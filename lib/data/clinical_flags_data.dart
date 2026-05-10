@@ -38,37 +38,47 @@ final Map<String, List<Map<String, dynamic>>> clinicalCategories = {
   ],
 
   'Entorse de cheville': [
-    {
-      'title': 'Incapacité à effectuer au moins quatre pas',
-      'severity': 'Élevé',
-      'checked': false,
-    },
-    {
-      'title': 'Douleur osseuse sur les malléoles',
-      'severity': 'Élevé',
-      'checked': false,
-    },
-    {
-      'title': 'Douleur osseuse à la base du 5e métatarsien',
-      'severity': 'Élevé',
-      'checked': false,
-    },
-    {
-      'title': 'Douleur osseuse sur le naviculaire',
-      'severity': 'Élevé',
-      'checked': false,
-    },
-    {
-      'title': 'Déformation évidente ou suspicion de luxation',
-      'severity': 'Critique',
-      'checked': false,
-    },
-    {
-      'title': 'Suspicion de fracture ouverte',
-      'severity': 'Critique',
-      'checked': false,
-    },
-  ],
+  {
+    'title': 'Ottawa positif : incapacité à effectuer au moins quatre pas immédiatement après le traumatisme ou à l’examen',
+    'severity': 'Élevé',
+    'checked': false,
+  },
+  {
+    'title': 'Ottawa positif : douleur osseuse au bord postérieur ou à la pointe de la malléole latérale',
+    'severity': 'Élevé',
+    'checked': false,
+  },
+  {
+    'title': 'Ottawa positif : douleur osseuse au bord postérieur ou à la pointe de la malléole médiale',
+    'severity': 'Élevé',
+    'checked': false,
+  },
+  {
+    'title': 'Ottawa positif : douleur osseuse à la base du 5e métatarsien',
+    'severity': 'Élevé',
+    'checked': false,
+  },
+  {
+    'title': 'Ottawa positif : douleur osseuse sur le naviculaire',
+    'severity': 'Élevé',
+    'checked': false,
+  },
+  {
+    'title': 'Déformation évidente ou suspicion de luxation',
+    'severity': 'Critique',
+    'checked': false,
+  },
+  {
+    'title': 'Suspicion de fracture ouverte',
+    'severity': 'Critique',
+    'checked': false,
+  },
+  {
+    'title': 'Douleur haute ou instabilité évoquant une atteinte syndesmotique importante',
+    'severity': 'Élevé',
+    'checked': false,
+  },
+],
 
   'Respiratoire adulte': [
     {
@@ -127,32 +137,57 @@ final Map<String, List<Map<String, dynamic>>> clinicalCategories = {
   ],
 
   'Cervicalgie': [
-    {
-      'title': 'Céphalée brutale en coup de tonnerre',
-      'severity': 'Critique',
-      'checked': false,
-    },
-    {
-      'title': 'Diplopie, dysarthrie, dysphagie, drop attacks ou vertiges importants',
-      'severity': 'Critique',
-      'checked': false,
-    },
-    {
-      'title': 'Troubles de coordination, fièvre ou raideur cervicale',
-      'severity': 'Critique',
-      'checked': false,
-    },
-    {
-      'title': 'Signes neurologiques : paresthésies, faiblesse, déficit moteur',
-      'severity': 'Élevé',
-      'checked': false,
-    },
-    {
-      'title': 'Suspicion de dissection ou atteinte neurovasculaire',
-      'severity': 'Critique',
-      'checked': false,
-    },
-  ],
+  {
+    'title': '5D : vertiges importants ou sensation rotatoire',
+    'severity': 'Critique',
+    'checked': false,
+  },
+  {
+    'title': '5D : diplopie',
+    'severity': 'Critique',
+    'checked': false,
+  },
+  {
+    'title': '5D : dysarthrie',
+    'severity': 'Critique',
+    'checked': false,
+  },
+  {
+    'title': '5D : dysphagie',
+    'severity': 'Critique',
+    'checked': false,
+  },
+  {
+    'title': '5D : drop attacks ou malaise brutal',
+    'severity': 'Critique',
+    'checked': false,
+  },
+  {
+    'title': '3N : nausees importantes',
+    'severity': 'Élevé',
+    'checked': false,
+  },
+  {
+    'title': '3N : nystagmus',
+    'severity': 'Élevé',
+    'checked': false,
+  },
+  {
+    'title': '3N : paresthesies ou engourdissement facial',
+    'severity': 'Élevé',
+    'checked': false,
+  },
+  {
+    'title': 'Céphalée brutale inhabituelle',
+    'severity': 'Critique',
+    'checked': false,
+  },
+  {
+    'title': 'Trouble neurologique recent',
+    'severity': 'Critique',
+    'checked': false,
+  },
+],
 
   'Cardiaque': [
     {
@@ -183,32 +218,52 @@ final Map<String, List<Map<String, dynamic>>> clinicalCategories = {
   ],
 
   'TVP / Vasculaire': [
-    {
-      'title': 'Œdème unilatéral récent',
-      'severity': 'Élevé',
-      'checked': false,
-    },
-    {
-      'title': 'Mollet chaud, tendu et douloureux à la palpation',
-      'severity': 'Élevé',
-      'checked': false,
-    },
-    {
-      'title': 'Score de Wells à vérifier',
-      'severity': 'Modéré',
-      'checked': false,
-    },
-    {
-      'title': 'Dyspnée brutale, douleur thoracique ou tachycardie',
-      'severity': 'Critique',
-      'checked': false,
-    },
-    {
-      'title': 'Facteurs de risque : chirurgie récente, immobilisation, cancer actif, grossesse/post-partum',
-      'severity': 'Modéré',
-      'checked': false,
-    },
-  ],
+  {
+    'title': 'Wells TVP : cancer actif ou traitement recent',
+    'severity': 'Modere',
+    'checked': false,
+  },
+  {
+    'title': 'Wells TVP : paralysie, paresie ou immobilisation recente du membre inferieur',
+    'severity': 'Modere',
+    'checked': false,
+  },
+  {
+    'title': 'Wells TVP : alitement recent de plus de 3 jours ou chirurgie majeure recente',
+    'severity': 'Modere',
+    'checked': false,
+  },
+  {
+    'title': 'Wells TVP : douleur localisee sur le trajet veineux profond',
+    'severity': 'Eleve',
+    'checked': false,
+  },
+  {
+    'title': 'Wells TVP : oedeme global du membre inferieur',
+    'severity': 'Eleve',
+    'checked': false,
+  },
+  {
+    'title': 'Wells TVP : mollet augmente de volume de plus de 3 cm',
+    'severity': 'Eleve',
+    'checked': false,
+  },
+  {
+    'title': 'Wells TVP : oedeme prenant le godet',
+    'severity': 'Modere',
+    'checked': false,
+  },
+  {
+    'title': 'Wells TVP : veines superficielles collaterales non variqueuses',
+    'severity': 'Modere',
+    'checked': false,
+  },
+  {
+    'title': 'Dyspnee brutale, douleur thoracique, malaise ou tachycardie',
+    'severity': 'Critique',
+    'checked': false,
+  },
+],
 
   'Post-opératoire': [
     {

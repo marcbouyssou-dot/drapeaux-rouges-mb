@@ -9,6 +9,10 @@ class PdfService {
     required int checkedCount,
     required String riskLevel,
     required String patientCode,
+    required String motif,
+    required String decisionTitle,
+    required String decisionMessage,
+    required String aiSummary,
   }) async {
     final pdf = pw.Document();
     final now = DateTime.now();
@@ -27,26 +31,10 @@ class PdfService {
     }).toList();
 
     PdfColor riskPdfColor() {
-      if (score >= 9) return PdfColor.fromHex('#7F1D1D');
-      if (score >= 6) return PdfColors.red;
-      if (score >= 3) return PdfColors.orange;
+      if (score >= 6) return PdfColor.fromHex('#7F1D1D');
+      if (score >= 4) return PdfColors.red;
+      if (score >= 2) return PdfColors.orange;
       return PdfColors.green;
-    }
-
-    String conclusion() {
-      if (score >= 9) {
-        return 'Presence de signes critiques multiples. Une evaluation medicale urgente est recommandee selon le contexte clinique.';
-      }
-
-      if (score >= 6) {
-        return 'Presence de plusieurs signes d alerte importants. Une evaluation medicale rapide est recommandee.';
-      }
-
-      if (score >= 3) {
-        return 'Presence de signes necessitant une vigilance clinique renforcee.';
-      }
-
-      return 'Aucun signe critique majeur identifie dans cette grille.';
     }
 
     pdf.addPage(
@@ -58,38 +46,19 @@ class PdfService {
             bold: boldFont,
           ),
         ),
-        footer: (context) {
-          return pw.Container(
-            padding: const pw.EdgeInsets.only(top: 10),
-            decoration: const pw.BoxDecoration(
-              border: pw.Border(
-                top: pw.BorderSide(
-                  color: PdfColors.grey300,
-                  width: 0.8,
-                ),
-              ),
+        footer: (context) => pw.Row(
+          mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+          children: [
+            pw.Text(
+              'Acces Direct MK - Aide au reperage clinique',
+              style: const pw.TextStyle(fontSize: 9, color: PdfColors.grey600),
             ),
-            child: pw.Row(
-              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-              children: [
-                pw.Text(
-                  'Drapeaux rouges MB - Aide au reperage clinique',
-                  style: const pw.TextStyle(
-                    fontSize: 9,
-                    color: PdfColors.grey600,
-                  ),
-                ),
-                pw.Text(
-                  'Page ${context.pageNumber}/${context.pagesCount}',
-                  style: const pw.TextStyle(
-                    fontSize: 9,
-                    color: PdfColors.grey600,
-                  ),
-                ),
-              ],
+            pw.Text(
+              'Page ${context.pageNumber}/${context.pagesCount}',
+              style: const pw.TextStyle(fontSize: 9, color: PdfColors.grey600),
             ),
-          );
-        },
+          ],
+        ),
         build: (context) => [
           pw.Container(
             padding: const pw.EdgeInsets.all(22),
@@ -99,7 +68,6 @@ class PdfService {
             ),
             child: pw.Row(
               mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: pw.CrossAxisAlignment.center,
               children: [
                 pw.Column(
                   crossAxisAlignment: pw.CrossAxisAlignment.start,
@@ -113,18 +81,11 @@ class PdfService {
                       ),
                     ),
                     pw.SizedBox(height: 6),
-                    pw.Text(
-                      'Drapeaux rouges MB',
-                      style: pw.TextStyle(
-                        fontSize: 13,
-                        color: PdfColor.fromHex('#334155'),
-                      ),
-                    ),
+                    pw.Text('Acces Direct MK'),
                     pw.SizedBox(height: 10),
+                    pw.Text('Motif : $motif'),
                     pw.Text('Date : ${now.day}/${now.month}/${now.year}'),
-                    pw.Text(
-                      'Heure : ${now.hour}:${now.minute.toString().padLeft(2, '0')}',
-                    ),
+                    pw.Text('Heure : ${now.hour}:${now.minute.toString().padLeft(2, '0')}'),
                     pw.Text('Code patient : $patientCode'),
                   ],
                 ),
@@ -137,7 +98,7 @@ class PdfService {
                     borderRadius: pw.BorderRadius.circular(18),
                   ),
                   child: pw.Text(
-                    'MB',
+                    'MK',
                     style: pw.TextStyle(
                       color: PdfColors.white,
                       fontSize: 24,
@@ -155,37 +116,10 @@ class PdfService {
             children: [
               pw.Expanded(
                 flex: 2,
-                child: pw.Container(
-                  padding: const pw.EdgeInsets.all(18),
-                  decoration: pw.BoxDecoration(
-                    color: PdfColors.white,
-                    borderRadius: pw.BorderRadius.circular(16),
-                    border: pw.Border.all(
-                      color: riskPdfColor(),
-                      width: 2,
-                    ),
-                  ),
-                  child: pw.Column(
-                    crossAxisAlignment: pw.CrossAxisAlignment.start,
-                    children: [
-                      pw.Text(
-                        'Niveau de risque',
-                        style: const pw.TextStyle(
-                          fontSize: 10,
-                          color: PdfColors.grey600,
-                        ),
-                      ),
-                      pw.SizedBox(height: 6),
-                      pw.Text(
-                        riskLevel,
-                        style: pw.TextStyle(
-                          fontSize: 22,
-                          fontWeight: pw.FontWeight.bold,
-                          color: riskPdfColor(),
-                        ),
-                      ),
-                    ],
-                  ),
+                child: statBox(
+                  title: 'Niveau de risque',
+                  value: riskLevel,
+                  color: riskPdfColor(),
                 ),
               ),
               pw.SizedBox(width: 12),
@@ -209,19 +143,27 @@ class PdfService {
 
           pw.SizedBox(height: 24),
 
-          sectionTitle('Drapeaux rouges coches'),
+          sectionTitle('Decision clinique'),
+          pw.SizedBox(height: 8),
+          infoBox(
+            title: decisionTitle,
+            text: decisionMessage,
+            color: riskPdfColor(),
+          ),
 
+          pw.SizedBox(height: 24),
+
+          sectionTitle('Synthese locale assistee'),
+          pw.SizedBox(height: 8),
+          neutralBox(aiSummary),
+
+          pw.SizedBox(height: 24),
+
+          sectionTitle('Drapeaux rouges coches'),
           pw.SizedBox(height: 10),
 
           checkedRows.isEmpty
-              ? pw.Container(
-                  padding: const pw.EdgeInsets.all(14),
-                  decoration: pw.BoxDecoration(
-                    color: PdfColor.fromHex('#F8FAFC'),
-                    borderRadius: pw.BorderRadius.circular(12),
-                  ),
-                  child: pw.Text('Aucun drapeau rouge coche.'),
-                )
+              ? neutralBox('Aucun drapeau rouge coche.')
               : pw.TableHelper.fromTextArray(
                   headers: ['Categorie', 'Drapeau rouge', 'Niveau'],
                   data: checkedRows,
@@ -243,76 +185,15 @@ class PdfService {
 
           pw.SizedBox(height: 24),
 
-          sectionTitle('Conclusion clinique'),
-
-          pw.SizedBox(height: 8),
-
-          pw.Container(
-            padding: const pw.EdgeInsets.all(16),
-            decoration: pw.BoxDecoration(
-              color: PdfColor.fromHex('#F8FAFC'),
-              borderRadius: pw.BorderRadius.circular(14),
-              border: pw.Border.all(
-                color: PdfColor.fromHex('#E2E8F0'),
-              ),
-            ),
-            child: pw.Text(
-              conclusion(),
-              style: const pw.TextStyle(
-                fontSize: 11,
-                lineSpacing: 4,
-              ),
-            ),
-          ),
-
-          pw.SizedBox(height: 22),
-
           sectionTitle('Mentions legales et RGPD'),
-
           pw.SizedBox(height: 8),
-
-          pw.Container(
-            padding: const pw.EdgeInsets.all(16),
-            decoration: pw.BoxDecoration(
-              color: PdfColor.fromHex('#FFF7ED'),
-              borderRadius: pw.BorderRadius.circular(14),
-              border: pw.Border.all(
-                color: PdfColor.fromHex('#FED7AA'),
-              ),
-            ),
-            child: pw.Column(
-              crossAxisAlignment: pw.CrossAxisAlignment.start,
-              children: [
-                pw.Text(
-                  'Mention de prudence',
-                  style: pw.TextStyle(
-                    fontWeight: pw.FontWeight.bold,
-                    color: PdfColor.fromHex('#9A3412'),
-                  ),
-                ),
-                pw.SizedBox(height: 6),
-                pw.Text(
-                  'Ce document constitue une aide clinique. Il ne remplace pas une evaluation medicale professionnelle.',
-                  style: const pw.TextStyle(fontSize: 10),
-                ),
-                pw.SizedBox(height: 10),
-                pw.Text(
-                  'RGPD',
-                  style: pw.TextStyle(
-                    fontWeight: pw.FontWeight.bold,
-                    color: PdfColor.fromHex('#9A3412'),
-                  ),
-                ),
-                pw.SizedBox(height: 6),
-                pw.Text(
-                  'Ne pas saisir de donnees nominatives. Utiliser uniquement un identifiant pseudonymise. Les exports sont sous la responsabilite de l utilisateur professionnel.',
-                  style: const pw.TextStyle(fontSize: 10),
-                ),
-              ],
-            ),
+          neutralBox(
+            'Ce document constitue une aide clinique. Il ne remplace pas une evaluation medicale professionnelle.\n\n'
+            'Ne pas saisir de donnees nominatives. Utiliser uniquement un identifiant pseudonymise.\n\n'
+            'Les decisions cliniques restent sous la responsabilite du professionnel utilisateur.',
           ),
 
-          pw.SizedBox(height: 20),
+          pw.SizedBox(height: 18),
 
           pw.Align(
             alignment: pw.Alignment.centerRight,
@@ -343,23 +224,20 @@ class PdfService {
       decoration: pw.BoxDecoration(
         color: PdfColor.fromHex('#F8FAFC'),
         borderRadius: pw.BorderRadius.circular(16),
-        border: pw.Border.all(color: PdfColor.fromHex('#E2E8F0')),
+        border: pw.Border.all(color: color, width: 1.2),
       ),
       child: pw.Column(
         crossAxisAlignment: pw.CrossAxisAlignment.start,
         children: [
           pw.Text(
             title,
-            style: const pw.TextStyle(
-              fontSize: 10,
-              color: PdfColors.grey600,
-            ),
+            style: const pw.TextStyle(fontSize: 10, color: PdfColors.grey600),
           ),
           pw.SizedBox(height: 6),
           pw.Text(
             value,
             style: pw.TextStyle(
-              fontSize: 24,
+              fontSize: 18,
               fontWeight: pw.FontWeight.bold,
               color: color,
             ),
@@ -376,6 +254,51 @@ class PdfService {
         fontSize: 16,
         fontWeight: pw.FontWeight.bold,
         color: PdfColor.fromHex('#0F172A'),
+      ),
+    );
+  }
+
+  static pw.Widget infoBox({
+    required String title,
+    required String text,
+    required PdfColor color,
+  }) {
+    return pw.Container(
+      padding: const pw.EdgeInsets.all(16),
+      decoration: pw.BoxDecoration(
+        color: PdfColor.fromHex('#F8FAFC'),
+        borderRadius: pw.BorderRadius.circular(14),
+        border: pw.Border.all(color: color, width: 1.2),
+      ),
+      child: pw.Column(
+        crossAxisAlignment: pw.CrossAxisAlignment.start,
+        children: [
+          pw.Text(
+            title,
+            style: pw.TextStyle(
+              fontWeight: pw.FontWeight.bold,
+              color: color,
+              fontSize: 13,
+            ),
+          ),
+          pw.SizedBox(height: 8),
+          pw.Text(text, style: const pw.TextStyle(fontSize: 10, lineSpacing: 4)),
+        ],
+      ),
+    );
+  }
+
+  static pw.Widget neutralBox(String text) {
+    return pw.Container(
+      padding: const pw.EdgeInsets.all(16),
+      decoration: pw.BoxDecoration(
+        color: PdfColor.fromHex('#F8FAFC'),
+        borderRadius: pw.BorderRadius.circular(14),
+        border: pw.Border.all(color: PdfColor.fromHex('#E2E8F0')),
+      ),
+      child: pw.Text(
+        text,
+        style: const pw.TextStyle(fontSize: 10, lineSpacing: 4),
       ),
     );
   }

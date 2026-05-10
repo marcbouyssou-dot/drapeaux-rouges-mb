@@ -27,19 +27,23 @@ class ResultCard extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(32),
+        borderRadius: BorderRadius.circular(34),
         boxShadow: [
           BoxShadow(
-            color: riskColor.withOpacity(0.28),
-            blurRadius: 28,
-            offset: const Offset(0, 14),
+            color: riskColor.withOpacity(0.24),
+            blurRadius: 30,
+            offset: const Offset(0, 16),
           ),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(Icons.health_and_safety_rounded, color: Colors.white, size: 44),
+          const Icon(
+            Icons.health_and_safety_rounded,
+            color: Colors.white,
+            size: 44,
+          ),
           const SizedBox(height: 18),
           Text(
             riskLevel,
@@ -67,8 +71,10 @@ class ResultCard extends StatelessWidget {
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(0.18),
-        borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: Colors.white.withOpacity(0.25)),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.26),
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
