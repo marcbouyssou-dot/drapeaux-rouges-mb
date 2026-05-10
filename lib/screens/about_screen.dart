@@ -8,7 +8,7 @@ class AboutScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: const Color(0xFFF3F6FA),
       appBar: AppBar(
-        title: const Text('Informations'),
+        title: const Text('Infos'),
         centerTitle: true,
       ),
       body: ListView(
@@ -19,17 +19,16 @@ class AboutScreen extends StatelessWidget {
           infoCard(
             icon: Icons.person_outline,
             title: 'Editeur',
-            text: 'Application developpee sous les initiales MB.',
+            text: 'Application drapeaux_rouges_MB.',
           ),
           infoCard(
             icon: Icons.health_and_safety_outlined,
             title: 'Usage',
-            text:
-                'Outil professionnel d aide au reperage des drapeaux rouges sur le terrain.',
+            text: 'Outil professionnel d aide au reperage des drapeaux rouges.',
           ),
           infoCard(
             icon: Icons.warning_amber_rounded,
-            title: 'Mention de prudence',
+            title: 'Prudence',
             text:
                 'Cette application ne pose pas de diagnostic medical et ne remplace pas une evaluation par un professionnel de sante.',
           ),
@@ -40,15 +39,9 @@ class AboutScreen extends StatelessWidget {
                 'Ne jamais saisir de donnees nominatives. Utiliser uniquement un code patient pseudonymise.',
           ),
           infoCard(
-            icon: Icons.gavel_outlined,
-            title: 'Responsabilite',
-            text:
-                'Les decisions cliniques restent sous la responsabilite du professionnel utilisateur.',
-          ),
-          infoCard(
             icon: Icons.info_outline,
             title: 'Version',
-            text: 'Drapeaux rouges MB - Version 1.0.0',
+            text: 'drapeaux_rouges_MB - Version 1.0.0',
           ),
         ],
       ),
@@ -77,7 +70,7 @@ class AboutScreen extends StatelessWidget {
           ),
           SizedBox(height: 18),
           Text(
-            'Drapeaux rouges MB',
+            'drapeaux_rouges_MB',
             style: TextStyle(
               color: Colors.white,
               fontSize: 28,

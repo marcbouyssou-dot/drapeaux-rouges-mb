@@ -6,32 +6,52 @@ class HeaderCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(22),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(28),
-      ),
-      child: const Row(
-        children: [
-          Icon(
-            Icons.health_and_safety_rounded,
-            color: Color(0xFF2563EB),
-            size: 42,
+        gradient: const LinearGradient(
+          colors: [
+            Colors.white,
+            Color(0xFFEFF6FF),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(30),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 22,
+            offset: const Offset(0, 10),
           ),
-          SizedBox(width: 16),
-          Expanded(
+        ],
+      ),
+      child: Row(
+        children: [
+          Image.asset(
+            'assets/assets/logo_urps_mk_na.jpg',
+            height: 70,
+            fit: BoxFit.contain,
+          ),
+          const SizedBox(width: 18),
+          const Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Evaluation terrain',
+                  'Aide à la décision clinique',
                   style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
+                    fontSize: 25,
+                    fontWeight: FontWeight.w900,
+                    color: Color(0xFF0F172A),
                   ),
                 ),
                 SizedBox(height: 6),
-                Text('Reperage rapide des drapeaux rouges'),
+                Text(
+                  'Repérage rapide des drapeaux rouges',
+                  style: TextStyle(
+                    fontSize: 15,
+                    color: Color(0xFF64748B),
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
               ],
             ),
           ),

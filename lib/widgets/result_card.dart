@@ -17,39 +17,44 @@ class ResultCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(26),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            riskColor.withOpacity(0.95),
+            riskColor,
             riskColor.withOpacity(0.72),
           ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(28),
+        borderRadius: BorderRadius.circular(32),
+        boxShadow: [
+          BoxShadow(
+            color: riskColor.withOpacity(0.28),
+            blurRadius: 28,
+            offset: const Offset(0, 14),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(
-            Icons.health_and_safety_rounded,
-            color: Colors.white,
-            size: 42,
-          ),
+          const Icon(Icons.health_and_safety_rounded, color: Colors.white, size: 44),
           const SizedBox(height: 18),
           Text(
             riskLevel,
             style: const TextStyle(
               fontSize: 34,
               color: Colors.white,
-              fontWeight: FontWeight.bold,
+              fontWeight: FontWeight.w900,
             ),
           ),
-          const SizedBox(height: 18),
+          const SizedBox(height: 20),
           Row(
             children: [
-              Expanded(child: miniStat('Score', '$score')),
+              Expanded(child: _miniStat('Score', '$score')),
               const SizedBox(width: 12),
-              Expanded(child: miniStat('Drapeaux', '$checkedCount')),
+              Expanded(child: _miniStat('Drapeaux', '$checkedCount')),
             ],
           ),
         ],
@@ -57,24 +62,25 @@ class ResultCard extends StatelessWidget {
     );
   }
 
-  Widget miniStat(String label, String value) {
+  Widget _miniStat(String label, String value) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(0.18),
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: Colors.white.withOpacity(0.25)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(label, style: const TextStyle(color: Colors.white70)),
-          const SizedBox(height: 6),
+          const SizedBox(height: 8),
           Text(
             value,
             style: const TextStyle(
               color: Colors.white,
-              fontSize: 28,
-              fontWeight: FontWeight.bold,
+              fontSize: 30,
+              fontWeight: FontWeight.w900,
             ),
           ),
         ],

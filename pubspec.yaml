@@ -29,6 +29,7 @@ environment:
 # versions available, run `flutter pub outdated`.
 dependencies:
   flutter:
+ 
     sdk: flutter
 
   pdf: any
@@ -62,6 +63,8 @@ flutter:
   # the material Icons class.
   uses-material-design: true
 
+  assets:
+      - assets/assets/logo_urps_mk_na.jpg
   # To add assets to your application, add an assets section, like this:
   # assets:
   #   - images/a_dot_burr.jpeg

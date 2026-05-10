@@ -13,7 +13,7 @@ class RedFlagsApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Drapeaux rouges MB',
+      title: 'Accès Direct MK',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       home: const MainNavigationScreen(),
