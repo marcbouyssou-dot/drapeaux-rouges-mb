@@ -36,6 +36,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         child: ClipRRect(
           borderRadius: BorderRadius.circular(28),
           child: NavigationBar(
+            
             selectedIndex: currentIndex,
             height: 74,
             onDestinationSelected: (index) {

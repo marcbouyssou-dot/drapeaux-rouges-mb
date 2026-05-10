@@ -217,10 +217,7 @@ String get aiSummary {
     final bool isTablet = screenWidth > 900;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Drapeaux rouges MB'),
-      ),
-      body: Center(
+  body: Center(
         child: ConstrainedBox(
           constraints: BoxConstraints(
             maxWidth: isTablet ? 1200 : 700,

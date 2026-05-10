@@ -26,14 +26,6 @@ class _HistoryScreenState extends State<HistoryScreen> {
     });
   }
 
-  Future<void> clearHistory() async {
-    await HistoryService.clearHistory();
-
-    setState(() {
-      history.clear();
-    });
-  }
-
   Color riskColor(String risk) {
     if (risk.contains('critique')) return const Color(0xFF7F1D1D);
     if (risk.contains('eleve')) return Colors.red;
@@ -45,16 +37,6 @@ class _HistoryScreenState extends State<HistoryScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF3F6FA),
-      appBar: AppBar(
-        title: const Text('Historique'),
-        centerTitle: true,
-        actions: [
-          IconButton(
-            onPressed: history.isEmpty ? null : clearHistory,
-            icon: const Icon(Icons.delete_outline),
-          ),
-        ],
-      ),
       body: history.isEmpty
           ? const Center(
               child: Text('Aucune evaluation enregistree'),
@@ -102,12 +84,17 @@ class _HistoryScreenState extends State<HistoryScreen> {
                                 ),
                               ),
                               const SizedBox(height: 6),
-                              Text('Patient : ${item['patientCode'] ?? 'Non renseigne'}'),
+                              Text(
+                                'Patient : ${item['patientCode'] ?? 'Non renseigne'}',
+                              ),
                               Text('Score : ${item['score']}'),
                               Text('Drapeaux : ${item['checkedCount']}'),
                               const SizedBox(height: 6),
                               Text(
-                                item['date'].toString().replaceAll('T', ' ').substring(0, 16),
+                                item['date']
+                                    .toString()
+                                    .replaceAll('T', ' ')
+                                    .substring(0, 16),
                                 style: const TextStyle(color: Colors.grey),
                               ),
                             ],

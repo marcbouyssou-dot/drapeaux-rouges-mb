@@ -12,7 +12,7 @@ class SettingsScreen extends StatelessWidget {
 
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text('Historique supprime'),
+        content: Text('Historique supprimé'),
       ),
     );
   }
@@ -21,29 +21,25 @@ class SettingsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF3F6FA),
-      appBar: AppBar(
-        title: const Text('Reglages'),
-        centerTitle: true,
-      ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
           settingCard(
             icon: Icons.privacy_tip_outlined,
-            title: 'Confidentialite RGPD',
+            title: 'Confidentialité RGPD',
             subtitle:
-                'Ne jamais saisir de nom, prenom, date de naissance ou donnee directement identifiante.',
+                'Ne jamais saisir de nom, prénom, date de naissance ou donnée directement identifiante.',
           ),
           settingCard(
             icon: Icons.medical_information_outlined,
             title: 'Usage clinique',
             subtitle:
-                'Cette application est une aide au reperage. Elle ne pose pas de diagnostic medical.',
+                'Cette application est une aide au repérage. Elle ne pose pas de diagnostic médical.',
           ),
           settingCard(
             icon: Icons.info_outline,
             title: 'Version',
-            subtitle: 'Drapeaux rouges MB - Version 1.0.0',
+            subtitle: 'Accès Direct MK - Version 1.0.0',
           ),
           const SizedBox(height: 12),
           OutlinedButton.icon(
