@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 
 import '../data/clinical_flags_data.dart';
+import '../services/clinical_ai_service.dart';
 import '../services/csv_service.dart';
 import '../services/history_service.dart';
 import '../services/pdf_service.dart';
-import '../widgets/action_buttons.dart';
 import '../widgets/category_card.dart';
 import '../widgets/header_card.dart';
 import '../widgets/result_card.dart';
-import '../services/clinical_ai_service.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -22,6 +21,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   bool rgpdConsent = false;
   String searchQuery = '';
+  String selectedCategory = clinicalCategories.keys.first;
+
   List<Map<String, dynamic>> history = [];
 
   final Map<String, List<Map<String, dynamic>>> categories =
@@ -38,27 +39,46 @@ class _HomeScreenState extends State<HomeScreen> {
     loadHistory();
   }
 
+  List<Map<String, dynamic>> get selectedItems {
+    final items = categories[selectedCategory] ?? [];
+
+    if (searchQuery.trim().isEmpty) return items;
+
+    final query = searchQuery.toLowerCase();
+
+    return items.where((item) {
+      final title = item['title'].toString().toLowerCase();
+      final severity = item['severity'].toString().toLowerCase();
+
+      return title.contains(query) || severity.contains(query);
+    }).toList();
+  }
+
+  Map<String, List<Map<String, dynamic>>> get selectedCategoryMap {
+    return {
+      selectedCategory: selectedItems,
+    };
+  }
+
   int get checkedCount {
-    int total = 0;
-
-    for (final category in categories.values) {
-      for (final item in category) {
-        if (item['checked'] == true) {
-          total++;
-        }
-      }
-    }
-
-    return total;
+    return (categories[selectedCategory] ?? [])
+        .where((item) => item['checked'] == true)
+        .length;
   }
 
   int get score {
     int total = 0;
 
-    for (final category in categories.values) {
-      for (final item in category) {
-        if (item['checked'] == true) {
-          total += item['severity'] == 'Critique' ? 3 : 1;
+    for (final item in categories[selectedCategory] ?? []) {
+      if (item['checked'] == true) {
+        final severity = item['severity'].toString();
+
+        if (severity == 'Critique') {
+          total += 3;
+        } else if (severity == 'Élevé') {
+          total += 2;
+        } else {
+          total += 1;
         }
       }
     }
@@ -67,57 +87,30 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   String get riskLevel {
-    if (score >= 9) return 'Risque critique';
-    if (score >= 6) return 'Risque eleve';
-    if (score >= 3) return 'Risque modere';
+    if (score >= 6) return 'Risque critique';
+    if (score >= 4) return 'Risque eleve';
+    if (score >= 2) return 'Risque modere';
     return 'Risque faible';
   }
 
   Color get riskColor {
-    if (score >= 9) return const Color(0xFF7F1D1D);
-    if (score >= 6) return Colors.red;
-    if (score >= 3) return Colors.orange;
+    if (score >= 6) return const Color(0xFF7F1D1D);
+    if (score >= 4) return Colors.red;
+    if (score >= 2) return Colors.orange;
     return Colors.green;
   }
-String get aiSummary {
-  return ClinicalAiService.generateClinicalSummary(
-    categories: categories,
-    score: score,
-    checkedCount: checkedCount,
-  );
-}
+
   String get patientCode {
     final value = patientCodeController.text.trim();
-
     return value.isEmpty ? 'Non renseigne' : value;
   }
 
-  Map<String, List<Map<String, dynamic>>> get filteredCategories {
-    if (searchQuery.trim().isEmpty) {
-      return categories;
-    }
-
-    final query = searchQuery.toLowerCase();
-
-    final Map<String, List<Map<String, dynamic>>> filtered = {};
-
-    for (final entry in categories.entries) {
-      final items = entry.value.where((item) {
-        final title = item['title'].toString().toLowerCase();
-        final severity = item['severity'].toString().toLowerCase();
-        final category = entry.key.toLowerCase();
-
-        return title.contains(query) ||
-            severity.contains(query) ||
-            category.contains(query);
-      }).toList();
-
-      if (items.isNotEmpty) {
-        filtered[entry.key] = items;
-      }
-    }
-
-    return filtered;
+  String get aiSummary {
+    return ClinicalAiService.generateClinicalSummary(
+      categories: selectedCategoryMap,
+      score: score,
+      checkedCount: checkedCount,
+    );
   }
 
   Future<void> loadHistory() async {
@@ -132,6 +125,7 @@ String get aiSummary {
     final evaluation = {
       'date': DateTime.now().toIso8601String(),
       'patientCode': patientCode,
+      'motif': selectedCategory,
       'score': score,
       'risk': riskLevel,
       'checkedCount': checkedCount,
@@ -141,8 +135,6 @@ String get aiSummary {
       history: history,
       evaluation: evaluation,
     );
-
-    setState(() {});
 
     if (!mounted) return;
 
@@ -155,7 +147,7 @@ String get aiSummary {
 
   void exportPdf() {
     PdfService.exportPdf(
-      categories: categories,
+      categories: selectedCategoryMap,
       score: score,
       checkedCount: checkedCount,
       riskLevel: riskLevel,
@@ -165,7 +157,7 @@ String get aiSummary {
 
   void exportCsv() {
     CsvService.exportCsv(
-      categories: categories,
+      categories: selectedCategoryMap,
       score: score,
       riskLevel: riskLevel,
       patientCode: patientCode,
@@ -179,7 +171,6 @@ String get aiSummary {
           content: Text('Veuillez valider l information RGPD'),
         ),
       );
-
       return;
     }
 
@@ -200,24 +191,13 @@ String get aiSummary {
     });
   }
 
-  void showHistory() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text(
-          'Utilise l onglet Historique en bas de l ecran',
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
-
     final bool isTablet = screenWidth > 900;
 
     return Scaffold(
-  body: Center(
+      body: Center(
         child: ConstrainedBox(
           constraints: BoxConstraints(
             maxWidth: isTablet ? 1200 : 700,
@@ -226,13 +206,11 @@ String get aiSummary {
             padding: const EdgeInsets.all(18),
             children: [
               const HeaderCard(),
-
               const SizedBox(height: 18),
-
+              buildPathologySelector(),
+              const SizedBox(height: 18),
               buildTopSection(isTablet),
-
               const SizedBox(height: 20),
-
               ResultCard(
                 riskLevel: riskLevel,
                 riskColor: riskColor,
@@ -240,24 +218,12 @@ String get aiSummary {
                 checkedCount: checkedCount,
               ),
               const SizedBox(height: 18),
-
               buildAiSummaryCard(),
               const SizedBox(height: 22),
-
-              buildCategoriesGrid(isTablet),
-
+              buildSelectedCategoryCard(),
               const SizedBox(height: 22),
-
-              ActionButtons(
-                onSave: () => requireRgpd(saveEvaluation),
-                onHistory: showHistory,
-                onPdf: () => requireRgpd(exportPdf),
-                onCsv: () => requireRgpd(exportCsv),
-                onReset: resetSession,
-              ),
-
+              buildActionButtons(),
               const SizedBox(height: 30),
-
               const Text(
                 'RGPD : ne jamais saisir de donnees nominatives.',
                 style: TextStyle(color: Colors.grey),
@@ -265,6 +231,37 @@ String get aiSummary {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget buildPathologySelector() {
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(28),
+      ),
+      child: DropdownButtonFormField<String>(
+        value: selectedCategory,
+        decoration: const InputDecoration(
+          labelText: 'Motif / pathologie initiale',
+          prefixIcon: Icon(Icons.medical_information_outlined),
+        ),
+        items: categories.keys.map((category) {
+          return DropdownMenuItem(
+            value: category,
+            child: Text(category),
+          );
+        }).toList(),
+        onChanged: (value) {
+          if (value == null) return;
+
+          setState(() {
+            selectedCategory = value;
+            searchQuery = '';
+          });
+        },
       ),
     );
   }
@@ -290,8 +287,8 @@ String get aiSummary {
             });
           },
           decoration: const InputDecoration(
-            labelText: 'Recherche',
-            hintText: 'douleur, neuro...',
+            labelText: 'Recherche dans ce motif',
+            hintText: 'douleur, neuro, fracture...',
             prefixIcon: Icon(Icons.search),
           ),
         ),
@@ -303,13 +300,6 @@ String get aiSummary {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(28),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 18,
-            offset: const Offset(0, 8),
-          ),
-        ],
       ),
       child: Column(
         children: [
@@ -322,9 +312,7 @@ String get aiSummary {
                     content[2],
                   ],
                 ),
-
           const SizedBox(height: 14),
-
           CheckboxListTile(
             value: rgpdConsent,
             onChanged: (value) {
@@ -345,77 +333,80 @@ String get aiSummary {
     );
   }
 
-  Widget buildCategoriesGrid(bool isTablet) {
-    final entries = filteredCategories.entries.toList();
-
-    if (!isTablet) {
-      return Column(
-        children: entries.map((entry) {
-          return CategoryCard(
-            category: entry.key,
-            items: entry.value,
-            onChanged: (item, value) {
-              setState(() {
-                item['checked'] = value;
-              });
-            },
-          );
-        }).toList(),
-      );
-    }
-
-    return Wrap(
-      spacing: 18,
-      runSpacing: 18,
-      children: entries.map((entry) {
-        return SizedBox(
-          width: 560,
-          child: CategoryCard(
-            category: entry.key,
-            items: entry.value,
-            onChanged: (item, value) {
-              setState(() {
-                item['checked'] = value;
-              });
-            },
-          ),
-        );
-      }).toList(),
+  Widget buildSelectedCategoryCard() {
+    return CategoryCard(
+      category: selectedCategory,
+      items: selectedItems,
+      onChanged: (item, value) {
+        setState(() {
+          item['checked'] = value;
+        });
+      },
     );
   }
-  Widget buildAiSummaryCard() {
-  return Container(
-    padding: const EdgeInsets.all(20),
-    decoration: BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(26),
-    ),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+
+  Widget buildActionButtons() {
+    return Wrap(
+      spacing: 12,
+      runSpacing: 12,
       children: [
-        const Row(
-          children: [
-            Icon(Icons.auto_awesome, color: Color(0xFF2563EB)),
-            SizedBox(width: 10),
-            Text(
-              'Synthese locale assistee',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w900,
-              ),
-            ),
-          ],
+        FilledButton.icon(
+          onPressed: () => requireRgpd(saveEvaluation),
+          icon: const Icon(Icons.save_outlined),
+          label: const Text('Enregistrer'),
         ),
-        const SizedBox(height: 12),
-        Text(
-          aiSummary,
-          style: const TextStyle(
-            height: 1.5,
-            color: Colors.black87,
-          ),
+        OutlinedButton.icon(
+          onPressed: () => requireRgpd(exportPdf),
+          icon: const Icon(Icons.picture_as_pdf_outlined),
+          label: const Text('PDF'),
+        ),
+        OutlinedButton.icon(
+          onPressed: () => requireRgpd(exportCsv),
+          icon: const Icon(Icons.table_chart_outlined),
+          label: const Text('CSV'),
+        ),
+        OutlinedButton.icon(
+          onPressed: resetSession,
+          icon: const Icon(Icons.refresh),
+          label: const Text('Réinitialiser'),
         ),
       ],
-    ),
-  );
-}
+    );
+  }
+
+  Widget buildAiSummaryCard() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(26),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Row(
+            children: [
+              Icon(Icons.auto_awesome, color: Color(0xFF2563EB)),
+              SizedBox(width: 10),
+              Text(
+                'Synthese locale assistee',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Text(
+            aiSummary,
+            style: const TextStyle(
+              height: 1.5,
+              color: Colors.black87,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
