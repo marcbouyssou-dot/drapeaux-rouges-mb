@@ -9,8 +9,8 @@ import '../services/pdf_service.dart';
 
 import '../widgets/category_card.dart';
 import '../widgets/decision_card.dart';
-import '../widgets/header_card.dart';
 import '../widgets/result_card.dart';
+import '../services/patient_session_service.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -20,11 +20,6 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final TextEditingController patientCodeController =
-      TextEditingController();
-
-  bool rgpdConsent = false;
-
   String selectedCategory = clinicalCategories.keys.first;
 
   List<Map<String, dynamic>> history = [];
@@ -65,9 +60,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   int get checkedCount {
-    return selectedItems
-        .where((item) => item['checked'] == true)
-        .length;
+    return selectedItems.where((item) => item['checked'] == true).length;
   }
 
   int get score {
@@ -92,8 +85,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   String get riskLevel {
     if (score >= 6) return 'Risque critique';
-    if (score >= 4) return 'Risque eleve';
-    if (score >= 2) return 'Risque modere';
+    if (score >= 4) return 'Risque élevé';
+    if (score >= 2) return 'Risque modéré';
     return 'Risque faible';
   }
 
@@ -105,9 +98,8 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   String get patientCode {
-    final value = patientCodeController.text.trim();
-    return value.isEmpty ? 'Non renseigne' : value;
-  }
+  return PatientSessionService.patientCode;
+}
 
   String get aiSummary {
     return ClinicalAiService.generateClinicalSummary(
@@ -144,7 +136,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text('Evaluation enregistree'),
+        content: Text('Évaluation enregistrée'),
       ),
     );
   }
@@ -180,23 +172,8 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  void requireRgpd(VoidCallback action) {
-    if (!rgpdConsent) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Veuillez valider l information RGPD'),
-        ),
-      );
-      return;
-    }
-
-    action();
-  }
-
   void resetSession() {
     setState(() {
-      patientCodeController.clear();
-
       for (final category in categories.values) {
         for (final item in category) {
           item['checked'] = false;
@@ -208,28 +185,20 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
-
     final bool isTablet = screenWidth > 900;
 
     return Scaffold(
-      body: SafeArea(
+  backgroundColor: const Color(0xFFF6F8FC),
+        body: SafeArea(
         child: Center(
           child: ConstrainedBox(
             constraints: BoxConstraints(
-              maxWidth: isTablet ? 1200 : 700,
+              maxWidth: isTablet ? 860 : 520,
             ),
             child: ListView(
               padding: const EdgeInsets.all(18),
               children: [
-                const HeaderCard(),
-
-                const SizedBox(height: 24),
-
                 buildClinicalSelector(),
-
-                const SizedBox(height: 22),
-
-                buildQuickInfos(),
 
                 const SizedBox(height: 22),
 
@@ -286,135 +255,204 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget buildClinicalSelector() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Motif principal',
-          style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.w900,
-          ),
-        ),
-
-        const SizedBox(height: 16),
-
-        SizedBox(
-          height: 140,
-          child: ListView(
-            scrollDirection: Axis.horizontal,
-            children: categories.keys.map((category) {
-              final selected = category == selectedCategory;
-
-              return GestureDetector(
-                onTap: () {
-                  setState(() {
-                    selectedCategory = category;
-                  });
-                },
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 180),
-                  width: 165,
-                  margin: const EdgeInsets.only(right: 14),
-                  padding: const EdgeInsets.all(18),
-                  decoration: BoxDecoration(
-                    gradient: selected
-                        ? const LinearGradient(
-                            colors: [
-                              Color(0xFF0A84FF),
-                              Color(0xFF2563EB),
-                            ],
-                          )
-                        : null,
-                    color: selected ? null : Colors.white,
-                    borderRadius: BorderRadius.circular(30),
-                    boxShadow: [
-                      BoxShadow(
-                        color: selected
-                            ? const Color(0xFF0A84FF).withOpacity(0.22)
-                            : Colors.black.withOpacity(0.04),
-                        blurRadius: 20,
-                        offset: const Offset(0, 10),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        categoryIcons[category],
-                        size: 38,
-                        color: selected
-                            ? Colors.white
-                            : const Color(0xFF0F172A),
-                      ),
-                      const SizedBox(height: 12),
-                      Expanded(
-                        child: Center(
-                          child: Text(
-                            category,
-                            textAlign: TextAlign.center,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              color: selected
-                                  ? Colors.white
-                                  : const Color(0xFF0F172A),
-                              fontWeight: FontWeight.w800,
-                              fontSize: 14,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Évaluation',
+                  style: TextStyle(
+                    fontSize: 34,
+                    fontWeight: FontWeight.w900,
+                    color: Color(0xFF071936),
                   ),
                 ),
-              );
-            }).toList(),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget buildQuickInfos() {
-    return Container(
-      padding: const EdgeInsets.all(22),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(30),
-      ),
-      child: Column(
-        children: [
-          TextField(
-            controller: patientCodeController,
-            decoration: const InputDecoration(
-              labelText: 'Code patient pseudonymise',
-              prefixIcon: Icon(Icons.badge_outlined),
+                SizedBox(height: 4),
+                Text(
+                  'Choisissez le motif principal',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Color(0xFF64748B),
+                  ),
+                ),
+              ],
             ),
           ),
-
-          const SizedBox(height: 16),
-
-          CheckboxListTile(
-            value: rgpdConsent,
-            onChanged: (value) {
-              setState(() {
-                rgpdConsent = value ?? false;
-              });
-            },
-            title: const Text(
-              'Information RGPD comprise',
-              style: TextStyle(fontWeight: FontWeight.bold),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            decoration: BoxDecoration(
+              color: const Color(0xFFEFFAF4),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: const Color(0xFFD5F3E1)),
             ),
-            subtitle: const Text(
-              'Ne jamais saisir de donnees nominatives.',
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const CircleAvatar(
+                  radius: 6,
+                  backgroundColor: Color(0xFF12B76A),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  patientCode == 'Non renseigné'
+                      ? 'Aucun patient'
+                      : 'Patient actif\n$patientCode',
+                  style: const TextStyle(
+                    color: Color(0xFF071936),
+                    fontWeight: FontWeight.w800,
+                    fontSize: 12,
+                    height: 1.2,
+                  ),
+                ),
+              ],
             ),
           ),
         ],
       ),
-    );
-  }
+
+      const SizedBox(height: 22),
+
+      GridView.builder(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        itemCount: categories.keys.length,
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+  crossAxisCount: 2,
+  mainAxisSpacing: 12,
+  crossAxisSpacing: 12,
+  childAspectRatio: isTabletLayout(context) ? 2.8 : 2.15,
+),
+        itemBuilder: (context, index) {
+          final category = categories.keys.elementAt(index);
+          final selected = category == selectedCategory;
+
+          return InkWell(
+            borderRadius: BorderRadius.circular(22),
+            onTap: () {
+              setState(() {
+                selectedCategory = category;
+              });
+            },
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 180),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(22),
+                border: Border.all(
+                  color: selected
+                      ? const Color(0xFF007AFF)
+                      : const Color(0xFFE6ECF5),
+                  width: selected ? 1.8 : 1,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: selected
+                        ? const Color(0xFF007AFF).withOpacity(0.12)
+                        : Colors.black.withOpacity(0.035),
+                    blurRadius: selected ? 18 : 12,
+                    offset: const Offset(0, 6),
+                  ),
+                ],
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 42,
+                    height: 42,
+                    decoration: BoxDecoration(
+                      color: selected
+                          ? const Color(0xFF007AFF)
+                          : const Color(0xFFEAF3FF),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Icon(
+                      categoryIcons[category],
+                      size: 23,
+                      color: selected
+                          ? Colors.white
+                          : const Color(0xFF007AFF),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      category,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: const Color(0xFF071936),
+                        fontWeight: selected
+                            ? FontWeight.w900
+                            : FontWeight.w700,
+                        fontSize: 14,
+                        height: 1.15,
+                      ),
+                    ),
+                  ),
+                  const Icon(
+                    Icons.chevron_right_rounded,
+                    color: Color(0xFF94A3B8),
+                    size: 22,
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+
+      const SizedBox(height: 22),
+
+      Container(
+        padding: const EdgeInsets.all(18),
+        decoration: BoxDecoration(
+          color: const Color(0xFFEAF3FF),
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(color: const Color(0xFFD7E8FF)),
+        ),
+        child: const Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(
+              Icons.lightbulb_outline_rounded,
+              color: Color(0xFF007AFF),
+            ),
+            SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Aide au raisonnement clinique',
+                    style: TextStyle(
+                      color: Color(0xFF0057D9),
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                  SizedBox(height: 6),
+                  Text(
+                    'Cette application ne pose pas de diagnostic médical et ne remplace pas un avis médical.',
+                    style: TextStyle(
+                      color: Color(0xFF1E3A8A),
+                      height: 1.35,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    ],
+  );
+}
 
   Widget buildBottomButtons() {
     return Wrap(
@@ -422,23 +460,20 @@ class _HomeScreenState extends State<HomeScreen> {
       runSpacing: 12,
       children: [
         FilledButton.icon(
-          onPressed: () => requireRgpd(saveEvaluation),
+          onPressed: saveEvaluation,
           icon: const Icon(Icons.save_outlined),
           label: const Text('Enregistrer'),
         ),
-
         FilledButton.icon(
-          onPressed: () => requireRgpd(exportPdf),
+          onPressed: exportPdf,
           icon: const Icon(Icons.picture_as_pdf_outlined),
           label: const Text('PDF'),
         ),
-
         OutlinedButton.icon(
-          onPressed: () => requireRgpd(exportCsv),
+          onPressed: exportCsv,
           icon: const Icon(Icons.table_chart_outlined),
           label: const Text('CSV'),
         ),
-
         OutlinedButton.icon(
           onPressed: resetSession,
           icon: const Icon(Icons.refresh),
@@ -466,7 +501,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               SizedBox(width: 10),
               Text(
-                'Synthese clinique',
+                'Synthèse clinique',
                 style: TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.w900,
@@ -474,9 +509,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ],
           ),
-
           const SizedBox(height: 14),
-
           Text(
             aiSummary,
             style: const TextStyle(
@@ -489,4 +522,7 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
+  bool isTabletLayout(BuildContext context) {
+  return MediaQuery.of(context).size.width > 700;
+}
 }
