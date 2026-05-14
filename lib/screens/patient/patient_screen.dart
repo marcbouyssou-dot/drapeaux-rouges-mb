@@ -1,7 +1,7 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 
-import '../services/patient_session_service.dart';
+import '../../services/patient_session_service.dart';
 
 class PatientScreen extends StatefulWidget {
   const PatientScreen({super.key});

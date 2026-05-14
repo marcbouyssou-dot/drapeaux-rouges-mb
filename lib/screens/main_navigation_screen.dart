@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'patient_screen.dart';
+import 'patient/patient_screen.dart';
 import 'history_screen.dart';
 import 'home_screen.dart';
 import 'settings_screen.dart';

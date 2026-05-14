@@ -21,6 +21,8 @@ class RedFlagsApp extends StatelessWidget {
       title: 'Accès Direct MK',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      themeMode: ThemeMode.system,
       home: const MainNavigationScreen(),
     );
   }
