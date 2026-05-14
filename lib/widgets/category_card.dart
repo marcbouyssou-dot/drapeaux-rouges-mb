@@ -28,108 +28,182 @@ class CategoryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(22),
+      padding: const EdgeInsets.all(18),
+
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(32),
+
+        borderRadius: BorderRadius.circular(28),
+
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 24,
-            offset: const Offset(0, 12),
+            color: Colors.black.withOpacity(0.035),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
           ),
         ],
       ),
+
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+
         children: [
-          Text(
-            category,
-            style: const TextStyle(
-              fontSize: 26,
-              fontWeight: FontWeight.w900,
-            ),
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  category,
+
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 7,
+                ),
+
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF1F5F9),
+
+                  borderRadius: BorderRadius.circular(99),
+                ),
+
+                child: Text(
+                  '${items.length} items',
+
+                  style: const TextStyle(
+                    color: Color(0xFF475569),
+                    fontWeight: FontWeight.w700,
+                    fontSize: 12,
+                  ),
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 6),
-          Text(
-            '${items.length} éléments cliniques',
-            style: const TextStyle(
-              color: Colors.grey,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const SizedBox(height: 20),
+
+          const SizedBox(height: 18),
 
           ...items.map((item) {
             final checked = item['checked'] == true;
-            final severity = item['severity'].toString();
+
+            final severity =
+                item['severity'].toString();
 
             return AnimatedContainer(
-              duration: const Duration(milliseconds: 180),
-              margin: const EdgeInsets.only(bottom: 14),
-              padding: const EdgeInsets.all(18),
+              duration:
+                  const Duration(milliseconds: 180),
+
+              margin:
+                  const EdgeInsets.only(bottom: 10),
+
+              padding: const EdgeInsets.symmetric(
+                horizontal: 14,
+                vertical: 12,
+              ),
+
               decoration: BoxDecoration(
                 color: checked
-                    ? severityColor(severity).withOpacity(0.08)
+                    ? severityColor(severity)
+                        .withOpacity(0.08)
                     : const Color(0xFFF8FAFC),
-                borderRadius: BorderRadius.circular(24),
+
+                borderRadius:
+                    BorderRadius.circular(20),
+
                 border: Border.all(
                   color: checked
                       ? severityColor(severity)
                       : const Color(0xFFE2E8F0),
-                  width: checked ? 1.8 : 1,
+
+                  width: checked ? 1.6 : 1,
                 ),
               ),
+
               child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment:
+                    CrossAxisAlignment.center,
+
                 children: [
                   Transform.scale(
-                    scale: 1.15,
+                    scale: 1.08,
+
                     child: Checkbox(
                       value: checked,
-                      activeColor: severityColor(severity),
+
+                      activeColor:
+                          severityColor(severity),
+
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(6),
+                        borderRadius:
+                            BorderRadius.circular(5),
                       ),
+
                       onChanged: (value) {
-                        onChanged(item, value ?? false);
+                        onChanged(
+                          item,
+                          value ?? false,
+                        );
                       },
                     ),
                   ),
 
-                  const SizedBox(width: 10),
+                  const SizedBox(width: 8),
 
                   Expanded(
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                      crossAxisAlignment:
+                          CrossAxisAlignment.start,
+
                       children: [
                         Text(
                           item['title'],
+
                           style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                            height: 1.4,
+                            fontSize: 15,
+                            fontWeight:
+                                FontWeight.w700,
+
+                            height: 1.25,
                           ),
                         ),
 
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 8),
 
                         Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 14,
-                            vertical: 8,
+                          padding:
+                              const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 5,
                           ),
+
                           decoration: BoxDecoration(
-                            color:
-                                severityColor(severity).withOpacity(0.12),
-                            borderRadius: BorderRadius.circular(99),
+                            color: severityColor(
+                              severity,
+                            ).withOpacity(0.12),
+
+                            borderRadius:
+                                BorderRadius.circular(
+                              99,
+                            ),
                           ),
+
                           child: Text(
                             severity,
+
                             style: TextStyle(
-                              color: severityColor(severity),
-                              fontWeight: FontWeight.w800,
-                              fontSize: 13,
+                              color: severityColor(
+                                severity,
+                              ),
+
+                              fontWeight:
+                                  FontWeight.w800,
+
+                              fontSize: 11,
                             ),
                           ),
                         ),
