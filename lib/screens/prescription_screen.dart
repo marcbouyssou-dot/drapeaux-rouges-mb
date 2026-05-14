@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/material.dart';
+
 import '../models/prescription_model.dart';
+import '../services/prescription_pdf_service.dart';
 import '../services/prescription_service.dart';
 
 class PrescriptionScreen extends StatefulWidget {
@@ -14,8 +15,7 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
   final TextEditingController professionalController =
       TextEditingController();
 
-  final TextEditingController patientController =
-      TextEditingController();
+  final TextEditingController patientController = TextEditingController();
 
   final TextEditingController clinicalContextController =
       TextEditingController();
@@ -23,14 +23,14 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
   final TextEditingController prescriptionController =
       TextEditingController();
 
-  final TextEditingController frequencyController =
-      TextEditingController();
+  final TextEditingController frequencyController = TextEditingController();
 
-  final TextEditingController durationController =
-      TextEditingController();
+  final TextEditingController durationController = TextEditingController();
 
   final TextEditingController nomenclatureController =
       TextEditingController();
+
+  
 
   @override
   void initState() {
@@ -68,6 +68,27 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
     super.dispose();
   }
 
+  PrescriptionModel buildPrescription() {
+    return PrescriptionModel(
+      professional: professionalController.text,
+      patient: patientController.text,
+      clinicalContext: clinicalContextController.text,
+      prescription: prescriptionController.text,
+      frequency: frequencyController.text,
+      duration: durationController.text,
+      nomenclature: nomenclatureController.text,
+      createdAt: DateTime.now(),
+    );
+  }
+
+  void showPdfGeneratedMessage() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Prescription PDF générée avec succès.'),
+      ),
+    );
+  }
+
   Widget sectionTitle(String title) {
     return Padding(
       padding: const EdgeInsets.only(top: 22, bottom: 10),
@@ -91,9 +112,7 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
       margin: const EdgeInsets.only(bottom: 14),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(18),
-        side: BorderSide(
-          color: Colors.grey.shade300,
-        ),
+        side: BorderSide(color: Colors.grey.shade300),
       ),
       child: Padding(
         padding: const EdgeInsets.all(14),
@@ -113,25 +132,40 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
     );
   }
 
-  void showComingSoonMessage() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Export PDF bientôt disponible'),
+Widget signatureCard() {
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      sectionTitle('Validation praticien'),
+      Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          border: Border.all(color: Colors.grey.shade400),
+          borderRadius: BorderRadius.circular(18),
+        ),
+        child: const Text(
+          'Signature praticien à intégrer dans une prochaine étape.\n\n'
+          'Validation professionnelle réalisée avant export PDF.',
+        ),
       ),
-    );
-  }
-PrescriptionModel buildPrescription() {
-  return PrescriptionModel(
-    professional: professionalController.text,
-    patient: patientController.text,
-    clinicalContext: clinicalContextController.text,
-    prescription: prescriptionController.text,
-    frequency: frequencyController.text,
-    duration: durationController.text,
-    nomenclature: nomenclatureController.text,
-    createdAt: DateTime.now(),
+      const SizedBox(height: 18),
+    ],
   );
 }
+
+  Future<void> exportPrescriptionPdf() async {
+    final prescription = buildPrescription();
+
+    await PrescriptionService.savePrescription(prescription);
+
+    debugPrint(prescription.toMap().toString());
+
+    await PrescriptionPdfService.generatePdf(prescription);
+
+    showPdfGeneratedMessage();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -150,28 +184,24 @@ PrescriptionModel buildPrescription() {
                 controller: professionalController,
                 maxLines: 5,
               ),
-
               sectionTitle('Patient'),
               editableCard(
                 title: 'Identité patient locale',
                 controller: patientController,
                 maxLines: 4,
               ),
-
               sectionTitle('Cadre accès direct'),
               editableCard(
                 title: 'Cadre clinique',
                 controller: clinicalContextController,
                 maxLines: 5,
               ),
-
               sectionTitle('Prescription pré-remplie'),
               editableCard(
                 title: 'Prescription / conduite thérapeutique',
                 controller: prescriptionController,
                 maxLines: 12,
               ),
-
               sectionTitle('Fréquence et durée'),
               editableCard(
                 title: 'Fréquence',
@@ -183,29 +213,18 @@ PrescriptionModel buildPrescription() {
                 controller: durationController,
                 maxLines: 2,
               ),
-
               sectionTitle('Nomenclature'),
               editableCard(
                 title: 'Aide nomenclature',
                 controller: nomenclatureController,
                 maxLines: 5,
               ),
-
-              const SizedBox(height: 18),
-
+              signatureCard(),
               SizedBox(
                 width: double.infinity,
                 height: 56,
                 child: ElevatedButton.icon(
-                  onPressed: () async {
-                    final prescription = buildPrescription();
-
-                    await PrescriptionService.savePrescription(prescription);
-
-                    debugPrint(prescription.toMap().toString());
-
-                    showComingSoonMessage();
-                  },
+                  onPressed: exportPrescriptionPdf,
                   icon: const Icon(Icons.picture_as_pdf),
                   label: const Text(
                     'Exporter en PDF',
