@@ -5,6 +5,7 @@ import 'history_screen.dart';
 import 'home_screen.dart';
 import 'patient/patient_screen.dart';
 import 'settings_screen.dart';
+import 'prescription_screen.dart';
 
 class MainNavigationScreen extends StatefulWidget {
   const MainNavigationScreen({super.key});
@@ -26,6 +27,7 @@ class _MainNavigationScreenState
     HomeScreen(),
     HistoryScreen(),
     DashboardScreen(),
+    PrescriptionScreen(),
     SettingsScreen(),
   ];
 
@@ -160,7 +162,11 @@ class _MainNavigationScreenState
                   selectedIcon: Icons.dashboard,
                   label: 'Dashboard',
                 ),
-
+                buildDestination(
+                  icon: Icons.description_outlined,
+                  selectedIcon: Icons.description,
+                  label: 'Prescription',
+              ),
                 buildDestination(
                   icon: Icons.settings_outlined,
                   selectedIcon: Icons.settings,
