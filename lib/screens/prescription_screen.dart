@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
+import '../models/prescription_model.dart';
+import '../services/prescription_service.dart';
 
 class PrescriptionScreen extends StatefulWidget {
   const PrescriptionScreen({super.key});
@@ -117,7 +120,18 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
       ),
     );
   }
-
+PrescriptionModel buildPrescription() {
+  return PrescriptionModel(
+    professional: professionalController.text,
+    patient: patientController.text,
+    clinicalContext: clinicalContextController.text,
+    prescription: prescriptionController.text,
+    frequency: frequencyController.text,
+    duration: durationController.text,
+    nomenclature: nomenclatureController.text,
+    createdAt: DateTime.now(),
+  );
+}
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -183,7 +197,15 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
                 width: double.infinity,
                 height: 56,
                 child: ElevatedButton.icon(
-                  onPressed: showComingSoonMessage,
+                  onPressed: () async {
+                    final prescription = buildPrescription();
+
+                    await PrescriptionService.savePrescription(prescription);
+
+                    debugPrint(prescription.toMap().toString());
+
+                    showComingSoonMessage();
+                  },
                   icon: const Icon(Icons.picture_as_pdf),
                   label: const Text(
                     'Exporter en PDF',
