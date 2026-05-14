@@ -5,12 +5,12 @@ import '../services/clinical_ai_service.dart';
 import '../services/csv_service.dart';
 import '../services/decision_engine_service.dart';
 import '../services/history_service.dart';
+import '../services/patient_session_service.dart';
 import '../services/pdf_service.dart';
 
 import '../widgets/category_card.dart';
 import '../widgets/decision_card.dart';
 import '../widgets/result_card.dart';
-import '../services/patient_session_service.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -31,17 +31,6 @@ class _HomeScreenState extends State<HomeScreen> {
       value.map((item) => Map<String, dynamic>.from(item)).toList(),
     ),
   );
-
-  final Map<String, IconData> categoryIcons = {
-    'Lombalgie': Icons.accessibility_new_rounded,
-    'Entorse de cheville': Icons.directions_walk_rounded,
-    'Respiratoire adulte': Icons.air_rounded,
-    'Orthopédie générale': Icons.healing_rounded,
-    'Cervicalgie': Icons.psychology_alt_rounded,
-    'Cardiaque': Icons.favorite_rounded,
-    'TVP / Vasculaire': Icons.monitor_heart_rounded,
-    'Post-opératoire': Icons.local_hospital_rounded,
-  };
 
   @override
   void initState() {
@@ -98,8 +87,8 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   String get patientCode {
-  return PatientSessionService.patientCode;
-}
+    return PatientSessionService.patientCode;
+  }
 
   String get aiSummary {
     return ClinicalAiService.generateClinicalSummary(
@@ -188,8 +177,8 @@ class _HomeScreenState extends State<HomeScreen> {
     final bool isTablet = screenWidth > 900;
 
     return Scaffold(
-  backgroundColor: const Color(0xFFF6F8FC),
-        body: SafeArea(
+      backgroundColor: const Color(0xFFF6F8FC),
+      body: SafeArea(
         child: Center(
           child: ConstrainedBox(
             constraints: BoxConstraints(
@@ -199,18 +188,14 @@ class _HomeScreenState extends State<HomeScreen> {
               padding: const EdgeInsets.all(18),
               children: [
                 buildClinicalSelector(),
-
                 const SizedBox(height: 22),
-
                 ResultCard(
                   riskLevel: riskLevel,
                   riskColor: riskColor,
                   score: score,
                   checkedCount: checkedCount,
                 ),
-
                 const SizedBox(height: 18),
-
                 DecisionCard(
                   title: DecisionEngineService.decisionTitle(
                     score: score,
@@ -224,13 +209,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   color: riskColor,
                 ),
-
                 const SizedBox(height: 18),
-
                 buildAiSummaryCard(),
-
                 const SizedBox(height: 22),
-
                 CategoryCard(
                   category: selectedCategory,
                   items: selectedItems,
@@ -240,11 +221,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     });
                   },
                 ),
-
                 const SizedBox(height: 24),
-
                 buildBottomButtons(),
-
                 const SizedBox(height: 28),
               ],
             ),
@@ -255,193 +233,64 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget buildClinicalSelector() {
-  return Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Évaluation',
-                  style: TextStyle(
-                    fontSize: 34,
-                    fontWeight: FontWeight.w900,
-                    color: Color(0xFF071936),
-                  ),
-                ),
-                SizedBox(height: 4),
-                Text(
-                  'Choisissez le motif principal',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Color(0xFF64748B),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-            decoration: BoxDecoration(
-              color: const Color(0xFFEFFAF4),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: const Color(0xFFD5F3E1)),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const CircleAvatar(
-                  radius: 6,
-                  backgroundColor: Color(0xFF12B76A),
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  patientCode == 'Non renseigné'
-                      ? 'Aucun patient'
-                      : 'Patient actif\n$patientCode',
-                  style: const TextStyle(
-                    color: Color(0xFF071936),
-                    fontWeight: FontWeight.w800,
-                    fontSize: 12,
-                    height: 1.2,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-
-      const SizedBox(height: 22),
-
-      GridView.builder(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        itemCount: categories.keys.length,
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-  crossAxisCount: 2,
-  mainAxisSpacing: 12,
-  crossAxisSpacing: 12,
-  childAspectRatio: isTabletLayout(context) ? 2.8 : 2.15,
-),
-        itemBuilder: (context, index) {
-          final category = categories.keys.elementAt(index);
-          final selected = category == selectedCategory;
-
-          return InkWell(
-            borderRadius: BorderRadius.circular(22),
-            onTap: () {
-              setState(() {
-                selectedCategory = category;
-              });
-            },
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 180),
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(22),
-                border: Border.all(
-                  color: selected
-                      ? const Color(0xFF007AFF)
-                      : const Color(0xFFE6ECF5),
-                  width: selected ? 1.8 : 1,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: selected
-                        ? const Color(0xFF007AFF).withOpacity(0.12)
-                        : Colors.black.withOpacity(0.035),
-                    blurRadius: selected ? 18 : 12,
-                    offset: const Offset(0, 6),
-                  ),
-                ],
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    width: 42,
-                    height: 42,
-                    decoration: BoxDecoration(
-                      color: selected
-                          ? const Color(0xFF007AFF)
-                          : const Color(0xFFEAF3FF),
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Icon(
-                      categoryIcons[category],
-                      size: 23,
-                      color: selected
-                          ? Colors.white
-                          : const Color(0xFF007AFF),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      category,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: const Color(0xFF071936),
-                        fontWeight: selected
-                            ? FontWeight.w900
-                            : FontWeight.w700,
-                        fontSize: 14,
-                        height: 1.15,
-                      ),
-                    ),
-                  ),
-                  const Icon(
-                    Icons.chevron_right_rounded,
-                    color: Color(0xFF94A3B8),
-                    size: 22,
-                  ),
-                ],
-              ),
-            ),
-          );
-        },
-      ),
-
-      const SizedBox(height: 22),
-
-      Container(
-        padding: const EdgeInsets.all(18),
-        decoration: BoxDecoration(
-          color: const Color(0xFFEAF3FF),
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: const Color(0xFFD7E8FF)),
-        ),
-        child: const Row(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(
-              Icons.lightbulb_outline_rounded,
-              color: Color(0xFF007AFF),
-            ),
-            SizedBox(width: 12),
-            Expanded(
+            const Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Aide au raisonnement clinique',
+                    'Évaluation',
                     style: TextStyle(
-                      color: Color(0xFF0057D9),
+                      fontSize: 34,
                       fontWeight: FontWeight.w900,
+                      color: Color(0xFF071936),
                     ),
                   ),
-                  SizedBox(height: 6),
+                  SizedBox(height: 4),
                   Text(
-                    'Cette application ne pose pas de diagnostic médical et ne remplace pas un avis médical.',
+                    'Choisissez le motif principal',
                     style: TextStyle(
-                      color: Color(0xFF1E3A8A),
-                      height: 1.35,
+                      fontSize: 16,
+                      color: Color(0xFF64748B),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 14,
+                vertical: 12,
+              ),
+              decoration: BoxDecoration(
+                color: const Color(0xFFEFFAF4),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: const Color(0xFFD5F3E1),
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const CircleAvatar(
+                    radius: 6,
+                    backgroundColor: Color(0xFF12B76A),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    patientCode == 'Non renseigné'
+                        ? 'Aucun patient'
+                        : 'Patient actif\n$patientCode',
+                    style: const TextStyle(
+                      color: Color(0xFF071936),
+                      fontWeight: FontWeight.w800,
+                      fontSize: 12,
+                      height: 1.2,
                     ),
                   ),
                 ],
@@ -449,10 +298,135 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ],
         ),
-      ),
-    ],
-  );
-}
+        const SizedBox(height: 18),
+        buildCategoryGrid(),
+        const SizedBox(height: 18),
+        Container(
+          padding: const EdgeInsets.all(18),
+          decoration: BoxDecoration(
+            color: const Color(0xFFEAF3FF),
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(
+              color: const Color(0xFFD7E8FF),
+            ),
+          ),
+          child: const Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(
+                Icons.lightbulb_outline_rounded,
+                color: Color(0xFF007AFF),
+              ),
+              SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Aide au raisonnement clinique',
+                      style: TextStyle(
+                        color: Color(0xFF0057D9),
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    SizedBox(height: 6),
+                    Text(
+                      'Cette application ne pose pas de diagnostic médical et ne remplace pas un avis médical.',
+                      style: TextStyle(
+                        color: Color(0xFF1E3A8A),
+                        height: 1.35,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget buildCategoryGrid() {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final bool compact = constraints.maxWidth < 430;
+
+        return GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: categories.keys.length,
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: compact ? 2 : 4,
+            mainAxisSpacing: 10,
+            crossAxisSpacing: 10,
+            childAspectRatio: compact ? 2.8 : 2.2,
+          ),
+          itemBuilder: (context, index) {
+            final category = categories.keys.elementAt(index);
+            final selected = category == selectedCategory;
+
+            return GestureDetector(
+              onTap: () {
+                setState(() {
+                  selectedCategory = category;
+                });
+              },
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 180),
+                padding: const EdgeInsets.symmetric(horizontal: 10),
+                decoration: BoxDecoration(
+                  color: selected ? const Color(0xFF007AFF) : Colors.white,
+                  borderRadius: BorderRadius.circular(18),
+                  border: Border.all(
+                    color: selected
+                        ? const Color(0xFF007AFF)
+                        : const Color(0xFFE5E7EB),
+                    width: selected ? 1.6 : 1,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: selected
+                          ? const Color(0xFF007AFF).withOpacity(0.14)
+                          : Colors.black.withOpacity(0.03),
+                      blurRadius: selected ? 14 : 8,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.health_and_safety_outlined,
+                      size: 19,
+                      color: selected
+                          ? Colors.white
+                          : const Color(0xFF007AFF),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        category,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: selected
+                              ? Colors.white
+                              : const Color(0xFF071936),
+                          fontWeight: FontWeight.w800,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
 
   Widget buildBottomButtons() {
     return Wrap(
@@ -522,7 +496,4 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
-  bool isTabletLayout(BuildContext context) {
-  return MediaQuery.of(context).size.width > 700;
-}
 }
