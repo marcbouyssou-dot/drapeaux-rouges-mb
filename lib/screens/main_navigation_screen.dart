@@ -1,22 +1,25 @@
 import 'package:flutter/material.dart';
 
-import 'patient/patient_screen.dart';
+import 'dashboard_screen.dart';
 import 'history_screen.dart';
 import 'home_screen.dart';
+import 'patient/patient_screen.dart';
 import 'settings_screen.dart';
-import 'dashboard_screen.dart';
 
 class MainNavigationScreen extends StatefulWidget {
   const MainNavigationScreen({super.key});
 
   @override
-  State<MainNavigationScreen> createState() => _MainNavigationScreenState();
+  State<MainNavigationScreen> createState() =>
+      _MainNavigationScreenState();
 }
 
-class _MainNavigationScreenState extends State<MainNavigationScreen> {
-  int currentIndex = 0;
+class _MainNavigationScreenState
+    extends State<MainNavigationScreen> {
+  int currentIndex = 1;
 
-  final PageController _pageController = PageController();
+  final PageController _pageController =
+      PageController(initialPage: 1);
 
   final screens = const [
     PatientScreen(),
@@ -33,7 +36,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 
     _pageController.animateToPage(
       index,
-      duration: const Duration(milliseconds: 250),
+      duration: const Duration(milliseconds: 240),
       curve: Curves.easeOutCubic,
     );
   }
@@ -44,53 +47,127 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     super.dispose();
   }
 
+  NavigationDestination buildDestination({
+    required IconData icon,
+    required IconData selectedIcon,
+    required String label,
+  }) {
+    return NavigationDestination(
+      icon: Icon(
+        icon,
+        size: 23,
+      ),
+
+      selectedIcon: Icon(
+        selectedIcon,
+        size: 24,
+      ),
+
+      label: label,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBody: true,
+
       body: PageView(
         controller: _pageController,
+
+        physics:
+            const BouncingScrollPhysics(),
+
         onPageChanged: (index) {
           setState(() {
             currentIndex = index;
           });
         },
+
         children: screens,
       ),
+
       bottomNavigationBar: Padding(
-        padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(28),
-          child: NavigationBar(
-            selectedIndex: currentIndex,
-            height: 74,
-            onDestinationSelected: goToPage,
-            destinations: const [
-              NavigationDestination(
-                icon: Icon(Icons.person_outline),
-                selectedIcon: Icon(Icons.person),
-                label: 'Patient',
-              ),
-              NavigationDestination(
-                icon: Icon(Icons.health_and_safety_outlined),
-                selectedIcon: Icon(Icons.health_and_safety),
-                label: 'Évaluation',
-              ),
-              NavigationDestination(
-                icon: Icon(Icons.history_outlined),
-                selectedIcon: Icon(Icons.history),
-                label: 'Historique',
-              ),
-              NavigationDestination(
-                icon: Icon(Icons.dashboard_outlined),
-                selectedIcon: Icon(Icons.dashboard),
-                label: 'Dashboard',
-              ),
-              NavigationDestination(
-                icon: Icon(Icons.settings_outlined),
-                selectedIcon: Icon(Icons.settings),
-                label: 'Paramètres',
+        padding: const EdgeInsets.fromLTRB(
+          14,
+          0,
+          14,
+          14,
+        ),
+
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius:
+                BorderRadius.circular(30),
+
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(
+                  0.08,
+                ),
+
+                blurRadius: 24,
+
+                offset: const Offset(0, 10),
               ),
             ],
+          ),
+
+          child: ClipRRect(
+            borderRadius:
+                BorderRadius.circular(30),
+
+            child: NavigationBar(
+              selectedIndex: currentIndex,
+
+              height: 68,
+
+              elevation: 0,
+
+              labelBehavior:
+                  NavigationDestinationLabelBehavior
+                      .onlyShowSelected,
+
+              animationDuration:
+                  const Duration(
+                milliseconds: 300,
+              ),
+
+              onDestinationSelected: goToPage,
+
+              destinations: [
+                buildDestination(
+                  icon: Icons.person_outline,
+                  selectedIcon: Icons.person,
+                  label: 'Patient',
+                ),
+
+                buildDestination(
+                  icon: Icons.health_and_safety_outlined,
+                  selectedIcon:
+                      Icons.health_and_safety,
+                  label: 'Évaluation',
+                ),
+
+                buildDestination(
+                  icon: Icons.history_outlined,
+                  selectedIcon: Icons.history,
+                  label: 'Historique',
+                ),
+
+                buildDestination(
+                  icon: Icons.dashboard_outlined,
+                  selectedIcon: Icons.dashboard,
+                  label: 'Dashboard',
+                ),
+
+                buildDestination(
+                  icon: Icons.settings_outlined,
+                  selectedIcon: Icons.settings,
+                  label: 'Réglages',
+                ),
+              ],
+            ),
           ),
         ),
       ),

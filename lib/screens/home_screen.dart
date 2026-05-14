@@ -21,7 +21,6 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   String selectedCategory = clinicalCategories.keys.first;
-
   List<Map<String, dynamic>> history = [];
 
   final Map<String, List<Map<String, dynamic>>> categories =
@@ -43,9 +42,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Map<String, List<Map<String, dynamic>>> get selectedCategoryMap {
-    return {
-      selectedCategory: selectedItems,
-    };
+    return {selectedCategory: selectedItems};
   }
 
   int get checkedCount {
@@ -124,9 +121,7 @@ class _HomeScreenState extends State<HomeScreen> {
     if (!mounted) return;
 
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Évaluation enregistrée'),
-      ),
+      const SnackBar(content: Text('Évaluation enregistrée')),
     );
   }
 
@@ -185,7 +180,7 @@ class _HomeScreenState extends State<HomeScreen> {
               maxWidth: isTablet ? 860 : 520,
             ),
             child: ListView(
-              padding: const EdgeInsets.all(18),
+              padding: const EdgeInsets.fromLTRB(18, 18, 18, 110),
               children: [
                 buildClinicalSelector(),
                 const SizedBox(height: 22),
@@ -209,9 +204,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   color: riskColor,
                 ),
-                const SizedBox(height: 18),
-
-
+                const SizedBox(height: 22),
                 CategoryCard(
                   category: selectedCategory,
                   items: selectedItems,
@@ -221,310 +214,215 @@ class _HomeScreenState extends State<HomeScreen> {
                     });
                   },
                 ),
-                const SizedBox(height: 24),
-                buildBottomButtons(),
-                const SizedBox(height: 28),
+                const SizedBox(height: 20),
+                buildSecondaryButtons(),
               ],
             ),
           ),
         ),
       ),
+      bottomNavigationBar: buildStickyActionBar(),
     );
   }
 
   Widget buildClinicalSelector() {
-  return Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Évaluation',
-                  style: TextStyle(
-                    fontSize: 34,
-                    fontWeight: FontWeight.w900,
-                    color: Color(0xFF071936),
-                  ),
-                ),
-                SizedBox(height: 4),
-                Text(
-                  'Choisissez le motif principal',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Color(0xFF64748B),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-            decoration: BoxDecoration(
-              color: const Color(0xFFEFFAF4),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: const Color(0xFFD5F3E1)),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const CircleAvatar(
-                  radius: 6,
-                  backgroundColor: Color(0xFF12B76A),
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  patientCode == 'Non renseigné'
-                      ? 'Aucun patient'
-                      : 'Patient actif\n$patientCode',
-                  style: const TextStyle(
-                    color: Color(0xFF071936),
-                    fontWeight: FontWeight.w800,
-                    fontSize: 12,
-                    height: 1.2,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-      const SizedBox(height: 18),
-      buildCategoryGrid(),
-    ],
-  );
-}
-
-  Widget buildCategoryGrid() {
-  return LayoutBuilder(
-    builder: (context, constraints) {
-      final double totalWidth = constraints.maxWidth;
-
-      final double itemWidth =
-          (totalWidth - 10) / 2;
-
-      return Wrap(
-        spacing: 10,
-        runSpacing: 10,
-
-        children: categories.keys.map((category) {
-          final selected =
-              category == selectedCategory;
-
-          return GestureDetector(
-            onTap: () {
-              setState(() {
-                selectedCategory = category;
-              });
-            },
-
-            child: AnimatedContainer(
-              duration:
-                  const Duration(milliseconds: 180),
-
-              width: itemWidth,
-              height: 54,
-
-              padding:
-                  const EdgeInsets.symmetric(
-                horizontal: 12,
-              ),
-
-              decoration: BoxDecoration(
-                color: selected
-                    ? const Color(0xFF007AFF)
-                    : Colors.white,
-
-                borderRadius:
-                    BorderRadius.circular(18),
-
-                border: Border.all(
-                  color: selected
-                      ? const Color(0xFF007AFF)
-                      : const Color(0xFFE5E7EB),
-                ),
-
-                boxShadow: [
-                  BoxShadow(
-                    color: selected
-                        ? const Color(0xFF007AFF)
-                            .withOpacity(0.12)
-                        : Colors.black
-                            .withOpacity(0.03),
-
-                    blurRadius:
-                        selected ? 12 : 6,
-
-                    offset:
-                        const Offset(0, 3),
-                  ),
-                ],
-              ),
-
-              child: Row(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(
-                    Icons
-                        .health_and_safety_outlined,
-
-                    size: 18,
-
-                    color: selected
-                        ? Colors.white
-                        : const Color(0xFF007AFF),
+                  Text(
+                    'Évaluation',
+                    style: TextStyle(
+                      fontSize: 34,
+                      fontWeight: FontWeight.w900,
+                      color: Color(0xFF071936),
+                    ),
                   ),
-
-                  const SizedBox(width: 8),
-
-                  Expanded(
-                    child: Text(
-                      category,
-
-                      maxLines: 1,
-
-                      overflow:
-                          TextOverflow.ellipsis,
-
-                      style: TextStyle(
-                        color: selected
-                            ? Colors.white
-                            : const Color(
-                                0xFF071936),
-
-                        fontWeight:
-                            FontWeight.w800,
-
-                        fontSize: 13,
-                      ),
+                  SizedBox(height: 4),
+                  Text(
+                    'Choisissez le motif principal',
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Color(0xFF64748B),
                     ),
                   ),
                 ],
               ),
             ),
-          );
-        }).toList(),
-      );
-    },
-  );
-}
-
-  Widget buildBottomButtons() {
-  return Column(
-    crossAxisAlignment: CrossAxisAlignment.stretch,
-    children: [
-      Row(
-        children: [
-          Expanded(
-            child: FilledButton.icon(
-              onPressed: saveEvaluation,
-
-              icon: const Icon(
-                Icons.save_outlined,
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              decoration: BoxDecoration(
+                color: const Color(0xFFEFFAF4),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: const Color(0xFFD5F3E1)),
               ),
-
-              label: const Text(
-                'Enregistrer',
-              ),
-            ),
-          ),
-
-          const SizedBox(width: 12),
-
-          Expanded(
-            child: FilledButton.icon(
-              onPressed: exportPdf,
-
-              icon: const Icon(
-                Icons.picture_as_pdf_outlined,
-              ),
-
-              label: const Text(
-                'PDF',
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const CircleAvatar(
+                    radius: 6,
+                    backgroundColor: Color(0xFF12B76A),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    patientCode == 'Non renseigné'
+                        ? 'Aucun patient'
+                        : 'Patient actif\n$patientCode',
+                    style: const TextStyle(
+                      color: Color(0xFF071936),
+                      fontWeight: FontWeight.w800,
+                      fontSize: 12,
+                      height: 1.2,
+                    ),
+                  ),
+                ],
               ),
             ),
-          ),
-        ],
-      ),
+          ],
+        ),
+        const SizedBox(height: 18),
+        buildCategoryGrid(),
+      ],
+    );
+  }
 
-      const SizedBox(height: 12),
+  Widget buildCategoryGrid() {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final double totalWidth = constraints.maxWidth;
+        final double itemWidth = (totalWidth - 10) / 2;
 
-      Row(
-        children: [
-          Expanded(
-            child: OutlinedButton.icon(
-              onPressed: exportCsv,
+        return Wrap(
+          spacing: 10,
+          runSpacing: 10,
+          children: categories.keys.map((category) {
+            final selected = category == selectedCategory;
 
-              icon: const Icon(
-                Icons.table_chart_outlined,
-              ),
-
-              label: const Text(
-                'CSV',
-              ),
-            ),
-          ),
-
-          const SizedBox(width: 12),
-
-          Expanded(
-            child: OutlinedButton.icon(
-              onPressed: resetSession,
-
-              icon: const Icon(
-                Icons.refresh,
-              ),
-
-              label: const Text(
-                'Réinitialiser',
-              ),
-            ),
-          ),
-        ],
-      ),
-    ],
-  );
-}
-
-  Widget buildAiSummaryCard() {
-    return Container(
-      padding: const EdgeInsets.all(22),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(30),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Row(
-            children: [
-              Icon(
-                Icons.auto_awesome,
-                color: Color(0xFF0A84FF),
-              ),
-              SizedBox(width: 10),
-              Text(
-                'Synthèse clinique',
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w900,
+            return GestureDetector(
+              onTap: () {
+                setState(() {
+                  selectedCategory = category;
+                });
+              },
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 180),
+                width: itemWidth,
+                height: 54,
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                decoration: BoxDecoration(
+                  color: selected ? const Color(0xFF007AFF) : Colors.white,
+                  borderRadius: BorderRadius.circular(18),
+                  border: Border.all(
+                    color: selected
+                        ? const Color(0xFF007AFF)
+                        : const Color(0xFFE5E7EB),
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: selected
+                          ? const Color(0xFF007AFF).withOpacity(0.12)
+                          : Colors.black.withOpacity(0.03),
+                      blurRadius: selected ? 12 : 6,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.health_and_safety_outlined,
+                      size: 18,
+                      color:
+                          selected ? Colors.white : const Color(0xFF007AFF),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        category,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color:
+                              selected ? Colors.white : const Color(0xFF071936),
+                          fontWeight: FontWeight.w800,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            ],
+            );
+          }).toList(),
+        );
+      },
+    );
+  }
+
+  Widget buildSecondaryButtons() {
+    return Row(
+      children: [
+        Expanded(
+          child: OutlinedButton.icon(
+            onPressed: exportCsv,
+            icon: const Icon(Icons.table_chart_outlined),
+            label: const Text('CSV'),
           ),
-          const SizedBox(height: 14),
-          Text(
-            aiSummary,
-            style: const TextStyle(
-              fontSize: 15,
-              height: 1.5,
-              color: Colors.black87,
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: OutlinedButton.icon(
+            onPressed: resetSession,
+            icon: const Icon(Icons.refresh),
+            label: const Text('Réinitialiser'),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget buildStickyActionBar() {
+    return SafeArea(
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(18, 12, 18, 14),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.96),
+          border: const Border(
+            top: BorderSide(color: Color(0xFFE5E7EB)),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.08),
+              blurRadius: 18,
+              offset: const Offset(0, -6),
             ),
-          ),
-        ],
+          ],
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: FilledButton.icon(
+                onPressed: saveEvaluation,
+                icon: const Icon(Icons.save_outlined),
+                label: const Text('Enregistrer'),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: FilledButton.icon(
+                onPressed: exportPdf,
+                icon: const Icon(Icons.picture_as_pdf_outlined),
+                label: const Text('PDF'),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
