@@ -8,6 +8,15 @@ class PrescriptionScreen extends StatefulWidget {
 }
 
 class _PrescriptionScreenState extends State<PrescriptionScreen> {
+  final TextEditingController professionalController =
+      TextEditingController();
+
+  final TextEditingController patientController =
+      TextEditingController();
+
+  final TextEditingController clinicalContextController =
+      TextEditingController();
+
   final TextEditingController prescriptionController =
       TextEditingController();
 
@@ -17,61 +26,94 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
   final TextEditingController durationController =
       TextEditingController();
 
+  final TextEditingController nomenclatureController =
+      TextEditingController();
+
   @override
   void initState() {
     super.initState();
 
-    prescriptionController.text = '''
-Rééducation fonctionnelle adaptée au bilan kinésithérapique.
+    professionalController.text =
+        'Marc BOUYSSOU\nMasseur-Kinésithérapeute\nRPPS / ADELI : à compléter\nTéléphone : à compléter\nEmail : à compléter';
 
-Objectifs :
-- Diminution de la douleur
-- Amélioration de la mobilité
-- Renforcement fonctionnel
-- Prévention des récidives
+    patientController.text =
+        'Nom : à compléter\nPrénom : à compléter\nDate de naissance : à compléter';
 
-Surveillance clinique régulière recommandée.
-''';
+    clinicalContextController.text =
+        'Prescription réalisée dans le cadre de l’accès direct en kinésithérapie après évaluation clinique.\n\nAbsence de signe d’urgence nécessitant une réorientation immédiate à ce stade.';
+
+    prescriptionController.text =
+        'Rééducation fonctionnelle adaptée au bilan kinésithérapique.\n\nObjectifs :\n- Diminution de la douleur\n- Amélioration de la mobilité\n- Renforcement fonctionnel\n- Reprise progressive des activités\n- Prévention des récidives\n\nSurveillance clinique régulière recommandée.';
+
+    frequencyController.text = 'Exemple : 2 séances par semaine';
+
+    durationController.text = 'Exemple : 6 semaines';
+
+    nomenclatureController.text =
+        'Aide indicative à la nomenclature / cotation selon le contexte clinique.\n\nLa validation finale reste sous la responsabilité du professionnel.';
   }
 
   @override
   void dispose() {
+    professionalController.dispose();
+    patientController.dispose();
+    clinicalContextController.dispose();
     prescriptionController.dispose();
     frequencyController.dispose();
     durationController.dispose();
+    nomenclatureController.dispose();
     super.dispose();
   }
 
   Widget sectionTitle(String title) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12, top: 20),
+      padding: const EdgeInsets.only(top: 22, bottom: 10),
       child: Text(
         title,
         style: const TextStyle(
-          fontSize: 20,
+          fontSize: 21,
           fontWeight: FontWeight.bold,
         ),
       ),
     );
   }
 
-  Widget customField({
-    required String label,
-    int maxLines = 1,
+  Widget editableCard({
+    required String title,
     required TextEditingController controller,
+    int maxLines = 4,
   }) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
-      child: TextField(
-        controller: controller,
-        maxLines: maxLines,
-        decoration: InputDecoration(
-          labelText: label,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(14),
-          ),
-          filled: true,
+    return Card(
+      elevation: 0,
+      margin: const EdgeInsets.only(bottom: 14),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(18),
+        side: BorderSide(
+          color: Colors.grey.shade300,
         ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: TextField(
+          controller: controller,
+          maxLines: maxLines,
+          decoration: InputDecoration(
+            labelText: title,
+            border: InputBorder.none,
+          ),
+          style: const TextStyle(
+            fontSize: 16,
+            height: 1.35,
+          ),
+        ),
+      ),
+    );
+  }
+
+  void showComingSoonMessage() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Export PDF bientôt disponible'),
       ),
     );
   }
@@ -84,106 +126,71 @@ Surveillance clinique régulière recommandée.
       ),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.fromLTRB(16, 10, 16, 28),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               sectionTitle('Coordonnées professionnel'),
-
-              const Card(
-                child: Padding(
-                  padding: EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Marc BOUYSSOU',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 18,
-                        ),
-                      ),
-                      SizedBox(height: 8),
-                      Text('Masseur-Kinésithérapeute'),
-                      Text('RPPS : XXXXXXXX'),
-                      Text('Téléphone : XX XX XX XX XX'),
-                      Text('Email : contact@email.fr'),
-                    ],
-                  ),
-                ),
+              editableCard(
+                title: 'Professionnel',
+                controller: professionalController,
+                maxLines: 5,
               ),
 
-              sectionTitle('Cadre clinique'),
-
-              const Card(
-                child: Padding(
-                  padding: EdgeInsets.all(16),
-                  child: Text(
-                    'Prescription réalisée dans le cadre de l’accès direct '
-                    'en kinésithérapie après évaluation clinique.',
-                  ),
-                ),
+              sectionTitle('Patient'),
+              editableCard(
+                title: 'Identité patient locale',
+                controller: patientController,
+                maxLines: 4,
               ),
 
-              sectionTitle('Prescription'),
+              sectionTitle('Cadre accès direct'),
+              editableCard(
+                title: 'Cadre clinique',
+                controller: clinicalContextController,
+                maxLines: 5,
+              ),
 
-              customField(
-                label: 'Prescription / conduite thérapeutique',
+              sectionTitle('Prescription pré-remplie'),
+              editableCard(
+                title: 'Prescription / conduite thérapeutique',
                 controller: prescriptionController,
-                maxLines: 10,
+                maxLines: 12,
               ),
 
-              Row(
-                children: [
-                  Expanded(
-                    child: customField(
-                      label: 'Fréquence',
-                      controller: frequencyController,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: customField(
-                      label: 'Durée',
-                      controller: durationController,
-                    ),
-                  ),
-                ],
+              sectionTitle('Fréquence et durée'),
+              editableCard(
+                title: 'Fréquence',
+                controller: frequencyController,
+                maxLines: 2,
+              ),
+              editableCard(
+                title: 'Durée / nombre de séances',
+                controller: durationController,
+                maxLines: 2,
               ),
 
               sectionTitle('Nomenclature'),
-
-              const Card(
-                child: Padding(
-                  padding: EdgeInsets.all(16),
-                  child: Text(
-                    'Aide indicative à la cotation NGAP.\n'
-                    'Validation finale laissée au professionnel.',
-                  ),
-                ),
+              editableCard(
+                title: 'Aide nomenclature',
+                controller: nomenclatureController,
+                maxLines: 5,
               ),
 
-              const SizedBox(height: 24),
+              const SizedBox(height: 18),
 
               SizedBox(
                 width: double.infinity,
-                height: 54,
+                height: 56,
                 child: ElevatedButton.icon(
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text(
-                          'Export PDF bientôt disponible',
-                        ),
-                      ),
-                    );
-                  },
+                  onPressed: showComingSoonMessage,
                   icon: const Icon(Icons.picture_as_pdf),
-                  label: const Text('Exporter en PDF'),
+                  label: const Text(
+                    'Exporter en PDF',
+                    style: TextStyle(fontSize: 17),
+                  ),
                 ),
               ),
-
-              const SizedBox(height: 24),
             ],
           ),
         ),
