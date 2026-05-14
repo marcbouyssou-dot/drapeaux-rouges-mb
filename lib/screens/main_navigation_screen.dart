@@ -76,7 +76,7 @@ class _MainNavigationScreenState
         controller: _pageController,
 
         physics:
-            const BouncingScrollPhysics(),
+            const NeverScrollableScrollPhysics(),
 
         onPageChanged: (index) {
           setState(() {
