@@ -31,12 +31,18 @@ dependencies:
   flutter:
     sdk: flutter
 
+  cupertino_icons: ^1.0.8
+
   pdf: ^3.11.1
   printing: ^5.13.4
-  share_plus: any
-  cross_file: any
-  shared_preferences: ^2.2.2
-  cupertino_icons: ^1.0.8
+
+  share_plus: ^10.0.2
+  cross_file: ^0.3.4+2
+
+  shared_preferences: ^2.3.3
+
+  signature: ^6.3.0
+  uuid: ^4.5.1
 
 dev_dependencies:
   flutter_test:
@@ -54,14 +60,10 @@ dev_dependencies:
 
 # The following section is specific to Flutter packages.
 flutter:
-
-  # The following line ensures that the Material Icons font is
-  # included with your application, so that you can use the icons in
-  # the material Icons class.
   uses-material-design: true
 
   assets:
-      - assets/assets/logo_urps_mk_na.jpg
+    - assets/images/
   # To add assets to your application, add an assets section, like this:
   # assets:
   #   - images/a_dot_burr.jpeg

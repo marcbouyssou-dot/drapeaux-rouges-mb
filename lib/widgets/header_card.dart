@@ -41,7 +41,7 @@ class HeaderCard extends StatelessWidget {
               ],
             ),
             child: Image.asset(
-              'assets/assets/logo_urps_mk_na.jpg',
+              'assets/images/logo_urps_modern.png',
               height: 64,
               fit: BoxFit.contain,
             ),

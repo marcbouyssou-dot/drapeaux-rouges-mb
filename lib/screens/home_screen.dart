@@ -7,10 +7,13 @@ import '../services/decision_engine_service.dart';
 import '../services/history_service.dart';
 import '../services/patient_session_service.dart';
 import '../services/pdf_service.dart';
+import '../theme/app_text_styles.dart';
 
-import '../widgets/category_card.dart';
+import '../widgets/app_header.dart';
 import '../widgets/decision_card.dart';
 import '../widgets/result_card.dart';
+
+import 'evaluation/red_flags_category_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -78,9 +81,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Color get riskColor {
     if (score >= 6) return const Color(0xFF7F1D1D);
-    if (score >= 4) return Colors.red;
-    if (score >= 2) return Colors.orange;
-    return Colors.green;
+    if (score >= 4) return const Color(0xFFDC2626);
+    if (score >= 2) return const Color(0xFFF59E0B);
+    return const Color(0xFF22C55E);
   }
 
   String get patientCode {
@@ -93,6 +96,74 @@ class _HomeScreenState extends State<HomeScreen> {
       score: score,
       checkedCount: checkedCount,
     );
+  }
+
+  String itemTitle(Map<String, dynamic> item) {
+    return item['title']?.toString() ??
+        item['label']?.toString() ??
+        item['question']?.toString() ??
+        item['text']?.toString() ??
+        item['name']?.toString() ??
+        'Item sans titre';
+  }
+
+  int checkedCountForCategory(String category) {
+    final items = categories[category] ?? [];
+    return items.where((item) => item['checked'] == true).length;
+  }
+
+  Future<void> openCategory(String category) async {
+    setState(() {
+      selectedCategory = category;
+    });
+
+    final items = categories[category] ?? [];
+    final itemLabels = items.map(itemTitle).toList();
+
+    final initiallySelected = items
+        .where((item) => item['checked'] == true)
+        .map(itemTitle)
+        .toSet();
+
+    final result = await Navigator.push<Set<String>>(
+      context,
+      PageRouteBuilder(
+        transitionDuration: const Duration(milliseconds: 260),
+        reverseTransitionDuration: const Duration(milliseconds: 220),
+        pageBuilder: (context, animation, secondaryAnimation) {
+          return RedFlagsCategoryScreen(
+            title: category,
+            items: itemLabels,
+            initiallySelected: initiallySelected,
+          );
+        },
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          final curvedAnimation = CurvedAnimation(
+            parent: animation,
+            curve: Curves.easeOutCubic,
+          );
+
+          return SlideTransition(
+            position: Tween<Offset>(
+              begin: const Offset(0.08, 0),
+              end: Offset.zero,
+            ).animate(curvedAnimation),
+            child: FadeTransition(
+              opacity: curvedAnimation,
+              child: child,
+            ),
+          );
+        },
+      ),
+    );
+
+    if (result != null) {
+      setState(() {
+        for (final item in items) {
+          item['checked'] = result.contains(itemTitle(item));
+        }
+      });
+    }
   }
 
   Future<void> loadHistory() async {
@@ -168,126 +239,84 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final bool isTablet = screenWidth > 900;
-
     return Scaffold(
       backgroundColor: const Color(0xFFF6F8FC),
       body: SafeArea(
-        child: Center(
-          child: ConstrainedBox(
-            constraints: BoxConstraints(
-              maxWidth: isTablet ? 860 : 520,
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(18, 12, 18, 150),
+          children: [
+            const AppHeader(),
+            const SizedBox(height: 18),
+            buildTitleBlock(),
+            const SizedBox(height: 18),
+            buildCategoryGrid(),
+            const SizedBox(height: 22),
+            ResultCard(
+              riskLevel: riskLevel,
+              riskColor: riskColor,
+              score: score,
+              checkedCount: checkedCount,
             ),
-            child: ListView(
-              padding: const EdgeInsets.fromLTRB(18, 18, 18, 110),
-              children: [
-                buildClinicalSelector(),
-                const SizedBox(height: 22),
-                ResultCard(
-                  riskLevel: riskLevel,
-                  riskColor: riskColor,
-                  score: score,
-                  checkedCount: checkedCount,
-                ),
-                const SizedBox(height: 18),
-                DecisionCard(
-                  title: DecisionEngineService.decisionTitle(
-                    score: score,
-                    selectedCategory: selectedCategory,
-                    categories: categories,
-                  ),
-                  message: DecisionEngineService.decisionMessage(
-                    score: score,
-                    selectedCategory: selectedCategory,
-                    categories: categories,
-                  ),
-                  color: riskColor,
-                ),
-                const SizedBox(height: 22),
-                CategoryCard(
-                  category: selectedCategory,
-                  items: selectedItems,
-                  onChanged: (item, value) {
-                    setState(() {
-                      item['checked'] = value;
-                    });
-                  },
-                ),
-                const SizedBox(height: 20),
-                buildSecondaryButtons(),
-              ],
+            const SizedBox(height: 18),
+            DecisionCard(
+              title: DecisionEngineService.decisionTitle(
+                score: score,
+                selectedCategory: selectedCategory,
+                categories: categories,
+              ),
+              message: DecisionEngineService.decisionMessage(
+                score: score,
+                selectedCategory: selectedCategory,
+                categories: categories,
+              ),
+              color: riskColor,
             ),
-          ),
+            const SizedBox(height: 22),
+            buildCurrentCategorySummary(),
+            const SizedBox(height: 20),
+            buildSecondaryButtons(),
+          ],
         ),
       ),
       bottomNavigationBar: buildStickyActionBar(),
     );
   }
 
-  Widget buildClinicalSelector() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+  Widget buildTitleBlock() {
+    return Row(
       children: [
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Évaluation',
-                    style: TextStyle(
-                      fontSize: 34,
-                      fontWeight: FontWeight.w900,
-                      color: Color(0xFF071936),
-                    ),
-                  ),
-                  SizedBox(height: 4),
-                  Text(
-                    'Choisissez le motif principal',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Color(0xFF64748B),
-                    ),
-                  ),
-                ],
+        const Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Évaluation',
+                style: AppTextStyles.pageTitle,
               ),
-            ),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-              decoration: BoxDecoration(
-                color: const Color(0xFFEFFAF4),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: const Color(0xFFD5F3E1)),
+              SizedBox(height: 4),
+              Text(
+                'Choisissez le motif principal',
+                style: AppTextStyles.pageSubtitle,
               ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const CircleAvatar(
-                    radius: 6,
-                    backgroundColor: Color(0xFF12B76A),
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    patientCode == 'Non renseigné'
-                        ? 'Aucun patient'
-                        : 'Patient actif\n$patientCode',
-                    style: const TextStyle(
-                      color: Color(0xFF071936),
-                      fontWeight: FontWeight.w800,
-                      fontSize: 12,
-                      height: 1.2,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
-        const SizedBox(height: 18),
-        buildCategoryGrid(),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          decoration: BoxDecoration(
+            color: const Color(0xFFEFFAF4),
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(color: const Color(0xFFD5F3E1)),
+          ),
+          child: Text(
+            patientCode == 'Non renseigné' ? 'Aucun patient' : patientCode,
+            style: const TextStyle(
+              color: Color(0xFF166534),
+              fontWeight: FontWeight.w900,
+              fontSize: 12,
+            ),
+          ),
+        ),
       ],
     );
   }
@@ -295,64 +324,71 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget buildCategoryGrid() {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final double totalWidth = constraints.maxWidth;
-        final double itemWidth = (totalWidth - 10) / 2;
+        final double itemWidth = (constraints.maxWidth - 12) / 2;
 
         return Wrap(
-          spacing: 10,
-          runSpacing: 10,
+          spacing: 12,
+          runSpacing: 12,
           children: categories.keys.map((category) {
             final selected = category == selectedCategory;
+            final count = checkedCountForCategory(category);
 
             return GestureDetector(
-              onTap: () {
-                setState(() {
-                  selectedCategory = category;
-                });
-              },
+              onTap: () => openCategory(category),
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 180),
                 width: itemWidth,
-                height: 54,
-                padding: const EdgeInsets.symmetric(horizontal: 12),
+                height: 104,
+                padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
-                  color: selected ? const Color(0xFF007AFF) : Colors.white,
-                  borderRadius: BorderRadius.circular(18),
+                  color: selected ? const Color(0xFF2563EB) : Colors.white,
+                  borderRadius: BorderRadius.circular(28),
                   border: Border.all(
                     color: selected
-                        ? const Color(0xFF007AFF)
-                        : const Color(0xFFE5E7EB),
+                        ? const Color(0xFF2563EB)
+                        : const Color(0xFFE2E8F0),
                   ),
                   boxShadow: [
                     BoxShadow(
                       color: selected
-                          ? const Color(0xFF007AFF).withOpacity(0.12)
-                          : Colors.black.withOpacity(0.03),
-                      blurRadius: selected ? 12 : 6,
-                      offset: const Offset(0, 3),
+                          ? const Color(0xFF2563EB).withOpacity(0.18)
+                          : Colors.black.withOpacity(0.04),
+                      blurRadius: 20,
+                      offset: const Offset(0, 10),
                     ),
                   ],
                 ),
-                child: Row(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Icon(
-                      Icons.health_and_safety_outlined,
-                      size: 18,
-                      color:
-                          selected ? Colors.white : const Color(0xFF007AFF),
+                      Icons.monitor_heart_outlined,
+                      color: selected ? Colors.white : const Color(0xFF2563EB),
+                      size: 25,
                     ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        category,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color:
-                              selected ? Colors.white : const Color(0xFF071936),
-                          fontWeight: FontWeight.w800,
-                          fontSize: 13,
-                        ),
+                    const Spacer(),
+                    Text(
+                      category,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color:
+                            selected ? Colors.white : const Color(0xFF0F172A),
+                        fontWeight: FontWeight.w800,
+                        fontSize: 15,
+                        letterSpacing: -0.3,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      count == 0 ? 'Aucun item coché' : '$count item(s)',
+                      style: TextStyle(
+                        color: selected
+                            ? Colors.white.withOpacity(0.85)
+                            : const Color(0xFF64748B),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: -0.1,
                       ),
                     ),
                   ],
@@ -362,6 +398,45 @@ class _HomeScreenState extends State<HomeScreen> {
           }).toList(),
         );
       },
+    );
+  }
+
+  Widget buildCurrentCategorySummary() {
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(28),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 18,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          const Icon(
+            Icons.checklist_rounded,
+            color: Color(0xFF2563EB),
+            size: 28,
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Text(
+              checkedCount == 0
+                  ? 'Touchez une carte pour cocher les drapeaux rouges.'
+                  : '$checkedCount drapeau(x) rouge(s) coché(s).',
+              style: const TextStyle(
+                color: Color(0xFF334155),
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -379,7 +454,7 @@ class _HomeScreenState extends State<HomeScreen> {
         Expanded(
           child: OutlinedButton.icon(
             onPressed: resetSession,
-            icon: const Icon(Icons.refresh),
+            icon: const Icon(Icons.refresh_rounded),
             label: const Text('Réinitialiser'),
           ),
         ),
@@ -390,17 +465,17 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget buildStickyActionBar() {
     return SafeArea(
       child: Container(
-        padding: const EdgeInsets.fromLTRB(18, 12, 18, 14),
+        padding: const EdgeInsets.fromLTRB(18, 10, 18, 22),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.96),
+          color: Colors.white.withOpacity(0.92),
           border: const Border(
             top: BorderSide(color: Color(0xFFE5E7EB)),
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.08),
-              blurRadius: 18,
-              offset: const Offset(0, -6),
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 20,
+              offset: const Offset(0, -4),
             ),
           ],
         ),
@@ -408,6 +483,12 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             Expanded(
               child: FilledButton.icon(
+                style: FilledButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(18),
+                  ),
+                ),
                 onPressed: saveEvaluation,
                 icon: const Icon(Icons.save_outlined),
                 label: const Text('Enregistrer'),
@@ -416,6 +497,12 @@ class _HomeScreenState extends State<HomeScreen> {
             const SizedBox(width: 12),
             Expanded(
               child: FilledButton.icon(
+                style: FilledButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(18),
+                  ),
+                ),
                 onPressed: exportPdf,
                 icon: const Icon(Icons.picture_as_pdf_outlined),
                 label: const Text('PDF'),
