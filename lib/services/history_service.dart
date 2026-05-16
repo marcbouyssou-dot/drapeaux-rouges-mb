@@ -9,9 +9,17 @@ class HistoryService {
     required List<Map<String, dynamic>> history,
     required Map<String, dynamic> evaluation,
   }) async {
-    history.insert(0, evaluation);
-
     await LocalDatabaseService.saveEvaluation(evaluation);
+  }
+
+  static Future<void> deleteEvaluation(String evaluationId) async {
+    await LocalDatabaseService.deleteEvaluation(evaluationId);
+  }
+
+  static Future<List<Map<String, dynamic>>> loadHistoryForPatient(
+    String patientLocalId,
+  ) async {
+    return LocalDatabaseService.getEvaluationsForPatient(patientLocalId);
   }
 
   static Future<void> clearHistory() async {

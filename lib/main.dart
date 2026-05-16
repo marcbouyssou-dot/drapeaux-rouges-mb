@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
 import 'screens/main_navigation_screen.dart';
-import 'services/patient_session_service.dart';
 import 'theme/app_theme.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await PatientSessionService.loadPatient();
+  await Hive.initFlutter();
+
+  await Hive.openBox('patients_box');
+  await Hive.openBox('evaluations_box');
+  await Hive.openBox('settings_box');
 
   runApp(const RedFlagsApp());
 }

@@ -4,28 +4,30 @@ class DecisionEngineService {
     required String selectedCategory,
     required Map<String, List<Map<String, dynamic>>> categories,
   }) {
-    if (_hasCervicalVascularSuspicion(selectedCategory, categories)) {
+    if (_hasPulmonaryEmbolismSigns(categories)) {
+      return 'Orientation urgente recommandée';
+    }
+
+    if (_hasCervicalVascularSuspicion(categories)) {
       return 'Suspicion neurovasculaire cervicale';
     }
-    if (_hasPulmonaryEmbolismSigns(selectedCategory, categories)) {
-      return 'Orientation urgente recommandee';
+
+    if (_hasCriticalFractureOrLuxation(categories)) {
+      return 'Orientation urgente recommandée';
     }
 
-    if (_hasCriticalFractureOrLuxation(selectedCategory, categories)) {
-      return 'Orientation urgente recommandee';
+    if (_hasPositiveOttawa(categories)) {
+      return 'Critères d’Ottawa positifs';
     }
 
-    if (_hasPositiveOttawa(selectedCategory, categories)) {
-      return 'Criteres d Ottawa positifs';
-    }
-
-    if (_hasWellsSuspicion(selectedCategory, categories)) {
+    if (_hasWellsSuspicion(categories)) {
       return 'Suspicion de TVP';
     }
 
-    if (score >= 6) return 'Orientation urgente recommandee';
-    if (score >= 4) return 'Avis medical rapide recommande';
-    if (score >= 2) return 'Vigilance clinique renforcee';
+    if (score >= 6) return 'Orientation urgente recommandée';
+    if (score >= 4) return 'Avis médical rapide recommandé';
+    if (score >= 2) return 'Vigilance clinique renforcée';
+
     return 'Prise en charge possible avec surveillance';
   }
 
@@ -34,128 +36,147 @@ class DecisionEngineService {
     required String selectedCategory,
     required Map<String, List<Map<String, dynamic>>> categories,
   }) {
-    if (_hasCervicalVascularSuspicion(selectedCategory, categories)) {
-    return 'Plusieurs signes compatibles avec une atteinte neurovasculaire cervicale sont presents. Un avis medical urgent est recommande.';
-    }
-    if (_hasPulmonaryEmbolismSigns(selectedCategory, categories)) {
-      return 'Presence de signes pouvant evoquer une complication cardio-respiratoire. Une orientation medicale urgente est recommandee.';
+    if (_hasPulmonaryEmbolismSigns(categories)) {
+      return 'Présence de signes pouvant évoquer une complication cardio-respiratoire ou embolique. Une orientation médicale urgente est recommandée.';
     }
 
-    if (_hasCriticalFractureOrLuxation(selectedCategory, categories)) {
-      return 'Suspicion de fracture ouverte, luxation ou deformation evidente. Une orientation medicale urgente est recommandee.';
+    if (_hasCervicalVascularSuspicion(categories)) {
+      return 'Plusieurs signes compatibles avec une atteinte neurovasculaire cervicale sont présents. Un avis médical urgent est recommandé.';
     }
 
-    if (_hasPositiveOttawa(selectedCategory, categories)) {
-      return 'Un ou plusieurs criteres d Ottawa sont positifs. Une radiographie est recommandee selon le contexte clinique.';
+    if (_hasCriticalFractureOrLuxation(categories)) {
+      return 'Suspicion de fracture ouverte, luxation ou déformation évidente. Une orientation médicale urgente est recommandée.';
     }
 
-    if (_hasWellsSuspicion(selectedCategory, categories)) {
-      return 'Plusieurs criteres de Wells TVP sont presents. Un avis medical rapide est recommande pour evaluation complementaire.';
+    if (_hasPositiveOttawa(categories)) {
+      return 'Un ou plusieurs critères d’Ottawa sont positifs. Une radiographie est recommandée selon le contexte clinique.';
+    }
+
+    if (_hasWellsSuspicion(categories)) {
+      return 'Plusieurs critères de Wells TVP sont présents. Un avis médical rapide est recommandé pour évaluation complémentaire.';
     }
 
     if (score >= 6) {
-      return 'Plusieurs signes d alerte importants sont presents. Une orientation medicale urgente doit etre envisagee.';
+      return 'Plusieurs signes d’alerte importants sont présents. Une orientation médicale urgente doit être envisagée.';
     }
 
     if (score >= 4) {
-      return 'Des signes d alerte significatifs sont presents. Un avis medical rapide est recommande.';
+      return 'Des signes d’alerte significatifs sont présents. Un avis médical rapide est recommandé.';
     }
 
     if (score >= 2) {
-      return 'Une surveillance clinique renforcee est recommandee.';
+      return 'Une surveillance clinique renforcée est recommandée.';
     }
 
-    return 'Aucun signe critique majeur identifie actuellement.';
+    return 'Aucun signe critique majeur identifié actuellement.';
   }
 
   static bool _hasPositiveOttawa(
-    String selectedCategory,
     Map<String, List<Map<String, dynamic>>> categories,
   ) {
-    if (selectedCategory != 'Entorse de cheville') return false;
-
-    final items = categories[selectedCategory] ?? [];
+    final items = categories['Entorse de cheville'] ?? [];
 
     return items.any((item) {
-      final title = item['title'].toString().toLowerCase();
       final checked = item['checked'] == true;
-
-      return checked && title.contains('ottawa positif');
+      return checked && _hasTagOrText(item, 'ottawa', 'ottawa positif');
     });
   }
 
   static bool _hasWellsSuspicion(
-    String selectedCategory,
     Map<String, List<Map<String, dynamic>>> categories,
   ) {
-    if (selectedCategory != 'TVP / Vasculaire') return false;
-
-    final items = categories[selectedCategory] ?? [];
+    final items = categories['TVP / Vasculaire'] ?? [];
 
     final wellsChecked = items.where((item) {
-      final title = item['title'].toString().toLowerCase();
       final checked = item['checked'] == true;
-
-      return checked && title.contains('wells tvp');
+      return checked && _hasTagOrText(item, 'wells_tvp', 'wells tvp');
     }).length;
 
     return wellsChecked >= 2;
   }
 
   static bool _hasPulmonaryEmbolismSigns(
-    String selectedCategory,
     Map<String, List<Map<String, dynamic>>> categories,
   ) {
-    if (selectedCategory != 'TVP / Vasculaire') return false;
-
-    final items = categories[selectedCategory] ?? [];
+    final items = categories['TVP / Vasculaire'] ?? [];
 
     return items.any((item) {
-      final title = item['title'].toString().toLowerCase();
       final checked = item['checked'] == true;
 
       return checked &&
-          (title.contains('dyspnee brutale') ||
-              title.contains('douleur thoracique') ||
-              title.contains('tachycardie'));
+          (_hasTag(item, 'embolie_pulmonaire') ||
+              _textContains(item, 'dyspnée brutale') ||
+              _textContains(item, 'dyspnee brutale') ||
+              _textContains(item, 'douleur thoracique') ||
+              _textContains(item, 'tachycardie'));
     });
   }
 
   static bool _hasCriticalFractureOrLuxation(
-    String selectedCategory,
     Map<String, List<Map<String, dynamic>>> categories,
   ) {
-    final items = categories[selectedCategory] ?? [];
+    for (final items in categories.values) {
+      final found = items.any((item) {
+        final checked = item['checked'] == true;
 
-    return items.any((item) {
-      final title = item['title'].toString().toLowerCase();
+        return checked &&
+            (_hasTag(item, 'fracture_ouverte') ||
+                _hasTag(item, 'luxation') ||
+                _hasTag(item, 'deformation') ||
+                _textContains(item, 'fracture ouverte') ||
+                _textContains(item, 'luxation') ||
+                _textContains(item, 'déformation évidente') ||
+                _textContains(item, 'deformation evidente'));
+      });
+
+      if (found) return true;
+    }
+
+    return false;
+  }
+
+  static bool _hasCervicalVascularSuspicion(
+    Map<String, List<Map<String, dynamic>>> categories,
+  ) {
+    final items = categories['Cervicalgie'] ?? [];
+
+    final checkedDangerSigns = items.where((item) {
       final checked = item['checked'] == true;
 
       return checked &&
-          (title.contains('fracture ouverte') ||
-              title.contains('luxation') ||
-              title.contains('deformation evidente'));
-    });
+          (_hasTag(item, 'neurovasculaire_cervical') ||
+              _hasTag(item, '5d') ||
+              _hasTag(item, '3n') ||
+              _textContains(item, '5d') ||
+              _textContains(item, '3n') ||
+              _textContains(item, 'céphalée') ||
+              _textContains(item, 'cephalee') ||
+              _textContains(item, 'neurologique'));
+    }).length;
+
+    return checkedDangerSigns >= 2;
   }
-  static bool _hasCervicalVascularSuspicion(
-  String selectedCategory,
-  Map<String, List<Map<String, dynamic>>> categories,
-) {
-  if (selectedCategory != 'Cervicalgie') return false;
 
-  final items = categories[selectedCategory] ?? [];
+  static bool _hasTagOrText(
+    Map<String, dynamic> item,
+    String tag,
+    String text,
+  ) {
+    return _hasTag(item, tag) || _textContains(item, text);
+  }
 
-  final checkedDangerSigns = items.where((item) {
-    final checked = item['checked'] == true;
-    final title = item['title'].toString().toLowerCase();
+  static bool _hasTag(Map<String, dynamic> item, String tag) {
+    final rawTags = item['tags'];
 
-    return checked &&
-        (title.contains('5d') ||
-            title.contains('3n') ||
-            title.contains('céphalée') ||
-            title.contains('neurologique'));
-  }).length;
+    if (rawTags is! List) return false;
 
-  return checkedDangerSigns >= 2;
-}
+    return rawTags.map((value) => value.toString()).contains(tag);
+  }
+
+  static bool _textContains(Map<String, dynamic> item, String value) {
+    final title = item['title']?.toString().toLowerCase() ?? '';
+    final searched = value.toLowerCase();
+
+    return title.contains(searched);
+  }
 }
