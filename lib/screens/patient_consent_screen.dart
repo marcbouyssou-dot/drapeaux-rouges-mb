@@ -107,9 +107,12 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
     final Uint8List? signatureBytes = await signatureController.toPngBytes();
 
     if (signatureBytes == null) {
+      if (!mounted) return;
+
       setState(() {
         isSaving = false;
       });
+
       showMessage('Erreur lors de la sauvegarde de la signature.');
       return;
     }
@@ -155,7 +158,7 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
   Future<void> deletePatient(PatientLocal patient) async {
     final confirm = await showDialog<bool>(
       context: context,
-      builder: (_) {
+      builder: (dialogContext) {
         return AlertDialog(
           title: const Text('Supprimer ce patient ?'),
           content: Text(
@@ -164,11 +167,11 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(context, false),
+              onPressed: () => Navigator.pop(dialogContext, false),
               child: const Text('Annuler'),
             ),
             FilledButton(
-              onPressed: () => Navigator.pop(context, true),
+              onPressed: () => Navigator.pop(dialogContext, true),
               style: FilledButton.styleFrom(
                 backgroundColor: const Color(0xFFEF4444),
               ),
@@ -196,7 +199,7 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
 
     showDialog(
       context: context,
-      builder: (_) {
+      builder: (dialogContext) {
         return AlertDialog(
           title: const Text('Export pseudonymisé patient'),
           content: SingleChildScrollView(
@@ -206,7 +209,7 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(context),
+              onPressed: () => Navigator.pop(dialogContext),
               child: const Text('Fermer'),
             ),
           ],
@@ -218,7 +221,7 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
   Future<void> confirmDeleteAll() async {
     final confirm = await showDialog<bool>(
       context: context,
-      builder: (_) {
+      builder: (dialogContext) {
         return AlertDialog(
           title: const Text('Supprimer tous les patients ?'),
           content: const Text(
@@ -226,11 +229,11 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(context, false),
+              onPressed: () => Navigator.pop(dialogContext, false),
               child: const Text('Annuler'),
             ),
             FilledButton(
-              onPressed: () => Navigator.pop(context, true),
+              onPressed: () => Navigator.pop(dialogContext, true),
               style: FilledButton.styleFrom(
                 backgroundColor: Color(0xFFEF4444),
               ),
@@ -280,7 +283,6 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
             padding: const EdgeInsets.fromLTRB(18, 12, 18, 150),
             children: [
               const UrpsBanner(isLarge: true),
-              
               buildCurrentPatientCard(),
               const SizedBox(height: 18),
               buildSearchBar(),
@@ -300,20 +302,6 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
         ),
       ),
       bottomNavigationBar: buildBottomSaveBar(),
-    );
-  }
-
-  Widget buildTitleBlock() {
-    return const Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text('Patient', style: AppTextStyles.pageTitle),
-        SizedBox(height: 4),
-        Text(
-          'Créer, rechercher ou sélectionner un patient actif',
-          style: AppTextStyles.pageSubtitle,
-        ),
-      ],
     );
   }
 
@@ -817,9 +805,9 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
     return SafeArea(
       child: Container(
         padding: const EdgeInsets.fromLTRB(18, 10, 18, 22),
-        decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.96),
-          border: const Border(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          border: Border(
             top: BorderSide(color: Color(0xFFE5E7EB)),
           ),
         ),
