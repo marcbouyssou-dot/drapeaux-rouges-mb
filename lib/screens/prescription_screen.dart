@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 
 import '../models/patient_local.dart';
+import '../models/practitioner_profile.dart';
+import '../services/practitioner_profile_service.dart';
 import '../services/prescription_pdf_service.dart';
 import '../services/rgpd_local_service.dart';
 import '../theme/app_text_styles.dart';
-import '../widgets/app_header.dart';
+import '../widgets/urps_banner.dart';
 
 class PrescriptionScreen extends StatefulWidget {
   const PrescriptionScreen({super.key});
@@ -14,40 +16,37 @@ class PrescriptionScreen extends StatefulWidget {
 }
 
 class _PrescriptionScreenState extends State<PrescriptionScreen> {
-  final diagnosticController = TextEditingController();
-  final prescriptionController = TextEditingController();
-  final observationsController = TextEditingController();
+  final pathologieController = TextEditingController();
 
   PatientLocal? currentPatient;
+  PractitionerProfile practitioner = PractitionerProfile.empty();
 
   @override
   void initState() {
     super.initState();
-    loadCurrentPatient();
+    loadInitialData();
   }
 
   @override
   void dispose() {
-    diagnosticController.dispose();
-    prescriptionController.dispose();
-    observationsController.dispose();
+    pathologieController.dispose();
     super.dispose();
   }
 
-  Future<void> loadCurrentPatient() async {
+  Future<void> loadInitialData() async {
     final patient = await RgpdLocalService.getCurrentPatient();
+    final loadedPractitioner = await PractitionerProfileService.getProfile();
 
     if (!mounted) return;
 
     setState(() {
       currentPatient = patient;
+      practitioner = loadedPractitioner;
     });
   }
 
   void resetForm() {
-    diagnosticController.clear();
-    prescriptionController.clear();
-    observationsController.clear();
+    pathologieController.clear();
 
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
@@ -58,21 +57,138 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
 
   Future<void> exportPdf() async {
     if (currentPatient == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Aucun patient actif. Sélectionnez un patient avant export.',
-          ),
-        ),
-      );
+      showMessage('Aucun patient actif. Sélectionnez un patient avant export.');
+      return;
+    }
+
+    if (!practitioner.isComplete) {
+      showMessage('Merci de renseigner vos informations professionnelles.');
+      await showPractitionerDialog();
+      return;
+    }
+
+    if (pathologieController.text.trim().isEmpty) {
+      showMessage('Merci de renseigner la pathologie.');
       return;
     }
 
     await PrescriptionPdfService.exportPrescriptionPdf(
       patient: currentPatient!,
-      diagnostic: diagnosticController.text,
-      prescription: prescriptionController.text,
-      observations: observationsController.text,
+      practitioner: practitioner,
+      pathologie: pathologieController.text.trim(),
+    );
+  }
+
+  Future<void> showPractitionerDialog() async {
+  final nomController = TextEditingController(text: practitioner.nom);
+  final prenomController = TextEditingController(text: practitioner.prenom);
+  final adresseController = TextEditingController(text: practitioner.adresse);
+  final adeliController = TextEditingController(text: practitioner.adeli);
+  final rppsController = TextEditingController(text: practitioner.rpps);
+
+  final saved = await showDialog<bool>(
+    context: context,
+    builder: (dialogContext) {
+      return AlertDialog(
+        title: const Text('Informations professionnelles'),
+        content: SingleChildScrollView(
+          child: Column(
+            children: [
+              buildDialogField(
+                controller: nomController,
+                label: 'Nom',
+              ),
+              const SizedBox(height: 10),
+              buildDialogField(
+                controller: prenomController,
+                label: 'Prénom',
+              ),
+              const SizedBox(height: 10),
+              buildDialogField(
+                controller: adresseController,
+                label: 'Adresse professionnelle',
+                maxLines: 3,
+              ),
+              const SizedBox(height: 10),
+              buildDialogField(
+                controller: adeliController,
+                label: 'ADELI',
+              ),
+              const SizedBox(height: 10),
+              buildDialogField(
+                controller: rppsController,
+                label: 'RPPS',
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('Annuler'),
+          ),
+          FilledButton(
+            onPressed: () async {
+              final profile = PractitionerProfile(
+                nom: nomController.text.trim(),
+                prenom: prenomController.text.trim(),
+                adresse: adresseController.text.trim(),
+                adeli: adeliController.text.trim(),
+                rpps: rppsController.text.trim(),
+              );
+
+              await PractitionerProfileService.saveProfile(profile);
+
+              if (!dialogContext.mounted) return;
+
+              Navigator.pop(dialogContext, true);
+            },
+            child: const Text('Enregistrer'),
+          ),
+        ],
+      );
+    },
+  );
+
+  nomController.dispose();
+  prenomController.dispose();
+  adresseController.dispose();
+  adeliController.dispose();
+  rppsController.dispose();
+
+  if (saved == true) {
+    await loadInitialData();
+
+    if (!mounted) return;
+
+    showMessage('Informations professionnelles enregistrées.');
+  }
+}
+
+  Widget buildDialogField({
+    required TextEditingController controller,
+    required String label,
+    int maxLines = 1,
+  }) {
+    return TextField(
+      controller: controller,
+      maxLines: maxLines,
+      decoration: InputDecoration(
+        labelText: label,
+        filled: true,
+        fillColor: const Color(0xFFF8FAFC),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+      ),
+    );
+  }
+
+  void showMessage(String message) {
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
     );
   }
 
@@ -88,46 +204,16 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
         child: ListView(
           padding: const EdgeInsets.fromLTRB(18, 12, 18, 150),
           children: [
-            const AppHeader(compact: true),
-            const SizedBox(height: 20),
+            const UrpsBanner(isLarge: false),
             buildTitle(),
             const SizedBox(height: 22),
             buildPatientCard(),
-            const SizedBox(height: 20),
-            buildHeroCard(),
-            const SizedBox(height: 20),
-            buildSectionCard(
-              title: 'Motif / Diagnostic',
-              subtitle: 'Motif clinique principal',
-              icon: Icons.medical_information_outlined,
-              child: buildTextField(
-                controller: diagnosticController,
-                label: 'Exemple : Lombalgie aiguë',
-                maxLines: 3,
-              ),
-            ),
-            buildSectionCard(
-              title: 'Prescription',
-              subtitle: 'Contenu de la rééducation',
-              icon: Icons.description_outlined,
-              child: buildTextField(
-                controller: prescriptionController,
-                label: 'Contenu de la prescription de rééducation',
-                maxLines: 7,
-              ),
-            ),
-            buildSectionCard(
-              title: 'Observations',
-              subtitle: 'Notes complémentaires',
-              icon: Icons.edit_note_rounded,
-              child: buildTextField(
-                controller: observationsController,
-                label: 'Observations complémentaires',
-                maxLines: 4,
-              ),
-            ),
             const SizedBox(height: 18),
-            buildInfoCard(),
+            buildPractitionerCard(),
+            const SizedBox(height: 18),
+            buildPrescriptionCard(),
+            const SizedBox(height: 18),
+            buildPrintInfoCard(),
           ],
         ),
       ),
@@ -145,7 +231,7 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
         ),
         SizedBox(height: 4),
         Text(
-          'Prescription de rééducation accès direct',
+          'Prescription sobre et imprimable',
           style: AppTextStyles.pageSubtitle,
         ),
       ],
@@ -190,7 +276,7 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Text(
-                        'Patient actif',
+                        'Patient',
                         style: TextStyle(
                           color: Color(0xFF64748B),
                           fontWeight: FontWeight.w700,
@@ -226,81 +312,103 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
                   ),
           ),
           IconButton(
-            onPressed: loadCurrentPatient,
+            onPressed: loadInitialData,
             icon: const Icon(Icons.refresh_rounded),
-            tooltip: 'Actualiser le patient actif',
+            tooltip: 'Actualiser',
           ),
         ],
       ),
     );
   }
 
-  Widget buildHeroCard() {
+  Widget buildPractitionerCard() {
+    final complete = practitioner.isComplete;
+
     return Container(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [
-            Color(0xFF2563EB),
-            Color(0xFF1D4ED8),
-          ],
+        color: complete ? Colors.white : const Color(0xFFFFF7ED),
+        borderRadius: BorderRadius.circular(28),
+        border: Border.all(
+          color: complete ? const Color(0xFFE2E8F0) : const Color(0xFFFED7AA),
         ),
-        borderRadius: BorderRadius.circular(32),
       ),
       child: Row(
         children: [
           Container(
-            height: 68,
-            width: 68,
+            height: 54,
+            width: 54,
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.14),
-              borderRadius: BorderRadius.circular(22),
+              color:
+                  complete ? const Color(0xFFEAF2FF) : const Color(0xFFFFEDD5),
+              borderRadius: BorderRadius.circular(18),
             ),
-            child: const Icon(
-              Icons.description_rounded,
-              color: Colors.white,
-              size: 36,
+            child: Icon(
+              complete ? Icons.badge_rounded : Icons.edit_note_rounded,
+              color:
+                  complete ? const Color(0xFF2563EB) : const Color(0xFFC2410C),
+              size: 30,
             ),
           ),
-          const SizedBox(width: 18),
-          const Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Document clinique',
-                  style: TextStyle(
-                    color: Colors.white70,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w700,
+          const SizedBox(width: 14),
+          Expanded(
+            child: complete
+                ? Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Professionnel',
+                        style: TextStyle(
+                          color: Color(0xFF64748B),
+                          fontWeight: FontWeight.w700,
+                          fontSize: 13,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        practitioner.fullName,
+                        style: const TextStyle(
+                          color: Color(0xFF0F172A),
+                          fontWeight: FontWeight.w900,
+                          fontSize: 18,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        [
+                          if (practitioner.adeli.trim().isNotEmpty)
+                            'ADELI ${practitioner.adeli.trim()}',
+                          if (practitioner.rpps.trim().isNotEmpty)
+                            'RPPS ${practitioner.rpps.trim()}',
+                        ].join(' • '),
+                        style: const TextStyle(
+                          color: Color(0xFF64748B),
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  )
+                : const Text(
+                    'Renseignez une seule fois vos informations professionnelles pour les PDF.',
+                    style: TextStyle(
+                      color: Color(0xFFC2410C),
+                      fontWeight: FontWeight.w800,
+                      height: 1.35,
+                    ),
                   ),
-                ),
-                SizedBox(height: 6),
-                Text(
-                  'Prescription de rééducation',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 28,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: -1,
-                  ),
-                ),
-              ],
-            ),
+          ),
+          IconButton(
+            onPressed: showPractitionerDialog,
+            icon: const Icon(Icons.edit_rounded),
+            tooltip: 'Modifier',
           ),
         ],
       ),
     );
   }
 
-  Widget buildSectionCard({
-    required String title,
-    required String subtitle,
-    required IconData icon,
-    required Widget child,
-  }) {
+  Widget buildPrescriptionCard() {
     return Container(
-      margin: const EdgeInsets.only(bottom: 18),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -321,117 +429,90 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
                   color: const Color(0xFFEAF2FF),
                   borderRadius: BorderRadius.circular(18),
                 ),
-                child: Icon(
-                  icon,
-                  color: const Color(0xFF2563EB),
+                child: const Icon(
+                  Icons.description_outlined,
+                  color: Color(0xFF2563EB),
                   size: 28,
                 ),
               ),
               const SizedBox(width: 14),
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: AppTextStyles.sectionTitle.copyWith(
-                        fontSize: 20,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      subtitle,
-                      style: AppTextStyles.cardSubtitle,
-                    ),
-                  ],
+                child: Text(
+                  'Rééducation pour',
+                  style: AppTextStyles.sectionTitle.copyWith(
+                    fontSize: 20,
+                  ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 20),
-          child,
+          const SizedBox(height: 18),
+          TextField(
+            controller: pathologieController,
+            maxLines: 2,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              color: Color(0xFF0F172A),
+            ),
+            decoration: InputDecoration(
+              hintText: 'Exemple : lombalgie aiguë',
+              filled: true,
+              fillColor: const Color(0xFFF8FAFC),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 18,
+                vertical: 18,
+              ),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(20),
+                borderSide: const BorderSide(
+                  color: Color(0xFFE2E8F0),
+                ),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(20),
+                borderSide: const BorderSide(
+                  color: Color(0xFFE2E8F0),
+                ),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(20),
+                borderSide: const BorderSide(
+                  color: Color(0xFF2563EB),
+                  width: 2,
+                ),
+              ),
+            ),
+          ),
         ],
       ),
     );
   }
 
-  Widget buildTextField({
-    required TextEditingController controller,
-    required String label,
-    int maxLines = 1,
-  }) {
-    return TextField(
-      controller: controller,
-      maxLines: maxLines,
-      style: const TextStyle(
-        fontSize: 16,
-        fontWeight: FontWeight.w600,
-        color: Color(0xFF0F172A),
-      ),
-      decoration: InputDecoration(
-        labelText: label,
-        labelStyle: const TextStyle(
-          color: Color(0xFF64748B),
-          fontWeight: FontWeight.w600,
-        ),
-        filled: true,
-        fillColor: const Color(0xFFF8FAFC),
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 18,
-          vertical: 18,
-        ),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(20),
-          borderSide: BorderSide.none,
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(20),
-          borderSide: const BorderSide(
-            color: Color(0xFFE2E8F0),
-          ),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(20),
-          borderSide: const BorderSide(
-            color: Color(0xFF2563EB),
-            width: 2,
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget buildInfoCard() {
+  Widget buildPrintInfoCard() {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [
-            Color(0xFFEAF2FF),
-            Color(0xFFF0F9FF),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(28),
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(24),
         border: Border.all(
-          color: const Color(0xFFBFDBFE),
+          color: const Color(0xFFE2E8F0),
         ),
       ),
       child: const Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Icon(
-            Icons.info_outline_rounded,
-            color: Color(0xFF2563EB),
-            size: 26,
+            Icons.print_outlined,
+            color: Color(0xFF64748B),
           ),
-          SizedBox(width: 14),
+          SizedBox(width: 12),
           Expanded(
             child: Text(
-              'Cette prescription constitue une aide documentaire dans le cadre de l’accès direct en masso-kinésithérapie.',
+              'Le PDF généré est volontairement sobre pour faciliter l’impression et limiter l’usage d’encre.',
               style: TextStyle(
-                color: Color(0xFF1E3A8A),
+                color: Color(0xFF64748B),
                 fontWeight: FontWeight.w700,
-                height: 1.5,
+                height: 1.35,
               ),
             ),
           ),

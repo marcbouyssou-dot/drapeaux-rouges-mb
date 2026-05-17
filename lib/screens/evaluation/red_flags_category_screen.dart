@@ -35,6 +35,10 @@ class _RedFlagsCategoryScreenState extends State<RedFlagsCategoryScreen> {
     });
   }
 
+  void saveAndClose() {
+    Navigator.pop(context, selectedItems);
+  }
+
   @override
   Widget build(BuildContext context) {
     final selectedCount = selectedItems.length;
@@ -42,12 +46,18 @@ class _RedFlagsCategoryScreenState extends State<RedFlagsCategoryScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F8FC),
       body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(18, 18, 18, 140),
+        child: Column(
           children: [
             buildHeader(selectedCount),
-            const SizedBox(height: 22),
-            ...widget.items.map(buildItemCard),
+            Expanded(
+              child: ListView.builder(
+                padding: const EdgeInsets.fromLTRB(18, 16, 18, 120),
+                itemCount: widget.items.length,
+                itemBuilder: (context, index) {
+                  return buildItemCard(widget.items[index]);
+                },
+              ),
+            ),
           ],
         ),
       ),
@@ -57,46 +67,91 @@ class _RedFlagsCategoryScreenState extends State<RedFlagsCategoryScreen> {
 
   Widget buildHeader(int selectedCount) {
     return Container(
-      padding: const EdgeInsets.all(20),
+      margin: const EdgeInsets.fromLTRB(18, 14, 18, 0),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: const Color(0xFF2563EB),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(28),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF2563EB).withOpacity(0.20),
-            blurRadius: 18,
-            offset: const Offset(0, 8),
-          ),
-        ],
+        border: Border.all(color: const Color(0xFFE2E8F0)),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
         children: [
           IconButton(
             onPressed: () => Navigator.pop(context),
             icon: const Icon(Icons.arrow_back_ios_new_rounded),
-            color: Colors.white,
-            padding: EdgeInsets.zero,
-            constraints: const BoxConstraints(),
-          ),
-          const SizedBox(height: 18),
-          Text(
-            widget.title,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 28,
-              fontWeight: FontWeight.w900,
+            style: IconButton.styleFrom(
+              backgroundColor: const Color(0xFFEAF2FF),
+              foregroundColor: const Color(0xFF2563EB),
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  widget.title,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Color(0xFF0F172A),
+                    fontSize: 24,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: -0.6,
+                    height: 1.05,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  selectedCount == 0
+                      ? 'Aucun drapeau rouge coché'
+                      : '$selectedCount drapeau(x) rouge(s) coché(s)',
+                  style: TextStyle(
+                    color: selectedCount == 0
+                        ? const Color(0xFF64748B)
+                        : const Color(0xFF2563EB),
+                    fontSize: 14,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          buildCounterBadge(selectedCount),
+        ],
+      ),
+    );
+  }
+
+  Widget buildCounterBadge(int selectedCount) {
+    final active = selectedCount > 0;
+
+    return Container(
+      height: 58,
+      width: 58,
+      decoration: BoxDecoration(
+        color: active ? const Color(0xFF2563EB) : const Color(0xFFF1F5F9),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
           Text(
-            selectedCount == 0
-                ? 'Aucun drapeau rouge coché'
-                : '$selectedCount drapeau(x) rouge(s) coché(s)',
+            '$selectedCount',
             style: TextStyle(
-              color: Colors.white.withOpacity(0.88),
-              fontSize: 15,
-              fontWeight: FontWeight.w700,
+              color: active ? Colors.white : const Color(0xFF64748B),
+              fontSize: 22,
+              fontWeight: FontWeight.w900,
+              height: 1,
+            ),
+          ),
+          const SizedBox(height: 3),
+          Text(
+            'coché',
+            style: TextStyle(
+              color: active ? Colors.white70 : const Color(0xFF94A3B8),
+              fontSize: 10,
+              fontWeight: FontWeight.w800,
             ),
           ),
         ],
@@ -107,65 +162,68 @@ class _RedFlagsCategoryScreenState extends State<RedFlagsCategoryScreen> {
   Widget buildItemCard(String item) {
     final isSelected = selectedItems.contains(item);
 
-    return GestureDetector(
-      onTap: () => toggleItem(item),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
-        margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFFEAF2FF) : Colors.white,
-          borderRadius: BorderRadius.circular(22),
-          border: Border.all(
-            color: isSelected
-                ? const Color(0xFF2563EB)
-                : const Color(0xFFE2E8F0),
-            width: isSelected ? 1.6 : 1,
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => toggleItem(item),
+          borderRadius: BorderRadius.circular(24),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 180),
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: isSelected ? const Color(0xFFEAF2FF) : Colors.white,
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(
+                color: isSelected
+                    ? const Color(0xFF2563EB)
+                    : const Color(0xFFE2E8F0),
+                width: isSelected ? 1.7 : 1,
+              ),
+            ),
+            child: Row(
+              children: [
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 180),
+                  height: 42,
+                  width: 42,
+                  decoration: BoxDecoration(
+                    color:
+                        isSelected ? const Color(0xFF2563EB) : const Color(0xFFF8FAFC),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: isSelected
+                          ? const Color(0xFF2563EB)
+                          : const Color(0xFFCBD5E1),
+                    ),
+                  ),
+                  child: Icon(
+                    isSelected
+                        ? Icons.check_rounded
+                        : Icons.add_rounded,
+                    color: isSelected
+                        ? Colors.white
+                        : const Color(0xFF64748B),
+                    size: 25,
+                  ),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Text(
+                    item,
+                    style: TextStyle(
+                      fontSize: 16,
+                      height: 1.35,
+                      fontWeight:
+                          isSelected ? FontWeight.w900 : FontWeight.w700,
+                      color: const Color(0xFF0F172A),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.035),
-              blurRadius: 12,
-              offset: const Offset(0, 5),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 180),
-              height: 32,
-              width: 32,
-              decoration: BoxDecoration(
-                color: isSelected ? const Color(0xFF2563EB) : Colors.white,
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(
-                  color: isSelected
-                      ? const Color(0xFF2563EB)
-                      : const Color(0xFFCBD5E1),
-                ),
-              ),
-              child: isSelected
-                  ? const Icon(
-                      Icons.check_rounded,
-                      color: Colors.white,
-                      size: 22,
-                    )
-                  : null,
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Text(
-                item,
-                style: TextStyle(
-                  fontSize: 15,
-                  height: 1.3,
-                  fontWeight: isSelected ? FontWeight.w900 : FontWeight.w700,
-                  color: const Color(0xFF0F172A),
-                ),
-              ),
-            ),
-          ],
         ),
       ),
     );
@@ -180,13 +238,6 @@ class _RedFlagsCategoryScreenState extends State<RedFlagsCategoryScreen> {
           border: const Border(
             top: BorderSide(color: Color(0xFFE5E7EB)),
           ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.08),
-              blurRadius: 18,
-              offset: const Offset(0, -6),
-            ),
-          ],
         ),
         child: Row(
           children: [
@@ -200,9 +251,9 @@ class _RedFlagsCategoryScreenState extends State<RedFlagsCategoryScreen> {
             const SizedBox(width: 12),
             Expanded(
               child: FilledButton.icon(
-                onPressed: () => Navigator.pop(context, selectedItems),
+                onPressed: saveAndClose,
                 icon: const Icon(Icons.check_rounded),
-                label: const Text('Enregistrer'),
+                label: const Text('Valider'),
               ),
             ),
           ],

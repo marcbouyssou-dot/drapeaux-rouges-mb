@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../services/history_service.dart';
 import '../theme/app_text_styles.dart';
-import '../widgets/app_header.dart';
+import '../widgets/urps_banner.dart';
 import 'evaluation/evaluation_detail_screen.dart';
 
 class HistoryScreen extends StatefulWidget {
@@ -237,8 +237,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
           child: ListView(
             padding: const EdgeInsets.fromLTRB(18, 12, 18, 150),
             children: [
-              const AppHeader(compact: true),
-              const SizedBox(height: 20),
+              const UrpsBanner(isLarge: false),
               buildTitleRow(),
               const SizedBox(height: 18),
               buildStatsOverview(),

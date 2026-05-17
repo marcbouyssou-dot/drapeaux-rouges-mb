@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../services/history_service.dart';
 import '../../services/pdf_service.dart';
 import '../../theme/app_text_styles.dart';
+import '../../widgets/urps_banner.dart';
 
 class EvaluationDetailScreen extends StatelessWidget {
   final Map<String, dynamic> evaluation;
@@ -12,9 +13,7 @@ class EvaluationDetailScreen extends StatelessWidget {
     required this.evaluation,
   });
 
-  String get evaluationId {
-    return evaluation['evaluationId']?.toString() ?? '';
-  }
+  String get evaluationId => evaluation['evaluationId']?.toString() ?? '';
 
   String get patientName {
     return evaluation['patientDisplayName']?.toString() ??
@@ -22,9 +21,7 @@ class EvaluationDetailScreen extends StatelessWidget {
         'Patient non renseigné';
   }
 
-  String get motif {
-    return evaluation['motif']?.toString() ?? 'Motif non renseigné';
-  }
+  String get motif => evaluation['motif']?.toString() ?? 'Motif non renseigné';
 
   String get riskLevel {
     return evaluation['riskLevel']?.toString() ??
@@ -60,9 +57,7 @@ class EvaluationDetailScreen extends StatelessWidget {
 
   List<Map<String, dynamic>> get checkedFlags {
     final raw = evaluation['checkedFlags'];
-
     if (raw is! List) return [];
-
     return raw.map((item) => Map<String, dynamic>.from(item)).toList();
   }
 
@@ -82,11 +77,9 @@ class EvaluationDetailScreen extends StatelessWidget {
 
   String formatDate(dynamic value) {
     final raw = value?.toString() ?? '';
-
     if (raw.isEmpty) return 'Date inconnue';
 
     final date = DateTime.tryParse(raw);
-
     if (date == null) return raw;
 
     final day = date.day.toString().padLeft(2, '0');
@@ -103,7 +96,6 @@ class EvaluationDetailScreen extends StatelessWidget {
 
     for (final flag in checkedFlags) {
       final category = flag['category']?.toString() ?? motif;
-
       result.putIfAbsent(category, () => []);
 
       result[category]!.add({
@@ -117,7 +109,9 @@ class EvaluationDetailScreen extends StatelessWidget {
     return result;
   }
 
-  Future<void> exportPdf(BuildContext context) async {
+  Future<void> exportPdf({
+    required bool printable,
+  }) async {
     await PdfService.exportPdf(
       categories: buildPdfCategories(),
       score: score,
@@ -128,6 +122,121 @@ class EvaluationDetailScreen extends StatelessWidget {
       decisionTitle: decisionTitle,
       decisionMessage: decisionMessage,
       aiSummary: aiSummary,
+      printable: printable,
+    );
+  }
+
+  void showPdfExportChoice(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (_) {
+        return SafeArea(
+          child: Container(
+            padding: const EdgeInsets.all(18),
+            decoration: const BoxDecoration(
+              color: Color(0xFFF8FAFC),
+              borderRadius: BorderRadius.vertical(
+                top: Radius.circular(30),
+              ),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  height: 5,
+                  width: 54,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFCBD5E1),
+                    borderRadius: BorderRadius.circular(99),
+                  ),
+                ),
+                const SizedBox(height: 18),
+                const Text(
+                  'Exporter le PDF',
+                  style: TextStyle(
+                    color: Color(0xFF0F172A),
+                    fontSize: 22,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                buildPdfChoiceTile(
+                  icon: Icons.palette_outlined,
+                  title: 'PDF couleur',
+                  subtitle: 'Lecture écran, risque plus visible',
+                  onTap: () {
+                    Navigator.pop(context);
+                    exportPdf(printable: false);
+                  },
+                ),
+                const SizedBox(height: 10),
+                buildPdfChoiceTile(
+                  icon: Icons.print_outlined,
+                  title: 'PDF impression',
+                  subtitle: 'Noir et blanc, moins d’encre',
+                  onTap: () {
+                    Navigator.pop(context);
+                    exportPdf(printable: true);
+                  },
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget buildPdfChoiceTile({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+  }) {
+    return Material(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(22),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(22),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              Icon(icon, color: const Color(0xFF2563EB), size: 28),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        color: Color(0xFF0F172A),
+                        fontSize: 16,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      subtitle,
+                      style: const TextStyle(
+                        color: Color(0xFF64748B),
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(
+                Icons.chevron_right_rounded,
+                color: Color(0xFF94A3B8),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
@@ -135,7 +244,9 @@ class EvaluationDetailScreen extends StatelessWidget {
     if (evaluationId.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Impossible de supprimer ce bilan : identifiant manquant.'),
+          content: Text(
+            'Impossible de supprimer ce bilan : identifiant manquant.',
+          ),
         ),
       );
       return;
@@ -160,7 +271,7 @@ class EvaluationDetailScreen extends StatelessWidget {
               style: FilledButton.styleFrom(
                 backgroundColor: Color(0xFFEF4444),
               ),
-              child: Text('Supprimer'),
+              child: const Text('Supprimer'),
             ),
           ],
         );
@@ -184,6 +295,7 @@ class EvaluationDetailScreen extends StatelessWidget {
         child: ListView(
           padding: const EdgeInsets.fromLTRB(18, 18, 18, 28),
           children: [
+            const UrpsBanner(isLarge: false),
             buildHeader(context),
             const SizedBox(height: 18),
             buildRiskCard(),
@@ -193,8 +305,6 @@ class EvaluationDetailScreen extends StatelessWidget {
             buildFlagsSection(),
             const SizedBox(height: 18),
             buildActionButtons(context),
-            const SizedBox(height: 18),
-            buildLegalNote(),
           ],
         ),
       ),
@@ -400,9 +510,7 @@ class EvaluationDetailScreen extends StatelessWidget {
   }
 
   Widget buildFlagsSection() {
-    if (checkedFlags.isEmpty) {
-      return buildEmptyFlags();
-    }
+    if (checkedFlags.isEmpty) return buildEmptyFlags();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -512,9 +620,9 @@ class EvaluationDetailScreen extends StatelessWidget {
       children: [
         Expanded(
           child: FilledButton.icon(
-            onPressed: () => exportPdf(context),
+            onPressed: () => showPdfExportChoice(context),
             icon: const Icon(Icons.picture_as_pdf_outlined),
-            label: const Text('Exporter PDF'),
+            label: const Text('PDF'),
           ),
         ),
         const SizedBox(width: 12),
@@ -530,39 +638,6 @@ class EvaluationDetailScreen extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-
-  Widget buildLegalNote() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF8FAFC),
-        borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
-      ),
-      child: const Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(
-            Icons.info_outline_rounded,
-            color: Color(0xFF64748B),
-            size: 20,
-          ),
-          SizedBox(width: 10),
-          Expanded(
-            child: Text(
-              'Aide au repérage clinique uniquement. Cette application ne remplace pas une évaluation médicale professionnelle.',
-              style: TextStyle(
-                color: Color(0xFF64748B),
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                height: 1.45,
-              ),
-            ),
-          ),
-        ],
-      ),
     );
   }
 }

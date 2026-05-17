@@ -14,9 +14,9 @@ class MainNavigationScreen extends StatefulWidget {
 }
 
 class _MainNavigationScreenState extends State<MainNavigationScreen> {
-  int currentIndex = 1;
+  int currentIndex = 0;
 
-  final PageController _pageController = PageController(initialPage: 1);
+final PageController _pageController = PageController(initialPage: 0);
 
   final screens = const [
     PatientConsentScreen(),

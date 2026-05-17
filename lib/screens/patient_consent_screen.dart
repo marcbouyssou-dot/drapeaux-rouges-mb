@@ -7,7 +7,7 @@ import 'package:signature/signature.dart';
 import '../models/patient_local.dart';
 import '../services/rgpd_local_service.dart';
 import '../theme/app_text_styles.dart';
-import '../widgets/app_header.dart';
+import '../widgets/urps_banner.dart';
 
 class PatientConsentScreen extends StatefulWidget {
   const PatientConsentScreen({super.key});
@@ -279,8 +279,7 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
           child: ListView(
             padding: const EdgeInsets.fromLTRB(18, 12, 18, 150),
             children: [
-              const AppHeader(),
-              const SizedBox(height: 18),
+              const UrpsBanner(isLarge: true),
               buildTitleBlock(),
               const SizedBox(height: 18),
               buildCurrentPatientCard(),
@@ -309,10 +308,7 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
     return const Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Patient',
-          style: AppTextStyles.pageTitle,
-        ),
+        Text('Patient', style: AppTextStyles.pageTitle),
         SizedBox(height: 4),
         Text(
           'Créer, rechercher ou sélectionner un patient actif',
@@ -422,10 +418,7 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
               ),
         filled: true,
         fillColor: Colors.white,
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 18,
-          vertical: 16,
-        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(22),
           borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
@@ -436,10 +429,7 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(22),
-          borderSide: const BorderSide(
-            color: Color(0xFF2563EB),
-            width: 2,
-          ),
+          borderSide: const BorderSide(color: Color(0xFF2563EB), width: 2),
         ),
       ),
     );
@@ -494,10 +484,7 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
       ),
       child: ListTile(
         onTap: () => selectPatient(patient),
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 8,
-        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         leading: CircleAvatar(
           backgroundColor:
               active ? const Color(0xFF22C55E) : const Color(0xFFEAF2FF),
@@ -526,14 +513,8 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
             if (value == 'delete') deletePatient(patient);
           },
           itemBuilder: (_) => const [
-            PopupMenuItem(
-              value: 'select',
-              child: Text('Sélectionner'),
-            ),
-            PopupMenuItem(
-              value: 'delete',
-              child: Text('Supprimer localement'),
-            ),
+            PopupMenuItem(value: 'select', child: Text('Sélectionner')),
+            PopupMenuItem(value: 'delete', child: Text('Supprimer localement')),
           ],
         ),
       ),
@@ -550,15 +531,9 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
       ),
       child: Column(
         children: [
-          buildTextField(
-            controller: nomController,
-            label: 'Nom',
-          ),
+          buildTextField(controller: nomController, label: 'Nom'),
           const SizedBox(height: 12),
-          buildTextField(
-            controller: prenomController,
-            label: 'Prénom',
-          ),
+          buildTextField(controller: prenomController, label: 'Prénom'),
           const SizedBox(height: 12),
           buildTextField(
             controller: dateNaissanceController,
@@ -570,11 +545,28 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
           buildConsentCard(),
           const SizedBox(height: 18),
           buildSignatureBox(),
-          const SizedBox(height: 10),
-          OutlinedButton.icon(
-            onPressed: signatureController.clear,
-            icon: const Icon(Icons.clear_rounded),
-            label: const Text('Effacer la signature'),
+          const SizedBox(height: 12),
+          Align(
+            alignment: Alignment.center,
+            child: TextButton.icon(
+              onPressed: signatureController.clear,
+              icon: const Icon(Icons.close_rounded, size: 18),
+              label: const Text('Effacer la signature'),
+              style: TextButton.styleFrom(
+                foregroundColor: const Color(0xFF2563EB),
+                backgroundColor: const Color(0xFFEAF2FF),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 18,
+                  vertical: 12,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(18),
+                ),
+                textStyle: const TextStyle(
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+            ),
           ),
         ],
       ),
@@ -600,10 +592,7 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
         suffixIcon: suffixIcon == null ? null : Icon(suffixIcon),
         filled: true,
         fillColor: const Color(0xFFF8FAFC),
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 18,
-          vertical: 16,
-        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(18),
           borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
@@ -614,10 +603,7 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(18),
-          borderSide: const BorderSide(
-            color: Color(0xFF2563EB),
-            width: 2,
-          ),
+          borderSide: const BorderSide(color: Color(0xFF2563EB), width: 2),
         ),
       ),
     );
@@ -689,27 +675,75 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
   }
 
   Widget buildRgpdActions() {
-    return Row(
-      children: [
-        Expanded(
-          child: OutlinedButton.icon(
-            onPressed: showAnonymousExportExample,
-            icon: const Icon(Icons.ios_share_rounded),
-            label: const Text('Export anonyme'),
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: OutlinedButton.icon(
-            onPressed: confirmDeleteAll,
-            icon: const Icon(Icons.delete_forever_outlined),
-            label: const Text('Tout supprimer'),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: const Color(0xFFEF4444),
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(26),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: secondaryActionButton(
+              icon: Icons.ios_share_rounded,
+              label: 'Export anonyme',
+              color: const Color(0xFF2563EB),
+              backgroundColor: const Color(0xFFEAF2FF),
+              onPressed: showAnonymousExportExample,
             ),
           ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: secondaryActionButton(
+              icon: Icons.delete_forever_outlined,
+              label: 'Tout supprimer',
+              color: const Color(0xFFEF4444),
+              backgroundColor: const Color(0xFFFFF1F2),
+              onPressed: confirmDeleteAll,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget secondaryActionButton({
+    required IconData icon,
+    required String label,
+    required Color color,
+    required Color backgroundColor,
+    required VoidCallback onPressed,
+  }) {
+    return Material(
+      color: backgroundColor,
+      borderRadius: BorderRadius.circular(18),
+      child: InkWell(
+        onTap: onPressed,
+        borderRadius: BorderRadius.circular(18),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 15),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, color: color, size: 20),
+              const SizedBox(width: 8),
+              Flexible(
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: color,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 14,
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
-      ],
+      ),
     );
   }
 
@@ -726,17 +760,11 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
             color: const Color(0xFFEAF2FF),
             borderRadius: BorderRadius.circular(16),
           ),
-          child: Icon(
-            icon,
-            color: const Color(0xFF2563EB),
-          ),
+          child: Icon(icon, color: const Color(0xFF2563EB)),
         ),
         const SizedBox(width: 14),
         Expanded(
-          child: Text(
-            title,
-            style: AppTextStyles.sectionTitle,
-          ),
+          child: Text(title, style: AppTextStyles.sectionTitle),
         ),
       ],
     );
@@ -756,11 +784,7 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
       ),
       child: Row(
         children: [
-          Icon(
-            icon,
-            color: const Color(0xFF94A3B8),
-            size: 34,
-          ),
+          Icon(icon, color: const Color(0xFF94A3B8), size: 34),
           const SizedBox(width: 14),
           Expanded(
             child: Column(

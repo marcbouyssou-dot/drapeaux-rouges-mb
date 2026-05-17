@@ -2,13 +2,38 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 
-import '../services/patient_record_service.dart';
-import '../theme/app_text_styles.dart';
-import '../widgets/app_header.dart';
+import '../models/practitioner_profile.dart';
 import '../services/global_statistics_csv_service.dart';
+import '../services/patient_record_service.dart';
+import '../services/practitioner_profile_service.dart';
+import '../theme/app_text_styles.dart';
+import '../widgets/urps_banner.dart';
 
-class SettingsScreen extends StatelessWidget {
+class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
+
+  @override
+  State<SettingsScreen> createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends State<SettingsScreen> {
+  PractitionerProfile practitioner = PractitionerProfile.empty();
+
+  @override
+  void initState() {
+    super.initState();
+    loadPractitioner();
+  }
+
+  Future<void> loadPractitioner() async {
+    final profile = await PractitionerProfileService.getProfile();
+
+    if (!mounted) return;
+
+    setState(() {
+      practitioner = profile;
+    });
+  }
 
   Future<void> showAnonymousRecordsExport(BuildContext context) async {
     final data = await PatientRecordService.getAnonymousRecordsExport();
@@ -36,6 +61,103 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
+  Future<void> showPractitionerDialog() async {
+  final nomController = TextEditingController(text: practitioner.nom);
+  final prenomController = TextEditingController(text: practitioner.prenom);
+  final adresseController = TextEditingController(text: practitioner.adresse);
+  final adeliController = TextEditingController(text: practitioner.adeli);
+  final rppsController = TextEditingController(text: practitioner.rpps);
+
+  final saved = await showDialog<bool>(
+    context: context,
+    builder: (dialogContext) {
+      return AlertDialog(
+        title: const Text('Profil professionnel'),
+        content: SingleChildScrollView(
+          child: Column(
+            children: [
+              buildDialogField(controller: nomController, label: 'Nom'),
+              const SizedBox(height: 10),
+              buildDialogField(controller: prenomController, label: 'Prénom'),
+              const SizedBox(height: 10),
+              buildDialogField(
+                controller: adresseController,
+                label: 'Adresse professionnelle',
+                maxLines: 3,
+              ),
+              const SizedBox(height: 10),
+              buildDialogField(controller: adeliController, label: 'ADELI'),
+              const SizedBox(height: 10),
+              buildDialogField(controller: rppsController, label: 'RPPS'),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('Annuler'),
+          ),
+          FilledButton(
+            onPressed: () async {
+              final profile = PractitionerProfile(
+                nom: nomController.text.trim(),
+                prenom: prenomController.text.trim(),
+                adresse: adresseController.text.trim(),
+                adeli: adeliController.text.trim(),
+                rpps: rppsController.text.trim(),
+              );
+
+              await PractitionerProfileService.saveProfile(profile);
+
+              if (!dialogContext.mounted) return;
+
+              Navigator.pop(dialogContext, true);
+            },
+            child: const Text('Enregistrer'),
+          ),
+        ],
+      );
+    },
+  );
+
+  nomController.dispose();
+  prenomController.dispose();
+  adresseController.dispose();
+  adeliController.dispose();
+  rppsController.dispose();
+
+  if (saved == true) {
+    await loadPractitioner();
+
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Profil professionnel enregistré'),
+      ),
+    );
+  }
+}
+
+  Widget buildDialogField({
+    required TextEditingController controller,
+    required String label,
+    int maxLines = 1,
+  }) {
+    return TextField(
+      controller: controller,
+      maxLines: maxLines,
+      decoration: InputDecoration(
+        labelText: label,
+        filled: true,
+        fillColor: const Color(0xFFF8FAFC),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+      ),
+    );
+  }
+
   void showComingSoon(BuildContext context, String title) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -46,18 +168,33 @@ class SettingsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final practitionerComplete = practitioner.isComplete;
+
     return Scaffold(
       backgroundColor: const Color(0xFFF6F8FC),
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.fromLTRB(18, 12, 18, 150),
           children: [
-            const AppHeader(compact: true),
-            const SizedBox(height: 20),
+            const UrpsBanner(isLarge: false),
             buildTitle(),
             const SizedBox(height: 22),
             buildHeroCard(),
             const SizedBox(height: 24),
+            buildSectionLabel('PROFIL PROFESSIONNEL'),
+            const SizedBox(height: 12),
+            settingCard(
+              context: context,
+              icon: practitionerComplete
+                  ? Icons.verified_user_outlined
+                  : Icons.badge_outlined,
+              title: 'Informations MK',
+              subtitle: practitionerComplete
+                  ? practitioner.fullName
+                  : 'Nom, prénom, adresse, ADELI, RPPS pour les prescriptions.',
+              onTap: showPractitionerDialog,
+            ),
+            const SizedBox(height: 26),
             buildSectionLabel('CONFIDENTIALITÉ'),
             const SizedBox(height: 12),
             settingCard(
@@ -69,7 +206,7 @@ class SettingsScreen extends StatelessWidget {
             ),
             settingCard(
               context: context,
-              icon: Icons.shield_outlined,
+              icon: Icons.cloud_off_outlined,
               title: 'Protection des données',
               subtitle: 'Aucune transmission automatique.',
               onTap: () => showComingSoon(context, 'Protection des données'),
@@ -78,14 +215,14 @@ class SettingsScreen extends StatelessWidget {
               context: context,
               icon: Icons.cloud_outlined,
               title: 'Export statistique pseudonymisé',
-              subtitle: 'Données cliniques pseudonymisées, sans nom ni prénom.',
+              subtitle: 'Données cliniques sans nom ni prénom.',
               onTap: () => showAnonymousRecordsExport(context),
             ),
             settingCard(
               context: context,
               icon: Icons.table_chart_outlined,
               title: 'CSV statistiques pseudonymisées',
-              subtitle: 'Exporter toutes les évaluations locales en fichier CSV.',
+              subtitle: 'Exporter toutes les évaluations locales en CSV.',
               onTap: GlobalStatisticsCsvService.exportGlobalStatisticsCsv,
             ),
             const SizedBox(height: 26),
@@ -102,7 +239,7 @@ class SettingsScreen extends StatelessWidget {
               context: context,
               icon: Icons.picture_as_pdf_outlined,
               title: 'Exports PDF',
-              subtitle: 'Documents cliniques et synthèses.',
+              subtitle: 'PDF couleur ou impression noir et blanc.',
               onTap: () => showComingSoon(context, 'Exports PDF'),
             ),
             settingCard(
@@ -111,23 +248,6 @@ class SettingsScreen extends StatelessWidget {
               title: 'Statistiques locales',
               subtitle: 'Analyse locale dans Historique.',
               onTap: () => showComingSoon(context, 'Statistiques locales'),
-            ),
-            const SizedBox(height: 26),
-            buildSectionLabel('ASSISTANCE'),
-            const SizedBox(height: 12),
-            settingCard(
-              context: context,
-              icon: Icons.help_outline_rounded,
-              title: 'FAQ',
-              subtitle: 'Questions fréquentes.',
-              onTap: () => showComingSoon(context, 'FAQ'),
-            ),
-            settingCard(
-              context: context,
-              icon: Icons.mail_outline_rounded,
-              title: 'Contact',
-              subtitle: 'Support et assistance.',
-              onTap: () => showComingSoon(context, 'Contact'),
             ),
             const SizedBox(height: 30),
             buildVersionCard(),
@@ -286,7 +406,7 @@ class SettingsScreen extends StatelessWidget {
           ],
         ),
         borderRadius: BorderRadius.circular(28),
-        border: Border.all(color: const Color(0xFFBFDBFE)),
+        border: Border.all(color: Color(0xFFBFDBFE)),
       ),
       child: const Column(
         children: [

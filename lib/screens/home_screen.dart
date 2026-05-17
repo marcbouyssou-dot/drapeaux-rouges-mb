@@ -12,8 +12,9 @@ import '../services/pdf_service.dart';
 import '../services/rgpd_local_service.dart';
 import '../services/risk_score_service.dart';
 import '../theme/app_text_styles.dart';
-import '../widgets/app_header.dart';
+import '../widgets/clinical_category_picker.dart';
 import '../widgets/decision_card.dart';
+import '../widgets/urps_banner.dart';
 import 'evaluation/red_flags_category_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -54,10 +55,6 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  List<Map<String, dynamic>> get selectedItems {
-    return categories[selectedCategory] ?? [];
-  }
-
   int get checkedCount {
     return RiskScoreService.computeGlobalCheckedCount(categories);
   }
@@ -76,14 +73,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   List<Map<String, dynamic>> get checkedFlags {
     return RiskScoreService.checkedFlagsFromCategories(categories);
-  }
-
-  int get selectedCategoryCheckedCount {
-    return RiskScoreService.computeCheckedCount(selectedItems);
-  }
-
-  int get selectedCategoryScore {
-    return RiskScoreService.computeScore(selectedItems);
   }
 
   String get patientDisplayName {
@@ -110,6 +99,146 @@ class _HomeScreenState extends State<HomeScreen> {
   int checkedCountForCategory(String category) {
     final items = categories[category] ?? [];
     return RiskScoreService.computeCheckedCount(items);
+  }
+
+  void openCategoryPicker() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) {
+        return ClinicalCategoryPicker(
+          categories: categories,
+          selectedCategory: selectedCategory,
+          checkedCount: checkedCountForCategory,
+          onSelected: (category) async {
+            setState(() {
+              selectedCategory = category;
+            });
+
+            await Future.delayed(const Duration(milliseconds: 120));
+
+            if (!mounted) return;
+
+            await openCategory(category);
+          },
+        );
+      },
+    );
+  }
+
+  void showPdfExportChoice() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (_) {
+        return SafeArea(
+          child: Container(
+            padding: const EdgeInsets.all(18),
+            decoration: const BoxDecoration(
+              color: Color(0xFFF8FAFC),
+              borderRadius: BorderRadius.vertical(
+                top: Radius.circular(30),
+              ),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  height: 5,
+                  width: 54,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFCBD5E1),
+                    borderRadius: BorderRadius.circular(99),
+                  ),
+                ),
+                const SizedBox(height: 18),
+                const Text(
+                  'Exporter le PDF',
+                  style: TextStyle(
+                    color: Color(0xFF0F172A),
+                    fontSize: 22,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                buildPdfChoiceTile(
+                  icon: Icons.palette_outlined,
+                  title: 'PDF couleur',
+                  subtitle: 'Lecture écran, risque plus visible',
+                  onTap: () {
+                    Navigator.pop(context);
+                    exportPdf(printable: false);
+                  },
+                ),
+                const SizedBox(height: 10),
+                buildPdfChoiceTile(
+                  icon: Icons.print_outlined,
+                  title: 'PDF impression',
+                  subtitle: 'Noir et blanc, moins d’encre',
+                  onTap: () {
+                    Navigator.pop(context);
+                    exportPdf(printable: true);
+                  },
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget buildPdfChoiceTile({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+  }) {
+    return Material(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(22),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(22),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              Icon(icon, color: const Color(0xFF2563EB), size: 28),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        color: Color(0xFF0F172A),
+                        fontSize: 16,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      subtitle,
+                      style: const TextStyle(
+                        color: Color(0xFF64748B),
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(
+                Icons.chevron_right_rounded,
+                color: Color(0xFF94A3B8),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   Future<bool> confirmAnonymousMode({
@@ -249,14 +378,14 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Future<void> exportPdf() async {
+  Future<void> exportPdf({required bool printable}) async {
     final canContinue = await confirmAnonymousMode(
       action: 'exporter un PDF',
     );
 
     if (!canContinue) return;
 
-    PdfService.exportPdf(
+    await PdfService.exportPdf(
       categories: categories,
       score: score,
       checkedCount: checkedCount,
@@ -274,6 +403,7 @@ class _HomeScreenState extends State<HomeScreen> {
         categories: categories,
       ),
       aiSummary: aiSummary,
+      printable: printable,
     );
   }
 
@@ -318,7 +448,7 @@ class _HomeScreenState extends State<HomeScreen> {
           child: ListView(
             padding: const EdgeInsets.fromLTRB(18, 12, 18, 150),
             children: [
-              const AppHeader(compact: true),
+              const UrpsBanner(isLarge: false),
               const SizedBox(height: 14),
               buildTitleBlock(),
               const SizedBox(height: 16),
@@ -330,11 +460,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 color: riskColor,
               ),
               const SizedBox(height: 20),
-              buildSectionHeader(),
-              const SizedBox(height: 12),
-              buildCategoryGrid(),
-              const SizedBox(height: 20),
-              buildCurrentCategorySummary(),
+              buildRedFlagsAccessCard(),
               const SizedBox(height: 20),
               buildSecondaryButtons(),
             ],
@@ -463,17 +589,17 @@ class _HomeScreenState extends State<HomeScreen> {
             children: [
               Expanded(
                 child: buildSummaryChip(
-                  icon: Icons.assignment_rounded,
-                  label: 'Motif actif',
-                  value: selectedCategory,
+                  icon: Icons.flag_rounded,
+                  label: 'Total global',
+                  value: '$checkedCount drapeau(x)',
                 ),
               ),
               const SizedBox(width: 10),
               Expanded(
                 child: buildSummaryChip(
-                  icon: Icons.flag_rounded,
-                  label: 'Total global',
-                  value: '$checkedCount drapeau(x)',
+                  icon: Icons.folder_special_rounded,
+                  label: 'Pathologies',
+                  value: '${categories.length} motifs',
                 ),
               ),
             ],
@@ -562,146 +688,77 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget buildSectionHeader() {
-    return const Row(
-      children: [
-        Expanded(
-          child: Text(
-            'Motif principal',
-            style: TextStyle(
-              color: Color(0xFF0F172A),
-              fontSize: 20,
-              fontWeight: FontWeight.w900,
-              letterSpacing: -0.4,
-            ),
+  Widget buildRedFlagsAccessCard() {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: openCategoryPicker,
+        borderRadius: BorderRadius.circular(30),
+        child: Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(30),
+            border: Border.all(color: const Color(0xFFE2E8F0)),
           ),
-        ),
-        Text(
-          'Touchez une carte',
-          style: TextStyle(
-            color: Color(0xFF64748B),
-            fontWeight: FontWeight.w700,
-            fontSize: 12,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget buildCategoryGrid() {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final itemWidth = (constraints.maxWidth - 12) / 2;
-
-        return Wrap(
-          spacing: 12,
-          runSpacing: 12,
-          children: categories.keys.map((category) {
-            final selected = category == selectedCategory;
-            final count = checkedCountForCategory(category);
-
-            return GestureDetector(
-              onTap: () => openCategory(category),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 180),
-                width: itemWidth,
-                height: 104,
-                padding: const EdgeInsets.all(14),
+          child: Row(
+            children: [
+              Container(
+                height: 62,
+                width: 62,
                 decoration: BoxDecoration(
-                  color: selected ? const Color(0xFF2563EB) : Colors.white,
-                  borderRadius: BorderRadius.circular(28),
-                  border: Border.all(
-                    color: selected
-                        ? const Color(0xFF2563EB)
-                        : const Color(0xFFE2E8F0),
-                  ),
+                  color: const Color(0xFFEAF2FF),
+                  borderRadius: BorderRadius.circular(22),
                 ),
+                child: const Icon(
+                  Icons.checklist_rounded,
+                  color: Color(0xFF2563EB),
+                  size: 32,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(
-                      categoryIcon(category),
-                      color: selected ? Colors.white : const Color(0xFF2563EB),
-                      size: 25,
-                    ),
-                    const Spacer(),
-                    Text(
-                      category,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+                    const Text(
+                      'Drapeaux rouges',
                       style: TextStyle(
-                        color:
-                            selected ? Colors.white : const Color(0xFF0F172A),
-                        fontWeight: FontWeight.w800,
-                        fontSize: 15,
+                        color: Color(0xFF0F172A),
+                        fontSize: 22,
+                        fontWeight: FontWeight.w900,
                       ),
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      count == 0 ? 'Aucun item coché' : '$count item(s)',
-                      style: TextStyle(
-                        color: selected
-                            ? Colors.white.withOpacity(0.85)
-                            : const Color(0xFF64748B),
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
+                      checkedCount == 0
+                          ? 'Choisir une pathologie et cocher les signes d’alerte'
+                          : '$checkedCount drapeau(x) rouge(s) coché(s) au total',
+                      style: const TextStyle(
+                        color: Color(0xFF64748B),
+                        fontWeight: FontWeight.w700,
+                        height: 1.3,
                       ),
                     ),
                   ],
                 ),
               ),
-            );
-          }).toList(),
-        );
-      },
-    );
-  }
-
-  IconData categoryIcon(String category) {
-    final lower = category.toLowerCase();
-
-    if (lower.contains('lomb')) return Icons.accessibility_new_rounded;
-    if (lower.contains('entorse')) return Icons.directions_walk_rounded;
-    if (lower.contains('resp')) return Icons.air_rounded;
-    if (lower.contains('ortho')) return Icons.medical_services_outlined;
-    if (lower.contains('cerv')) return Icons.psychology_alt_outlined;
-    if (lower.contains('card')) return Icons.favorite_border_rounded;
-    if (lower.contains('tvp') || lower.contains('vasc')) {
-      return Icons.water_drop_outlined;
-    }
-    if (lower.contains('post')) return Icons.healing_rounded;
-
-    return Icons.monitor_heart_outlined;
-  }
-
-  Widget buildCurrentCategorySummary() {
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(28),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
-      ),
-      child: Row(
-        children: [
-          const Icon(
-            Icons.checklist_rounded,
-            color: Color(0xFF2563EB),
-            size: 28,
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Text(
-              selectedCategoryCheckedCount == 0
-                  ? 'Touchez le motif sélectionné pour cocher les drapeaux rouges.'
-                  : '$selectedCategoryCheckedCount drapeau(x) rouge(s) coché(s) pour ce motif. Score motif : $selectedCategoryScore.',
-              style: const TextStyle(
-                color: Color(0xFF334155),
-                fontWeight: FontWeight.w700,
+              const SizedBox(width: 12),
+              Container(
+                height: 42,
+                width: 42,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF2563EB),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: const Icon(
+                  Icons.arrow_forward_rounded,
+                  color: Colors.white,
+                ),
               ),
-            ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -750,7 +807,7 @@ class _HomeScreenState extends State<HomeScreen> {
             const SizedBox(width: 12),
             Expanded(
               child: FilledButton.icon(
-                onPressed: exportPdf,
+                onPressed: showPdfExportChoice,
                 icon: const Icon(Icons.picture_as_pdf_outlined),
                 label: const Text('PDF'),
               ),
