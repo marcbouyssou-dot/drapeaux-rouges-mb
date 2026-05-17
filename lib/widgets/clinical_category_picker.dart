@@ -50,11 +50,11 @@ class ClinicalCategoryPicker extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final categoryNames = categories.keys.toList();
+
     return Container(
-      constraints: BoxConstraints(
-        maxHeight: MediaQuery.of(context).size.height * 0.88,
-      ),
-      padding: const EdgeInsets.fromLTRB(18, 12, 18, 22),
+      height: MediaQuery.of(context).size.height * 0.96,
+      padding: const EdgeInsets.fromLTRB(18, 8, 18, 14),
       decoration: const BoxDecoration(
         color: Color(0xFFF8FAFC),
         borderRadius: BorderRadius.vertical(
@@ -64,7 +64,6 @@ class ClinicalCategoryPicker extends StatelessWidget {
       child: SafeArea(
         top: false,
         child: Column(
-          mainAxisSize: MainAxisSize.min,
           children: [
             Container(
               height: 5,
@@ -74,33 +73,20 @@ class ClinicalCategoryPicker extends StatelessWidget {
                 borderRadius: BorderRadius.circular(99),
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
             Row(
               children: [
+                const SizedBox(width: 44),
                 const Expanded(
-                  child: Column(
-                    children: [
-                      Text(
-                        'Choisir un motif',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: Color(0xFF0F172A),
-                          fontSize: 24,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: -0.5,
-                        ),
-                      ),
-                      SizedBox(height: 4),
-                      Text(
-                        'Sélectionnez le motif principal',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: Color(0xFF64748B),
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
+                  child: Text(
+                    'Choisir un motif',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Color(0xFF0F172A),
+                      fontSize: 24,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: -0.5,
+                    ),
                   ),
                 ),
                 IconButton(
@@ -113,16 +99,54 @@ class ClinicalCategoryPicker extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 18),
-            Flexible(
+            const SizedBox(height: 12),
+            Expanded(
               child: ListView.separated(
-                shrinkWrap: true,
-                itemCount: categories.keys.length,
-                separatorBuilder: (_, __) => const SizedBox(height: 10),
+                physics: const NeverScrollableScrollPhysics(),
+                padding: EdgeInsets.zero,
+                itemCount: categoryNames.length,
+                separatorBuilder: (_, __) => const SizedBox(height: 8),
                 itemBuilder: (context, index) {
-                  final category = categories.keys.elementAt(index);
-                  return buildCategoryRow(context, category);
+                  final category = categoryNames[index];
+
+                  return buildCategoryRow(
+                    context: context,
+                    category: category,
+                    index: index + 1,
+                  );
                 },
+              ),
+            ),
+            const SizedBox(height: 10),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              decoration: BoxDecoration(
+                color: const Color(0xFFEAF2FF),
+                borderRadius: BorderRadius.circular(18),
+              ),
+              child: const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.info_outline_rounded,
+                    color: Color(0xFF2563EB),
+                    size: 18,
+                  ),
+                  SizedBox(width: 8),
+                  Flexible(
+                    child: Text(
+                      'Sélectionnez le motif principal pour afficher les drapeaux rouges associés.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Color(0xFF2563EB),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w800,
+                        height: 1.25,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
@@ -131,45 +155,66 @@ class ClinicalCategoryPicker extends StatelessWidget {
     );
   }
 
-  Widget buildCategoryRow(BuildContext context, String category) {
+  Widget buildCategoryRow({
+    required BuildContext context,
+    required String category,
+    required int index,
+  }) {
     final selected = category == selectedCategory;
     final color = categoryColor(category);
+    final count = checkedCount(category);
 
     return Material(
-      color: Colors.transparent,
+      color: selected ? color.withValues(alpha: 0.08) : Colors.white,
+      borderRadius: BorderRadius.circular(20),
       child: InkWell(
-        onTap: () {
-  Navigator.pop(context);
-  onSelected(category);
-},
-        borderRadius: BorderRadius.circular(24),
+        onTap: () => onSelected(category),
+        borderRadius: BorderRadius.circular(20),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 180),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          height: 64,
+          padding: const EdgeInsets.symmetric(horizontal: 14),
           decoration: BoxDecoration(
-            color: selected ? color.withOpacity(0.08) : Colors.white,
-            borderRadius: BorderRadius.circular(24),
+            borderRadius: BorderRadius.circular(20),
             border: Border.all(
               color: selected ? color : const Color(0xFFE2E8F0),
-              width: selected ? 1.8 : 1,
+              width: selected ? 1.7 : 1,
             ),
           ),
           child: Row(
             children: [
               Container(
-                height: 52,
-                width: 52,
+                height: 46,
+                width: 46,
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.14),
-                  shape: BoxShape.circle,
+                  color: color.withValues(alpha: 0.13),
+                  borderRadius: BorderRadius.circular(16),
                 ),
                 child: Icon(
                   categoryIcon(category),
                   color: color,
-                  size: 28,
+                  size: 26,
                 ),
               ),
-              const SizedBox(width: 16),
+              const SizedBox(width: 12),
+              Container(
+                height: 25,
+                width: 25,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.14),
+                  shape: BoxShape.circle,
+                ),
+                child: Text(
+                  '$index',
+                  style: TextStyle(
+                    color: color,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 14),
               Expanded(
                 child: Text(
                   category,
@@ -177,31 +222,40 @@ class ClinicalCategoryPicker extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     color: selected ? color : const Color(0xFF0F172A),
-                    fontSize: 18,
+                    fontSize: 17,
                     fontWeight: FontWeight.w900,
                   ),
                 ),
               ),
-              if (selected)
+              if (count > 0) ...[
+                const SizedBox(width: 8),
                 Container(
-                  height: 32,
-                  width: 32,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 9,
+                    vertical: 5,
+                  ),
                   decoration: BoxDecoration(
-                    color: color,
-                    shape: BoxShape.circle,
+                    color: const Color(0xFFEAF2FF),
+                    borderRadius: BorderRadius.circular(99),
                   ),
-                  child: const Icon(
-                    Icons.check_rounded,
-                    color: Colors.white,
-                    size: 22,
+                  child: Text(
+                    '$count',
+                    style: const TextStyle(
+                      color: Color(0xFF2563EB),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w900,
+                    ),
                   ),
-                )
-              else
-                const Icon(
-                  Icons.chevron_right_rounded,
-                  color: Color(0xFF94A3B8),
-                  size: 28,
                 ),
+              ],
+              const SizedBox(width: 8),
+              Icon(
+                selected
+                    ? Icons.check_circle_rounded
+                    : Icons.chevron_right_rounded,
+                color: selected ? color : const Color(0xFF94A3B8),
+                size: selected ? 30 : 28,
+              ),
             ],
           ),
         ),

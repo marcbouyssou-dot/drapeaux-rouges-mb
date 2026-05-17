@@ -13,7 +13,6 @@ import '../services/rgpd_local_service.dart';
 import '../services/risk_score_service.dart';
 import '../theme/app_text_styles.dart';
 import '../widgets/clinical_category_picker.dart';
-
 import '../widgets/urps_banner.dart';
 import 'evaluation/red_flags_category_screen.dart';
 
@@ -102,12 +101,23 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void openCategoryPicker() {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (_) {
-        return ClinicalCategoryPicker(
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    useSafeArea: true,
+    backgroundColor: Colors.transparent,
+    builder: (_) {
+      final screenHeight = MediaQuery.of(context).size.height;
+
+      return Container(
+        height: screenHeight * 0.96,
+        decoration: const BoxDecoration(
+          color: Color(0xFFF8FAFC),
+          borderRadius: BorderRadius.vertical(
+            top: Radius.circular(30),
+          ),
+        ),
+        child: ClinicalCategoryPicker(
           categories: categories,
           selectedCategory: selectedCategory,
           checkedCount: checkedCountForCategory,
@@ -116,16 +126,19 @@ class _HomeScreenState extends State<HomeScreen> {
               selectedCategory = category;
             });
 
+            Navigator.pop(context);
+
             await Future.delayed(const Duration(milliseconds: 120));
 
             if (!mounted) return;
 
             await openCategory(category);
           },
-        );
-      },
-    );
-  }
+        ),
+      );
+    },
+  );
+}
 
   void showPdfExportChoice() {
     showModalBottomSheet(
@@ -434,7 +447,6 @@ class _HomeScreenState extends State<HomeScreen> {
       categories: categories,
     );
 
-    
     return Scaffold(
       backgroundColor: const Color(0xFFF6F8FC),
       body: SafeArea(
@@ -443,17 +455,26 @@ class _HomeScreenState extends State<HomeScreen> {
           child: ListView(
             padding: const EdgeInsets.fromLTRB(18, 12, 18, 150),
             children: [
-  const UrpsBanner(isLarge: false),
-  buildClinicalSummaryCard(),
-  const SizedBox(height: 12),
-  buildCompactDecisionCard(decisionTitle),
-  const SizedBox(height: 12),
-  buildRedFlagsAccessCard(),
-  const SizedBox(height: 16),
-  buildSecondaryButtons(),
-  const SizedBox(height: 16),
-  buildClinicalSafetyNote(),
-],
+              const UrpsBanner(isLarge: false),
+
+buildRedFlagsAccessCard(),
+
+const SizedBox(height: 14),
+
+buildClinicalSummaryCard(),
+
+const SizedBox(height: 12),
+
+buildCompactDecisionCard(decisionTitle),
+
+const SizedBox(height: 16),
+
+buildSecondaryButtons(),
+
+const SizedBox(height: 16),
+
+buildClinicalSafetyNote(),
+            ],
           ),
         ),
       ),
@@ -517,7 +538,7 @@ class _HomeScreenState extends State<HomeScreen> {
         gradient: LinearGradient(
           colors: [
             riskColor,
-            riskColor.withOpacity(0.84),
+            riskColor.withValues(alpha: 0.84),
           ],
         ),
         borderRadius: BorderRadius.circular(30),
@@ -530,7 +551,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 height: 58,
                 width: 58,
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.15),
+                  color: Colors.white.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: const Icon(
@@ -562,7 +583,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
-                        color: Colors.white.withOpacity(0.82),
+                        color: Colors.white.withValues(alpha: 0.82),
                         fontWeight: FontWeight.w700,
                         fontSize: 13,
                       ),
@@ -604,7 +625,7 @@ class _HomeScreenState extends State<HomeScreen> {
       width: 74,
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.16),
+        color: Colors.white.withValues(alpha: 0.16),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Column(
@@ -612,7 +633,7 @@ class _HomeScreenState extends State<HomeScreen> {
           Text(
             label,
             style: TextStyle(
-              color: Colors.white.withOpacity(0.72),
+              color: Colors.white.withValues(alpha: 0.72),
               fontSize: 11,
               fontWeight: FontWeight.w700,
             ),
@@ -640,12 +661,12 @@ class _HomeScreenState extends State<HomeScreen> {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.14),
+        color: Colors.white.withValues(alpha: 0.14),
         borderRadius: BorderRadius.circular(18),
       ),
       child: Row(
         children: [
-          Icon(icon, color: Colors.white.withOpacity(0.9), size: 20),
+          Icon(icon, color: Colors.white.withValues(alpha: 0.9), size: 20),
           const SizedBox(width: 8),
           Expanded(
             child: Column(
@@ -654,7 +675,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 Text(
                   label,
                   style: TextStyle(
-                    color: Colors.white.withOpacity(0.68),
+                    color: Colors.white.withValues(alpha: 0.68),
                     fontSize: 11,
                     fontWeight: FontWeight.w700,
                   ),
@@ -679,80 +700,107 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget buildRedFlagsAccessCard() {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: openCategoryPicker,
-        borderRadius: BorderRadius.circular(30),
-        child: Container(
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(30),
-            border: Border.all(color: const Color(0xFFE2E8F0)),
-          ),
-          child: Row(
-            children: [
-              Container(
-                height: 62,
-                width: 62,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFEAF2FF),
-                  borderRadius: BorderRadius.circular(22),
-                ),
-                child: const Icon(
-                  Icons.checklist_rounded,
-                  color: Color(0xFF2563EB),
-                  size: 32,
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Drapeaux rouges',
-                      style: TextStyle(
-                        color: Color(0xFF0F172A),
-                        fontSize: 22,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      checkedCount == 0
-                          ? 'Choisir une pathologie et cocher les signes d’alerte'
-                          : '$checkedCount drapeau(x) rouge(s) coché(s) au total',
-                      style: const TextStyle(
-                        color: Color(0xFF64748B),
-                        fontWeight: FontWeight.w700,
-                        height: 1.3,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 12),
-              Container(
-                height: 42,
-                width: 42,
-                decoration: BoxDecoration(
-                  color: const Color(0xFF2563EB),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: const Icon(
-                  Icons.arrow_forward_rounded,
-                  color: Colors.white,
-                ),
-              ),
+  return Material(
+    color: Colors.transparent,
+    child: InkWell(
+      onTap: openCategoryPicker,
+      borderRadius: BorderRadius.circular(30),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.fromLTRB(22, 24, 22, 24),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [
+              Color(0xFFEC4899),
+              Color(0xFFF472B6),
             ],
+            begin: Alignment.centerLeft,
+            end: Alignment.centerRight,
           ),
+          borderRadius: BorderRadius.circular(30),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFFEC4899).withValues(alpha: 0.18),
+              blurRadius: 22,
+              offset: const Offset(0, 10),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'DRAPEAUX',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 32,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: -1,
+                      height: 1,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    'Choisir une pathologie et cocher les signes d’alerte',
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.94),
+                      fontSize: 16,
+                      fontWeight: FontWeight.w800,
+                      height: 1.25,
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.touch_app_rounded,
+                        color: Colors.white.withValues(alpha: 0.95),
+                        size: 19,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Appuyer pour commencer',
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.96),
+                          fontSize: 15,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 16),
+            Container(
+              height: 70,
+              width: 70,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.10),
+                    blurRadius: 16,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
+              ),
+              child: const Icon(
+                Icons.arrow_forward_rounded,
+                color: Color(0xFFEC4899),
+                size: 36,
+              ),
+            ),
+          ],
         ),
       ),
-    );
-  }
-
+    ),
+  );
+}
   Widget buildSecondaryButtons() {
     return Row(
       children: [
@@ -780,7 +828,7 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Container(
         padding: const EdgeInsets.fromLTRB(18, 10, 18, 22),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.94),
+          color: Colors.white.withValues(alpha: 0.94),
           border: const Border(
             top: BorderSide(color: Color(0xFFE5E7EB)),
           ),
@@ -807,76 +855,77 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
-  Widget buildCompactDecisionCard(String decisionTitle) {
-  return Container(
-    padding: const EdgeInsets.all(16),
-    decoration: BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(26),
-      border: Border.all(color: riskColor.withValues(alpha: 0.22)),
-    ),
-    child: Row(
-      children: [
-        Container(
-          height: 48,
-          width: 48,
-          decoration: BoxDecoration(
-            color: riskColor.withValues(alpha: 0.10),
-            borderRadius: BorderRadius.circular(18),
-          ),
-          child: Icon(
-            Icons.route_rounded,
-            color: riskColor,
-            size: 28,
-          ),
-        ),
-        const SizedBox(width: 14),
-        Expanded(
-          child: Text(
-            decisionTitle,
-            style: TextStyle(
-              color: riskColor,
-              fontSize: 19,
-              fontWeight: FontWeight.w900,
-              letterSpacing: -0.4,
-              height: 1.1,
-            ),
-          ),
-        ),
-      ],
-    ),
-  );
-}
 
-Widget buildClinicalSafetyNote() {
-  return Container(
-    padding: const EdgeInsets.all(14),
-    decoration: BoxDecoration(
-      color: const Color(0xFFF8FAFC),
-      borderRadius: BorderRadius.circular(22),
-      border: Border.all(color: const Color(0xFFE2E8F0)),
-    ),
-    child: const Row(
-      children: [
-        Icon(
-          Icons.info_outline_rounded,
-          color: Color(0xFF64748B),
-          size: 20,
-        ),
-        SizedBox(width: 10),
-        Expanded(
-          child: Text(
-            'Aide au repérage clinique uniquement. Cette application ne remplace pas une évaluation médicale professionnelle.',
-            style: TextStyle(
-              color: Color(0xFF64748B),
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              height: 1.35,
+  Widget buildCompactDecisionCard(String decisionTitle) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(26),
+        border: Border.all(color: riskColor.withValues(alpha: 0.22)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            height: 48,
+            width: 48,
+            decoration: BoxDecoration(
+              color: riskColor.withValues(alpha: 0.10),
+              borderRadius: BorderRadius.circular(18),
+            ),
+            child: Icon(
+              Icons.route_rounded,
+              color: riskColor,
+              size: 28,
             ),
           ),
-        ),
-      ],
-    ),
-  );
-}
+          const SizedBox(width: 14),
+          Expanded(
+            child: Text(
+              decisionTitle,
+              style: TextStyle(
+                color: riskColor,
+                fontSize: 19,
+                fontWeight: FontWeight.w900,
+                letterSpacing: -0.4,
+                height: 1.1,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget buildClinicalSafetyNote() {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+      ),
+      child: const Row(
+        children: [
+          Icon(
+            Icons.info_outline_rounded,
+            color: Color(0xFF64748B),
+            size: 20,
+          ),
+          SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              'Aide au repérage clinique uniquement. Cette application ne remplace pas une évaluation médicale professionnelle.',
+              style: TextStyle(
+                color: Color(0xFF64748B),
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                height: 1.35,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }

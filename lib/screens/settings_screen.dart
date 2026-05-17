@@ -44,7 +44,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
-          title: const Text('Export statistique pseudonymisé'),
+          title: const Text('Export pseudonymisé'),
           content: SingleChildScrollView(
             child: Text(
               const JsonEncoder.withIndent('  ').convert(data),
@@ -72,7 +72,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
-          title: const Text('Profil professionnel'),
+          title: const Text('Informations MK'),
           content: SingleChildScrollView(
             child: Column(
               children: [
@@ -132,9 +132,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Profil professionnel enregistré'),
-        ),
+        const SnackBar(content: Text('Informations MK enregistrées')),
       );
     }
   }
@@ -160,9 +158,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   void showComingSoon(BuildContext context, String title) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('$title : fonctionnalité à venir.'),
-      ),
+      SnackBar(content: Text('$title : fonctionnalité à venir.')),
     );
   }
 
@@ -177,69 +173,106 @@ class _SettingsScreenState extends State<SettingsScreen> {
           padding: const EdgeInsets.fromLTRB(18, 12, 18, 150),
           children: [
             const UrpsBanner(isLarge: false),
-            buildHeroCard(),
-            const SizedBox(height: 18),
-            buildSectionLabel('PROFIL PROFESSIONNEL'),
+            const SizedBox(height: 22),
+
+            buildSectionLabel('PROFIL MK'),
             const SizedBox(height: 12),
             settingCard(
               icon: practitionerComplete
                   ? Icons.verified_user_outlined
                   : Icons.badge_outlined,
+              iconColor: const Color(0xFF2563EB),
               title: 'Informations MK',
               subtitle: practitionerComplete
                   ? practitioner.fullName
-                  : 'Nom, prénom, adresse, ADELI, RPPS pour les prescriptions.',
+                  : 'Nom, RPPS, ADELI, cabinet.',
               onTap: showPractitionerDialog,
             ),
+            settingCard(
+              icon: Icons.draw_outlined,
+              iconColor: const Color(0xFF2563EB),
+              title: 'Signature praticien',
+              subtitle: 'Signature pour prescriptions et PDF.',
+              onTap: () => showComingSoon(context, 'Signature praticien'),
+            ),
+
             const SizedBox(height: 22),
             buildSectionLabel('CONFIDENTIALITÉ'),
             const SizedBox(height: 12),
             settingCard(
-              icon: Icons.privacy_tip_outlined,
-              title: 'Confidentialité RGPD',
-              subtitle: 'Données nominatives conservées localement.',
-              onTap: () => showComingSoon(context, 'Confidentialité RGPD'),
+              icon: Icons.verified_user_outlined,
+              iconColor: const Color(0xFF2563EB),
+              title: 'Consentement et confidentialité',
+              subtitle: 'Gestion RGPD et consentement patient.',
+              onTap: () =>
+                  showComingSoon(context, 'Consentement et confidentialité'),
             ),
             settingCard(
-              icon: Icons.cloud_off_outlined,
-              title: 'Protection des données',
+              icon: Icons.storage_rounded,
+              iconColor: const Color(0xFF0F766E),
+              title: 'Stockage local sécurisé',
               subtitle: 'Aucune transmission automatique.',
-              onTap: () => showComingSoon(context, 'Protection des données'),
+              onTap: () => showComingSoon(context, 'Stockage local sécurisé'),
             ),
             settingCard(
-              icon: Icons.cloud_outlined,
-              title: 'Export statistique pseudonymisé',
+              icon: Icons.ios_share_outlined,
+              iconColor: const Color(0xFF7C3AED),
+              title: 'Export pseudonymisé',
               subtitle: 'Données cliniques sans nom ni prénom.',
               onTap: () => showAnonymousRecordsExport(context),
             ),
-            settingCard(
-              icon: Icons.table_chart_outlined,
-              title: 'CSV statistiques pseudonymisées',
-              subtitle: 'Exporter toutes les évaluations locales en CSV.',
-              onTap: GlobalStatisticsCsvService.exportGlobalStatisticsCsv,
-            ),
+
             const SizedBox(height: 22),
-            buildSectionLabel('PARAMÈTRES CLINIQUES'),
+            buildSectionLabel('EXPORTS'),
             const SizedBox(height: 12),
             settingCard(
-              icon: Icons.medical_information_outlined,
-              title: 'Usage clinique',
-              subtitle: 'Aide au raisonnement clinique.',
-              onTap: () => showComingSoon(context, 'Usage clinique'),
-            ),
-            settingCard(
               icon: Icons.picture_as_pdf_outlined,
-              title: 'Exports PDF',
-              subtitle: 'PDF couleur ou impression noir et blanc.',
-              onTap: () => showComingSoon(context, 'Exports PDF'),
+              iconColor: const Color(0xFFDC2626),
+              title: 'Préférences PDF',
+              subtitle: 'Couleur, impression et signature.',
+              onTap: () => showComingSoon(context, 'Préférences PDF'),
             ),
             settingCard(
-              icon: Icons.analytics_outlined,
-              title: 'Statistiques locales',
-              subtitle: 'Analyse locale dans Historique.',
-              onTap: () => showComingSoon(context, 'Statistiques locales'),
+              icon: Icons.table_chart_outlined,
+              iconColor: const Color(0xFF2563EB),
+              title: 'CSV statistiques pseudonymisées',
+              subtitle: 'Exporter les évaluations locales.',
+              onTap: GlobalStatisticsCsvService.exportGlobalStatisticsCsv,
             ),
-            const SizedBox(height: 24),
+            settingCard(
+              icon: Icons.history_rounded,
+              iconColor: const Color(0xFF0F766E),
+              title: 'Historique et exports',
+              subtitle: 'Retrouver les bilans et exports.',
+              onTap: () => showComingSoon(context, 'Historique et exports'),
+            ),
+
+            const SizedBox(height: 22),
+            buildSectionLabel('APPLICATION'),
+            const SizedBox(height: 12),
+            settingCard(
+              icon: Icons.dark_mode_outlined,
+              iconColor: const Color(0xFF7C3AED),
+              title: 'Apparence',
+              subtitle: 'Thème, taille de texte et affichage.',
+              onTap: () => showComingSoon(context, 'Apparence'),
+            ),
+            settingCard(
+              icon: Icons.medical_information_outlined,
+              iconColor: const Color(0xFFEA580C),
+              title: 'Mode clinique rapide',
+              subtitle: 'Parcours simplifié pour accès direct.',
+              onTap: () => showComingSoon(context, 'Mode clinique rapide'),
+            ),
+            settingCard(
+              icon: Icons.restart_alt_rounded,
+              iconColor: const Color(0xFFEF4444),
+              title: 'Réinitialisation locale',
+              subtitle: 'Effacer les données stockées sur cet appareil.',
+              onTap: () => showComingSoon(context, 'Réinitialisation locale'),
+            ),
+
+            const SizedBox(height: 22),
             buildVersionCard(),
           ],
         ),
@@ -247,105 +280,65 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  Widget buildHeroCard() {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [
-            Color(0xFF0F172A),
-            Color(0xFF1E293B),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(30),
-      ),
-      child: Row(
-        children: [
-          Container(
-            height: 58,
-            width: 58,
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.10),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: const Icon(
-              Icons.settings_rounded,
-              color: Colors.white,
-              size: 34,
-            ),
-          ),
-          const SizedBox(width: 16),
-          const Expanded(
-            child: Text(
-              'Paramètres de l’application',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 24,
-                fontWeight: FontWeight.w900,
-                letterSpacing: -0.8,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget buildSectionLabel(String text) {
-    return Text(
-      text,
-      style: const TextStyle(
-        color: Color(0xFF475569),
-        fontSize: 13,
-        fontWeight: FontWeight.w900,
-        letterSpacing: 0.6,
+    return Padding(
+      padding: const EdgeInsets.only(left: 4),
+      child: Text(
+        text,
+        style: const TextStyle(
+          color: Color(0xFF64748B),
+          fontSize: 13,
+          fontWeight: FontWeight.w900,
+          letterSpacing: 0.6,
+        ),
       ),
     );
   }
 
   Widget settingCard({
     required IconData icon,
+    required Color iconColor,
     required String title,
     required String subtitle,
     required VoidCallback onTap,
   }) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(26),
+        borderRadius: BorderRadius.circular(24),
         border: Border.all(color: const Color(0xFFE2E8F0)),
       ),
       child: ListTile(
         onTap: onTap,
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 16,
-          vertical: 10,
+          vertical: 8,
         ),
         leading: Container(
-          height: 50,
-          width: 50,
+          height: 48,
+          width: 48,
           decoration: BoxDecoration(
-            color: const Color(0xFFEAF2FF),
-            borderRadius: BorderRadius.circular(18),
+            color: iconColor.withValues(alpha: 0.10),
+            borderRadius: BorderRadius.circular(17),
           ),
           child: Icon(
             icon,
-            color: const Color(0xFF2563EB),
-            size: 27,
+            color: iconColor,
+            size: 26,
           ),
         ),
         title: Text(title, style: AppTextStyles.cardTitle),
         subtitle: Padding(
-          padding: const EdgeInsets.only(top: 4),
+          padding: const EdgeInsets.only(top: 3),
           child: Text(subtitle, style: AppTextStyles.cardSubtitle),
         ),
         trailing: Container(
-          height: 36,
-          width: 36,
+          height: 34,
+          width: 34,
           decoration: BoxDecoration(
             color: const Color(0xFFF8FAFC),
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(13),
           ),
           child: const Icon(
             Icons.chevron_right_rounded,
@@ -358,39 +351,28 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Widget buildVersionCard() {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [
-            Color(0xFFEAF2FF),
-            Color(0xFFF8FAFC),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(26),
-        border: Border.all(color: Color(0xFFBFDBFE)),
+        color: const Color(0xFFEAF2FF),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: const Color(0xFFBFDBFE)),
       ),
-      child: const Column(
+      child: const Row(
         children: [
           Icon(
             Icons.verified_rounded,
             color: Color(0xFF2563EB),
-            size: 32,
+            size: 30,
           ),
-          SizedBox(height: 10),
-          Text(
-            'Drapeaux Rouges',
-            style: TextStyle(
-              color: Color(0xFF0F172A),
-              fontSize: 18,
-              fontWeight: FontWeight.w900,
-            ),
-          ),
-          SizedBox(height: 6),
-          Text(
-            'Version 1.0.0',
-            style: TextStyle(
-              color: Color(0xFF64748B),
-              fontWeight: FontWeight.w700,
+          SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              'Drapeaux Rouges — Version 1.0.0',
+              style: TextStyle(
+                color: Color(0xFF0F172A),
+                fontSize: 15,
+                fontWeight: FontWeight.w900,
+              ),
             ),
           ),
         ],

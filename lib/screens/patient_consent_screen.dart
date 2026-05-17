@@ -6,7 +6,6 @@ import 'package:signature/signature.dart';
 
 import '../models/patient_local.dart';
 import '../services/rgpd_local_service.dart';
-import '../theme/app_text_styles.dart';
 import '../widgets/urps_banner.dart';
 
 class PatientConsentScreen extends StatefulWidget {
@@ -34,6 +33,7 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
   String searchQuery = '';
   bool consentementCoche = false;
   bool isSaving = false;
+  bool isSigning = false;
 
   @override
   void initState() {
@@ -82,11 +82,37 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
     }).toList();
   }
 
-  Future<void> savePatient() async {
+  PatientLocal? get existingPatient {
+    final nom = nomController.text.trim().toLowerCase();
+    final prenom = prenomController.text.trim().toLowerCase();
+    final naissance = dateNaissanceController.text.trim().toLowerCase();
+
+    if (nom.isEmpty || prenom.isEmpty || naissance.isEmpty) return null;
+
+    for (final patient in patients) {
+      if (patient.nom.trim().toLowerCase() == nom &&
+          patient.prenom.trim().toLowerCase() == prenom &&
+          patient.dateNaissance.trim().toLowerCase() == naissance) {
+        return patient;
+      }
+    }
+
+    return null;
+  }
+
+  Future<void> saveOrActivatePatient() async {
     if (nomController.text.trim().isEmpty ||
         prenomController.text.trim().isEmpty ||
         dateNaissanceController.text.trim().isEmpty) {
       showMessage('Merci de renseigner nom, prénom et date de naissance.');
+      return;
+    }
+
+    final foundPatient = existingPatient;
+
+    if (foundPatient != null) {
+      await selectPatient(foundPatient);
+      clearForm();
       return;
     }
 
@@ -129,21 +155,28 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
     );
 
     await RgpdLocalService.saveOrUpdatePatient(patient);
+    await RgpdLocalService.setCurrentPatientId(patient.localId);
 
     if (!mounted) return;
 
     setState(() {
       isSaving = false;
-      nomController.clear();
-      prenomController.clear();
-      dateNaissanceController.clear();
-      consentementCoche = false;
-      signatureController.clear();
     });
 
+    clearForm();
     await loadPatients();
 
-    showMessage('Patient enregistré et sélectionné comme patient actif.');
+    showMessage('Patient enregistré et activé.');
+  }
+
+  void clearForm() {
+    nomController.clear();
+    prenomController.clear();
+    dateNaissanceController.clear();
+    consentementCoche = false;
+    signatureController.clear();
+
+    if (mounted) setState(() {});
   }
 
   Future<void> selectPatient(PatientLocal patient) async {
@@ -152,7 +185,7 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
 
     if (!mounted) return;
 
-    showMessage('${patient.nom.toUpperCase()} ${patient.prenom} sélectionné.');
+    showMessage('${patient.nom.toUpperCase()} ${patient.prenom} activé.');
   }
 
   Future<void> deletePatient(PatientLocal patient) async {
@@ -190,32 +223,6 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
     if (!mounted) return;
 
     showMessage('Patient supprimé localement.');
-  }
-
-  Future<void> showAnonymousExportExample() async {
-    final anonymousData = await RgpdLocalService.getAnonymousExportData();
-
-    if (!mounted) return;
-
-    showDialog(
-      context: context,
-      builder: (dialogContext) {
-        return AlertDialog(
-          title: const Text('Export pseudonymisé patient'),
-          content: SingleChildScrollView(
-            child: Text(
-              const JsonEncoder.withIndent('  ').convert(anonymousData),
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(dialogContext),
-              child: const Text('Fermer'),
-            ),
-          ],
-        );
-      },
-    );
   }
 
   Future<void> confirmDeleteAll() async {
@@ -273,6 +280,7 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
   @override
   Widget build(BuildContext context) {
     final visiblePatients = filteredPatients;
+    final foundPatient = existingPatient;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF6F8FC),
@@ -280,101 +288,58 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
         child: RefreshIndicator(
           onRefresh: loadPatients,
           child: ListView(
+            physics: isSigning
+                ? const NeverScrollableScrollPhysics()
+                : const AlwaysScrollableScrollPhysics(),
             padding: const EdgeInsets.fromLTRB(18, 12, 18, 150),
             children: [
               const UrpsBanner(isLarge: true),
-              buildCurrentPatientCard(),
-              const SizedBox(height: 18),
+              const SizedBox(height: 14),
               buildSearchBar(),
-              const SizedBox(height: 16),
+              if (currentPatient != null) ...[
+                const SizedBox(height: 12),
+                buildCurrentPatientBanner(),
+              ],
+              const SizedBox(height: 14),
+              buildPatientForm(foundPatient),
+              const SizedBox(height: 22),
               buildPatientsList(visiblePatients),
-              const SizedBox(height: 26),
-              buildSectionTitle(
-                icon: Icons.person_add_alt_1_rounded,
-                title: 'Créer un patient',
-              ),
-              const SizedBox(height: 16),
-              buildPatientForm(),
-              const SizedBox(height: 24),
-              buildRgpdActions(),
+              const SizedBox(height: 20),
+              buildDeleteAllButton(),
             ],
           ),
         ),
       ),
-      bottomNavigationBar: buildBottomSaveBar(),
+      bottomNavigationBar: buildBottomSaveBar(foundPatient),
     );
   }
 
-  Widget buildCurrentPatientCard() {
-    final hasPatient = currentPatient != null;
-
+  Widget buildCurrentPatientBanner() {
     return Container(
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
       decoration: BoxDecoration(
-        color: hasPatient ? const Color(0xFFEFFAF4) : const Color(0xFFFFF7ED),
-        borderRadius: BorderRadius.circular(26),
-        border: Border.all(
-          color: hasPatient ? const Color(0xFFD5F3E1) : const Color(0xFFFED7AA),
-        ),
+        color: const Color(0xFFEFFAF4),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: const Color(0xFFBBF7D0)),
       ),
       child: Row(
         children: [
-          Container(
-            height: 52,
-            width: 52,
-            decoration: BoxDecoration(
-              color:
-                  hasPatient ? const Color(0xFFDCFCE7) : const Color(0xFFFFEDD5),
-              borderRadius: BorderRadius.circular(18),
-            ),
-            child: Icon(
-              hasPatient ? Icons.person_rounded : Icons.person_off_rounded,
-              color:
-                  hasPatient ? const Color(0xFF166534) : const Color(0xFFC2410C),
-              size: 30,
-            ),
+          const Icon(
+            Icons.check_circle_rounded,
+            color: Color(0xFF16A34A),
+            size: 20,
           ),
-          const SizedBox(width: 14),
+          const SizedBox(width: 8),
           Expanded(
-            child: hasPatient
-                ? Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Patient actif',
-                        style: TextStyle(
-                          color: Color(0xFF166534),
-                          fontWeight: FontWeight.w900,
-                          fontSize: 13,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        patientName(currentPatient!),
-                        style: const TextStyle(
-                          color: Color(0xFF0F172A),
-                          fontWeight: FontWeight.w900,
-                          fontSize: 18,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        'Né(e) le ${currentPatient!.dateNaissance}',
-                        style: const TextStyle(
-                          color: Color(0xFF64748B),
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ],
-                  )
-                : const Text(
-                    'Aucun patient actif. Sélectionnez un patient ou créez un nouveau dossier.',
-                    style: TextStyle(
-                      color: Color(0xFFC2410C),
-                      fontWeight: FontWeight.w800,
-                      height: 1.35,
-                    ),
-                  ),
+            child: Text(
+              'Patient actif : ${patientName(currentPatient!)}',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                color: Color(0xFF166534),
+                fontWeight: FontWeight.w900,
+              ),
+            ),
           ),
         ],
       ),
@@ -390,7 +355,7 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
         });
       },
       decoration: InputDecoration(
-        hintText: 'Rechercher par nom, prénom, date ou identifiant...',
+        hintText: 'Rechercher par nom, prénom, date de naissance...',
         prefixIcon: const Icon(Icons.search_rounded),
         suffixIcon: searchQuery.isEmpty
             ? null
@@ -405,7 +370,7 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
               ),
         filled: true,
         fillColor: Colors.white,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 15),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(22),
           borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
@@ -422,36 +387,252 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
     );
   }
 
+  Widget buildPatientForm(PatientLocal? foundPatient) {
+    final patientExists = foundPatient != null;
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+      ),
+      child: Column(
+        children: [
+          buildTextField(
+            controller: nomController,
+            label: 'Nom',
+            textCapitalization: TextCapitalization.characters,
+          ),
+          const SizedBox(height: 10),
+          buildTextField(
+            controller: prenomController,
+            label: 'Prénom',
+            textCapitalization: TextCapitalization.words,
+          ),
+          const SizedBox(height: 10),
+          buildTextField(
+            controller: dateNaissanceController,
+            label: 'Date de naissance',
+            hint: 'JJ/MM/AAAA',
+            suffixIcon: Icons.calendar_today_outlined,
+            keyboardType: TextInputType.datetime,
+          ),
+          if (patientExists) ...[
+            const SizedBox(height: 12),
+            buildExistingPatientNotice(foundPatient),
+          ],
+          if (!patientExists) ...[
+            const SizedBox(height: 14),
+            buildConsentCard(),
+            const SizedBox(height: 14),
+            buildSignatureBox(),
+            const SizedBox(height: 10),
+            TextButton.icon(
+              onPressed: signatureController.clear,
+              icon: const Icon(Icons.cleaning_services_rounded, size: 18),
+              label: const Text('Effacer la signature'),
+              style: TextButton.styleFrom(
+                foregroundColor: const Color(0xFF2563EB),
+                backgroundColor: const Color(0xFFEAF2FF),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 18,
+                  vertical: 11,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(18),
+                ),
+                textStyle: const TextStyle(
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget buildExistingPatientNotice(PatientLocal patient) {
+    return Container(
+      padding: const EdgeInsets.all(13),
+      decoration: BoxDecoration(
+        color: const Color(0xFFEFFAF4),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: const Color(0xFFBBF7D0)),
+      ),
+      child: Row(
+        children: [
+          const Icon(
+            Icons.person_search_rounded,
+            color: Color(0xFF16A34A),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              'Patient déjà enregistré : ${patientName(patient)}. Le bouton va l’activer.',
+              style: const TextStyle(
+                color: Color(0xFF166534),
+                fontWeight: FontWeight.w800,
+                height: 1.3,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget buildTextField({
+    required TextEditingController controller,
+    required String label,
+    String? hint,
+    IconData? suffixIcon,
+    TextInputType? keyboardType,
+    TextCapitalization textCapitalization = TextCapitalization.none,
+  }) {
+    return TextField(
+      controller: controller,
+      keyboardType: keyboardType,
+      textCapitalization: textCapitalization,
+      onChanged: (_) => setState(() {}),
+      style: const TextStyle(
+        fontSize: 16,
+        fontWeight: FontWeight.w600,
+        color: Color(0xFF0F172A),
+      ),
+      decoration: InputDecoration(
+        labelText: label,
+        hintText: hint,
+        suffixIcon: suffixIcon == null ? null : Icon(suffixIcon),
+        filled: true,
+        fillColor: const Color(0xFFF8FAFC),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 15),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(18),
+          borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(18),
+          borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(18),
+          borderSide: const BorderSide(color: Color(0xFF2563EB), width: 2),
+        ),
+      ),
+    );
+  }
+
+  Widget buildConsentCard() {
+    return Container(
+      decoration: BoxDecoration(
+        color: consentementCoche ? const Color(0xFFEFFAF4) : Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: consentementCoche
+              ? const Color(0xFF22C55E)
+              : const Color(0xFFE2E8F0),
+        ),
+      ),
+      child: CheckboxListTile(
+        value: consentementCoche,
+        onChanged: (value) {
+          setState(() {
+            consentementCoche = value ?? false;
+          });
+        },
+        activeColor: const Color(0xFF22C55E),
+        controlAffinity: ListTileControlAffinity.leading,
+        title: const Text(
+          'Le patient consent à l’utilisation locale de ses données dans l’application.',
+          style: TextStyle(
+            fontWeight: FontWeight.w800,
+            color: Color(0xFF0F172A),
+            height: 1.3,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget buildSignatureBox() {
+    return Listener(
+      onPointerDown: (_) {
+        setState(() {
+          isSigning = true;
+        });
+      },
+      onPointerUp: (_) {
+        setState(() {
+          isSigning = false;
+        });
+      },
+      onPointerCancel: (_) {
+        setState(() {
+          isSigning = false;
+        });
+      },
+      child: Container(
+        height: 155,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: const Color(0xFFE2E8F0)),
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(20),
+          child: Stack(
+            children: [
+              Signature(
+                controller: signatureController,
+                backgroundColor: Colors.white,
+              ),
+              const Center(
+                child: IgnorePointer(
+                  child: Text(
+                    'Signature patient',
+                    style: TextStyle(
+                      color: Color(0xFF94A3B8),
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget buildPatientsList(List<PatientLocal> visiblePatients) {
-    if (patients.isEmpty) {
-      return buildEmptyCard(
-        icon: Icons.folder_open_rounded,
-        title: 'Aucun patient enregistré',
-        text: 'Les patients créés localement apparaîtront ici.',
-      );
-    }
-
-    if (visiblePatients.isEmpty) {
-      return buildEmptyCard(
-        icon: Icons.search_off_rounded,
-        title: 'Aucun résultat',
-        text: 'Essayez avec un autre nom, prénom ou identifiant.',
-      );
-    }
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          '${visiblePatients.length} patient(s)',
-          style: const TextStyle(
-            color: Color(0xFF475569),
+        const Text(
+          'Patients enregistrés',
+          style: TextStyle(
+            color: Color(0xFF0F172A),
             fontWeight: FontWeight.w900,
-            fontSize: 13,
+            fontSize: 17,
           ),
         ),
         const SizedBox(height: 10),
-        ...visiblePatients.map(buildPatientTile),
+        if (patients.isEmpty)
+          buildEmptyCard(
+            icon: Icons.folder_open_rounded,
+            title: 'Aucun patient enregistré',
+            text: 'Les patients créés localement apparaîtront ici.',
+          )
+        else if (visiblePatients.isEmpty)
+          buildEmptyCard(
+            icon: Icons.search_off_rounded,
+            title: 'Aucun résultat',
+            text: 'Essayez avec un autre nom, prénom ou une autre date.',
+          )
+        else
+          ...visiblePatients.map(buildPatientTile),
       ],
     );
   }
@@ -460,10 +641,10 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
     final active = isCurrentPatient(patient);
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 10),
+      margin: const EdgeInsets.only(bottom: 9),
       decoration: BoxDecoration(
         color: active ? const Color(0xFFEFFAF4) : Colors.white,
-        borderRadius: BorderRadius.circular(22),
+        borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: active ? const Color(0xFF86EFAC) : const Color(0xFFE2E8F0),
           width: active ? 1.4 : 1,
@@ -471,8 +652,9 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
       ),
       child: ListTile(
         onTap: () => selectPatient(patient),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
         leading: CircleAvatar(
+          radius: 20,
           backgroundColor:
               active ? const Color(0xFF22C55E) : const Color(0xFFEAF2FF),
           child: Icon(
@@ -500,7 +682,7 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
             if (value == 'delete') deletePatient(patient);
           },
           itemBuilder: (_) => const [
-            PopupMenuItem(value: 'select', child: Text('Sélectionner')),
+            PopupMenuItem(value: 'select', child: Text('Activer')),
             PopupMenuItem(value: 'delete', child: Text('Supprimer localement')),
           ],
         ),
@@ -508,252 +690,20 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
     );
   }
 
-  Widget buildPatientForm() {
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(26),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
-      ),
-      child: Column(
-        children: [
-          buildTextField(controller: nomController, label: 'Nom'),
-          const SizedBox(height: 12),
-          buildTextField(controller: prenomController, label: 'Prénom'),
-          const SizedBox(height: 12),
-          buildTextField(
-            controller: dateNaissanceController,
-            label: 'Date de naissance',
-            hint: 'JJ/MM/AAAA',
-            suffixIcon: Icons.calendar_today_outlined,
-          ),
-          const SizedBox(height: 18),
-          buildConsentCard(),
-          const SizedBox(height: 18),
-          buildSignatureBox(),
-          const SizedBox(height: 12),
-          Align(
-            alignment: Alignment.center,
-            child: TextButton.icon(
-              onPressed: signatureController.clear,
-              icon: const Icon(Icons.close_rounded, size: 18),
-              label: const Text('Effacer la signature'),
-              style: TextButton.styleFrom(
-                foregroundColor: const Color(0xFF2563EB),
-                backgroundColor: const Color(0xFFEAF2FF),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 18,
-                  vertical: 12,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(18),
-                ),
-                textStyle: const TextStyle(
-                  fontWeight: FontWeight.w900,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget buildTextField({
-    required TextEditingController controller,
-    required String label,
-    String? hint,
-    IconData? suffixIcon,
-  }) {
-    return TextField(
-      controller: controller,
-      style: const TextStyle(
-        fontSize: 16,
-        fontWeight: FontWeight.w600,
-        color: Color(0xFF0F172A),
-      ),
-      decoration: InputDecoration(
-        labelText: label,
-        hintText: hint,
-        suffixIcon: suffixIcon == null ? null : Icon(suffixIcon),
-        filled: true,
-        fillColor: const Color(0xFFF8FAFC),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(18),
-          borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(18),
-          borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(18),
-          borderSide: const BorderSide(color: Color(0xFF2563EB), width: 2),
-        ),
-      ),
-    );
-  }
-
-  Widget buildConsentCard() {
-    return Container(
-      decoration: BoxDecoration(
-        color: consentementCoche ? const Color(0xFFEFFAF4) : Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: consentementCoche
-              ? const Color(0xFF22C55E)
-              : const Color(0xFFE2E8F0),
-        ),
-      ),
-      child: CheckboxListTile(
-        value: consentementCoche,
-        onChanged: (value) {
-          setState(() {
-            consentementCoche = value ?? false;
-          });
-        },
-        activeColor: const Color(0xFF22C55E),
-        controlAffinity: ListTileControlAffinity.leading,
-        title: const Text(
-          'Le patient a été informé et consent à l’utilisation locale de ses données dans l’application.',
-          style: TextStyle(
+  Widget buildDeleteAllButton() {
+    return Align(
+      alignment: Alignment.center,
+      child: TextButton.icon(
+        onPressed: confirmDeleteAll,
+        icon: const Icon(Icons.delete_forever_outlined),
+        label: const Text('Supprimer tous les patients locaux'),
+        style: TextButton.styleFrom(
+          foregroundColor: const Color(0xFFEF4444),
+          textStyle: const TextStyle(
             fontWeight: FontWeight.w800,
-            color: Color(0xFF0F172A),
-            height: 1.35,
           ),
         ),
       ),
-    );
-  }
-
-  Widget buildSignatureBox() {
-    return Container(
-      height: 170,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(22),
-        child: Stack(
-          children: [
-            Signature(
-              controller: signatureController,
-              backgroundColor: Colors.white,
-            ),
-            const Center(
-              child: IgnorePointer(
-                child: Text(
-                  'Signature patient',
-                  style: TextStyle(
-                    color: Color(0xFF94A3B8),
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget buildRgpdActions() {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(26),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: secondaryActionButton(
-              icon: Icons.ios_share_rounded,
-              label: 'Export anonyme',
-              color: const Color(0xFF2563EB),
-              backgroundColor: const Color(0xFFEAF2FF),
-              onPressed: showAnonymousExportExample,
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: secondaryActionButton(
-              icon: Icons.delete_forever_outlined,
-              label: 'Tout supprimer',
-              color: const Color(0xFFEF4444),
-              backgroundColor: const Color(0xFFFFF1F2),
-              onPressed: confirmDeleteAll,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget secondaryActionButton({
-    required IconData icon,
-    required String label,
-    required Color color,
-    required Color backgroundColor,
-    required VoidCallback onPressed,
-  }) {
-    return Material(
-      color: backgroundColor,
-      borderRadius: BorderRadius.circular(18),
-      child: InkWell(
-        onTap: onPressed,
-        borderRadius: BorderRadius.circular(18),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 15),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(icon, color: color, size: 20),
-              const SizedBox(width: 8),
-              Flexible(
-                child: Text(
-                  label,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: color,
-                    fontWeight: FontWeight.w900,
-                    fontSize: 14,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget buildSectionTitle({
-    required IconData icon,
-    required String title,
-  }) {
-    return Row(
-      children: [
-        Container(
-          height: 46,
-          width: 46,
-          decoration: BoxDecoration(
-            color: const Color(0xFFEAF2FF),
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Icon(icon, color: const Color(0xFF2563EB)),
-        ),
-        const SizedBox(width: 14),
-        Expanded(
-          child: Text(title, style: AppTextStyles.sectionTitle),
-        ),
-      ],
     );
   }
 
@@ -763,15 +713,15 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
     required String text,
   }) {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(22),
         border: Border.all(color: const Color(0xFFE2E8F0)),
       ),
       child: Row(
         children: [
-          Icon(icon, color: const Color(0xFF94A3B8), size: 34),
+          Icon(icon, color: const Color(0xFF94A3B8), size: 32),
           const SizedBox(width: 14),
           Expanded(
             child: Column(
@@ -790,7 +740,7 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
                   style: const TextStyle(
                     color: Color(0xFF64748B),
                     fontWeight: FontWeight.w600,
-                    height: 1.35,
+                    height: 1.3,
                   ),
                 ),
               ],
@@ -801,7 +751,10 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
     );
   }
 
-  Widget buildBottomSaveBar() {
+  Widget buildBottomSaveBar(PatientLocal? foundPatient) {
+    final buttonText =
+        foundPatient == null ? 'Enregistrer / Activer' : 'Activer ce patient';
+
     return SafeArea(
       child: Container(
         padding: const EdgeInsets.fromLTRB(18, 10, 18, 22),
@@ -812,10 +765,10 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
           ),
         ),
         child: FilledButton.icon(
-          onPressed: isSaving ? null : savePatient,
+          onPressed: isSaving ? null : saveOrActivatePatient,
           icon: const Icon(Icons.save_outlined),
           label: Text(
-            isSaving ? 'Enregistrement...' : 'Enregistrer et activer',
+            isSaving ? 'Enregistrement...' : buttonText,
           ),
         ),
       ),
