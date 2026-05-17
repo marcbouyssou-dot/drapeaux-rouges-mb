@@ -177,8 +177,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           padding: const EdgeInsets.fromLTRB(18, 12, 18, 150),
           children: [
             const UrpsBanner(isLarge: false),
-            buildTitle(),
-            const SizedBox(height: 22),
+            
             buildHeroCard(),
             const SizedBox(height: 24),
             buildSectionLabel('PROFIL PROFESSIONNEL'),

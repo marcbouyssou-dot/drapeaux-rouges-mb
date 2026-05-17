@@ -280,8 +280,7 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
             padding: const EdgeInsets.fromLTRB(18, 12, 18, 150),
             children: [
               const UrpsBanner(isLarge: true),
-              buildTitleBlock(),
-              const SizedBox(height: 18),
+              
               buildCurrentPatientCard(),
               const SizedBox(height: 18),
               buildSearchBar(),

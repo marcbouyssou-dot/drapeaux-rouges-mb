@@ -60,11 +60,6 @@ class _HistoryScreenState extends State<HistoryScreen> {
     }).toList();
 
     filtered.sort((a, b) {
-      final patientCompare =
-          patientName(a).toLowerCase().compareTo(patientName(b).toLowerCase());
-
-      if (patientCompare != 0) return patientCompare;
-
       final dateA =
           DateTime.tryParse(a['date']?.toString() ?? '') ?? DateTime(1900);
       final dateB =
@@ -79,7 +74,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
   Future<void> clearHistory() async {
     final confirm = await showDialog<bool>(
       context: context,
-      builder: (context) {
+      builder: (dialogContext) {
         return AlertDialog(
           title: const Text('Supprimer tout l’historique ?'),
           content: const Text(
@@ -87,14 +82,14 @@ class _HistoryScreenState extends State<HistoryScreen> {
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(context, false),
+              onPressed: () => Navigator.pop(dialogContext, false),
               child: const Text('Annuler'),
             ),
             FilledButton(
               style: FilledButton.styleFrom(
                 backgroundColor: const Color(0xFFEF4444),
               ),
-              onPressed: () => Navigator.pop(context, true),
+              onPressed: () => Navigator.pop(dialogContext, true),
               child: const Text('Supprimer'),
             ),
           ],
@@ -238,13 +233,13 @@ class _HistoryScreenState extends State<HistoryScreen> {
             padding: const EdgeInsets.fromLTRB(18, 12, 18, 150),
             children: [
               const UrpsBanner(isLarge: false),
-              buildTitleRow(),
-              const SizedBox(height: 18),
               buildStatsOverview(),
               const SizedBox(height: 14),
               buildDashboardSummary(),
               const SizedBox(height: 18),
               buildSearchBar(),
+              const SizedBox(height: 14),
+              buildDeleteHistoryButton(),
               const SizedBox(height: 18),
               if (history.isEmpty) buildEmptyState(),
               if (history.isNotEmpty && results.isEmpty) buildNoResultState(),
@@ -253,46 +248,6 @@ class _HistoryScreenState extends State<HistoryScreen> {
           ),
         ),
       ),
-    );
-  }
-
-  Widget buildTitleRow() {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Historique', style: AppTextStyles.pageTitle),
-              SizedBox(height: 4),
-              Text(
-                'Bilans et statistiques locales',
-                style: AppTextStyles.pageSubtitle,
-              ),
-            ],
-          ),
-        ),
-        SizedBox(
-          width: 150,
-          child: OutlinedButton.icon(
-            onPressed: history.isEmpty ? null : clearHistory,
-            icon: const Icon(Icons.delete_outline_rounded, size: 18),
-            label: const Text(
-              'Supprimer',
-              overflow: TextOverflow.ellipsis,
-            ),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: const Color(0xFFEF4444),
-              side: const BorderSide(color: Color(0xFFFCA5A5)),
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(18),
-              ),
-            ),
-          ),
-        ),
-      ],
     );
   }
 
@@ -407,7 +362,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
     return Container(
       width: 1,
       height: 54,
-      color: Colors.white.withOpacity(0.25),
+      color: Colors.white.withValues(alpha: 0.25),
     );
   }
 
@@ -431,7 +386,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
           title,
           textAlign: TextAlign.center,
           style: TextStyle(
-            color: Colors.white.withOpacity(0.82),
+            color: Colors.white.withValues(alpha: 0.82),
             fontWeight: FontWeight.w600,
             fontSize: 12,
           ),
@@ -481,6 +436,27 @@ class _HistoryScreenState extends State<HistoryScreen> {
           borderSide: const BorderSide(
             color: Color(0xFF2563EB),
             width: 2,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget buildDeleteHistoryButton() {
+    if (history.isEmpty) return const SizedBox.shrink();
+
+    return Align(
+      alignment: Alignment.centerRight,
+      child: OutlinedButton.icon(
+        onPressed: clearHistory,
+        icon: const Icon(Icons.delete_outline_rounded, size: 18),
+        label: const Text('Supprimer l’historique'),
+        style: OutlinedButton.styleFrom(
+          foregroundColor: const Color(0xFFEF4444),
+          side: const BorderSide(color: Color(0xFFFCA5A5)),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(18),
           ),
         ),
       ),
@@ -544,8 +520,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
   Widget buildHistoryCard(Map<String, dynamic> item) {
     final risk = riskLevel(item);
     final motif = item['motif']?.toString() ?? 'Motif non renseigné';
-    final score = item['score']?.toString() ?? '-';
-    final checkedCount = item['checkedCount']?.toString() ?? '0';
+    final scoreValue = item['score']?.toString() ?? '-';
+    final checkedCountValue = item['checkedCount']?.toString() ?? '0';
     final patientDisplayName = patientName(item);
     final isAnonymous = patientDisplayName == 'Patient non renseigné';
 
@@ -578,7 +554,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
               height: 62,
               width: 62,
               decoration: BoxDecoration(
-                color: riskColor(risk).withOpacity(0.10),
+                color: riskColor(risk).withValues(alpha: 0.10),
                 borderRadius: BorderRadius.circular(22),
               ),
               child: Icon(
@@ -618,7 +594,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                     runSpacing: 8,
                     children: [
                       buildRiskBadge(risk),
-                      buildSmallBadge('$checkedCount drapeau(x)'),
+                      buildSmallBadge('$checkedCountValue drapeau(x)'),
                       if (isAnonymous) buildAnonymousBadge(),
                     ],
                   ),
@@ -637,7 +613,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   ),
                 ),
                 Text(
-                  score,
+                  scoreValue,
                   style: const TextStyle(
                     color: Color(0xFF0F172A),
                     fontSize: 28,
@@ -657,9 +633,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: riskColor(risk).withOpacity(0.10),
+        color: riskColor(risk).withValues(alpha: 0.10),
         borderRadius: BorderRadius.circular(99),
-        border: Border.all(color: riskColor(risk).withOpacity(0.35)),
+        border: Border.all(color: riskColor(risk).withValues(alpha: 0.35)),
       ),
       child: Text(
         risk,

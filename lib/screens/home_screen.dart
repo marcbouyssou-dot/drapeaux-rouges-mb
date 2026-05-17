@@ -450,8 +450,7 @@ class _HomeScreenState extends State<HomeScreen> {
             children: [
               const UrpsBanner(isLarge: false),
               const SizedBox(height: 14),
-              buildTitleBlock(),
-              const SizedBox(height: 16),
+              
               buildClinicalSummaryCard(),
               const SizedBox(height: 18),
               DecisionCard(

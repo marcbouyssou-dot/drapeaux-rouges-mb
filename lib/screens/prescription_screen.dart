@@ -205,8 +205,7 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
           padding: const EdgeInsets.fromLTRB(18, 12, 18, 150),
           children: [
             const UrpsBanner(isLarge: false),
-            buildTitle(),
-            const SizedBox(height: 22),
+            
             buildPatientCard(),
             const SizedBox(height: 18),
             buildPractitionerCard(),
