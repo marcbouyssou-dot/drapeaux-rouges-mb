@@ -130,7 +130,7 @@ class EvaluationDetailScreen extends StatelessWidget {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
-      builder: (_) {
+      builder: (sheetContext) {
         return SafeArea(
           child: Container(
             padding: const EdgeInsets.all(18),
@@ -166,7 +166,7 @@ class EvaluationDetailScreen extends StatelessWidget {
                   title: 'PDF couleur',
                   subtitle: 'Lecture écran, risque plus visible',
                   onTap: () {
-                    Navigator.pop(context);
+                    Navigator.pop(sheetContext);
                     exportPdf(printable: false);
                   },
                 ),
@@ -176,7 +176,7 @@ class EvaluationDetailScreen extends StatelessWidget {
                   title: 'PDF impression',
                   subtitle: 'Noir et blanc, moins d’encre',
                   onTap: () {
-                    Navigator.pop(context);
+                    Navigator.pop(sheetContext);
                     exportPdf(printable: true);
                   },
                 ),
@@ -254,7 +254,7 @@ class EvaluationDetailScreen extends StatelessWidget {
 
     final confirm = await showDialog<bool>(
       context: context,
-      builder: (_) {
+      builder: (dialogContext) {
         return AlertDialog(
           title: const Text('Supprimer ce bilan ?'),
           content: const Text(
@@ -263,11 +263,11 @@ class EvaluationDetailScreen extends StatelessWidget {
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(context, false),
+              onPressed: () => Navigator.pop(dialogContext, false),
               child: const Text('Annuler'),
             ),
             FilledButton(
-              onPressed: () => Navigator.pop(context, true),
+              onPressed: () => Navigator.pop(dialogContext, true),
               style: FilledButton.styleFrom(
                 backgroundColor: Color(0xFFEF4444),
               ),
@@ -293,17 +293,17 @@ class EvaluationDetailScreen extends StatelessWidget {
       backgroundColor: const Color(0xFFF6F8FC),
       body: SafeArea(
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(18, 18, 18, 28),
+          padding: const EdgeInsets.fromLTRB(18, 12, 18, 32),
           children: [
             const UrpsBanner(isLarge: false),
-            buildHeader(context),
-            const SizedBox(height: 18),
+            buildCompactHeader(context),
+            const SizedBox(height: 14),
             buildRiskCard(),
-            const SizedBox(height: 18),
+            const SizedBox(height: 14),
             buildDecisionCard(),
-            const SizedBox(height: 18),
+            const SizedBox(height: 14),
             buildFlagsSection(),
-            const SizedBox(height: 18),
+            const SizedBox(height: 14),
             buildActionButtons(context),
           ],
         ),
@@ -311,83 +311,83 @@ class EvaluationDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget buildHeader(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: const Color(0xFF2563EB),
-        borderRadius: BorderRadius.circular(28),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          IconButton(
+  Widget buildCompactHeader(BuildContext context) {
+    return Row(
+      children: [
+        Container(
+          height: 44,
+          width: 44,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: const Color(0xFFE2E8F0)),
+          ),
+          child: IconButton(
             onPressed: () => Navigator.pop(context),
             icon: const Icon(Icons.arrow_back_ios_new_rounded),
-            color: Colors.white,
-            padding: EdgeInsets.zero,
-            constraints: const BoxConstraints(),
+            iconSize: 18,
+            color: const Color(0xFF2563EB),
           ),
-          const SizedBox(height: 18),
-          const Text(
-            'Détail du bilan',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 28,
-              fontWeight: FontWeight.w900,
-            ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                patientName,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  color: Color(0xFF0F172A),
+                  fontSize: 17,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+              const SizedBox(height: 3),
+              Text(
+                formatDate(evaluation['date']),
+                style: const TextStyle(
+                  color: Color(0xFF64748B),
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 8),
-          Text(
-            patientName,
-            style: TextStyle(
-              color: Colors.white.withOpacity(0.88),
-              fontSize: 15,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            formatDate(evaluation['date']),
-            style: TextStyle(
-              color: Colors.white.withOpacity(0.76),
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
   Widget buildRiskCard() {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
             riskColor,
-            riskColor.withOpacity(0.84),
+            riskColor.withValues(alpha: 0.84),
           ],
         ),
-        borderRadius: BorderRadius.circular(30),
+        borderRadius: BorderRadius.circular(28),
       ),
       child: Row(
         children: [
           Container(
-            height: 62,
-            width: 62,
+            height: 58,
+            width: 58,
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.15),
-              borderRadius: BorderRadius.circular(22),
+              color: Colors.white.withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(20),
             ),
             child: const Icon(
               Icons.monitor_heart_rounded,
               color: Colors.white,
-              size: 34,
+              size: 32,
             ),
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: 14),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -396,16 +396,18 @@ class EvaluationDetailScreen extends StatelessWidget {
                   riskLevel,
                   style: const TextStyle(
                     color: Colors.white,
-                    fontSize: 25,
+                    fontSize: 24,
                     fontWeight: FontWeight.w900,
                     letterSpacing: -0.8,
                   ),
                 ),
-                const SizedBox(height: 6),
+                const SizedBox(height: 5),
                 Text(
                   motif,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    color: Colors.white.withOpacity(0.82),
+                    color: Colors.white.withValues(alpha: 0.82),
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -422,10 +424,10 @@ class EvaluationDetailScreen extends StatelessWidget {
 
   Widget buildMiniStat(String label, String value) {
     return Container(
-      width: 58,
+      width: 56,
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.16),
+        color: Colors.white.withValues(alpha: 0.16),
         borderRadius: BorderRadius.circular(18),
       ),
       child: Column(
@@ -433,7 +435,7 @@ class EvaluationDetailScreen extends StatelessWidget {
           Text(
             label,
             style: TextStyle(
-              color: Colors.white.withOpacity(0.72),
+              color: Colors.white.withValues(alpha: 0.72),
               fontSize: 10,
               fontWeight: FontWeight.w800,
             ),
@@ -443,7 +445,7 @@ class EvaluationDetailScreen extends StatelessWidget {
             value,
             style: const TextStyle(
               color: Colors.white,
-              fontSize: 22,
+              fontSize: 21,
               fontWeight: FontWeight.w900,
             ),
           ),
@@ -454,26 +456,26 @@ class EvaluationDetailScreen extends StatelessWidget {
 
   Widget buildDecisionCard() {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(28),
-        border: Border.all(color: riskColor.withOpacity(0.20)),
+        borderRadius: BorderRadius.circular(26),
+        border: Border.all(color: riskColor.withValues(alpha: 0.20)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            height: 52,
-            width: 52,
+            height: 50,
+            width: 50,
             decoration: BoxDecoration(
-              color: riskColor.withOpacity(0.10),
+              color: riskColor.withValues(alpha: 0.10),
               borderRadius: BorderRadius.circular(18),
             ),
             child: Icon(
               Icons.route_rounded,
               color: riskColor,
-              size: 30,
+              size: 28,
             ),
           ),
           const SizedBox(width: 14),
@@ -485,20 +487,20 @@ class EvaluationDetailScreen extends StatelessWidget {
                   decisionTitle,
                   style: TextStyle(
                     color: riskColor,
-                    fontSize: 21,
+                    fontSize: 20,
                     fontWeight: FontWeight.w900,
                     letterSpacing: -0.4,
                     height: 1.1,
                   ),
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 8),
                 Text(
                   decisionMessage,
                   style: const TextStyle(
                     color: Color(0xFF334155),
-                    fontSize: 15,
+                    fontSize: 14,
                     fontWeight: FontWeight.w500,
-                    height: 1.5,
+                    height: 1.45,
                   ),
                 ),
               ],
@@ -527,7 +529,7 @@ class EvaluationDetailScreen extends StatelessWidget {
 
   Widget buildEmptyFlags() {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(24),

@@ -13,7 +13,7 @@ import '../services/rgpd_local_service.dart';
 import '../services/risk_score_service.dart';
 import '../theme/app_text_styles.dart';
 import '../widgets/clinical_category_picker.dart';
-import '../widgets/decision_card.dart';
+
 import '../widgets/urps_banner.dart';
 import 'evaluation/red_flags_category_screen.dart';
 
@@ -434,12 +434,7 @@ class _HomeScreenState extends State<HomeScreen> {
       categories: categories,
     );
 
-    final decisionMessage = DecisionEngineService.decisionMessage(
-      score: score,
-      selectedCategory: selectedCategory,
-      categories: categories,
-    );
-
+    
     return Scaffold(
       backgroundColor: const Color(0xFFF6F8FC),
       body: SafeArea(
@@ -448,21 +443,17 @@ class _HomeScreenState extends State<HomeScreen> {
           child: ListView(
             padding: const EdgeInsets.fromLTRB(18, 12, 18, 150),
             children: [
-              const UrpsBanner(isLarge: false),
-              const SizedBox(height: 14),
-              
-              buildClinicalSummaryCard(),
-              const SizedBox(height: 18),
-              DecisionCard(
-                title: decisionTitle,
-                message: decisionMessage,
-                color: riskColor,
-              ),
-              const SizedBox(height: 20),
-              buildRedFlagsAccessCard(),
-              const SizedBox(height: 20),
-              buildSecondaryButtons(),
-            ],
+  const UrpsBanner(isLarge: false),
+  buildClinicalSummaryCard(),
+  const SizedBox(height: 12),
+  buildCompactDecisionCard(decisionTitle),
+  const SizedBox(height: 12),
+  buildRedFlagsAccessCard(),
+  const SizedBox(height: 16),
+  buildSecondaryButtons(),
+  const SizedBox(height: 16),
+  buildClinicalSafetyNote(),
+],
           ),
         ),
       ),
@@ -816,4 +807,76 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
+  Widget buildCompactDecisionCard(String decisionTitle) {
+  return Container(
+    padding: const EdgeInsets.all(16),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(26),
+      border: Border.all(color: riskColor.withValues(alpha: 0.22)),
+    ),
+    child: Row(
+      children: [
+        Container(
+          height: 48,
+          width: 48,
+          decoration: BoxDecoration(
+            color: riskColor.withValues(alpha: 0.10),
+            borderRadius: BorderRadius.circular(18),
+          ),
+          child: Icon(
+            Icons.route_rounded,
+            color: riskColor,
+            size: 28,
+          ),
+        ),
+        const SizedBox(width: 14),
+        Expanded(
+          child: Text(
+            decisionTitle,
+            style: TextStyle(
+              color: riskColor,
+              fontSize: 19,
+              fontWeight: FontWeight.w900,
+              letterSpacing: -0.4,
+              height: 1.1,
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+Widget buildClinicalSafetyNote() {
+  return Container(
+    padding: const EdgeInsets.all(14),
+    decoration: BoxDecoration(
+      color: const Color(0xFFF8FAFC),
+      borderRadius: BorderRadius.circular(22),
+      border: Border.all(color: const Color(0xFFE2E8F0)),
+    ),
+    child: const Row(
+      children: [
+        Icon(
+          Icons.info_outline_rounded,
+          color: Color(0xFF64748B),
+          size: 20,
+        ),
+        SizedBox(width: 10),
+        Expanded(
+          child: Text(
+            'Aide au repérage clinique uniquement. Cette application ne remplace pas une évaluation médicale professionnelle.',
+            style: TextStyle(
+              color: Color(0xFF64748B),
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              height: 1.35,
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
+}
 }

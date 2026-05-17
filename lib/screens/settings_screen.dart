@@ -42,7 +42,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     showDialog(
       context: context,
-      builder: (_) {
+      builder: (dialogContext) {
         return AlertDialog(
           title: const Text('Export statistique pseudonymisé'),
           content: SingleChildScrollView(
@@ -52,7 +52,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(context),
+              onPressed: () => Navigator.pop(dialogContext),
               child: const Text('Fermer'),
             ),
           ],
@@ -62,82 +62,82 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> showPractitionerDialog() async {
-  final nomController = TextEditingController(text: practitioner.nom);
-  final prenomController = TextEditingController(text: practitioner.prenom);
-  final adresseController = TextEditingController(text: practitioner.adresse);
-  final adeliController = TextEditingController(text: practitioner.adeli);
-  final rppsController = TextEditingController(text: practitioner.rpps);
+    final nomController = TextEditingController(text: practitioner.nom);
+    final prenomController = TextEditingController(text: practitioner.prenom);
+    final adresseController = TextEditingController(text: practitioner.adresse);
+    final adeliController = TextEditingController(text: practitioner.adeli);
+    final rppsController = TextEditingController(text: practitioner.rpps);
 
-  final saved = await showDialog<bool>(
-    context: context,
-    builder: (dialogContext) {
-      return AlertDialog(
-        title: const Text('Profil professionnel'),
-        content: SingleChildScrollView(
-          child: Column(
-            children: [
-              buildDialogField(controller: nomController, label: 'Nom'),
-              const SizedBox(height: 10),
-              buildDialogField(controller: prenomController, label: 'Prénom'),
-              const SizedBox(height: 10),
-              buildDialogField(
-                controller: adresseController,
-                label: 'Adresse professionnelle',
-                maxLines: 3,
-              ),
-              const SizedBox(height: 10),
-              buildDialogField(controller: adeliController, label: 'ADELI'),
-              const SizedBox(height: 10),
-              buildDialogField(controller: rppsController, label: 'RPPS'),
-            ],
+    final saved = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('Profil professionnel'),
+          content: SingleChildScrollView(
+            child: Column(
+              children: [
+                buildDialogField(controller: nomController, label: 'Nom'),
+                const SizedBox(height: 10),
+                buildDialogField(controller: prenomController, label: 'Prénom'),
+                const SizedBox(height: 10),
+                buildDialogField(
+                  controller: adresseController,
+                  label: 'Adresse professionnelle',
+                  maxLines: 3,
+                ),
+                const SizedBox(height: 10),
+                buildDialogField(controller: adeliController, label: 'ADELI'),
+                const SizedBox(height: 10),
+                buildDialogField(controller: rppsController, label: 'RPPS'),
+              ],
+            ),
           ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext, false),
-            child: const Text('Annuler'),
-          ),
-          FilledButton(
-            onPressed: () async {
-              final profile = PractitionerProfile(
-                nom: nomController.text.trim(),
-                prenom: prenomController.text.trim(),
-                adresse: adresseController.text.trim(),
-                adeli: adeliController.text.trim(),
-                rpps: rppsController.text.trim(),
-              );
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: const Text('Annuler'),
+            ),
+            FilledButton(
+              onPressed: () async {
+                final profile = PractitionerProfile(
+                  nom: nomController.text.trim(),
+                  prenom: prenomController.text.trim(),
+                  adresse: adresseController.text.trim(),
+                  adeli: adeliController.text.trim(),
+                  rpps: rppsController.text.trim(),
+                );
 
-              await PractitionerProfileService.saveProfile(profile);
+                await PractitionerProfileService.saveProfile(profile);
 
-              if (!dialogContext.mounted) return;
+                if (!dialogContext.mounted) return;
 
-              Navigator.pop(dialogContext, true);
-            },
-            child: const Text('Enregistrer'),
-          ),
-        ],
-      );
-    },
-  );
-
-  nomController.dispose();
-  prenomController.dispose();
-  adresseController.dispose();
-  adeliController.dispose();
-  rppsController.dispose();
-
-  if (saved == true) {
-    await loadPractitioner();
-
-    if (!mounted) return;
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Profil professionnel enregistré'),
-      ),
+                Navigator.pop(dialogContext, true);
+              },
+              child: const Text('Enregistrer'),
+            ),
+          ],
+        );
+      },
     );
+
+    nomController.dispose();
+    prenomController.dispose();
+    adresseController.dispose();
+    adeliController.dispose();
+    rppsController.dispose();
+
+    if (saved == true) {
+      await loadPractitioner();
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Profil professionnel enregistré'),
+        ),
+      );
+    }
   }
-}
 
   Widget buildDialogField({
     required TextEditingController controller,
@@ -177,13 +177,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
           padding: const EdgeInsets.fromLTRB(18, 12, 18, 150),
           children: [
             const UrpsBanner(isLarge: false),
-            
             buildHeroCard(),
-            const SizedBox(height: 24),
+            const SizedBox(height: 18),
             buildSectionLabel('PROFIL PROFESSIONNEL'),
             const SizedBox(height: 12),
             settingCard(
-              context: context,
               icon: practitionerComplete
                   ? Icons.verified_user_outlined
                   : Icons.badge_outlined,
@@ -193,62 +191,55 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   : 'Nom, prénom, adresse, ADELI, RPPS pour les prescriptions.',
               onTap: showPractitionerDialog,
             ),
-            const SizedBox(height: 26),
+            const SizedBox(height: 22),
             buildSectionLabel('CONFIDENTIALITÉ'),
             const SizedBox(height: 12),
             settingCard(
-              context: context,
               icon: Icons.privacy_tip_outlined,
               title: 'Confidentialité RGPD',
               subtitle: 'Données nominatives conservées localement.',
               onTap: () => showComingSoon(context, 'Confidentialité RGPD'),
             ),
             settingCard(
-              context: context,
               icon: Icons.cloud_off_outlined,
               title: 'Protection des données',
               subtitle: 'Aucune transmission automatique.',
               onTap: () => showComingSoon(context, 'Protection des données'),
             ),
             settingCard(
-              context: context,
               icon: Icons.cloud_outlined,
               title: 'Export statistique pseudonymisé',
               subtitle: 'Données cliniques sans nom ni prénom.',
               onTap: () => showAnonymousRecordsExport(context),
             ),
             settingCard(
-              context: context,
               icon: Icons.table_chart_outlined,
               title: 'CSV statistiques pseudonymisées',
               subtitle: 'Exporter toutes les évaluations locales en CSV.',
               onTap: GlobalStatisticsCsvService.exportGlobalStatisticsCsv,
             ),
-            const SizedBox(height: 26),
+            const SizedBox(height: 22),
             buildSectionLabel('PARAMÈTRES CLINIQUES'),
             const SizedBox(height: 12),
             settingCard(
-              context: context,
               icon: Icons.medical_information_outlined,
               title: 'Usage clinique',
               subtitle: 'Aide au raisonnement clinique.',
               onTap: () => showComingSoon(context, 'Usage clinique'),
             ),
             settingCard(
-              context: context,
               icon: Icons.picture_as_pdf_outlined,
               title: 'Exports PDF',
               subtitle: 'PDF couleur ou impression noir et blanc.',
               onTap: () => showComingSoon(context, 'Exports PDF'),
             ),
             settingCard(
-              context: context,
               icon: Icons.analytics_outlined,
               title: 'Statistiques locales',
               subtitle: 'Analyse locale dans Historique.',
               onTap: () => showComingSoon(context, 'Statistiques locales'),
             ),
-            const SizedBox(height: 30),
+            const SizedBox(height: 24),
             buildVersionCard(),
           ],
         ),
@@ -256,23 +247,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  Widget buildTitle() {
-    return const Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text('Réglages', style: AppTextStyles.pageTitle),
-        SizedBox(height: 4),
-        Text(
-          'Configuration de l’application',
-          style: AppTextStyles.pageSubtitle,
-        ),
-      ],
-    );
-  }
-
   Widget buildHeroCard() {
     return Container(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           colors: [
@@ -280,47 +257,33 @@ class _SettingsScreenState extends State<SettingsScreen> {
             Color(0xFF1E293B),
           ],
         ),
-        borderRadius: BorderRadius.circular(32),
+        borderRadius: BorderRadius.circular(30),
       ),
       child: Row(
         children: [
           Container(
-            height: 68,
-            width: 68,
+            height: 58,
+            width: 58,
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.10),
-              borderRadius: BorderRadius.circular(22),
+              color: Colors.white.withValues(alpha: 0.10),
+              borderRadius: BorderRadius.circular(20),
             ),
             child: const Icon(
               Icons.settings_rounded,
               color: Colors.white,
-              size: 38,
+              size: 34,
             ),
           ),
-          const SizedBox(width: 18),
+          const SizedBox(width: 16),
           const Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Configuration',
-                  style: TextStyle(
-                    color: Colors.white70,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                SizedBox(height: 6),
-                Text(
-                  'Paramètres de l’application',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 28,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: -1,
-                  ),
-                ),
-              ],
+            child: Text(
+              'Paramètres de l’application',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 24,
+                fontWeight: FontWeight.w900,
+                letterSpacing: -0.8,
+              ),
             ),
           ),
         ],
@@ -341,28 +304,27 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Widget settingCard({
-    required BuildContext context,
     required IconData icon,
     required String title,
     required String subtitle,
     required VoidCallback onTap,
   }) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 14),
+      margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(28),
+        borderRadius: BorderRadius.circular(26),
         border: Border.all(color: const Color(0xFFE2E8F0)),
       ),
       child: ListTile(
         onTap: onTap,
         contentPadding: const EdgeInsets.symmetric(
-          horizontal: 18,
-          vertical: 12,
+          horizontal: 16,
+          vertical: 10,
         ),
         leading: Container(
-          height: 52,
-          width: 52,
+          height: 50,
+          width: 50,
           decoration: BoxDecoration(
             color: const Color(0xFFEAF2FF),
             borderRadius: BorderRadius.circular(18),
@@ -370,7 +332,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           child: Icon(
             icon,
             color: const Color(0xFF2563EB),
-            size: 28,
+            size: 27,
           ),
         ),
         title: Text(title, style: AppTextStyles.cardTitle),
@@ -379,8 +341,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           child: Text(subtitle, style: AppTextStyles.cardSubtitle),
         ),
         trailing: Container(
-          height: 38,
-          width: 38,
+          height: 36,
+          width: 36,
           decoration: BoxDecoration(
             color: const Color(0xFFF8FAFC),
             borderRadius: BorderRadius.circular(14),
@@ -396,7 +358,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Widget buildVersionCard() {
     return Container(
-      padding: const EdgeInsets.all(22),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           colors: [
@@ -404,7 +366,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             Color(0xFFF8FAFC),
           ],
         ),
-        borderRadius: BorderRadius.circular(28),
+        borderRadius: BorderRadius.circular(26),
         border: Border.all(color: Color(0xFFBFDBFE)),
       ),
       child: const Column(
@@ -412,9 +374,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
           Icon(
             Icons.verified_rounded,
             color: Color(0xFF2563EB),
-            size: 34,
+            size: 32,
           ),
-          SizedBox(height: 12),
+          SizedBox(height: 10),
           Text(
             'Drapeaux Rouges',
             style: TextStyle(

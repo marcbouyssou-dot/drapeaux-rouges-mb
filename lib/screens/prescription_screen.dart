@@ -47,12 +47,7 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
 
   void resetForm() {
     pathologieController.clear();
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Prescription réinitialisée'),
-      ),
-    );
+    showMessage('Prescription réinitialisée');
   }
 
   Future<void> exportPdf() async {
@@ -80,90 +75,78 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
   }
 
   Future<void> showPractitionerDialog() async {
-  final nomController = TextEditingController(text: practitioner.nom);
-  final prenomController = TextEditingController(text: practitioner.prenom);
-  final adresseController = TextEditingController(text: practitioner.adresse);
-  final adeliController = TextEditingController(text: practitioner.adeli);
-  final rppsController = TextEditingController(text: practitioner.rpps);
+    final nomController = TextEditingController(text: practitioner.nom);
+    final prenomController = TextEditingController(text: practitioner.prenom);
+    final adresseController = TextEditingController(text: practitioner.adresse);
+    final adeliController = TextEditingController(text: practitioner.adeli);
+    final rppsController = TextEditingController(text: practitioner.rpps);
 
-  final saved = await showDialog<bool>(
-    context: context,
-    builder: (dialogContext) {
-      return AlertDialog(
-        title: const Text('Informations professionnelles'),
-        content: SingleChildScrollView(
-          child: Column(
-            children: [
-              buildDialogField(
-                controller: nomController,
-                label: 'Nom',
-              ),
-              const SizedBox(height: 10),
-              buildDialogField(
-                controller: prenomController,
-                label: 'Prénom',
-              ),
-              const SizedBox(height: 10),
-              buildDialogField(
-                controller: adresseController,
-                label: 'Adresse professionnelle',
-                maxLines: 3,
-              ),
-              const SizedBox(height: 10),
-              buildDialogField(
-                controller: adeliController,
-                label: 'ADELI',
-              ),
-              const SizedBox(height: 10),
-              buildDialogField(
-                controller: rppsController,
-                label: 'RPPS',
-              ),
-            ],
+    final saved = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('Informations professionnelles'),
+          content: SingleChildScrollView(
+            child: Column(
+              children: [
+                buildDialogField(controller: nomController, label: 'Nom'),
+                const SizedBox(height: 10),
+                buildDialogField(controller: prenomController, label: 'Prénom'),
+                const SizedBox(height: 10),
+                buildDialogField(
+                  controller: adresseController,
+                  label: 'Adresse professionnelle',
+                  maxLines: 3,
+                ),
+                const SizedBox(height: 10),
+                buildDialogField(controller: adeliController, label: 'ADELI'),
+                const SizedBox(height: 10),
+                buildDialogField(controller: rppsController, label: 'RPPS'),
+              ],
+            ),
           ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext, false),
-            child: const Text('Annuler'),
-          ),
-          FilledButton(
-            onPressed: () async {
-              final profile = PractitionerProfile(
-                nom: nomController.text.trim(),
-                prenom: prenomController.text.trim(),
-                adresse: adresseController.text.trim(),
-                adeli: adeliController.text.trim(),
-                rpps: rppsController.text.trim(),
-              );
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: const Text('Annuler'),
+            ),
+            FilledButton(
+              onPressed: () async {
+                final profile = PractitionerProfile(
+                  nom: nomController.text.trim(),
+                  prenom: prenomController.text.trim(),
+                  adresse: adresseController.text.trim(),
+                  adeli: adeliController.text.trim(),
+                  rpps: rppsController.text.trim(),
+                );
 
-              await PractitionerProfileService.saveProfile(profile);
+                await PractitionerProfileService.saveProfile(profile);
 
-              if (!dialogContext.mounted) return;
+                if (!dialogContext.mounted) return;
 
-              Navigator.pop(dialogContext, true);
-            },
-            child: const Text('Enregistrer'),
-          ),
-        ],
-      );
-    },
-  );
+                Navigator.pop(dialogContext, true);
+              },
+              child: const Text('Enregistrer'),
+            ),
+          ],
+        );
+      },
+    );
 
-  nomController.dispose();
-  prenomController.dispose();
-  adresseController.dispose();
-  adeliController.dispose();
-  rppsController.dispose();
+    nomController.dispose();
+    prenomController.dispose();
+    adresseController.dispose();
+    adeliController.dispose();
+    rppsController.dispose();
 
-  if (saved == true) {
-    await loadInitialData();
+    if (saved == true) {
+      await loadInitialData();
 
-    if (!mounted) return;
+      if (!mounted) return;
 
-    showMessage('Informations professionnelles enregistrées.');
+      showMessage('Informations professionnelles enregistrées.');
+    }
   }
-}
 
   Widget buildDialogField({
     required TextEditingController controller,
@@ -205,13 +188,12 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
           padding: const EdgeInsets.fromLTRB(18, 12, 18, 150),
           children: [
             const UrpsBanner(isLarge: false),
-            
             buildPatientCard(),
-            const SizedBox(height: 18),
+            const SizedBox(height: 14),
             buildPractitionerCard(),
-            const SizedBox(height: 18),
+            const SizedBox(height: 14),
             buildPrescriptionCard(),
-            const SizedBox(height: 18),
+            const SizedBox(height: 14),
             buildPrintInfoCard(),
           ],
         ),
@@ -220,31 +202,14 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
     );
   }
 
-  Widget buildTitle() {
-    return const Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Prescription',
-          style: AppTextStyles.pageTitle,
-        ),
-        SizedBox(height: 4),
-        Text(
-          'Prescription sobre et imprimable',
-          style: AppTextStyles.pageSubtitle,
-        ),
-      ],
-    );
-  }
-
   Widget buildPatientCard() {
     final hasPatient = currentPatient != null;
 
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: hasPatient ? Colors.white : const Color(0xFFFFF7ED),
-        borderRadius: BorderRadius.circular(28),
+        borderRadius: BorderRadius.circular(26),
         border: Border.all(
           color: hasPatient ? const Color(0xFFE2E8F0) : const Color(0xFFFED7AA),
         ),
@@ -252,8 +217,8 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
       child: Row(
         children: [
           Container(
-            height: 54,
-            width: 54,
+            height: 52,
+            width: 52,
             decoration: BoxDecoration(
               color: hasPatient
                   ? const Color(0xFFEAF2FF)
@@ -324,10 +289,10 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
     final complete = practitioner.isComplete;
 
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: complete ? Colors.white : const Color(0xFFFFF7ED),
-        borderRadius: BorderRadius.circular(28),
+        borderRadius: BorderRadius.circular(26),
         border: Border.all(
           color: complete ? const Color(0xFFE2E8F0) : const Color(0xFFFED7AA),
         ),
@@ -335,8 +300,8 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
       child: Row(
         children: [
           Container(
-            height: 54,
-            width: 54,
+            height: 52,
+            width: 52,
             decoration: BoxDecoration(
               color:
                   complete ? const Color(0xFFEAF2FF) : const Color(0xFFFFEDD5),
@@ -408,10 +373,10 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
 
   Widget buildPrescriptionCard() {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(30),
+        borderRadius: BorderRadius.circular(28),
         border: Border.all(
           color: const Color(0xFFE2E8F0),
         ),
@@ -422,8 +387,8 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
           Row(
             children: [
               Container(
-                height: 52,
-                width: 52,
+                height: 50,
+                width: 50,
                 decoration: BoxDecoration(
                   color: const Color(0xFFEAF2FF),
                   borderRadius: BorderRadius.circular(18),
@@ -431,7 +396,7 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
                 child: const Icon(
                   Icons.description_outlined,
                   color: Color(0xFF2563EB),
-                  size: 28,
+                  size: 27,
                 ),
               ),
               const SizedBox(width: 14),
@@ -445,7 +410,7 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
               ),
             ],
           ),
-          const SizedBox(height: 18),
+          const SizedBox(height: 16),
           TextField(
             controller: pathologieController,
             maxLines: 2,
@@ -460,7 +425,7 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
               fillColor: const Color(0xFFF8FAFC),
               contentPadding: const EdgeInsets.symmetric(
                 horizontal: 18,
-                vertical: 18,
+                vertical: 16,
               ),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(20),
@@ -490,7 +455,7 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
 
   Widget buildPrintInfoCard() {
     return Container(
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: const Color(0xFFF8FAFC),
         borderRadius: BorderRadius.circular(24),
@@ -507,7 +472,7 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
           SizedBox(width: 12),
           Expanded(
             child: Text(
-              'Le PDF généré est volontairement sobre pour faciliter l’impression et limiter l’usage d’encre.',
+              'PDF sobre, lisible et économique à imprimer.',
               style: TextStyle(
                 color: Color(0xFF64748B),
                 fontWeight: FontWeight.w700,
@@ -524,9 +489,9 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
     return SafeArea(
       child: Container(
         padding: const EdgeInsets.fromLTRB(18, 10, 18, 22),
-        decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.94),
-          border: const Border(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          border: Border(
             top: BorderSide(
               color: Color(0xFFE5E7EB),
             ),
