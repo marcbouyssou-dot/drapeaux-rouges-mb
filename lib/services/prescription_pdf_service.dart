@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
@@ -9,7 +11,9 @@ class PrescriptionPdfService {
   static Future<void> exportPrescriptionPdf({
     required PatientLocal patient,
     required PractitionerProfile practitioner,
-    required String pathologie,
+    required String prescriptionType,
+    required String prescriptionContent,
+    File? justificatifImage,
   }) async {
     final pdf = pw.Document();
     final now = DateTime.now();
@@ -17,8 +21,13 @@ class PrescriptionPdfService {
     final baseFont = pw.Font.helvetica();
     final boldFont = pw.Font.helveticaBold();
 
+    final pw.MemoryImage? justificatifPdfImage =
+        justificatifImage != null
+            ? pw.MemoryImage(justificatifImage.readAsBytesSync())
+            : null;
+
     pdf.addPage(
-      pw.Page(
+      pw.MultiPage(
         pageFormat: PdfPageFormat.a4,
         margin: const pw.EdgeInsets.fromLTRB(42, 36, 42, 36),
         theme: pw.ThemeData.withFont(
@@ -26,89 +35,180 @@ class PrescriptionPdfService {
           bold: boldFont,
         ),
         build: (context) {
-          return pw.Column(
-            crossAxisAlignment: pw.CrossAxisAlignment.start,
-            children: [
-              _practitionerBlock(practitioner),
-              pw.SizedBox(height: 28),
-              pw.Align(
-                alignment: pw.Alignment.centerRight,
-                child: pw.Text(
-                  'Le ${_formatDate(now)}',
-                  style: const pw.TextStyle(fontSize: 11),
-                ),
+          return [
+            _practitionerBlock(practitioner),
+            pw.SizedBox(height: 28),
+
+            pw.Align(
+              alignment: pw.Alignment.centerRight,
+              child: pw.Text(
+                'Le ${_formatDate(now)}',
+                style: const pw.TextStyle(fontSize: 11),
               ),
-              pw.SizedBox(height: 30),
-              _sectionTitle('Patient'),
-              pw.SizedBox(height: 8),
-              _simpleLine('Nom : ${patient.nom.toUpperCase()}'),
-              _simpleLine('Prénom : ${patient.prenom}'),
-              _simpleLine('Date de naissance : ${patient.dateNaissance}'),
-              pw.SizedBox(height: 36),
-              pw.Center(
-                child: pw.Text(
-                  'Prescription de rééducation',
-                  style: pw.TextStyle(
-                    fontSize: 20,
-                    fontWeight: pw.FontWeight.bold,
-                  ),
-                ),
-              ),
-              pw.SizedBox(height: 34),
-              pw.Text(
-                'Rééducation pour :',
+            ),
+
+            pw.SizedBox(height: 30),
+
+            _sectionTitle('Patient'),
+            pw.SizedBox(height: 8),
+            _simpleLine('Nom : ${patient.nom.toUpperCase()}'),
+            _simpleLine('Prénom : ${patient.prenom}'),
+            _simpleLine('Date de naissance : ${patient.dateNaissance}'),
+
+            pw.SizedBox(height: 36),
+
+            pw.Center(
+              child: pw.Text(
+                _documentTitle(prescriptionType),
+                textAlign: pw.TextAlign.center,
                 style: pw.TextStyle(
-                  fontSize: 13,
+                  fontSize: 20,
                   fontWeight: pw.FontWeight.bold,
                 ),
               ),
+            ),
+
+            pw.SizedBox(height: 30),
+
+            _sectionTitle('Type'),
+            pw.SizedBox(height: 8),
+            _boxedText(prescriptionType),
+
+            pw.SizedBox(height: 20),
+
+            _sectionTitle(_contentTitle(prescriptionType)),
+            pw.SizedBox(height: 8),
+            _boxedText(
+              prescriptionContent.trim().isEmpty
+                  ? 'Contenu non renseigné'
+                  : prescriptionContent.trim(),
+            ),
+
+            pw.SizedBox(height: 22),
+
+            _regulatoryNote(prescriptionType),
+
+            if (justificatifPdfImage != null) ...[
+              pw.SizedBox(height: 28),
+              _sectionTitle('Justificatif clinique joint'),
               pw.SizedBox(height: 12),
               pw.Container(
+                height: 220,
                 width: double.infinity,
-                padding: const pw.EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 14,
-                ),
                 decoration: pw.BoxDecoration(
-                  border: pw.Border.all(
-                    color: PdfColors.grey700,
-                    width: 0.8,
-                  ),
+                  border: pw.Border.all(color: PdfColors.grey400),
                 ),
-                child: pw.Text(
-                  pathologie.trim().isEmpty
-                      ? 'Pathologie non renseignée'
-                      : pathologie.trim(),
-                  style: const pw.TextStyle(fontSize: 14),
-                ),
-              ),
-              pw.Spacer(),
-              pw.Align(
-                alignment: pw.Alignment.centerRight,
-                child: pw.Column(
-                  crossAxisAlignment: pw.CrossAxisAlignment.center,
-                  children: [
-                    pw.Text(
-                      'Signature et cachet',
-                      style: const pw.TextStyle(fontSize: 11),
-                    ),
-                    pw.SizedBox(height: 54),
-                    pw.Container(
-                      width: 180,
-                      height: 1,
-                      color: PdfColors.grey700,
-                    ),
-                  ],
+                child: pw.Image(
+                  justificatifPdfImage,
+                  fit: pw.BoxFit.contain,
                 ),
               ),
             ],
-          );
+
+            pw.SizedBox(height: 40),
+
+            pw.Align(
+              alignment: pw.Alignment.centerRight,
+              child: pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.center,
+                children: [
+                  pw.Text(
+                    'Signature et cachet',
+                    style: const pw.TextStyle(fontSize: 11),
+                  ),
+                  pw.SizedBox(height: 54),
+                  pw.Container(
+                    width: 180,
+                    height: 1,
+                    color: PdfColors.grey700,
+                  ),
+                ],
+              ),
+            ),
+          ];
         },
       ),
     );
 
     await Printing.layoutPdf(
       onLayout: (_) async => pdf.save(),
+    );
+  }
+
+  static String _documentTitle(String type) {
+    switch (type) {
+      case 'Matériel':
+        return 'Prescription de matériel / dispositif médical';
+      case 'Examens':
+        return 'Orientation / examen à envisager';
+      case 'Conseils':
+        return 'Conseils associés';
+      case 'Autres':
+        return 'Prescription / recommandation';
+      case 'Rééducation':
+      default:
+        return 'Prescription de rééducation';
+    }
+  }
+
+  static String _contentTitle(String type) {
+    switch (type) {
+      case 'Matériel':
+        return 'Matériel / dispositif médical';
+      case 'Examens':
+        return 'Examen ou orientation à envisager';
+      case 'Conseils':
+        return 'Conseils';
+      case 'Autres':
+        return 'Contenu';
+      case 'Rééducation':
+      default:
+        return 'Rééducation pour';
+    }
+  }
+
+  static pw.Widget _boxedText(String text) {
+    return pw.Container(
+      width: double.infinity,
+      padding: const pw.EdgeInsets.symmetric(
+        horizontal: 12,
+        vertical: 14,
+      ),
+      decoration: pw.BoxDecoration(
+        border: pw.Border.all(
+          color: PdfColors.grey700,
+          width: 0.8,
+        ),
+      ),
+      child: pw.Text(
+        text,
+        style: const pw.TextStyle(fontSize: 14),
+      ),
+    );
+  }
+
+  static pw.Widget _regulatoryNote(String type) {
+    final text = type == 'Examens'
+        ? 'Mention : ce document constitue une orientation ou un examen à envisager selon le contexte clinique. Il ne remplace pas un avis médical lorsque celui-ci est nécessaire.'
+        : 'Mention : prescription ou recommandation établie dans le cadre des compétences et conditions réglementaires du masseur-kinésithérapeute.';
+
+    return pw.Container(
+      width: double.infinity,
+      padding: const pw.EdgeInsets.all(12),
+      decoration: pw.BoxDecoration(
+        color: PdfColors.grey100,
+        border: pw.Border.all(
+          color: PdfColors.grey400,
+          width: 0.6,
+        ),
+      ),
+      child: pw.Text(
+        text,
+        style: const pw.TextStyle(
+          fontSize: 9.5,
+          color: PdfColors.grey800,
+        ),
+      ),
     );
   }
 

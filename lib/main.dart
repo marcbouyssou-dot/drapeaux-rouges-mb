@@ -3,6 +3,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 
 import 'screens/main_navigation_screen.dart';
 import 'theme/app_theme.dart';
+import 'screens/login_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -25,7 +26,7 @@ class RedFlagsApp extends StatelessWidget {
       title: 'Accès Direct MK',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
-      home: const MainNavigationScreen(),
+      home: const LoginScreen(),
     );
   }
 }

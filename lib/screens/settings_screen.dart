@@ -8,6 +8,7 @@ import '../services/patient_record_service.dart';
 import '../services/practitioner_profile_service.dart';
 import '../theme/app_text_styles.dart';
 import '../widgets/urps_banner.dart';
+import 'access_direct_settings_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -258,12 +259,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
               onTap: () => showComingSoon(context, 'Apparence'),
             ),
             settingCard(
-              icon: Icons.medical_information_outlined,
-              iconColor: const Color(0xFFEA580C),
-              title: 'Mode clinique rapide',
-              subtitle: 'Parcours simplifié pour accès direct.',
-              onTap: () => showComingSoon(context, 'Mode clinique rapide'),
-            ),
+  icon: Icons.medical_information_outlined,
+  iconColor: const Color(0xFFEA580C),
+  title: 'Accès direct',
+  subtitle: 'Conditions réglementaires, diagnostic préalable et séances.',
+  onTap: () {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => const AccessDirectSettingsScreen(),
+      ),
+    );
+  },
+),
             settingCard(
               icon: Icons.restart_alt_rounded,
               iconColor: const Color(0xFFEF4444),

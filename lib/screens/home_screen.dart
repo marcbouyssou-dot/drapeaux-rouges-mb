@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 
 import '../data/clinical_flags_data.dart';
+import '../models/access_direct_model.dart';
 import '../models/evaluation_model.dart';
 import '../models/patient_local.dart';
+import '../services/access_direct_local_service.dart';
+import '../services/access_direct_service.dart';
 import '../services/clinical_ai_service.dart';
 import '../services/csv_service.dart';
 import '../services/decision_engine_service.dart';
@@ -27,6 +30,7 @@ class _HomeScreenState extends State<HomeScreen> {
   String selectedCategory = clinicalCategories.keys.first;
   List<Map<String, dynamic>> history = [];
   PatientLocal? currentPatient;
+  AccessDirectModel accessDirect = AccessDirectModel.empty;
 
   final Map<String, List<Map<String, dynamic>>> categories =
       clinicalCategories.map(
@@ -45,38 +49,31 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> loadInitialData() async {
     final loadedHistory = await HistoryService.loadHistory();
     final patient = await RgpdLocalService.getCurrentPatient();
+    final accessDirectSettings = await AccessDirectLocalService.loadSettings();
 
     if (!mounted) return;
 
     setState(() {
       history = loadedHistory;
       currentPatient = patient;
+      accessDirect = accessDirectSettings;
     });
   }
 
-  int get checkedCount {
-    return RiskScoreService.computeGlobalCheckedCount(categories);
-  }
+  int get checkedCount =>
+      RiskScoreService.computeGlobalCheckedCount(categories);
 
-  int get score {
-    return RiskScoreService.computeGlobalScore(categories);
-  }
+  int get score => RiskScoreService.computeGlobalScore(categories);
 
-  String get riskLevel {
-    return RiskScoreService.riskLevelFromScore(score);
-  }
+  String get riskLevel => RiskScoreService.riskLevelFromScore(score);
 
-  Color get riskColor {
-    return RiskScoreService.riskColorFromScore(score);
-  }
+  Color get riskColor => RiskScoreService.riskColorFromScore(score);
 
-  List<Map<String, dynamic>> get checkedFlags {
-    return RiskScoreService.checkedFlagsFromCategories(categories);
-  }
+  List<Map<String, dynamic>> get checkedFlags =>
+      RiskScoreService.checkedFlagsFromCategories(categories);
 
-  String get patientDisplayName {
-    return RgpdLocalService.patientDisplayName(currentPatient);
-  }
+  String get patientDisplayName =>
+      RgpdLocalService.patientDisplayName(currentPatient);
 
   String get aiSummary {
     return ClinicalAiService.generateClinicalSummary(
@@ -101,44 +98,175 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void openCategoryPicker() {
-  showModalBottomSheet(
-    context: context,
-    isScrollControlled: true,
-    useSafeArea: true,
-    backgroundColor: Colors.transparent,
-    builder: (_) {
-      final screenHeight = MediaQuery.of(context).size.height;
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) {
+        final screenHeight = MediaQuery.of(context).size.height;
 
-      return Container(
-        height: screenHeight * 0.96,
-        decoration: const BoxDecoration(
-          color: Color(0xFFF8FAFC),
-          borderRadius: BorderRadius.vertical(
-            top: Radius.circular(30),
+        return Container(
+          height: screenHeight * 0.96,
+          decoration: const BoxDecoration(
+            color: Color(0xFFF8FAFC),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
           ),
-        ),
-        child: ClinicalCategoryPicker(
-          categories: categories,
-          selectedCategory: selectedCategory,
-          checkedCount: checkedCountForCategory,
-          onSelected: (category) async {
-            setState(() {
-              selectedCategory = category;
-            });
+          child: ClinicalCategoryPicker(
+            categories: categories,
+            selectedCategory: selectedCategory,
+            checkedCount: checkedCountForCategory,
+            onSelected: (category) async {
+              setState(() {
+                selectedCategory = category;
+              });
 
-            Navigator.pop(context);
+              Navigator.pop(context);
+              await Future.delayed(const Duration(milliseconds: 120));
 
-            await Future.delayed(const Duration(milliseconds: 120));
+              if (!mounted) return;
+              await openCategory(category);
+            },
+          ),
+        );
+      },
+    );
+  }
 
-            if (!mounted) return;
+  Future<void> openCategory(String category) async {
+    setState(() {
+      selectedCategory = category;
+    });
 
-            await openCategory(category);
-          },
-        ),
-      );
-    },
-  );
-}
+    final items = categories[category] ?? [];
+    final itemLabels = items.map(itemTitle).toList();
+
+    final initiallySelected = items
+        .where((item) => item['checked'] == true)
+        .map(itemTitle)
+        .toSet();
+
+    final result = await Navigator.push<Set<String>>(
+      context,
+      PageRouteBuilder(
+        transitionDuration: const Duration(milliseconds: 260),
+        reverseTransitionDuration: const Duration(milliseconds: 220),
+        pageBuilder: (context, animation, secondaryAnimation) {
+          return RedFlagsCategoryScreen(
+            title: category,
+            items: itemLabels,
+            initiallySelected: initiallySelected,
+          );
+        },
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          final curvedAnimation = CurvedAnimation(
+            parent: animation,
+            curve: Curves.easeOutCubic,
+          );
+
+          return SlideTransition(
+            position: Tween<Offset>(
+              begin: const Offset(0.08, 0),
+              end: Offset.zero,
+            ).animate(curvedAnimation),
+            child: FadeTransition(
+              opacity: curvedAnimation,
+              child: child,
+            ),
+          );
+        },
+      ),
+    );
+
+    if (result != null) {
+      setState(() {
+        for (final item in items) {
+          item['checked'] = result.contains(itemTitle(item));
+        }
+      });
+    }
+  }
+
+  Future<bool> confirmAnonymousMode({required String action}) async {
+    if (currentPatient != null) return true;
+
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (_) {
+        return AlertDialog(
+          title: const Text('Aucun patient actif'),
+          content: Text(
+            'Vous êtes sur le point de $action sans patient sélectionné.\n\n'
+            'L’évaluation sera associée à “Patient non renseigné”. '
+            'Ce mode peut être utile en situation rapide, mais il sera moins facile de retrouver le bilan ensuite.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Annuler'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('Continuer'),
+            ),
+          ],
+        );
+      },
+    );
+
+    return result == true;
+  }
+
+  Future<void> saveEvaluation() async {
+    final canContinue = await confirmAnonymousMode(
+      action: 'enregistrer une évaluation',
+    );
+
+    if (!canContinue) return;
+
+    final decisionTitle = DecisionEngineService.decisionTitle(
+      score: score,
+      selectedCategory: selectedCategory,
+      categories: categories,
+    );
+
+    final decisionMessage = DecisionEngineService.decisionMessage(
+      score: score,
+      selectedCategory: selectedCategory,
+      categories: categories,
+    );
+
+    const uuid = Uuid();
+
+    final evaluation = EvaluationModel(
+      evaluationId: uuid.v4(),
+      patientLocalId: currentPatient?.localId,
+      patientAnonymousId: currentPatient?.anonymousId,
+      patientDisplayName: patientDisplayName,
+      date: DateTime.now(),
+      motif: selectedCategory,
+      score: score,
+      riskLevel: riskLevel,
+      checkedCount: checkedCount,
+      checkedFlags: checkedFlags,
+      decisionTitle: decisionTitle,
+      decisionMessage: decisionMessage,
+      aiSummary: aiSummary,
+    );
+
+    await HistoryService.saveEvaluation(
+      history: history,
+      evaluation: evaluation.toJson(),
+    );
+
+    await loadInitialData();
+
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Évaluation enregistrée')),
+    );
+  }
 
   void showPdfExportChoice() {
     showModalBottomSheet(
@@ -150,9 +278,7 @@ class _HomeScreenState extends State<HomeScreen> {
             padding: const EdgeInsets.all(18),
             decoration: const BoxDecoration(
               color: Color(0xFFF8FAFC),
-              borderRadius: BorderRadius.vertical(
-                top: Radius.circular(30),
-              ),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -254,147 +380,8 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Future<bool> confirmAnonymousMode({
-    required String action,
-  }) async {
-    if (currentPatient != null) return true;
-
-    final result = await showDialog<bool>(
-      context: context,
-      builder: (_) {
-        return AlertDialog(
-          title: const Text('Aucun patient actif'),
-          content: Text(
-            'Vous êtes sur le point de $action sans patient sélectionné.\n\n'
-            'L’évaluation sera associée à “Patient non renseigné”. '
-            'Ce mode peut être utile en situation rapide, mais il sera moins facile de retrouver le bilan ensuite.',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: const Text('Annuler'),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.pop(context, true),
-              child: const Text('Continuer'),
-            ),
-          ],
-        );
-      },
-    );
-
-    return result == true;
-  }
-
-  Future<void> openCategory(String category) async {
-    setState(() {
-      selectedCategory = category;
-    });
-
-    final items = categories[category] ?? [];
-    final itemLabels = items.map(itemTitle).toList();
-
-    final initiallySelected = items
-        .where((item) => item['checked'] == true)
-        .map(itemTitle)
-        .toSet();
-
-    final result = await Navigator.push<Set<String>>(
-      context,
-      PageRouteBuilder(
-        transitionDuration: const Duration(milliseconds: 260),
-        reverseTransitionDuration: const Duration(milliseconds: 220),
-        pageBuilder: (context, animation, secondaryAnimation) {
-          return RedFlagsCategoryScreen(
-            title: category,
-            items: itemLabels,
-            initiallySelected: initiallySelected,
-          );
-        },
-        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          final curvedAnimation = CurvedAnimation(
-            parent: animation,
-            curve: Curves.easeOutCubic,
-          );
-
-          return SlideTransition(
-            position: Tween<Offset>(
-              begin: const Offset(0.08, 0),
-              end: Offset.zero,
-            ).animate(curvedAnimation),
-            child: FadeTransition(
-              opacity: curvedAnimation,
-              child: child,
-            ),
-          );
-        },
-      ),
-    );
-
-    if (result != null) {
-      setState(() {
-        for (final item in items) {
-          item['checked'] = result.contains(itemTitle(item));
-        }
-      });
-    }
-  }
-
-  Future<void> saveEvaluation() async {
-    final canContinue = await confirmAnonymousMode(
-      action: 'enregistrer une évaluation',
-    );
-
-    if (!canContinue) return;
-
-    final decisionTitle = DecisionEngineService.decisionTitle(
-      score: score,
-      selectedCategory: selectedCategory,
-      categories: categories,
-    );
-
-    final decisionMessage = DecisionEngineService.decisionMessage(
-      score: score,
-      selectedCategory: selectedCategory,
-      categories: categories,
-    );
-
-    const uuid = Uuid();
-
-    final evaluation = EvaluationModel(
-      evaluationId: uuid.v4(),
-      patientLocalId: currentPatient?.localId,
-      patientAnonymousId: currentPatient?.anonymousId,
-      patientDisplayName: patientDisplayName,
-      date: DateTime.now(),
-      motif: selectedCategory,
-      score: score,
-      riskLevel: riskLevel,
-      checkedCount: checkedCount,
-      checkedFlags: checkedFlags,
-      decisionTitle: decisionTitle,
-      decisionMessage: decisionMessage,
-      aiSummary: aiSummary,
-    );
-
-    await HistoryService.saveEvaluation(
-      history: history,
-      evaluation: evaluation.toJson(),
-    );
-
-    await loadInitialData();
-
-    if (!mounted) return;
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Évaluation enregistrée')),
-    );
-  }
-
   Future<void> exportPdf({required bool printable}) async {
-    final canContinue = await confirmAnonymousMode(
-      action: 'exporter un PDF',
-    );
+    final canContinue = await confirmAnonymousMode(action: 'exporter un PDF');
 
     if (!canContinue) return;
 
@@ -456,24 +443,15 @@ class _HomeScreenState extends State<HomeScreen> {
             padding: const EdgeInsets.fromLTRB(18, 12, 18, 150),
             children: [
               const UrpsBanner(isLarge: false),
-
-buildRedFlagsAccessCard(),
-
-const SizedBox(height: 14),
-
-buildClinicalSummaryCard(),
-
-const SizedBox(height: 12),
-
-buildCompactDecisionCard(decisionTitle),
-
-const SizedBox(height: 16),
-
-buildSecondaryButtons(),
-
-const SizedBox(height: 16),
-
-buildClinicalSafetyNote(),
+              buildRedFlagsAccessCard(),
+              const SizedBox(height: 14),
+              buildClinicalSummaryCard(),
+              const SizedBox(height: 12),
+              buildCompactDecisionCard(decisionTitle),
+              const SizedBox(height: 16),
+              buildSecondaryButtons(),
+              const SizedBox(height: 16),
+              buildClinicalSafetyNote(),
             ],
           ),
         ),
@@ -481,6 +459,8 @@ buildClinicalSafetyNote(),
       bottomNavigationBar: buildStickyActionBar(),
     );
   }
+
+  
 
   Widget buildTitleBlock() {
     return Row(
@@ -700,107 +680,74 @@ buildClinicalSafetyNote(),
   }
 
   Widget buildRedFlagsAccessCard() {
-  return Material(
-    color: Colors.transparent,
-    child: InkWell(
-      onTap: openCategoryPicker,
-      borderRadius: BorderRadius.circular(30),
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.fromLTRB(22, 24, 22, 24),
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [
-              Color(0xFFEC4899),
-              Color(0xFFF472B6),
-            ],
-            begin: Alignment.centerLeft,
-            end: Alignment.centerRight,
+    final bool hasFlags = checkedCount > 0;
+
+    final Color cardColor =
+        hasFlags ? riskColor : const Color(0xFFEC4899);
+
+    final Color cardColorLight = hasFlags
+        ? riskColor.withValues(alpha: 0.84)
+        : const Color(0xFFF472B6);
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: openCategoryPicker,
+        borderRadius: BorderRadius.circular(32),
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(
+            horizontal: 28,
+            vertical: 34,
           ),
-          borderRadius: BorderRadius.circular(30),
-          boxShadow: [
-            BoxShadow(
-              color: const Color(0xFFEC4899).withValues(alpha: 0.18),
-              blurRadius: 22,
-              offset: const Offset(0, 10),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                cardColor,
+                cardColorLight,
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
             ),
-          ],
-        ),
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'DRAPEAUX',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 32,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: -1,
-                      height: 1,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Text(
-                    'Choisir une pathologie et cocher les signes d’alerte',
-                    style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.94),
-                      fontSize: 16,
-                      fontWeight: FontWeight.w800,
-                      height: 1.25,
-                    ),
-                  ),
-                  const SizedBox(height: 14),
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.touch_app_rounded,
-                        color: Colors.white.withValues(alpha: 0.95),
-                        size: 19,
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        'Appuyer pour commencer',
-                        style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.96),
-                          fontSize: 15,
-                          fontWeight: FontWeight.w900,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
+            borderRadius: BorderRadius.circular(32),
+            boxShadow: [
+              BoxShadow(
+                color: cardColor.withValues(alpha: 0.28),
+                blurRadius: 22,
+                offset: const Offset(0, 10),
               ),
-            ),
-            const SizedBox(width: 16),
-            Container(
-              height: 70,
-              width: 70,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.10),
-                    blurRadius: 16,
-                    offset: const Offset(0, 8),
-                  ),
-                ],
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'DRAPEAUX',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 38,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: -1.2,
+                  height: 1,
+                ),
               ),
-              child: const Icon(
-                Icons.arrow_forward_rounded,
-                color: Color(0xFFEC4899),
-                size: 36,
+              const SizedBox(height: 12),
+              Text(
+                'Choisir une pathologie et cocher les signes d’alerte',
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.96),
+                  fontSize: 19,
+                  fontWeight: FontWeight.w800,
+                  height: 1.3,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
-    ),
-  );
-}
+    );
+  }
+
   Widget buildSecondaryButtons() {
     return Row(
       children: [
