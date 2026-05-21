@@ -38,6 +38,8 @@ class EvaluationResultScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final Color medicalRiskColor = _medicalRiskColor(riskLevel);
+
     final decisionTitle = DecisionEngineService.decisionTitle(
       score: score,
       selectedCategory: selectedCategory,
@@ -58,12 +60,21 @@ class EvaluationResultScreen extends StatelessWidget {
             padding: const EdgeInsets.all(22),
             decoration: BoxDecoration(
               gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
                 colors: [
-                  riskColor,
-                  riskColor.withValues(alpha: 0.84),
+                  medicalRiskColor,
+                  medicalRiskColor.withValues(alpha: 0.86),
                 ],
               ),
               borderRadius: BorderRadius.circular(30),
+              boxShadow: [
+                BoxShadow(
+                  color: medicalRiskColor.withValues(alpha: 0.20),
+                  blurRadius: 26,
+                  offset: const Offset(0, 14),
+                ),
+              ],
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -73,25 +84,32 @@ class EvaluationResultScreen extends StatelessWidget {
                   color: Colors.white,
                   size: 42,
                 ),
+
                 const SizedBox(height: 18),
+
                 Text(
                   riskLevel,
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 30,
                     fontWeight: FontWeight.w900,
+                    letterSpacing: -1,
                   ),
                 ),
+
                 const SizedBox(height: 8),
+
                 Text(
                   '$checkedCount drapeau(x) — score $score',
                   style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.88),
+                    color: Colors.white.withValues(alpha: 0.90),
                     fontSize: 15,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
+
                 const SizedBox(height: 6),
+
                 Text(
                   patientDisplayName,
                   style: TextStyle(
@@ -103,31 +121,40 @@ class EvaluationResultScreen extends StatelessWidget {
               ],
             ),
           ),
+
           const SizedBox(height: 16),
+
           _ResultCard(
             icon: Icons.route_rounded,
             title: decisionTitle,
             text: decisionMessage,
-            color: riskColor,
+            color: medicalRiskColor,
           ),
+
           const SizedBox(height: 16),
+
           _ResultCard(
             icon: Icons.psychology_alt_outlined,
             title: 'Synthèse clinique',
             text: aiSummary,
             color: const Color(0xFF2563EB),
           ),
+
           const SizedBox(height: 16),
+
           const _SafetyNote(),
         ],
       ),
+
       bottomNavigationBar: SafeArea(
         child: Container(
           padding: const EdgeInsets.fromLTRB(18, 10, 18, 22),
           decoration: BoxDecoration(
             color: Colors.white.withValues(alpha: 0.96),
             border: const Border(
-              top: BorderSide(color: Color(0xFFE5E7EB)),
+              top: BorderSide(
+                color: Color(0xFFE5E7EB),
+              ),
             ),
           ),
           child: Column(
@@ -145,7 +172,9 @@ class EvaluationResultScreen extends StatelessWidget {
                       label: const Text('Réinitialiser'),
                     ),
                   ),
+
                   const SizedBox(width: 10),
+
                   Expanded(
                     child: FilledButton.icon(
                       onPressed: onSave,
@@ -153,7 +182,9 @@ class EvaluationResultScreen extends StatelessWidget {
                       label: const Text('Sauver'),
                     ),
                   ),
+
                   const SizedBox(width: 10),
+
                   Expanded(
                     child: FilledButton.icon(
                       onPressed: onExportPdf,
@@ -163,7 +194,9 @@ class EvaluationResultScreen extends StatelessWidget {
                   ),
                 ],
               ),
+
               const SizedBox(height: 10),
+
               SizedBox(
                 width: double.infinity,
                 child: FilledButton.icon(
@@ -216,13 +249,28 @@ class _ResultCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(26),
-        border: Border.all(color: color.withValues(alpha: 0.18)),
+        border: Border.all(
+          color: color.withValues(alpha: 0.18),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 14,
+            offset: const Offset(0, 8),
+          ),
+        ],
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, color: color, size: 30),
+          Icon(
+            icon,
+            color: color,
+            size: 30,
+          ),
+
           const SizedBox(width: 14),
+
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -235,7 +283,9 @@ class _ResultCard extends StatelessWidget {
                     fontWeight: FontWeight.w900,
                   ),
                 ),
+
                 const SizedBox(height: 8),
+
                 Text(
                   text,
                   style: const TextStyle(
@@ -264,7 +314,9 @@ class _SafetyNote extends StatelessWidget {
       decoration: BoxDecoration(
         color: const Color(0xFFF8FAFC),
         borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+        border: Border.all(
+          color: const Color(0xFFE2E8F0),
+        ),
       ),
       child: const Text(
         'Aide au repérage clinique uniquement. Cette application ne remplace pas une évaluation médicale professionnelle.',
@@ -277,4 +329,22 @@ class _SafetyNote extends StatelessWidget {
       ),
     );
   }
+}
+
+Color _medicalRiskColor(String riskLevel) {
+  final risk = riskLevel.toLowerCase();
+
+  if (risk.contains('critique')) {
+    return const Color(0xFFDC2626);
+  }
+
+  if (risk.contains('élevé') || risk.contains('eleve')) {
+    return const Color(0xFFEA580C);
+  }
+
+  if (risk.contains('modéré') || risk.contains('modere')) {
+    return const Color(0xFFF59E0B);
+  }
+
+  return const Color(0xFF16A34A);
 }

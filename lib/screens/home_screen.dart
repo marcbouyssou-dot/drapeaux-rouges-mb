@@ -473,15 +473,8 @@ final decisionMessage = DecisionEngineService.decisionMessage(
     });
   }
 
-  @override
+@override
 Widget build(BuildContext context) {
-  if (widget.openPickerOnStart) {
-    return const Scaffold(
-      backgroundColor: Color(0xFFF8FAFF),
-      body: SizedBox.expand(),
-    );
-  }
-
   return Scaffold(
     backgroundColor: const Color(0xFFF8FAFF),
     body: SafeArea(
@@ -492,14 +485,11 @@ Widget build(BuildContext context) {
           children: [
             buildModernEvaluationCard(),
             const SizedBox(height: 18),
-            buildQuickStatusRow(),
-            const SizedBox(height: 18),
             buildClinicalSafetyNote(),
           ],
         ),
       ),
     ),
-    bottomNavigationBar: buildStickyActionBar(),
   );
 }
 Widget buildModernEvaluationCard() {
@@ -510,7 +500,8 @@ Widget buildModernEvaluationCard() {
       borderRadius: BorderRadius.circular(32),
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.fromLTRB(24, 34, 24, 34),
+        height: 420,
+        padding: const EdgeInsets.fromLTRB(24, 28, 24, 28),
         decoration: BoxDecoration(
           color: const Color(0xFFFFF1F7),
           borderRadius: BorderRadius.circular(32),
@@ -524,6 +515,7 @@ Widget buildModernEvaluationCard() {
           ],
         ),
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
               width: 128,
@@ -563,7 +555,7 @@ Widget buildModernEvaluationCard() {
                 letterSpacing: -1.2,
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 14),
             const Text(
               'Choisir une pathologie et cocher les signes d’alerte',
               textAlign: TextAlign.center,
@@ -571,12 +563,12 @@ Widget buildModernEvaluationCard() {
                 color: Color(0xFF0F172A),
                 fontSize: 17,
                 height: 1.35,
-                fontWeight: FontWeight.w600,
+                fontWeight: FontWeight.w700,
               ),
             ),
-            const SizedBox(height: 26),
+            const SizedBox(height: 28),
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 13),
               decoration: BoxDecoration(
                 color: Colors.white.withValues(alpha: 0.78),
                 borderRadius: BorderRadius.circular(18),

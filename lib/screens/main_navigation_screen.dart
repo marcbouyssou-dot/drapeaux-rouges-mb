@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
 import 'patient_consent_screen.dart';
-import 'evaluation/evaluation_entry_screen.dart';
-import 'prescription/prescription_entry_screen.dart';
+import 'home_screen.dart';
 import 'bdk/bdk_entry_screen.dart';
+import 'prescription/prescription_entry_screen.dart';
 import 'history_settings/history_settings_screen.dart';
 
 class MainNavigationScreen extends StatefulWidget {
@@ -18,11 +18,11 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 
   final PageController _pageController = PageController(initialPage: 0);
 
-  final screens = const [
+  final List<Widget> _pages = const [
     PatientConsentScreen(),
-    EvaluationEntryScreen(),
-    PrescriptionEntryScreen(),
+    HomeScreen(),
     BDKEntryScreen(),
+    PrescriptionEntryScreen(),
     HistorySettingsScreen(),
   ];
 
@@ -77,7 +77,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
             currentIndex = index;
           });
         },
-        children: screens,
+        children: _pages,
       ),
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.fromLTRB(14, 0, 14, 16),
@@ -139,19 +139,19 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                     label: 'Patient',
                   ),
                   buildDestination(
-                    icon: Icons.tune_outlined,
-                    selectedIcon: Icons.tune_rounded,
-                    label: 'Évaluation',
-                  ),
-                  buildDestination(
-                    icon: Icons.description_outlined,
-                    selectedIcon: Icons.description_rounded,
-                    label: 'Prescription',
+                    icon: Icons.flag_outlined,
+                    selectedIcon: Icons.flag_rounded,
+                    label: 'Drapeaux',
                   ),
                   buildDestination(
                     icon: Icons.assignment_outlined,
                     selectedIcon: Icons.assignment_rounded,
                     label: 'BDK',
+                  ),
+                  buildDestination(
+                    icon: Icons.description_outlined,
+                    selectedIcon: Icons.description_rounded,
+                    label: 'Prescription',
                   ),
                   buildDestination(
                     icon: Icons.history_outlined,

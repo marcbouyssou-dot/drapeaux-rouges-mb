@@ -2,11 +2,22 @@ import 'package:flutter/material.dart';
 
 import '../home_screen.dart';
 
-class EvaluationEntryScreen extends StatelessWidget {
+class EvaluationEntryScreen extends StatefulWidget {
   const EvaluationEntryScreen({super.key});
 
   @override
+  State<EvaluationEntryScreen> createState() => _EvaluationEntryScreenState();
+}
+
+class _EvaluationEntryScreenState extends State<EvaluationEntryScreen> {
+  bool showEvaluation = false;
+
+  @override
   Widget build(BuildContext context) {
+    if (showEvaluation) {
+      return const HomeScreen();
+    }
+
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFF),
       body: SafeArea(
@@ -20,12 +31,9 @@ class EvaluationEntryScreen extends StatelessWidget {
                 child: Center(
                   child: GestureDetector(
                     onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const HomeScreen(),
-                        ),
-                      );
+                      setState(() {
+                        showEvaluation = true;
+                      });
                     },
                     child: Container(
                       width: double.infinity,
@@ -38,7 +46,8 @@ class EvaluationEntryScreen extends StatelessWidget {
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFFDB2777).withValues(alpha: 0.08),
+                            color: const Color(0xFFDB2777)
+                                .withValues(alpha: 0.08),
                             blurRadius: 28,
                             offset: const Offset(0, 14),
                           ),
@@ -75,9 +84,7 @@ class EvaluationEntryScreen extends StatelessWidget {
                               size: 68,
                             ),
                           ),
-
                           const SizedBox(height: 30),
-
                           const Text(
                             'DRAPEAUX',
                             textAlign: TextAlign.center,
@@ -88,9 +95,7 @@ class EvaluationEntryScreen extends StatelessWidget {
                               letterSpacing: -1.2,
                             ),
                           ),
-
                           const SizedBox(height: 12),
-
                           const Text(
                             'Évaluer les drapeaux rouges cliniques',
                             textAlign: TextAlign.center,
@@ -101,9 +106,7 @@ class EvaluationEntryScreen extends StatelessWidget {
                               fontWeight: FontWeight.w600,
                             ),
                           ),
-
                           const SizedBox(height: 26),
-
                           Container(
                             padding: const EdgeInsets.symmetric(
                               horizontal: 18,

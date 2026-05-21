@@ -33,6 +33,7 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
   bool consentementCoche = false;
   bool isSaving = false;
   bool isSigning = false;
+  bool showIdentifiedPatientForm = false;
 
   @override
   void initState() {
@@ -69,15 +70,10 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
     if (query.isEmpty) return patients;
 
     return patients.where((patient) {
-      final nom = patient.nom.toLowerCase();
-      final prenom = patient.prenom.toLowerCase();
-      final naissance = patient.dateNaissance.toLowerCase();
-      final anonymousId = patient.anonymousId.toLowerCase();
-
-      return nom.contains(query) ||
-          prenom.contains(query) ||
-          naissance.contains(query) ||
-          anonymousId.contains(query);
+      return patient.nom.toLowerCase().contains(query) ||
+          patient.prenom.toLowerCase().contains(query) ||
+          patient.dateNaissance.toLowerCase().contains(query) ||
+          patient.anonymousId.toLowerCase().contains(query);
     }).toList();
   }
 
@@ -97,6 +93,19 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
     }
 
     return null;
+  }
+
+  Future<void> activateAnonymousMode() async {
+    await RgpdLocalService.clearCurrentPatient();
+    await loadPatients();
+
+    if (!mounted) return;
+
+    setState(() {
+      showIdentifiedPatientForm = false;
+    });
+
+    showMessage('Mode patient anonyme activé.');
   }
 
   Future<void> saveOrActivatePatient() async {
@@ -133,11 +142,9 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
 
     if (signatureBytes == null) {
       if (!mounted) return;
-
       setState(() {
         isSaving = false;
       });
-
       showMessage('Erreur lors de la sauvegarde de la signature.');
       return;
     }
@@ -154,12 +161,12 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
     );
 
     await RgpdLocalService.saveOrUpdatePatient(patient);
-    await RgpdLocalService.setCurrentPatientId(patient.localId);
 
     if (!mounted) return;
 
     setState(() {
       isSaving = false;
+      showIdentifiedPatientForm = false;
     });
 
     clearForm();
@@ -184,6 +191,10 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
 
     if (!mounted) return;
 
+    setState(() {
+      showIdentifiedPatientForm = false;
+    });
+
     showMessage('${patient.nom.toUpperCase()} ${patient.prenom} activé.');
   }
 
@@ -194,8 +205,7 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
         return AlertDialog(
           title: const Text('Supprimer ce patient ?'),
           content: Text(
-            'Cette action supprimera ${patient.nom.toUpperCase()} ${patient.prenom} de cet appareil. '
-            'Les évaluations déjà enregistrées peuvent rester dans l’historique.',
+            'Cette action supprimera ${patient.nom.toUpperCase()} ${patient.prenom} de cet appareil.',
           ),
           actions: [
             TextButton(
@@ -290,84 +300,243 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
             physics: isSigning
                 ? const NeverScrollableScrollPhysics()
                 : const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.fromLTRB(22, 18, 22, 150),
+            padding: const EdgeInsets.fromLTRB(22, 22, 22, 150),
             children: [
-              buildHeroCard(),
-              const SizedBox(height: 22),
-              buildSearchBar(),
+              buildEntryCards(),
               if (currentPatient != null) ...[
-                const SizedBox(height: 14),
+                const SizedBox(height: 18),
                 buildCurrentPatientBanner(),
               ],
-              const SizedBox(height: 18),
-              buildPatientForm(foundPatient),
-              const SizedBox(height: 26),
-              buildPatientsList(visiblePatients),
-              const SizedBox(height: 20),
-              buildDeleteAllButton(),
+              if (currentPatient == null && !showIdentifiedPatientForm) ...[
+                const SizedBox(height: 18),
+                buildAnonymousBanner(),
+              ],
+              if (showIdentifiedPatientForm) ...[
+                const SizedBox(height: 22),
+                buildSearchBar(),
+                const SizedBox(height: 18),
+                buildPatientForm(foundPatient),
+                const SizedBox(height: 26),
+                buildPatientsList(visiblePatients),
+                const SizedBox(height: 20),
+                buildDeleteAllButton(),
+              ],
             ],
           ),
         ),
       ),
-      bottomNavigationBar: buildBottomSaveBar(foundPatient),
+      bottomNavigationBar:
+          showIdentifiedPatientForm ? buildBottomSaveBar(foundPatient) : null,
     );
   }
 
-  Widget buildHeroCard() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(26),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(34),
-        gradient: const LinearGradient(
-          colors: [
-            Color(0xFF60A5FA),
-            Color(0xFF2563EB),
+  Widget buildEntryCards() {
+  return LayoutBuilder(
+    builder: (context, constraints) {
+      final isWide = constraints.maxWidth > 900;
+
+      if (isWide) {
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: buildBigEntryCard(
+                title: 'PATIENT IDENTIFIÉ',
+                subtitle:
+                    'Créer ou activer un patient avec consentement et signature.',
+                buttonText: 'Renseigner le patient',
+                icon: Icons.person_add_alt_1_rounded,
+                backgroundColor: const Color(0xFFEFF6FF),
+                borderColor: const Color(0xFFBFDBFE),
+                mainColor: const Color(0xFF2563EB),
+                onTap: () {
+                  setState(() {
+                    showIdentifiedPatientForm = true;
+                  });
+                },
+              ),
+            ),
+            const SizedBox(width: 18),
+            Expanded(
+              child: buildBigEntryCard(
+                title: 'PATIENT ANONYME',
+                subtitle:
+                    'Évaluation rapide sans données personnelles nominatives.',
+                buttonText: 'Utiliser le mode anonyme',
+                icon: Icons.no_accounts_rounded,
+                backgroundColor: const Color(0xFFF8FAFC),
+                borderColor: const Color(0xFFE2E8F0),
+                mainColor: const Color(0xFF64748B),
+                onTap: activateAnonymousMode,
+              ),
+            ),
           ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF2563EB).withValues(alpha: 0.22),
-            blurRadius: 30,
-            offset: const Offset(0, 16),
+        );
+      }
+
+      return Column(
+        children: [
+          buildBigEntryCard(
+            title: 'PATIENT IDENTIFIÉ',
+            subtitle:
+                'Créer ou activer un patient avec consentement et signature.',
+            buttonText: 'Renseigner le patient',
+            icon: Icons.person_add_alt_1_rounded,
+            backgroundColor: const Color(0xFFEFF6FF),
+            borderColor: const Color(0xFFBFDBFE),
+            mainColor: const Color(0xFF2563EB),
+            onTap: () {
+              setState(() {
+                showIdentifiedPatientForm = true;
+              });
+            },
+          ),
+          const SizedBox(height: 18),
+          buildBigEntryCard(
+            title: 'PATIENT ANONYME',
+            subtitle:
+                'Évaluation rapide sans données personnelles nominatives.',
+            buttonText: 'Utiliser le mode anonyme',
+            icon: Icons.no_accounts_rounded,
+            backgroundColor: const Color(0xFFF8FAFC),
+            borderColor: const Color(0xFFE2E8F0),
+            mainColor: const Color(0xFF64748B),
+            onTap: activateAnonymousMode,
           ),
         ],
+      );
+    },
+  );
+}
+
+  Widget buildBigEntryCard({
+    required String title,
+    required String subtitle,
+    required String buttonText,
+    required IconData icon,
+    required Color backgroundColor,
+    required Color borderColor,
+    required Color mainColor,
+    required VoidCallback onTap,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(32),
+        child: Container(
+          width: double.infinity,
+          height: 360,
+          padding: const EdgeInsets.fromLTRB(24, 28, 24, 28),
+          decoration: BoxDecoration(
+            color: backgroundColor,
+            borderRadius: BorderRadius.circular(32),
+            border: Border.all(color: borderColor),
+            boxShadow: [
+              BoxShadow(
+                color: mainColor.withValues(alpha: 0.08),
+                blurRadius: 28,
+                offset: const Offset(0, 14),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              Container(
+                width: 116,
+                height: 116,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: LinearGradient(
+                    colors: [
+                      mainColor.withValues(alpha: 0.78),
+                      mainColor,
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: mainColor.withValues(alpha: 0.22),
+                      blurRadius: 28,
+                      offset: const Offset(0, 14),
+                    ),
+                  ],
+                ),
+                child: Icon(
+                  icon,
+                  color: Colors.white,
+                  size: 58,
+                ),
+              ),
+              const SizedBox(height: 18),
+              Text(
+                title,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: mainColor,
+                  fontSize: 28,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: -1,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                subtitle,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  color: Color(0xFF0F172A),
+                  fontSize: 16,
+                  height: 1.35,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: 24),
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 22, vertical: 13),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.78),
+                  borderRadius: BorderRadius.circular(18),
+                  border: Border.all(color: borderColor),
+                ),
+                child: Text(
+                  buttonText,
+                  style: TextStyle(
+                    color: mainColor,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 14,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+    );
+  }
+
+  Widget buildAnonymousBanner() {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+      ),
+      child: const Row(
         children: [
-          Container(
-            padding: const EdgeInsets.all(15),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.18),
-              borderRadius: BorderRadius.circular(22),
-            ),
-            child: const Icon(
-              Icons.person_add_alt_1_rounded,
-              color: Colors.white,
-              size: 34,
-            ),
-          ),
-          const SizedBox(height: 28),
-          const Text(
-            'Patient',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 31,
-              fontWeight: FontWeight.w900,
-              letterSpacing: -1.2,
-            ),
-          ),
-          const SizedBox(height: 10),
-          Text(
-            'Créer, rechercher ou activer un patient avec consentement local RGPD.',
-            style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.94),
-              fontSize: 15,
-              height: 1.45,
-              fontWeight: FontWeight.w500,
+          Icon(Icons.info_outline_rounded, color: Color(0xFF64748B)),
+          SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              'Aucun patient identifié actif. Les évaluations seront associées à “Patient non renseigné”.',
+              style: TextStyle(
+                color: Color(0xFF64748B),
+                fontWeight: FontWeight.w700,
+                height: 1.35,
+              ),
             ),
           ),
         ],
@@ -494,10 +663,8 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
               style: TextButton.styleFrom(
                 foregroundColor: const Color(0xFF2563EB),
                 backgroundColor: const Color(0xFFEAF2FF),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 18,
-                  vertical: 11,
-                ),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 18, vertical: 11),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(18),
                 ),
@@ -520,10 +687,7 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
       ),
       child: Row(
         children: [
-          const Icon(
-            Icons.person_search_rounded,
-            color: Color(0xFF16A34A),
-          ),
+          const Icon(Icons.person_search_rounded, color: Color(0xFF16A34A)),
           const SizedBox(width: 10),
           Expanded(
             child: Text(
@@ -564,7 +728,8 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
         suffixIcon: suffixIcon == null ? null : Icon(suffixIcon),
         filled: true,
         fillColor: const Color(0xFFF8FAFC),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(20),
           borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
@@ -717,7 +882,8 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
       ),
       child: ListTile(
         onTap: () => selectPatient(patient),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
         leading: CircleAvatar(
           radius: 21,
           backgroundColor:
@@ -844,9 +1010,7 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
             icon: const Icon(Icons.save_outlined),
             label: Text(
               isSaving ? 'Enregistrement...' : buttonText,
-              style: const TextStyle(
-                fontWeight: FontWeight.w900,
-              ),
+              style: const TextStyle(fontWeight: FontWeight.w900),
             ),
             style: FilledButton.styleFrom(
               backgroundColor: const Color(0xFF2563EB),

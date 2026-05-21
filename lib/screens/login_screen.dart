@@ -7,142 +7,115 @@ class LoginScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    final isSmallHeight = size.height < 740;
+
     return Scaffold(
-      body: SizedBox.expand(
-        child: Stack(
-          children: [
-
-            /// FOND PLEIN ÉCRAN
-            Positioned.fill(
-              child: Image.asset(
-                'assets/images/login_background.png',
-                fit: BoxFit.cover,
-                alignment: Alignment.center,
-              ),
+      resizeToAvoidBottomInset: true,
+      backgroundColor: const Color(0xFFF8FAFF),
+      body: Stack(
+        children: [
+          Positioned.fill(
+            child: Image.asset(
+              'assets/images/login_background.png',
+              fit: BoxFit.cover,
+              alignment: Alignment.center,
             ),
-
-            /// FILTRE LÉGER
-            Positioned.fill(
-              child: Container(
-                color: Colors.white.withValues(alpha: 0.06),
-              ),
+          ),
+          Positioned.fill(
+            child: Container(
+              color: Colors.white.withValues(alpha: 0.16),
             ),
-
-            /// CONTENU
-            SafeArea(
-              child: Center(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 24,
-                    vertical: 24,
-                  ),
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(
-                      maxWidth: 520,
+          ),
+          SafeArea(
+            child: Center(
+              child: SingleChildScrollView(
+                keyboardDismissBehavior:
+                    ScrollViewKeyboardDismissBehavior.onDrag,
+                padding: EdgeInsets.fromLTRB(
+                  22,
+                  isSmallHeight ? 14 : 24,
+                  22,
+                  24,
+                ),
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 460),
+                  child: Container(
+                    padding: EdgeInsets.fromLTRB(
+                      22,
+                      isSmallHeight ? 18 : 24,
+                      22,
+                      isSmallHeight ? 18 : 24,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.90),
+                      borderRadius: BorderRadius.circular(34),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.70),
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.10),
+                          blurRadius: 30,
+                          offset: const Offset(0, 16),
+                        ),
+                      ],
                     ),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-
-                        /// LOGO URPS
                         Image.asset(
                           'assets/images/banner_urps_large.png',
-                          width: double.infinity,
+                          height: isSmallHeight ? 82 : 120,
                           fit: BoxFit.contain,
                         ),
 
-                        const SizedBox(height: 34),
+                        SizedBox(height: isSmallHeight ? 18 : 26),
 
-                        /// IDENTIFIANT
-                        TextField(
-                          decoration: InputDecoration(
-                            prefixIcon:
-                                const Icon(Icons.person_outline),
-                            hintText: "Identifiant",
-                            filled: true,
-                            fillColor:
-                                Colors.white.withValues(alpha: 0.92),
-                            contentPadding:
-                                const EdgeInsets.symmetric(
-                              vertical: 20,
-                              horizontal: 20,
-                            ),
-                            border: OutlineInputBorder(
-                              borderRadius:
-                                  BorderRadius.circular(22),
-                              borderSide: const BorderSide(
-                                color: Color(0xFFDCE5F3),
-                              ),
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius:
-                                  BorderRadius.circular(22),
-                              borderSide: const BorderSide(
-                                color: Color(0xFFDCE5F3),
-                              ),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius:
-                                  BorderRadius.circular(22),
-                              borderSide: const BorderSide(
-                                color: Color(0xFF0B57E3),
-                                width: 1.5,
-                              ),
-                            ),
+                        const Text(
+                          'Accès Direct MK',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: Color(0xFF0F172A),
+                            fontSize: 28,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: -1,
                           ),
                         ),
 
-                        const SizedBox(height: 18),
+                        const SizedBox(height: 6),
 
-                        /// MOT DE PASSE
-                        TextField(
+                        const Text(
+                          'Connexion professionnelle sécurisée',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: Color(0xFF64748B),
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+
+                        SizedBox(height: isSmallHeight ? 20 : 28),
+
+                        _loginField(
+                          icon: Icons.person_outline_rounded,
+                          hint: 'Identifiant',
+                        ),
+
+                        const SizedBox(height: 14),
+
+                        _loginField(
+                          icon: Icons.lock_outline_rounded,
+                          hint: 'Mot de passe',
                           obscureText: true,
-                          decoration: InputDecoration(
-                            prefixIcon:
-                                const Icon(Icons.lock_outline),
-                            suffixIcon: const Icon(
-                              Icons.visibility_outlined,
-                            ),
-                            hintText: "Mot de passe",
-                            filled: true,
-                            fillColor:
-                                Colors.white.withValues(alpha: 0.92),
-                            contentPadding:
-                                const EdgeInsets.symmetric(
-                              vertical: 20,
-                              horizontal: 20,
-                            ),
-                            border: OutlineInputBorder(
-                              borderRadius:
-                                  BorderRadius.circular(22),
-                              borderSide: const BorderSide(
-                                color: Color(0xFFDCE5F3),
-                              ),
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius:
-                                  BorderRadius.circular(22),
-                              borderSide: const BorderSide(
-                                color: Color(0xFFDCE5F3),
-                              ),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius:
-                                  BorderRadius.circular(22),
-                              borderSide: const BorderSide(
-                                color: Color(0xFF0B57E3),
-                                width: 1.5,
-                              ),
-                            ),
-                          ),
+                          suffixIcon: Icons.visibility_outlined,
                         ),
 
-                        const SizedBox(height: 28),
+                        SizedBox(height: isSmallHeight ? 18 : 26),
 
-                        /// BOUTON CONNEXION
                         SizedBox(
                           width: double.infinity,
-                          height: 66,
+                          height: 58,
                           child: ElevatedButton.icon(
                             onPressed: () {
                               Navigator.of(context).pushReplacement(
@@ -152,41 +125,30 @@ class LoginScreen extends StatelessWidget {
                                 ),
                               );
                             },
-                            icon: const Icon(
-                              Icons.lock_open_rounded,
-                              size: 24,
-                            ),
-                            label: const Text(
-                              "CONNEXION SÉCURISÉE",
-                            ),
+                            icon: const Icon(Icons.lock_open_rounded),
+                            label: const Text('CONNEXION SÉCURISÉE'),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor:
-                                  const Color(0xFF0B57E3),
+                              backgroundColor: const Color(0xFF2563EB),
                               foregroundColor: Colors.white,
-                              elevation: 10,
-                              shadowColor:
-                                  const Color(0xFF0B57E3)
-                                      .withValues(alpha: 0.30),
+                              elevation: 0,
                               textStyle: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w800,
+                                fontSize: 15,
+                                fontWeight: FontWeight.w900,
                                 letterSpacing: 0.3,
                               ),
                               shape: RoundedRectangleBorder(
-                                borderRadius:
-                                    BorderRadius.circular(22),
+                                borderRadius: BorderRadius.circular(20),
                               ),
                             ),
                           ),
                         ),
 
-                        const SizedBox(height: 42),
+                        SizedBox(height: isSmallHeight ? 16 : 22),
 
-                        /// ICÔNE APPLICATION
                         Image.asset(
                           'assets/icons/app_icon.png',
-                          width: 110,
-                          height: 110,
+                          width: isSmallHeight ? 64 : 82,
+                          height: isSmallHeight ? 64 : 82,
                         ),
                       ],
                     ),
@@ -194,7 +156,39 @@ class LoginScreen extends StatelessWidget {
                 ),
               ),
             ),
-          ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _loginField({
+    required IconData icon,
+    required String hint,
+    bool obscureText = false,
+    IconData? suffixIcon,
+  }) {
+    return TextField(
+      obscureText: obscureText,
+      decoration: InputDecoration(
+        prefixIcon: Icon(icon),
+        suffixIcon: suffixIcon == null ? null : Icon(suffixIcon),
+        hintText: hint,
+        filled: true,
+        fillColor: const Color(0xFFF8FAFC),
+        contentPadding:
+            const EdgeInsets.symmetric(vertical: 18, horizontal: 18),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(20),
+          borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(20),
+          borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(20),
+          borderSide: const BorderSide(color: Color(0xFF2563EB), width: 1.6),
         ),
       ),
     );
