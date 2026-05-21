@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 
 import '../services/history_service.dart';
-import '../theme/app_text_styles.dart';
-import '../widgets/urps_banner.dart';
 import 'evaluation/evaluation_detail_screen.dart';
 
 class HistoryScreen extends StatefulWidget {
@@ -225,17 +223,14 @@ class _HistoryScreenState extends State<HistoryScreen> {
     final results = filteredHistory;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF6F8FC),
+      backgroundColor: const Color(0xFFF8FAFF),
       body: SafeArea(
         child: RefreshIndicator(
           onRefresh: loadHistory,
           child: ListView(
-            padding: const EdgeInsets.fromLTRB(18, 12, 18, 150),
+            padding: const EdgeInsets.fromLTRB(22, 22, 22, 140),
             children: [
-              const UrpsBanner(isLarge: false),
-              buildStatsOverview(),
-              const SizedBox(height: 14),
-              buildDashboardSummary(),
+              buildModernHistoryHero(),
               const SizedBox(height: 18),
               buildSearchBar(),
               const SizedBox(height: 14),
@@ -251,147 +246,129 @@ class _HistoryScreenState extends State<HistoryScreen> {
     );
   }
 
-  Widget buildStatsOverview() {
+  Widget buildModernHistoryHero() {
     return Container(
-      padding: const EdgeInsets.all(20),
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(22, 26, 22, 26),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [
-            Color(0xFF2563EB),
-            Color(0xFF1D4ED8),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(30),
+        color: const Color(0xFFEFF6FF),
+        borderRadius: BorderRadius.circular(32),
+        border: Border.all(color: const Color(0xFFBFDBFE)),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF2563EB).withValues(alpha: 0.08),
+            blurRadius: 28,
+            offset: const Offset(0, 14),
+          ),
+        ],
       ),
-      child: Row(
+      child: Column(
         children: [
-          Expanded(
-            child: buildOverviewItem(
-              title: 'Bilans',
-              value: '$totalEvaluations',
+          Container(
+            width: 108,
+            height: 108,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: const LinearGradient(
+                colors: [
+                  Color(0xFF60A5FA),
+                  Color(0xFF2563EB),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF2563EB).withValues(alpha: 0.22),
+                  blurRadius: 28,
+                  offset: const Offset(0, 14),
+                ),
+              ],
+            ),
+            child: const Icon(
+              Icons.history_rounded,
+              color: Colors.white,
+              size: 56,
             ),
           ),
-          buildVerticalDivider(),
-          Expanded(
-            child: buildOverviewItem(
-              title: 'Score moyen',
-              value: averageScore.toStringAsFixed(1),
+          const SizedBox(height: 22),
+          const Text(
+            'HISTORIQUE',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: Color(0xFF2563EB),
+              fontSize: 30,
+              fontWeight: FontWeight.w900,
+              letterSpacing: -1,
             ),
           ),
-          buildVerticalDivider(),
-          Expanded(
-            child: buildOverviewItem(
-              title: 'Drapeaux',
-              value: '$totalFlags',
+          const SizedBox(height: 10),
+          const Text(
+            'Consulter les évaluations enregistrées localement',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: Color(0xFF0F172A),
+              fontSize: 16,
+              height: 1.35,
+              fontWeight: FontWeight.w700,
             ),
+          ),
+          const SizedBox(height: 22),
+          Row(
+            children: [
+              Expanded(
+                child: buildHeroStat('Bilans', '$totalEvaluations'),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: buildHeroStat('Risques élevés', '$highRiskCount'),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: buildHeroStat('Drapeaux', '$totalFlags'),
+              ),
+            ],
           ),
         ],
       ),
     );
   }
 
-  Widget buildDashboardSummary() {
-    return Row(
-      children: [
-        Expanded(
-          child: buildDashboardCard(
-            icon: Icons.warning_amber_rounded,
-            title: 'Risques élevés',
-            value: '$highRiskCount',
-            color: const Color(0xFFDC2626),
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: buildDashboardCard(
-            icon: Icons.analytics_outlined,
-            title: 'Motif fréquent',
-            value: mostFrequentMotif,
-            color: const Color(0xFF2563EB),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget buildDashboardCard({
-    required IconData icon,
-    required String title,
-    required String value,
-    required Color color,
-  }) {
+  Widget buildHeroStat(String label, String value) {
     return Container(
-      height: 132,
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(26),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+        color: Colors.white.withValues(alpha: 0.78),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: const Color(0xFFBFDBFE)),
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, color: color, size: 28),
-          const Spacer(),
-          Text(
-            title,
-            style: const TextStyle(
-              color: Color(0xFF64748B),
-              fontWeight: FontWeight.w700,
-              fontSize: 12,
-            ),
-          ),
-          const SizedBox(height: 4),
           Text(
             value,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              color: color,
+            style: const TextStyle(
+              color: Color(0xFF2563EB),
+              fontSize: 21,
               fontWeight: FontWeight.w900,
-              fontSize: 18,
-              letterSpacing: -0.4,
+              letterSpacing: -0.8,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              color: Color(0xFF64748B),
+              fontSize: 11,
+              fontWeight: FontWeight.w800,
             ),
           ),
         ],
       ),
-    );
-  }
-
-  Widget buildVerticalDivider() {
-    return Container(
-      width: 1,
-      height: 54,
-      color: Colors.white.withValues(alpha: 0.25),
-    );
-  }
-
-  Widget buildOverviewItem({
-    required String title,
-    required String value,
-  }) {
-    return Column(
-      children: [
-        Text(
-          value,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 26,
-            fontWeight: FontWeight.w900,
-            letterSpacing: -1,
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          title,
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            color: Colors.white.withValues(alpha: 0.82),
-            fontWeight: FontWeight.w600,
-            fontSize: 12,
-          ),
-        ),
-      ],
     );
   }
 
@@ -500,7 +477,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
             style: const TextStyle(
               fontSize: 17,
               color: Color(0xFF64748B),
-              fontWeight: FontWeight.w700,
+              fontWeight: FontWeight.w800,
             ),
           ),
           const SizedBox(height: 6),
@@ -541,12 +518,19 @@ class _HistoryScreenState extends State<HistoryScreen> {
         }
       },
       child: Container(
-        margin: const EdgeInsets.only(bottom: 16),
+        margin: const EdgeInsets.only(bottom: 14),
         padding: const EdgeInsets.all(18),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(28),
           border: Border.all(color: const Color(0xFFE2E8F0)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.035),
+              blurRadius: 16,
+              offset: const Offset(0, 8),
+            ),
+          ],
         ),
         child: Row(
           children: [
@@ -572,7 +556,11 @@ class _HistoryScreenState extends State<HistoryScreen> {
                     patientDisplayName,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: AppTextStyles.cardTitle.copyWith(fontSize: 17),
+                    style: const TextStyle(
+                      color: Color(0xFF0F172A),
+                      fontSize: 17,
+                      fontWeight: FontWeight.w900,
+                    ),
                   ),
                   const SizedBox(height: 4),
                   Text(
@@ -586,7 +574,11 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   const SizedBox(height: 4),
                   Text(
                     formatDate(item['date']),
-                    style: AppTextStyles.cardSubtitle,
+                    style: const TextStyle(
+                      color: Color(0xFF64748B),
+                      fontWeight: FontWeight.w600,
+                      fontSize: 13,
+                    ),
                   ),
                   const SizedBox(height: 10),
                   Wrap(

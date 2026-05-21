@@ -53,7 +53,7 @@ class ClinicalCategoryPicker extends StatelessWidget {
     final categoryNames = categories.keys.toList();
 
     return Container(
-      height: MediaQuery.of(context).size.height * 0.96,
+      height: MediaQuery.of(context).size.height * 0.88,
       padding: const EdgeInsets.fromLTRB(18, 8, 18, 14),
       decoration: const BoxDecoration(
         color: Color(0xFFF8FAFC),
@@ -73,33 +73,9 @@ class ClinicalCategoryPicker extends StatelessWidget {
                 borderRadius: BorderRadius.circular(99),
               ),
             ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                const SizedBox(width: 44),
-                const Expanded(
-                  child: Text(
-                    'Choisir un motif',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Color(0xFF0F172A),
-                      fontSize: 24,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: -0.5,
-                    ),
-                  ),
-                ),
-                IconButton(
-                  onPressed: () => Navigator.pop(context),
-                  icon: const Icon(Icons.close_rounded),
-                  style: IconButton.styleFrom(
-                    backgroundColor: const Color(0xFFE2E8F0),
-                    foregroundColor: const Color(0xFF0F172A),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
+
+            const SizedBox(height: 22),
+
             Expanded(
               child: ListView.separated(
                 physics: const NeverScrollableScrollPhysics(),
@@ -117,7 +93,9 @@ class ClinicalCategoryPicker extends StatelessWidget {
                 },
               ),
             ),
+
             const SizedBox(height: 10),
+
             Container(
               width: double.infinity,
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),

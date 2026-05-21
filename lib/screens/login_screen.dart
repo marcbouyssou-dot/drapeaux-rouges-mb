@@ -16,15 +16,17 @@ class LoginScreen extends StatelessWidget {
       body: Stack(
         children: [
           Positioned.fill(
-            child: Image.asset(
-              'assets/images/login_background.png',
-              fit: BoxFit.cover,
-              alignment: Alignment.center,
-            ),
-          ),
-          Positioned.fill(
             child: Container(
-              color: Colors.white.withValues(alpha: 0.16),
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    Color(0xFFF8FBFF),
+                    Color(0xFFEAF2FF),
+                  ],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                ),
+              ),
             ),
           ),
           SafeArea(
@@ -48,7 +50,7 @@ class LoginScreen extends StatelessWidget {
                       isSmallHeight ? 18 : 24,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.90),
+                      color: Colors.white.withValues(alpha: 0.92),
                       borderRadius: BorderRadius.circular(34),
                       border: Border.all(
                         color: Colors.white.withValues(alpha: 0.70),
@@ -72,31 +74,6 @@ class LoginScreen extends StatelessWidget {
 
                         SizedBox(height: isSmallHeight ? 18 : 26),
 
-                        const Text(
-                          'Accès Direct MK',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: Color(0xFF0F172A),
-                            fontSize: 28,
-                            fontWeight: FontWeight.w900,
-                            letterSpacing: -1,
-                          ),
-                        ),
-
-                        const SizedBox(height: 6),
-
-                        const Text(
-                          'Connexion professionnelle sécurisée',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: Color(0xFF64748B),
-                            fontSize: 14,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-
-                        SizedBox(height: isSmallHeight ? 20 : 28),
-
                         _loginField(
                           icon: Icons.person_outline_rounded,
                           hint: 'Identifiant',
@@ -111,7 +88,29 @@ class LoginScreen extends StatelessWidget {
                           suffixIcon: Icons.visibility_outlined,
                         ),
 
-                        SizedBox(height: isSmallHeight ? 18 : 26),
+                        const SizedBox(height: 6),
+
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: TextButton(
+                            onPressed: () {},
+                            style: TextButton.styleFrom(
+                              foregroundColor: const Color(0xFF2563EB),
+                              padding: EdgeInsets.zero,
+                              minimumSize: const Size(0, 34),
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            ),
+                            child: const Text(
+                              'Mot de passe oublié ?',
+                              style: TextStyle(
+                                fontWeight: FontWeight.w800,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ),
+                        ),
+
+                        SizedBox(height: isSmallHeight ? 14 : 22),
 
                         SizedBox(
                           width: double.infinity,

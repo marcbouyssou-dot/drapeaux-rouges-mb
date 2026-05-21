@@ -6,8 +6,7 @@ import '../models/practitioner_profile.dart';
 import '../services/global_statistics_csv_service.dart';
 import '../services/patient_record_service.dart';
 import '../services/practitioner_profile_service.dart';
-import '../theme/app_text_styles.dart';
-import '../widgets/urps_banner.dart';
+
 import 'access_direct_settings_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -173,8 +172,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
         child: ListView(
           padding: const EdgeInsets.fromLTRB(18, 12, 18, 150),
           children: [
-            const UrpsBanner(isLarge: false),
-            const SizedBox(height: 22),
+            
+            buildHeroCard(),
+            const SizedBox(height: 26),
 
             buildSectionLabel('PROFIL MK'),
             const SizedBox(height: 12),
@@ -286,7 +286,80 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
     );
   }
-
+  Widget buildHeroCard() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(26, 34, 26, 34),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(34),
+        border: Border.all(
+          color: const Color(0xFFE2E8F0),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 22,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Container(
+            width: 118,
+            height: 118,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: const LinearGradient(
+                colors: [
+                  Color(0xFF64748B),
+                  Color(0xFF334155),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF334155)
+                      .withValues(alpha: 0.20),
+                  blurRadius: 28,
+                  offset: const Offset(0, 14),
+                ),
+              ],
+            ),
+            child: const Icon(
+              Icons.settings_rounded,
+              color: Colors.white,
+              size: 58,
+            ),
+          ),
+          const SizedBox(height: 26),
+          const Text(
+            'PARAMÈTRES',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: Color(0xFF334155),
+              fontSize: 30,
+              fontWeight: FontWeight.w900,
+              letterSpacing: -1,
+            ),
+          ),
+          const SizedBox(height: 10),
+          const Text(
+            'Profil praticien, confidentialité, exports et préférences de l’application.',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: Color(0xFF475569),
+              fontSize: 16,
+              height: 1.4,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
   Widget buildSectionLabel(String text) {
     return Padding(
       padding: const EdgeInsets.only(left: 4),
@@ -335,11 +408,26 @@ class _SettingsScreenState extends State<SettingsScreen> {
             size: 26,
           ),
         ),
-        title: Text(title, style: AppTextStyles.cardTitle),
-        subtitle: Padding(
-          padding: const EdgeInsets.only(top: 3),
-          child: Text(subtitle, style: AppTextStyles.cardSubtitle),
-        ),
+        title: Text(
+  title,
+  style: const TextStyle(
+    color: Color(0xFF0F172A),
+    fontSize: 15.5,
+    fontWeight: FontWeight.w900,
+  ),
+),
+subtitle: Padding(
+  padding: const EdgeInsets.only(top: 3),
+  child: Text(
+    subtitle,
+    style: const TextStyle(
+      color: Color(0xFF64748B),
+      fontSize: 13,
+      height: 1.35,
+      fontWeight: FontWeight.w600,
+    ),
+  ),
+),
         trailing: Container(
           height: 34,
           width: 34,
