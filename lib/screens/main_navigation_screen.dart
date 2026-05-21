@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
-import 'history_screen.dart';
-import 'home_screen.dart';
 import 'patient_consent_screen.dart';
-import 'prescription_screen.dart';
-import 'settings_screen.dart';
+import 'evaluation/evaluation_entry_screen.dart';
+import 'prescription/prescription_entry_screen.dart';
+import 'bdk/bdk_entry_screen.dart';
+import 'history_settings/history_settings_screen.dart';
 
 class MainNavigationScreen extends StatefulWidget {
   const MainNavigationScreen({super.key});
@@ -16,14 +16,14 @@ class MainNavigationScreen extends StatefulWidget {
 class _MainNavigationScreenState extends State<MainNavigationScreen> {
   int currentIndex = 0;
 
-final PageController _pageController = PageController(initialPage: 0);
+  final PageController _pageController = PageController(initialPage: 0);
 
   final screens = const [
     PatientConsentScreen(),
-    HomeScreen(),
-    HistoryScreen(),
-    PrescriptionScreen(),
-    SettingsScreen(),
+    EvaluationEntryScreen(),
+    PrescriptionEntryScreen(),
+    BDKEntryScreen(),
+    HistorySettingsScreen(),
   ];
 
   void goToPage(int index) {
@@ -50,18 +50,15 @@ final PageController _pageController = PageController(initialPage: 0);
     required String label,
   }) {
     return NavigationDestination(
-      icon: Icon(icon, size: 23),
+      icon: Icon(icon, size: 22),
       selectedIcon: AnimatedContainer(
         duration: const Duration(milliseconds: 220),
-        padding: const EdgeInsets.all(10),
+        padding: const EdgeInsets.all(9),
         decoration: BoxDecoration(
-          color: const Color(0xFF2563EB).withOpacity(0.10),
-          borderRadius: BorderRadius.circular(16),
+          color: const Color(0xFF2563EB).withValues(alpha: 0.10),
+          borderRadius: BorderRadius.circular(15),
         ),
-        child: Icon(
-          selectedIcon,
-          size: 24,
-        ),
+        child: Icon(selectedIcon, size: 23),
       ),
       label: label,
     );
@@ -71,6 +68,7 @@ final PageController _pageController = PageController(initialPage: 0);
   Widget build(BuildContext context) {
     return Scaffold(
       extendBody: true,
+      backgroundColor: const Color(0xFFF8FAFF),
       body: PageView(
         controller: _pageController,
         physics: const BouncingScrollPhysics(),
@@ -88,8 +86,8 @@ final PageController _pageController = PageController(initialPage: 0);
             borderRadius: BorderRadius.circular(34),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.10),
-                blurRadius: 30,
+                color: Colors.black.withValues(alpha: 0.10),
+                blurRadius: 28,
                 offset: const Offset(0, 12),
               ),
             ],
@@ -98,17 +96,16 @@ final PageController _pageController = PageController(initialPage: 0);
             borderRadius: BorderRadius.circular(34),
             child: NavigationBarTheme(
               data: NavigationBarThemeData(
-                backgroundColor: Colors.white.withOpacity(0.96),
+                backgroundColor: Colors.white.withValues(alpha: 0.97),
                 indicatorColor: Colors.transparent,
                 labelTextStyle: WidgetStateProperty.resolveWith(
                   (states) {
                     final selected = states.contains(WidgetState.selected);
 
                     return TextStyle(
-                      fontSize: 11,
-                      fontWeight:
-                          selected ? FontWeight.w900 : FontWeight.w600,
-                      letterSpacing: -0.2,
+                      fontSize: 10.5,
+                      fontWeight: selected ? FontWeight.w900 : FontWeight.w600,
+                      letterSpacing: -0.25,
                       color: selected
                           ? const Color(0xFF2563EB)
                           : const Color(0xFF64748B),
@@ -132,35 +129,34 @@ final PageController _pageController = PageController(initialPage: 0);
                 height: 76,
                 elevation: 0,
                 backgroundColor: Colors.transparent,
-                labelBehavior:
-                    NavigationDestinationLabelBehavior.alwaysShow,
+                labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
                 animationDuration: const Duration(milliseconds: 300),
                 onDestinationSelected: goToPage,
                 destinations: [
                   buildDestination(
-                    icon: Icons.person_outline,
-                    selectedIcon: Icons.person,
+                    icon: Icons.person_outline_rounded,
+                    selectedIcon: Icons.person_rounded,
                     label: 'Patient',
                   ),
                   buildDestination(
-                    icon: Icons.monitor_heart_outlined,
-                    selectedIcon: Icons.monitor_heart,
+                    icon: Icons.tune_outlined,
+                    selectedIcon: Icons.tune_rounded,
                     label: 'Évaluation',
                   ),
                   buildDestination(
-                    icon: Icons.history_outlined,
-                    selectedIcon: Icons.history,
-                    label: 'Historique',
-                  ),
-                  buildDestination(
                     icon: Icons.description_outlined,
-                    selectedIcon: Icons.description,
+                    selectedIcon: Icons.description_rounded,
                     label: 'Prescription',
                   ),
                   buildDestination(
-                    icon: Icons.settings_outlined,
-                    selectedIcon: Icons.settings,
-                    label: 'Réglages',
+                    icon: Icons.assignment_outlined,
+                    selectedIcon: Icons.assignment_rounded,
+                    label: 'BDK',
+                  ),
+                  buildDestination(
+                    icon: Icons.history_outlined,
+                    selectedIcon: Icons.history_rounded,
+                    label: 'Historique',
                   ),
                 ],
               ),

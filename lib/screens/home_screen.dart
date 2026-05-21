@@ -6,7 +6,6 @@ import '../models/access_direct_model.dart';
 import '../models/evaluation_model.dart';
 import '../models/patient_local.dart';
 import '../services/access_direct_local_service.dart';
-import '../services/access_direct_service.dart';
 import '../services/clinical_ai_service.dart';
 import '../services/csv_service.dart';
 import '../services/decision_engine_service.dart';
@@ -14,13 +13,19 @@ import '../services/history_service.dart';
 import '../services/pdf_service.dart';
 import '../services/rgpd_local_service.dart';
 import '../services/risk_score_service.dart';
-import '../theme/app_text_styles.dart';
+
 import '../widgets/clinical_category_picker.dart';
-import '../widgets/urps_banner.dart';
+
 import 'evaluation/red_flags_category_screen.dart';
+import 'evaluation/evaluation_result_screen.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  const HomeScreen({
+    super.key,
+    this.openPickerOnStart = false,
+  });
+
+  final bool openPickerOnStart;
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -41,11 +46,42 @@ class _HomeScreenState extends State<HomeScreen> {
   );
 
   @override
-  void initState() {
-    super.initState();
-    loadInitialData();
-  }
+void initState() {
+  super.initState();
+  loadInitialData();
 
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    if (widget.openPickerOnStart) {
+      openCategoryPicker();
+    }
+  });
+}
+  void openResultScreen() {
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (_) => EvaluationResultScreen(
+        score: score,
+        checkedCount: checkedCount,
+        riskLevel: riskLevel,
+        riskColor: riskColor,
+        selectedCategory: selectedCategory,
+        categories: categories,
+        patientDisplayName: patientDisplayName,
+        aiSummary: aiSummary,
+        checkedFlags: checkedFlags,
+        decisionMessage: DecisionEngineService.decisionMessage(
+          score: score,
+          selectedCategory: selectedCategory,
+          categories: categories,
+        ),
+        onReset: resetSession,
+        onSave: saveEvaluation,
+        onExportPdf: showPdfExportChoice,
+      ),
+    ),
+  );
+}
   Future<void> loadInitialData() async {
     final loadedHistory = await HistoryService.loadHistory();
     final patient = await RgpdLocalService.getCurrentPatient();
@@ -179,12 +215,22 @@ class _HomeScreenState extends State<HomeScreen> {
     );
 
     if (result != null) {
-      setState(() {
-        for (final item in items) {
-          item['checked'] = result.contains(itemTitle(item));
-        }
-      });
+  setState(() {
+    for (final item in items) {
+      item['checked'] = result.contains(itemTitle(item));
     }
+  });
+
+  if (checkedCount > 0) {
+    await Future.delayed(
+      const Duration(milliseconds: 180),
+    );
+
+    if (!mounted) return;
+
+    openResultScreen();
+  }
+}
   }
 
   Future<bool> confirmAnonymousMode({required String action}) async {
@@ -224,35 +270,36 @@ class _HomeScreenState extends State<HomeScreen> {
 
     if (!canContinue) return;
 
-    final decisionTitle = DecisionEngineService.decisionTitle(
-      score: score,
-      selectedCategory: selectedCategory,
-      categories: categories,
-    );
 
-    final decisionMessage = DecisionEngineService.decisionMessage(
-      score: score,
-      selectedCategory: selectedCategory,
-      categories: categories,
-    );
+    
 
     const uuid = Uuid();
+final decisionTitle = DecisionEngineService.decisionTitle(
+  score: score,
+  selectedCategory: selectedCategory,
+  categories: categories,
+);
 
+final decisionMessage = DecisionEngineService.decisionMessage(
+  score: score,
+  selectedCategory: selectedCategory,
+  categories: categories,
+);
     final evaluation = EvaluationModel(
-      evaluationId: uuid.v4(),
-      patientLocalId: currentPatient?.localId,
-      patientAnonymousId: currentPatient?.anonymousId,
-      patientDisplayName: patientDisplayName,
-      date: DateTime.now(),
-      motif: selectedCategory,
-      score: score,
-      riskLevel: riskLevel,
-      checkedCount: checkedCount,
-      checkedFlags: checkedFlags,
-      decisionTitle: decisionTitle,
-      decisionMessage: decisionMessage,
-      aiSummary: aiSummary,
-    );
+  evaluationId: uuid.v4(),
+  patientLocalId: currentPatient?.localId,
+  patientAnonymousId: currentPatient?.anonymousId,
+  patientDisplayName: patientDisplayName,
+  date: DateTime.now(),
+  motif: selectedCategory,
+  score: score,
+  riskLevel: riskLevel,
+  checkedCount: checkedCount,
+  checkedFlags: checkedFlags,
+  decisionTitle: decisionTitle,
+  decisionMessage: decisionMessage,
+  aiSummary: aiSummary,
+);
 
     await HistoryService.saveEvaluation(
       history: history,
@@ -427,61 +474,207 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    final decisionTitle = DecisionEngineService.decisionTitle(
-      score: score,
-      selectedCategory: selectedCategory,
-      categories: categories,
+Widget build(BuildContext context) {
+  if (widget.openPickerOnStart) {
+    return const Scaffold(
+      backgroundColor: Color(0xFFF8FAFF),
+      body: SizedBox.expand(),
     );
+  }
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFF6F8FC),
-      body: SafeArea(
-        child: RefreshIndicator(
-          onRefresh: loadInitialData,
-          child: ListView(
-            padding: const EdgeInsets.fromLTRB(18, 12, 18, 150),
-            children: [
-              const UrpsBanner(isLarge: false),
-              buildRedFlagsAccessCard(),
-              const SizedBox(height: 14),
-              buildClinicalSummaryCard(),
-              const SizedBox(height: 12),
-              buildCompactDecisionCard(decisionTitle),
-              const SizedBox(height: 16),
-              buildSecondaryButtons(),
-              const SizedBox(height: 16),
-              buildClinicalSafetyNote(),
-            ],
-          ),
+  return Scaffold(
+    backgroundColor: const Color(0xFFF8FAFF),
+    body: SafeArea(
+      child: RefreshIndicator(
+        onRefresh: loadInitialData,
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(22, 22, 22, 150),
+          children: [
+            buildModernEvaluationCard(),
+            const SizedBox(height: 18),
+            buildQuickStatusRow(),
+            const SizedBox(height: 18),
+            buildClinicalSafetyNote(),
+          ],
         ),
       ),
-      bottomNavigationBar: buildStickyActionBar(),
-    );
-  }
-
-  
-
-  Widget buildTitleBlock() {
-    return Row(
-      children: [
-        const Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Évaluation', style: AppTextStyles.pageTitle),
-              SizedBox(height: 4),
-              Text(
-                'Repérage rapide des drapeaux rouges',
-                style: AppTextStyles.pageSubtitle,
+    ),
+    bottomNavigationBar: buildStickyActionBar(),
+  );
+}
+Widget buildModernEvaluationCard() {
+  return Material(
+    color: Colors.transparent,
+    child: InkWell(
+      onTap: openCategoryPicker,
+      borderRadius: BorderRadius.circular(32),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.fromLTRB(24, 34, 24, 34),
+        decoration: BoxDecoration(
+          color: const Color(0xFFFFF1F7),
+          borderRadius: BorderRadius.circular(32),
+          border: Border.all(color: const Color(0xFFFBCFE8)),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFFDB2777).withValues(alpha: 0.08),
+              blurRadius: 28,
+              offset: const Offset(0, 14),
+            ),
+          ],
+        ),
+        child: Column(
+          children: [
+            Container(
+              width: 128,
+              height: 128,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: const LinearGradient(
+                  colors: [
+                    Color(0xFFF472B6),
+                    Color(0xFFDB2777),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFFDB2777).withValues(alpha: 0.24),
+                    blurRadius: 30,
+                    offset: const Offset(0, 14),
+                  ),
+                ],
               ),
-            ],
+              child: const Icon(
+                Icons.flag_rounded,
+                color: Colors.white,
+                size: 66,
+              ),
+            ),
+            const SizedBox(height: 28),
+            const Text(
+              'DRAPEAUX',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Color(0xFFDB2777),
+                fontSize: 32,
+                fontWeight: FontWeight.w900,
+                letterSpacing: -1.2,
+              ),
+            ),
+            const SizedBox(height: 12),
+            const Text(
+              'Choisir une pathologie et cocher les signes d’alerte',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Color(0xFF0F172A),
+                fontSize: 17,
+                height: 1.35,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 26),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.78),
+                borderRadius: BorderRadius.circular(18),
+                border: Border.all(color: const Color(0xFFFBCFE8)),
+              ),
+              child: const Text(
+                'Appuyer pour commencer',
+                style: TextStyle(
+                  color: Color(0xFFDB2777),
+                  fontWeight: FontWeight.w900,
+                  fontSize: 14,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
+Widget buildQuickStatusRow() {
+  return Row(
+    children: [
+      Expanded(
+        child: buildSmallStatusCard(
+          icon: Icons.person_rounded,
+          label: 'Patient',
+          value: currentPatient == null ? 'Non renseigné' : patientDisplayName,
+          color: currentPatient == null
+              ? const Color(0xFFF97316)
+              : const Color(0xFF16A34A),
+        ),
+      ),
+      const SizedBox(width: 12),
+      Expanded(
+        child: buildSmallStatusCard(
+          icon: Icons.monitor_heart_rounded,
+          label: 'Score',
+          value: '$score / $checkedCount item(s)',
+          color: riskColor,
+        ),
+      ),
+    ],
+  );
+}
+
+Widget buildSmallStatusCard({
+  required IconData icon,
+  required String label,
+  required String value,
+  required Color color,
+}) {
+  return Container(
+    padding: const EdgeInsets.all(16),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(24),
+      border: Border.all(color: const Color(0xFFE2E8F0)),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withValues(alpha: 0.035),
+          blurRadius: 16,
+          offset: const Offset(0, 8),
+        ),
+      ],
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, color: color, size: 26),
+        const SizedBox(height: 12),
+        Text(
+          label,
+          style: const TextStyle(
+            color: Color(0xFF64748B),
+            fontSize: 12,
+            fontWeight: FontWeight.w700,
           ),
         ),
-        buildPatientBadge(),
+        const SizedBox(height: 4),
+        Text(
+          value,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(
+            color: Color(0xFF0F172A),
+            fontSize: 14,
+            fontWeight: FontWeight.w900,
+          ),
+        ),
       ],
-    );
-  }
+    ),
+  );
+}
+  
+
+  
 
   Widget buildPatientBadge() {
     final hasPatient = currentPatient != null;
@@ -769,39 +962,63 @@ class _HomeScreenState extends State<HomeScreen> {
       ],
     );
   }
-
+Widget buildPathologyButton() {
+  return FilledButton.icon(
+    onPressed: openCategoryPicker,
+    icon: const Icon(Icons.flag_outlined),
+    label: const Text('Choisir une pathologie'),
+    style: FilledButton.styleFrom(
+      minimumSize: const Size.fromHeight(58),
+      backgroundColor: const Color(0xFFDB2777),
+      foregroundColor: Colors.white,
+      textStyle: const TextStyle(
+        fontSize: 16,
+        fontWeight: FontWeight.w800,
+      ),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+      ),
+    ),
+  );
+}
   Widget buildStickyActionBar() {
-    return SafeArea(
-      child: Container(
-        padding: const EdgeInsets.fromLTRB(18, 10, 18, 22),
-        decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.94),
-          border: const Border(
-            top: BorderSide(color: Color(0xFFE5E7EB)),
-          ),
-        ),
-        child: Row(
-          children: [
-            Expanded(
-              child: FilledButton.icon(
-                onPressed: saveEvaluation,
-                icon: const Icon(Icons.save_outlined),
-                label: const Text('Enregistrer'),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: FilledButton.icon(
-                onPressed: showPdfExportChoice,
-                icon: const Icon(Icons.picture_as_pdf_outlined),
-                label: const Text('PDF'),
-              ),
-            ),
-          ],
+  return SafeArea(
+    child: Container(
+      padding: const EdgeInsets.fromLTRB(18, 10, 18, 22),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.94),
+        border: const Border(
+          top: BorderSide(color: Color(0xFFE5E7EB)),
         ),
       ),
-    );
-  }
+      child: Row(
+        children: [
+          Expanded(
+            child: OutlinedButton.icon(
+              onPressed: resetSession,
+              icon: const Icon(Icons.refresh_rounded),
+              label: const Text('Réinitialiser'),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: FilledButton.icon(
+              onPressed: checkedCount == 0
+    ? null
+    : openResultScreen,
+              icon: const Icon(Icons.check_circle_outline),
+              label: Text(
+  checkedCount == 0
+      ? 'Aucun item'
+      : 'Valider ($checkedCount)',
+),
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
 
   Widget buildCompactDecisionCard(String decisionTitle) {
     return Container(
@@ -868,7 +1085,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
                 height: 1.35,
+                
               ),
+              
             ),
           ),
         ],

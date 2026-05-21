@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../data/prescription_templates_data.dart';
 import '../models/patient_local.dart';
@@ -6,44 +9,50 @@ import '../models/practitioner_profile.dart';
 import '../services/practitioner_profile_service.dart';
 import '../services/prescription_pdf_service.dart';
 import '../services/rgpd_local_service.dart';
-import '../theme/app_text_styles.dart';
-import '../widgets/urps_banner.dart';
-import 'dart:io';
-
-import 'package:image_picker/image_picker.dart';
+import '../theme/app_design_system.dart';
+import '../widgets/design_system/clinical_bottom_action_bar.dart';
+import '../widgets/design_system/clinical_info_banner.dart';
+import '../widgets/design_system/clinical_page_header.dart';
+import '../widgets/design_system/clinical_text_field.dart';
 
 class PrescriptionScreen extends StatefulWidget {
-  const PrescriptionScreen({super.key});
+  const PrescriptionScreen({
+    super.key,
+    this.initialPrescriptionType = 'Rééducation',
+  });
+
+  final String initialPrescriptionType;
 
   @override
   State<PrescriptionScreen> createState() => _PrescriptionScreenState();
 }
 
 class _PrescriptionScreenState extends State<PrescriptionScreen> {
-  String selectedPrescriptionType = 'Rééducation';
+  late String selectedPrescriptionType;
 
   final pathologieController = TextEditingController();
   final materielController = TextEditingController();
   final examensController = TextEditingController();
   final conseilsController = TextEditingController();
   final autresController = TextEditingController();
+
+  final reeducationObjectifsController = TextEditingController();
+  final reeducationFrequenceController = TextEditingController();
+
+  final materielJustificationController = TextEditingController();
+  final examensMotifController = TextEditingController();
+  final conseilsSurveillanceController = TextEditingController();
+
   final ImagePicker picker = ImagePicker();
-  File? justificatifImage;    
+  File? justificatifImage;
 
   PatientLocal? currentPatient;
   PractitionerProfile practitioner = PractitionerProfile.empty();
 
-  final List<String> prescriptionTypes = const [
-    'Rééducation',
-    'Matériel',
-    'Examens',
-    'Conseils',
-    'Autres',
-  ];
-
   @override
   void initState() {
     super.initState();
+    selectedPrescriptionType = widget.initialPrescriptionType;
     loadInitialData();
   }
 
@@ -54,22 +63,32 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
     examensController.dispose();
     conseilsController.dispose();
     autresController.dispose();
+
+    reeducationObjectifsController.dispose();
+    reeducationFrequenceController.dispose();
+
+    materielJustificationController.dispose();
+    examensMotifController.dispose();
+    conseilsSurveillanceController.dispose();
+
     super.dispose();
   }
+
   Future<void> pickJustificatif() async {
-  final XFile? image = await picker.pickImage(
-    source: ImageSource.camera,
-    imageQuality: 75,
-  );
+    final XFile? image = await picker.pickImage(
+      source: ImageSource.camera,
+      imageQuality: 75,
+    );
 
-  if (image == null) return;
+    if (image == null) return;
 
-  setState(() {
-    justificatifImage = File(image.path);
-  });
+    setState(() {
+      justificatifImage = File(image.path);
+    });
 
-  showMessage('Justificatif ajouté');
-}
+    showMessage('Justificatif ajouté');
+  }
+
   Future<void> loadInitialData() async {
     final patient = await RgpdLocalService.getCurrentPatient();
     final loadedPractitioner = await PractitionerProfileService.getProfile();
@@ -89,8 +108,16 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
     conseilsController.clear();
     autresController.clear();
 
+    reeducationObjectifsController.clear();
+    reeducationFrequenceController.clear();
+
+    materielJustificationController.clear();
+    examensMotifController.clear();
+    conseilsSurveillanceController.clear();
+
     setState(() {
-      selectedPrescriptionType = 'Rééducation';
+      selectedPrescriptionType = widget.initialPrescriptionType;
+      justificatifImage = null;
     });
 
     showMessage('Prescription réinitialisée');
@@ -115,16 +142,16 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
   String get activeTitle {
     switch (selectedPrescriptionType) {
       case 'Matériel':
-        return 'Matériel / dispositifs médicaux';
+        return 'Matériel demandé';
       case 'Examens':
-        return 'Examens à envisager / orientation';
+        return 'Examen ou avis demandé';
       case 'Conseils':
-        return 'Conseils associés';
+        return 'Conseils au patient';
       case 'Autres':
-        return 'Autres prescriptions ou recommandations';
+        return 'Document libre';
       case 'Rééducation':
       default:
-        return 'Rééducation pour';
+        return 'Pathologie / motif';
     }
   }
 
@@ -137,10 +164,52 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
       case 'Conseils':
         return 'Exemple : glaçage, compression, auto-exercices, surveillance...';
       case 'Autres':
-        return 'Exemple : crème, gel froid, pansement, autre recommandation...';
+        return 'Exemple : autre recommandation ou document personnalisé...';
       case 'Rééducation':
       default:
         return 'Exemple : lombalgie aiguë, entorse de cheville, rééducation respiratoire...';
+    }
+  }
+
+  String get prescriptionContentForPdf {
+    switch (selectedPrescriptionType) {
+      case 'Rééducation':
+        return [
+          if (pathologieController.text.trim().isNotEmpty)
+            'Pathologie / motif : ${pathologieController.text.trim()}',
+          if (reeducationObjectifsController.text.trim().isNotEmpty)
+            'Objectifs : ${reeducationObjectifsController.text.trim()}',
+          if (reeducationFrequenceController.text.trim().isNotEmpty)
+            'Fréquence / durée : ${reeducationFrequenceController.text.trim()}',
+        ].join('\n\n');
+
+      case 'Matériel':
+        return [
+          if (materielController.text.trim().isNotEmpty)
+            'Matériel demandé : ${materielController.text.trim()}',
+          if (materielJustificationController.text.trim().isNotEmpty)
+            'Justification clinique : ${materielJustificationController.text.trim()}',
+        ].join('\n\n');
+
+      case 'Examens':
+        return [
+          if (examensController.text.trim().isNotEmpty)
+            'Examen / avis demandé : ${examensController.text.trim()}',
+          if (examensMotifController.text.trim().isNotEmpty)
+            'Motif clinique : ${examensMotifController.text.trim()}',
+        ].join('\n\n');
+
+      case 'Conseils':
+        return [
+          if (conseilsController.text.trim().isNotEmpty)
+            'Conseils : ${conseilsController.text.trim()}',
+          if (conseilsSurveillanceController.text.trim().isNotEmpty)
+            'Points de surveillance : ${conseilsSurveillanceController.text.trim()}',
+        ].join('\n\n');
+
+      case 'Autres':
+      default:
+        return autresController.text.trim();
     }
   }
 
@@ -156,18 +225,20 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
       return;
     }
 
-    if (activeController.text.trim().isEmpty) {
+    final content = prescriptionContentForPdf.trim();
+
+    if (content.isEmpty) {
       showMessage('Merci de renseigner le contenu de la prescription.');
       return;
     }
 
     await PrescriptionPdfService.exportPrescriptionPdf(
-  patient: currentPatient!,
-  practitioner: practitioner,
-  prescriptionType: selectedPrescriptionType,
-  prescriptionContent: activeController.text.trim(),
-  justificatifImage: justificatifImage,
-);
+      patient: currentPatient!,
+      practitioner: practitioner,
+      prescriptionType: selectedPrescriptionType,
+      prescriptionContent: content,
+      justificatifImage: justificatifImage,
+    );
   }
 
   Future<void> showPractitionerDialog() async {
@@ -255,7 +326,7 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
       decoration: InputDecoration(
         labelText: label,
         filled: true,
-        fillColor: const Color(0xFFF8FAFC),
+        fillColor: AppColors.background,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
         ),
@@ -278,29 +349,57 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF6F8FC),
-      body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(18, 12, 18, 150),
-          children: [
-            const UrpsBanner(isLarge: false),
-            buildPatientCard(),
-            const SizedBox(height: 14),
-            buildPractitionerCard(),
-            const SizedBox(height: 14),
-            buildAccessDirectPrescriptionCard(),
-            const SizedBox(height: 14),
-            buildPrescriptionTypeCard(),
-            const SizedBox(height: 14),
-            buildPrescriptionCard(),
-            const SizedBox(height: 14),
-            buildRegulatoryInfoCard(),
-            const SizedBox(height: 14),
-            buildPrintInfoCard(),
-          ],
-        ),
+      backgroundColor: AppColors.background,
+      bottomNavigationBar: ClinicalBottomActionBar(
+        secondaryLabel: 'Réinitialiser',
+        secondaryIcon: Icons.refresh_rounded,
+        onSecondaryPressed: resetForm,
+        primaryLabel: 'Exporter PDF',
+        primaryIcon: Icons.picture_as_pdf_outlined,
+        onPrimaryPressed: exportPdf,
       ),
-      bottomNavigationBar: buildBottomBar(),
+      body: Column(
+        children: [
+          ClinicalPageHeader(
+            title: selectedPrescriptionType,
+            subtitle: 'Prescription clinique et document thérapeutique.',
+          ),
+          Expanded(
+            child: ListView(
+              padding: EdgeInsets.fromLTRB(
+                AppSpacing.screenPadding,
+                0,
+                AppSpacing.screenPadding,
+                120,
+              ),
+              children: [
+                buildPatientCard(),
+                const SizedBox(height: 14),
+                buildPractitionerCard(),
+                const SizedBox(height: 14),
+                buildAccessDirectPrescriptionCard(),
+                const SizedBox(height: 14),
+                buildPrescriptionCard(),
+                const SizedBox(height: 14),
+                ClinicalInfoBanner(
+                  text:
+                      'Les prescriptions et recommandations doivent rester conformes aux compétences, droits de prescription et conditions réglementaires du masseur-kinésithérapeute.',
+                  icon: Icons.gavel_rounded,
+                  color: AppColors.warningOrange,
+                  backgroundColor: AppColors.softOrange,
+                ),
+                const SizedBox(height: 14),
+                ClinicalInfoBanner(
+                  text: 'PDF sobre, lisible et économique à imprimer.',
+                  icon: Icons.print_outlined,
+                  color: AppColors.textSecondary,
+                  backgroundColor: AppColors.card,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -310,11 +409,12 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: hasPatient ? Colors.white : const Color(0xFFFFF7ED),
+        color: hasPatient ? AppColors.card : AppColors.softOrange,
         borderRadius: BorderRadius.circular(26),
         border: Border.all(
-          color: hasPatient ? const Color(0xFFE2E8F0) : const Color(0xFFFED7AA),
+          color: hasPatient ? AppColors.border : const Color(0xFFFED7AA),
         ),
+        boxShadow: AppShadows.softShadow,
       ),
       child: Row(
         children: [
@@ -322,16 +422,13 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
             height: 52,
             width: 52,
             decoration: BoxDecoration(
-              color: hasPatient
-                  ? const Color(0xFFEAF2FF)
-                  : const Color(0xFFFFEDD5),
+              color: hasPatient ? AppColors.softBlue : AppColors.softOrange,
               borderRadius: BorderRadius.circular(18),
             ),
             child: Icon(
               hasPatient ? Icons.person_rounded : Icons.warning_amber_rounded,
-              color: hasPatient
-                  ? const Color(0xFF2563EB)
-                  : const Color(0xFFC2410C),
+              color:
+                  hasPatient ? AppColors.primaryBlue : AppColors.warningOrange,
               size: 30,
             ),
           ),
@@ -341,37 +438,20 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
                 ? Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'Patient',
-                        style: TextStyle(
-                          color: Color(0xFF64748B),
-                          fontWeight: FontWeight.w700,
-                          fontSize: 13,
-                        ),
-                      ),
+                      Text('Patient', style: AppTextStyles.cardSubtitle),
                       const SizedBox(height: 4),
-                      Text(
-                        patientName,
-                        style: const TextStyle(
-                          color: Color(0xFF0F172A),
-                          fontWeight: FontWeight.w900,
-                          fontSize: 18,
-                        ),
-                      ),
+                      Text(patientName, style: AppTextStyles.cardTitle),
                       const SizedBox(height: 2),
                       Text(
                         'Né(e) le ${currentPatient!.dateNaissance}',
-                        style: const TextStyle(
-                          color: Color(0xFF64748B),
-                          fontWeight: FontWeight.w600,
-                        ),
+                        style: AppTextStyles.cardSubtitle,
                       ),
                     ],
                   )
-                : const Text(
+                : Text(
                     'Aucun patient actif. Sélectionnez ou créez un patient dans l’onglet Patient.',
                     style: TextStyle(
-                      color: Color(0xFFC2410C),
+                      color: AppColors.warningOrange,
                       fontWeight: FontWeight.w800,
                       height: 1.35,
                     ),
@@ -393,11 +473,12 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: complete ? Colors.white : const Color(0xFFFFF7ED),
+        color: complete ? AppColors.card : AppColors.softOrange,
         borderRadius: BorderRadius.circular(26),
         border: Border.all(
-          color: complete ? const Color(0xFFE2E8F0) : const Color(0xFFFED7AA),
+          color: complete ? AppColors.border : const Color(0xFFFED7AA),
         ),
+        boxShadow: AppShadows.softShadow,
       ),
       child: Row(
         children: [
@@ -405,14 +486,13 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
             height: 52,
             width: 52,
             decoration: BoxDecoration(
-              color:
-                  complete ? const Color(0xFFEAF2FF) : const Color(0xFFFFEDD5),
+              color: complete ? AppColors.softBlue : AppColors.softOrange,
               borderRadius: BorderRadius.circular(18),
             ),
             child: Icon(
               complete ? Icons.badge_rounded : Icons.edit_note_rounded,
               color:
-                  complete ? const Color(0xFF2563EB) : const Color(0xFFC2410C),
+                  complete ? AppColors.primaryBlue : AppColors.warningOrange,
               size: 30,
             ),
           ),
@@ -422,22 +502,11 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
                 ? Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'Professionnel',
-                        style: TextStyle(
-                          color: Color(0xFF64748B),
-                          fontWeight: FontWeight.w700,
-                          fontSize: 13,
-                        ),
-                      ),
+                      Text('Professionnel', style: AppTextStyles.cardSubtitle),
                       const SizedBox(height: 4),
                       Text(
                         practitioner.fullName,
-                        style: const TextStyle(
-                          color: Color(0xFF0F172A),
-                          fontWeight: FontWeight.w900,
-                          fontSize: 18,
-                        ),
+                        style: AppTextStyles.cardTitle,
                       ),
                       const SizedBox(height: 2),
                       Text(
@@ -447,17 +516,14 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
                           if (practitioner.rpps.trim().isNotEmpty)
                             'RPPS ${practitioner.rpps.trim()}',
                         ].join(' • '),
-                        style: const TextStyle(
-                          color: Color(0xFF64748B),
-                          fontWeight: FontWeight.w600,
-                        ),
+                        style: AppTextStyles.cardSubtitle,
                       ),
                     ],
                   )
-                : const Text(
+                : Text(
                     'Renseignez une seule fois vos informations professionnelles pour les PDF.',
                     style: TextStyle(
-                      color: Color(0xFFC2410C),
+                      color: AppColors.warningOrange,
                       fontWeight: FontWeight.w800,
                       height: 1.35,
                     ),
@@ -474,156 +540,92 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
   }
 
   Widget buildAccessDirectPrescriptionCard() {
-  final hasImage = justificatifImage != null;
+    final hasImage = justificatifImage != null;
 
-  return Container(
-    decoration: BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(28),
-      border: Border.all(color: const Color(0xFFE2E8F0)),
-    ),
-    child: Theme(
-      data: Theme.of(context).copyWith(
-        dividerColor: Colors.transparent,
-      ),
-      child: ExpansionTile(
-        tilePadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
-        childrenPadding: const EdgeInsets.fromLTRB(18, 0, 18, 18),
-        leading: Container(
-          height: 48,
-          width: 48,
-          decoration: BoxDecoration(
-            color: const Color(0xFFEAF2FF),
-            borderRadius: BorderRadius.circular(17),
-          ),
-          child: const Icon(
-            Icons.verified_user_outlined,
-            color: Color(0xFF2563EB),
-          ),
-        ),
-        title: const Text(
-          'Accès direct & cadre réglementaire',
-          style: TextStyle(
-            color: Color(0xFF0F172A),
-            fontSize: 16,
-            fontWeight: FontWeight.w900,
-          ),
-        ),
-        subtitle: const Text(
-          'Conditions d’exercice, diagnostic préalable, justificatif.',
-          style: TextStyle(
-            color: Color(0xFF64748B),
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        children: [
-          const _MiniRegulatoryLine(
-            icon: Icons.groups_rounded,
-            title: 'Exercice coordonné',
-            subtitle:
-                'MSP, CPTS ou structure coordonnée selon le cadre applicable.',
-          ),
-          const SizedBox(height: 10),
-          const _MiniRegulatoryLine(
-            icon: Icons.medical_information_outlined,
-            title: 'Diagnostic médical préalable',
-            subtitle: 'Si diagnostic déjà posé : justificatif recommandé.',
-          ),
-          const SizedBox(height: 18),
-          SizedBox(
-            width: double.infinity,
-            child: OutlinedButton.icon(
-              onPressed: pickJustificatif,
-              icon: Icon(
-                hasImage
-                    ? Icons.check_circle_rounded
-                    : Icons.camera_alt_rounded,
-              ),
-              label: Text(
-                hasImage ? 'Justificatif ajouté' : 'Ajouter un justificatif',
-              ),
-              style: OutlinedButton.styleFrom(
-                foregroundColor: hasImage
-                    ? const Color(0xFF15803D)
-                    : const Color(0xFF2563EB),
-                side: BorderSide(
-                  color: hasImage
-                      ? const Color(0xFFBBF7D0)
-                      : const Color(0xFFBFDBFE),
-                ),
-                backgroundColor: hasImage
-                    ? const Color(0xFFF0FDF4)
-                    : const Color(0xFFEFF6FF),
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(18),
-                ),
-              ),
-            ),
-          ),
-          if (hasImage) ...[
-            const SizedBox(height: 16),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(20),
-              child: Image.file(
-                justificatifImage!,
-                height: 180,
-                width: double.infinity,
-                fit: BoxFit.cover,
-              ),
-            ),
-          ],
-        ],
-      ),
-    ),
-  );
-}
-
-  Widget buildPrescriptionTypeCard() {
     return Container(
-      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(28),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+        color: AppColors.card,
+        borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
+        border: Border.all(color: AppColors.border),
+        boxShadow: AppShadows.softShadow,
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Type de document',
-            style: AppTextStyles.sectionTitle.copyWith(fontSize: 20),
+      child: Theme(
+        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+        child: ExpansionTile(
+          tilePadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+          childrenPadding: const EdgeInsets.fromLTRB(18, 0, 18, 18),
+          leading: Container(
+            height: 48,
+            width: 48,
+            decoration: BoxDecoration(
+              color: AppColors.softBlue,
+              borderRadius: BorderRadius.circular(17),
+            ),
+            child: const Icon(
+              Icons.verified_user_outlined,
+              color: AppColors.primaryBlue,
+            ),
           ),
-          const SizedBox(height: 12),
-          Wrap(
-            spacing: 10,
-            runSpacing: 10,
-            children: prescriptionTypes.map((type) {
-              final selected = selectedPrescriptionType == type;
-
-              return ChoiceChip(
-                label: Text(type),
-                selected: selected,
-                onSelected: (_) {
-                  setState(() {
-                    selectedPrescriptionType = type;
-                  });
-                },
-                labelStyle: TextStyle(
-                  color: selected ? Colors.white : const Color(0xFF334155),
-                  fontWeight: FontWeight.w900,
-                ),
-                selectedColor: const Color(0xFF2563EB),
-                backgroundColor: const Color(0xFFF8FAFC),
-                side: BorderSide(
-                  color: selected
-                      ? const Color(0xFF2563EB)
-                      : const Color(0xFFE2E8F0),
-                ),
-              );
-            }).toList(),
+          title: Text(
+            'Accès direct & cadre réglementaire',
+            style: AppTextStyles.cardTitle.copyWith(fontSize: 16),
           ),
-        ],
+          subtitle: Text(
+            'Conditions d’exercice, diagnostic préalable, justificatif.',
+            style: AppTextStyles.cardSubtitle,
+          ),
+          children: [
+            const _MiniRegulatoryLine(
+              icon: Icons.groups_rounded,
+              title: 'Exercice coordonné',
+              subtitle:
+                  'MSP, CPTS ou structure coordonnée selon le cadre applicable.',
+            ),
+            const SizedBox(height: 10),
+            const _MiniRegulatoryLine(
+              icon: Icons.medical_information_outlined,
+              title: 'Diagnostic médical préalable',
+              subtitle: 'Si diagnostic déjà posé : justificatif recommandé.',
+            ),
+            const SizedBox(height: 18),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: pickJustificatif,
+                icon: Icon(
+                  hasImage
+                      ? Icons.check_circle_rounded
+                      : Icons.camera_alt_rounded,
+                ),
+                label: Text(
+                  hasImage ? 'Justificatif ajouté' : 'Ajouter un justificatif',
+                ),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor:
+                      hasImage ? AppColors.successGreen : AppColors.primaryBlue,
+                  backgroundColor:
+                      hasImage ? AppColors.softGreen : AppColors.softBlue,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(18),
+                  ),
+                ),
+              ),
+            ),
+            if (hasImage) ...[
+              const SizedBox(height: 16),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(20),
+                child: Image.file(
+                  justificatifImage!,
+                  height: 180,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ],
+          ],
+        ),
       ),
     );
   }
@@ -632,88 +634,132 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(28),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+        color: AppColors.card,
+        borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
+        border: Border.all(color: AppColors.border),
+        boxShadow: AppShadows.softShadow,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Container(
-                height: 50,
-                width: 50,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFEAF2FF),
-                  borderRadius: BorderRadius.circular(18),
-                ),
-                child: const Icon(
-                  Icons.description_outlined,
-                  color: Color(0xFF2563EB),
-                  size: 27,
-                ),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Text(
-                  activeTitle,
-                  style: AppTextStyles.sectionTitle.copyWith(fontSize: 20),
-                ),
-              ),
-            ],
-          ),
+          Text(activeTitle, style: AppTextStyles.sectionTitle),
           const SizedBox(height: 16),
-          TextField(
-            controller: activeController,
-            maxLines: 4,
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
-              color: Color(0xFF0F172A),
-            ),
-            decoration: InputDecoration(
-              hintText: activeHint,
-              filled: true,
-              fillColor: const Color(0xFFF8FAFC),
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 18,
-                vertical: 16,
-              ),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(20),
-                borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(20),
-                borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(20),
-                borderSide: const BorderSide(
-                  color: Color(0xFF2563EB),
-                  width: 2,
-                ),
-              ),
-            ),
-          ),
+          ...buildPrescriptionFields(),
           buildTemplatesSection(),
         ],
       ),
     );
   }
 
+  List<Widget> buildPrescriptionFields() {
+    switch (selectedPrescriptionType) {
+      case 'Rééducation':
+        return [
+          ClinicalTextField(
+            label: 'Pathologie / motif',
+            hint:
+                'Exemple : lombalgie aiguë, entorse de cheville, rééducation respiratoire...',
+            maxLines: 3,
+            controller: pathologieController,
+          ),
+          const SizedBox(height: 16),
+          ClinicalTextField(
+            label: 'Objectifs de rééducation',
+            hint: 'Exemple : diminution de la douleur, récupération fonctionnelle...',
+            maxLines: 3,
+            controller: reeducationObjectifsController,
+          ),
+          const SizedBox(height: 16),
+          ClinicalTextField(
+            label: 'Fréquence / durée',
+            hint: 'Exemple : 2 séances par semaine pendant 6 semaines...',
+            maxLines: 2,
+            controller: reeducationFrequenceController,
+          ),
+        ];
+
+      case 'Matériel':
+        return [
+          ClinicalTextField(
+            label: 'Matériel demandé',
+            hint:
+                'Exemple : attelle de cheville, cannes anglaises, bas de contention...',
+            maxLines: 3,
+            controller: materielController,
+          ),
+          const SizedBox(height: 16),
+          ClinicalTextField(
+            label: 'Justification clinique',
+            hint: 'Exemple : instabilité, douleur, limitation d’appui...',
+            maxLines: 3,
+            controller: materielJustificationController,
+          ),
+        ];
+
+      case 'Examens':
+        return [
+          ClinicalTextField(
+            label: 'Examen / avis demandé',
+            hint:
+                'Exemple : avis médical, imagerie à envisager, doppler si suspicion TVP...',
+            maxLines: 3,
+            controller: examensController,
+          ),
+          const SizedBox(height: 16),
+          ClinicalTextField(
+            label: 'Motif clinique',
+            hint: 'Exemple : douleur persistante, suspicion de complication...',
+            maxLines: 3,
+            controller: examensMotifController,
+          ),
+        ];
+
+      case 'Conseils':
+        return [
+          ClinicalTextField(
+            label: 'Conseils au patient',
+            hint: 'Exemple : glaçage, compression, auto-exercices...',
+            maxLines: 3,
+            controller: conseilsController,
+          ),
+          const SizedBox(height: 16),
+          ClinicalTextField(
+            label: 'Points de surveillance',
+            hint:
+                'Exemple : aggravation douleur, fièvre, déficit neurologique...',
+            maxLines: 3,
+            controller: conseilsSurveillanceController,
+          ),
+        ];
+
+      case 'Autres':
+      default:
+        return [
+          ClinicalTextField(
+            label: 'Document libre',
+            hint: 'Exemple : autre recommandation ou document personnalisé...',
+            maxLines: 4,
+            controller: autresController,
+          ),
+        ];
+    }
+  }
+
   Widget buildTemplatesSection() {
     final templates = prescriptionTemplates[selectedPrescriptionType] ?? [];
+
+    if (templates.isEmpty) {
+      return const SizedBox.shrink();
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const SizedBox(height: 18),
-        const Text(
+        Text(
           'Modèles rapides',
           style: TextStyle(
-            color: Color(0xFF64748B),
+            color: AppColors.textSecondary,
             fontSize: 13,
             fontWeight: FontWeight.w900,
             letterSpacing: 0.4,
@@ -726,167 +772,56 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
           children: templates.map((template) {
             return ActionChip(
               label: Text(template),
-              backgroundColor: const Color(0xFFF8FAFC),
-              side: const BorderSide(color: Color(0xFFE2E8F0)),
-              labelStyle: const TextStyle(
-                color: Color(0xFF0F172A),
+              backgroundColor: AppColors.background,
+              side: BorderSide(color: AppColors.border),
+              labelStyle: TextStyle(
+                color: AppColors.textPrimary,
                 fontWeight: FontWeight.w700,
               ),
               onPressed: () {
-  final currentText = activeController.text.trim();
+                final currentText = activeController.text.trim();
 
-  if (currentText.isEmpty) {
-    activeController.text = template;
-  } else {
-    activeController.text =
-        '$currentText\n• $template';
-  }
+                activeController.text =
+                    currentText.isEmpty ? template : '$currentText\n• $template';
 
-  activeController.selection =
-      TextSelection.fromPosition(
-    TextPosition(
-      offset: activeController.text.length,
-    ),
-  );
+                activeController.selection = TextSelection.fromPosition(
+                  TextPosition(offset: activeController.text.length),
+                );
 
-  setState(() {});
-},
+                setState(() {});
+              },
             );
           }).toList(),
         ),
       ],
     );
   }
-
-  Widget buildRegulatoryInfoCard() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFFFFFBEB),
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: const Color(0xFFFDE68A)),
-      ),
-      child: const Row(
-        children: [
-          Icon(
-            Icons.gavel_rounded,
-            color: Color(0xFFD97706),
-          ),
-          SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              'Les prescriptions et recommandations doivent rester conformes aux compétences, droits de prescription et conditions réglementaires du masseur-kinésithérapeute.',
-              style: TextStyle(
-                color: Color(0xFF92400E),
-                fontWeight: FontWeight.w700,
-                height: 1.35,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget buildPrintInfoCard() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF8FAFC),
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
-      ),
-      child: const Row(
-        children: [
-          Icon(
-            Icons.print_outlined,
-            color: Color(0xFF64748B),
-          ),
-          SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              'PDF sobre, lisible et économique à imprimer.',
-              style: TextStyle(
-                color: Color(0xFF64748B),
-                fontWeight: FontWeight.w700,
-                height: 1.35,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget buildBottomBar() {
-    return SafeArea(
-      child: Container(
-        padding: const EdgeInsets.fromLTRB(18, 10, 18, 22),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          border: Border(top: BorderSide(color: Color(0xFFE5E7EB))),
-        ),
-        child: Row(
-          children: [
-            Expanded(
-              child: OutlinedButton.icon(
-                onPressed: resetForm,
-                icon: const Icon(Icons.refresh_rounded),
-                label: const Text('Réinitialiser'),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: FilledButton.icon(
-                onPressed: exportPdf,
-                icon: const Icon(Icons.picture_as_pdf_outlined),
-                label: const Text('Exporter PDF'),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 }
 
 class _MiniRegulatoryLine extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String subtitle;
-
   const _MiniRegulatoryLine({
     required this.icon,
     required this.title,
     required this.subtitle,
   });
 
+  final IconData icon;
+  final String title;
+  final String subtitle;
+
   @override
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(icon, color: const Color(0xFF2563EB), size: 22),
+        Icon(icon, color: AppColors.primaryBlue, size: 22),
         const SizedBox(width: 12),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                title,
-                style: const TextStyle(
-                  color: Color(0xFF0F172A),
-                  fontWeight: FontWeight.w900,
-                ),
-              ),
+              Text(title, style: AppTextStyles.cardTitle.copyWith(fontSize: 15)),
               const SizedBox(height: 2),
-              Text(
-                subtitle,
-                style: const TextStyle(
-                  color: Color(0xFF64748B),
-                  fontWeight: FontWeight.w600,
-                  height: 1.3,
-                ),
-              ),
+              Text(subtitle, style: AppTextStyles.cardSubtitle),
             ],
           ),
         ),

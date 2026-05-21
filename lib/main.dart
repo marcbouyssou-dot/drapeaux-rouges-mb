@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
-import 'screens/main_navigation_screen.dart';
 import 'theme/app_theme.dart';
 import 'screens/login_screen.dart';
 
