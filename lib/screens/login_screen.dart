@@ -5,194 +5,208 @@ import 'main_navigation_screen.dart';
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
 
-  static const _background = Color(0xFFEAF2FB);
+  static const Color bg = Color(0xFFEAF2FB);
+  static const Color raspberry = Color(0xFFD81B60);
+  static const Color raspberryDark = Color(0xFFC2185B);
 
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
-    final isSmallHeight = size.height < 740;
 
     return Scaffold(
-      resizeToAvoidBottomInset: true,
-      backgroundColor: _background,
-      body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            keyboardDismissBehavior:
-                ScrollViewKeyboardDismissBehavior.onDrag,
-            child: ConstrainedBox(
-              constraints: BoxConstraints(
-  maxWidth: size.width < 600 ? size.width : 430,
-),
-              child: Column(
-                children: [
-                  _Header(isSmallHeight: isSmallHeight),
-                  _LoginForm(isSmallHeight: isSmallHeight),
-                ],
-              ),
-            ),
+      backgroundColor: bg,
+      body: Center(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxWidth: size.width < 600 ? size.width : 430,
           ),
+          child: _MobileLoginLayout(screenHeight: size.height),
         ),
       ),
     );
   }
 }
 
-class _Header extends StatelessWidget {
-  const _Header({required this.isSmallHeight});
+class _MobileLoginLayout extends StatelessWidget {
+  const _MobileLoginLayout({required this.screenHeight});
 
-  final bool isSmallHeight;
+  final double screenHeight;
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: double.infinity,
-      height: isSmallHeight ? 300 : 335,
-      child: Image.asset(
-        'assets/images/login_header_premium.png',
-        width: double.infinity,
-        height: double.infinity,
-        fit: BoxFit.cover,
-        alignment: Alignment.center,
-      ),
+    return Stack(
+      children: [
+        Positioned.fill(child: Container(color: LoginScreen.bg)),
+
+        Positioned(
+          top: 0,
+          left: 0,
+          right: 0,
+          height: screenHeight * 0.54,
+          child: Image.asset(
+            'assets/images/login_header_premium.png',
+            fit: BoxFit.cover,
+            alignment: Alignment.center,
+          ),
+        ),
+
+        Positioned(
+          top: screenHeight * 0.445,
+          left: 0,
+          right: 0,
+          child: ClipPath(
+            clipper: _SoftCurveClipper(),
+            child: Container(
+              height: 120,
+              color: LoginScreen.bg,
+            ),
+          ),
+        ),
+
+        SafeArea(
+          child: SingleChildScrollView(
+            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+            padding: EdgeInsets.fromLTRB(
+              24,
+              screenHeight * 0.545,
+              24,
+              24,
+            ),
+            child: const _LoginForm(),
+          ),
+        ),
+      ],
     );
   }
 }
 
 class _LoginForm extends StatelessWidget {
-  const _LoginForm({required this.isSmallHeight});
-
-  final bool isSmallHeight;
+  const _LoginForm();
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: LoginScreen._background,
-      padding: EdgeInsets.fromLTRB(
-  24,
-  isSmallHeight ? 18 : 24,
-  24,
-  isSmallHeight ? 20 : 26,
-),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          const _FieldLabel('ADRESSE E-MAIL'),
-          const SizedBox(height: 8),
-
-          const _PremiumTextField(
-            hint: 'prenom.nom@mk.fr',
-            keyboardType: TextInputType.emailAddress,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const _FieldLabel('ADRESSE E-MAIL'),
+        const SizedBox(height: 10),
+        const _PremiumTextField(
+          hint: 'prenom.nom@mk.fr',
+          prefixIcon: Icons.mail_outline_rounded,
+          keyboardType: TextInputType.emailAddress,
+        ),
+        const SizedBox(height: 26),
+        const _FieldLabel('MOT DE PASSE'),
+        const SizedBox(height: 10),
+        const _PremiumTextField(
+          hint: '••••••••',
+          prefixIcon: Icons.lock_outline_rounded,
+          obscureText: true,
+          suffixIcon: Icons.visibility_outlined,
+        ),
+        const SizedBox(height: 4),
+        Align(
+          alignment: Alignment.centerRight,
+          child: TextButton(
+            onPressed: () {},
+            style: TextButton.styleFrom(
+              foregroundColor: const Color(0xFF0066C9),
+              padding: EdgeInsets.zero,
+              minimumSize: const Size(0, 34),
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
+            child: const Text(
+              'Mot de passe oublié ?',
+              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
+            ),
           ),
-
-          const SizedBox(height: 16),
-
-          const _FieldLabel('MOT DE PASSE'),
-          const SizedBox(height: 8),
-
-          const _PremiumTextField(
-            hint: '••••••••',
-            obscureText: true,
-            suffixIcon: Icons.visibility_outlined,
-          ),
-
-          const SizedBox(height: 2),
-
-          Align(
-            alignment: Alignment.centerRight,
-            child: TextButton(
-              onPressed: () {},
-              style: TextButton.styleFrom(
-                foregroundColor:
-                    const Color(0xFF4A8FCB).withValues(alpha: 0.78),
-                padding: EdgeInsets.zero,
-                minimumSize: const Size(0, 25),
-                tapTargetSize:
-                    MaterialTapTargetSize.shrinkWrap,
+        ),
+        const SizedBox(height: 24),
+        SizedBox(
+          height: 66,
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [LoginScreen.raspberry, LoginScreen.raspberryDark],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+              ),
+              borderRadius: BorderRadius.circular(18),
+              boxShadow: [
+                BoxShadow(
+                  color: LoginScreen.raspberry.withValues(alpha: 0.34),
+                  blurRadius: 30,
+                  offset: const Offset(0, 14),
+                ),
+              ],
+            ),
+            child: ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).pushReplacement(
+                  MaterialPageRoute(
+                    builder: (_) => const MainNavigationScreen(),
+                  ),
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                elevation: 0,
+                shadowColor: Colors.transparent,
+                backgroundColor: Colors.transparent,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(18),
+                ),
               ),
               child: const Text(
-                'Mot de passe oublié ?',
+                'Connexion',
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 44),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(
+              Icons.verified_user_outlined,
+              color: Color(0xFF0066C9),
+              size: 34,
+            ),
+            const SizedBox(width: 14),
+            Flexible(
+              child: Text(
+                'Données de santé protégées · RGPD · HDS\n'
+                'Réservé aux professionnels de santé habilités',
                 style: TextStyle(
-                  fontSize: 11,
+                  color: const Color(0xFF5B82B5).withValues(alpha: 0.72),
+                  fontSize: 13,
+                  height: 1.35,
                   fontWeight: FontWeight.w700,
                 ),
               ),
             ),
-          ),
-
-          SizedBox(height: isSmallHeight ? 10 : 14),
-
-          // BOUTON PREMIUM SOBRE
-          SizedBox(
-            height: 56,
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [
-                    Color(0xFFD81B60),
-                    Color(0xFFC2185B),
-                  ],
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                ),
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFFD81B60)
-                        .withValues(alpha: 0.28),
-                    blurRadius: 24,
-                    offset: const Offset(0, 10),
-                  ),
-                ],
-              ),
-              child: ElevatedButton(
-                onPressed: () {
-                  Navigator.of(context).pushReplacement(
-                    MaterialPageRoute(
-                      builder: (_) =>
-                          const MainNavigationScreen(),
-                    ),
-                  );
-                },
-                style: ElevatedButton.styleFrom(
-                  elevation: 0,
-                  shadowColor: Colors.transparent,
-                  backgroundColor: Colors.transparent,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius:
-                        BorderRadius.circular(16),
-                  ),
-                ),
-                child: const Text(
-                  'Connexion',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-              ),
-            ),
-          ),
-
-          SizedBox(height: isSmallHeight ? 40 : 52),
-
-          Text(
-            'Données de santé protégées · RGPD · HDS\n'
-            'Réservé aux professionnels de santé habilités',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: const Color(0xFF7A91B8)
-                  .withValues(alpha: 0.48),
-              fontSize: 10,
-              height: 1.35,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
-      ),
+          ],
+        ),
+        const SizedBox(height: 20),
+      ],
     );
   }
+}
+
+class _SoftCurveClipper extends CustomClipper<Path> {
+  @override
+  Path getClip(Size size) {
+    return Path()
+      ..moveTo(0, 26)
+      ..quadraticBezierTo(size.width / 2, size.height, size.width, 26)
+      ..lineTo(size.width, size.height)
+      ..lineTo(0, size.height)
+      ..close();
+  }
+
+  @override
+  bool shouldReclip(covariant CustomClipper<Path> oldClipper) => false;
 }
 
 class _FieldLabel extends StatelessWidget {
@@ -205,11 +219,10 @@ class _FieldLabel extends StatelessWidget {
     return Text(
       text,
       style: TextStyle(
-        color: const Color(0xFF004A8F)
-            .withValues(alpha: 0.56),
-        fontSize: 10.5,
+        color: const Color(0xFF004A8F).withValues(alpha: 0.78),
+        fontSize: 14,
         fontWeight: FontWeight.w900,
-        letterSpacing: 1.05,
+        letterSpacing: 1.2,
       ),
     );
   }
@@ -218,90 +231,46 @@ class _FieldLabel extends StatelessWidget {
 class _PremiumTextField extends StatelessWidget {
   const _PremiumTextField({
     required this.hint,
+    required this.prefixIcon,
     this.obscureText = false,
     this.suffixIcon,
     this.keyboardType,
   });
 
   final String hint;
+  final IconData prefixIcon;
   final bool obscureText;
   final IconData? suffixIcon;
   final TextInputType? keyboardType;
 
   @override
   Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.07),
-            blurRadius: 18,
-            offset: const Offset(0, 8),
-          ),
-          BoxShadow(
-            color: Colors.white.withValues(alpha: 0.90),
-            blurRadius: 2,
-            offset: const Offset(0, -1),
-          ),
-        ],
+    return TextField(
+      obscureText: obscureText,
+      keyboardType: keyboardType,
+      style: const TextStyle(
+        color: Color(0xFF28415F),
+        fontSize: 18,
+        fontWeight: FontWeight.w700,
       ),
-      child: TextField(
-        obscureText: obscureText,
-        keyboardType: keyboardType,
-        style: const TextStyle(
-          color: Color(0xFF28415F),
-          fontSize: 15,
-          fontWeight: FontWeight.w600,
+      decoration: InputDecoration(
+        prefixIcon: Icon(prefixIcon, color: const Color(0xFF0066C9), size: 28),
+        suffixIcon: suffixIcon == null
+            ? null
+            : Icon(suffixIcon, color: const Color(0xFF7A91B8), size: 24),
+        hintText: hint,
+        hintStyle: TextStyle(
+          color: const Color(0xFF8AA0BD).withValues(alpha: 0.55),
+          fontSize: 18,
+          fontWeight: FontWeight.w700,
         ),
-        decoration: InputDecoration(
-          hintText: hint,
-          hintStyle: TextStyle(
-            color: const Color(0xFF8AA0BD)
-                .withValues(alpha: 0.48),
-            fontSize: 15,
-            fontWeight: FontWeight.w600,
-          ),
-          suffixIcon: suffixIcon == null
-              ? null
-              : Icon(
-                  suffixIcon,
-                  size: 18,
-                  color: const Color(0xFF7A91B8)
-                      .withValues(alpha: 0.45),
-                ),
-          filled: true,
-          fillColor: Colors.white,
-          contentPadding:
-              const EdgeInsets.symmetric(
-            horizontal: 18,
-            vertical: 17,
-          ),
-          border: OutlineInputBorder(
-            borderRadius:
-                BorderRadius.circular(14),
-            borderSide: BorderSide(
-              color: const Color(0xFF003478)
-                  .withValues(alpha: 0.08),
-            ),
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius:
-                BorderRadius.circular(14),
-            borderSide: BorderSide(
-              color: const Color(0xFF003478)
-                  .withValues(alpha: 0.08),
-            ),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius:
-                BorderRadius.circular(14),
-            borderSide: const BorderSide(
-              color: Color(0xFF0B6BCB),
-              width: 1.25,
-            ),
-          ),
+        filled: true,
+        fillColor: Colors.white,
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 18, vertical: 22),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(22),
+          borderSide: BorderSide.none,
         ),
       ),
     );
