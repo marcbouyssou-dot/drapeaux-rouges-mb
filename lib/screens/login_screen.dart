@@ -21,7 +21,9 @@ class LoginScreen extends StatelessWidget {
             keyboardDismissBehavior:
                 ScrollViewKeyboardDismissBehavior.onDrag,
             child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 430),
+              constraints: BoxConstraints(
+  maxWidth: size.width < 600 ? size.width : 430,
+),
               child: Column(
                 children: [
                   _Header(isSmallHeight: isSmallHeight),
@@ -45,11 +47,13 @@ class _Header extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox(
       width: double.infinity,
-      height: isSmallHeight ? 315 : 345,
+      height: isSmallHeight ? 300 : 335,
       child: Image.asset(
         'assets/images/login_header_premium.png',
-        fit: BoxFit.fitWidth,
-        alignment: Alignment.topCenter,
+        width: double.infinity,
+        height: double.infinity,
+        fit: BoxFit.cover,
+        alignment: Alignment.center,
       ),
     );
   }
@@ -66,9 +70,9 @@ class _LoginForm extends StatelessWidget {
       color: LoginScreen._background,
       padding: EdgeInsets.fromLTRB(
   24,
-  isSmallHeight ? 0 : 4,
+  isSmallHeight ? 18 : 24,
   24,
-  isSmallHeight ? 18 : 22,
+  isSmallHeight ? 20 : 26,
 ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -171,7 +175,7 @@ class _LoginForm extends StatelessWidget {
             ),
           ),
 
-          SizedBox(height: isSmallHeight ? 36 : 44),
+          SizedBox(height: isSmallHeight ? 40 : 52),
 
           Text(
             'Données de santé protégées · RGPD · HDS\n'
