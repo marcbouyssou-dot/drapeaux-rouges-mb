@@ -44,19 +44,21 @@ class _LoginMobileContent extends StatelessWidget {
       child: Column(
         children: [
           // HEADER BLEU
-          Container(
-            width: double.infinity,
-            color: const Color(0xFF003F8C),
-            child: SafeArea(
-              bottom: false,
-              child: Image.asset(
-                'assets/images/login_header_premium.png',
-                width: double.infinity,
-                fit: BoxFit.fitWidth,
-                alignment: Alignment.topCenter,
-              ),
-            ),
-          ),
+         Container(
+  width: double.infinity,
+  color: const Color(0xFF003F8C),
+  child: Column(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      Image.asset(
+        'assets/images/login_header_premium.png',
+        width: double.infinity,
+        fit: BoxFit.cover,
+        alignment: Alignment.topCenter,
+      ),
+    ],
+  ),
+),
 
           // FORMULAIRE
           Expanded(
