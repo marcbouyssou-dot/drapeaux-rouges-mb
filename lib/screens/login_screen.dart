@@ -5,14 +5,15 @@ class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
 
   static const Color bg = Color(0xFFEAF2FB);
-  static const Color raspberry = Color(0xFFD81B60);
+  static const Color headerBlue = Color(0xFF003F8C);
+  static const Color raspberry = Color(0xFFE0005B);
   static const Color raspberryDark = Color(0xFFC2185B);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-  backgroundColor: const Color(0xFF003F8C),
-  resizeToAvoidBottomInset: false,
+      backgroundColor: headerBlue,
+      resizeToAvoidBottomInset: false,
       body: LayoutBuilder(
         builder: (context, constraints) {
           final isDesktop = constraints.maxWidth > 600;
@@ -22,74 +23,64 @@ class LoginScreen extends StatelessWidget {
               child: SizedBox(
                 width: 393,
                 height: 852,
-                child: const _LoginMobileContent(),
+                child: const _LoginContent(),
               ),
             );
           }
 
-          return const _LoginMobileContent();
+          return const _LoginContent();
         },
       ),
     );
   }
 }
 
-class _LoginMobileContent extends StatelessWidget {
-  const _LoginMobileContent();
+class _LoginContent extends StatelessWidget {
+  const _LoginContent();
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: LoginScreen.bg,
-      child: Column(
-        children: [
-          // HEADER BLEU
-         Container(
-  width: double.infinity,
-  color: const Color(0xFF003F8C),
-  child: Column(
-    mainAxisSize: MainAxisSize.min,
-    children: [
-      Image.asset(
-        'assets/images/login_header_premium.png',
-        width: double.infinity,
-        fit: BoxFit.cover,
-        alignment: Alignment.topCenter,
-      ),
-    ],
-  ),
-),
+    final h = MediaQuery.of(context).size.height;
 
-          // FORMULAIRE
-          Expanded(
+    return Column(
+      children: [
+        SizedBox(
+          width: double.infinity,
+          height: h * 0.39,
+          child: Image.asset(
+            'assets/images/login_header_premium.png',
+            width: double.infinity,
+            height: double.infinity,
+            fit: BoxFit.cover,
+            alignment: Alignment.topCenter,
+          ),
+        ),
+        Expanded(
+          child: Container(
+            width: double.infinity,
+            color: LoginScreen.bg,
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(24, 26, 24, 22),
+              padding: const EdgeInsets.fromLTRB(24, 34, 24, 18),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   const _FieldLabel('ADRESSE E-MAIL'),
                   const SizedBox(height: 10),
-
                   const _PremiumTextField(
                     hint: 'prenom.nom@mk.fr',
                     prefixIcon: Icons.mail_outline_rounded,
                     keyboardType: TextInputType.emailAddress,
                   ),
-
-                  const SizedBox(height: 28),
-
+                  const SizedBox(height: 34),
                   const _FieldLabel('MOT DE PASSE'),
                   const SizedBox(height: 10),
-
                   const _PremiumTextField(
                     hint: '••••••••',
                     prefixIcon: Icons.lock_outline_rounded,
                     obscureText: true,
                     suffixIcon: Icons.visibility_outlined,
                   ),
-
-                  const SizedBox(height: 6),
-
+                  const SizedBox(height: 4),
                   Align(
                     alignment: Alignment.centerRight,
                     child: TextButton(
@@ -97,9 +88,8 @@ class _LoginMobileContent extends StatelessWidget {
                       style: TextButton.styleFrom(
                         foregroundColor: const Color(0xFF0066C9),
                         padding: EdgeInsets.zero,
-                        minimumSize: const Size(0, 30),
-                        tapTargetSize:
-                            MaterialTapTargetSize.shrinkWrap,
+                        minimumSize: const Size(0, 32),
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                       ),
                       child: const Text(
                         'Mot de passe oublié ?',
@@ -110,9 +100,7 @@ class _LoginMobileContent extends StatelessWidget {
                       ),
                     ),
                   ),
-
-                  const SizedBox(height: 24),
-
+                  const SizedBox(height: 30),
                   SizedBox(
                     height: 66,
                     child: DecoratedBox(
@@ -125,59 +113,45 @@ class _LoginMobileContent extends StatelessWidget {
                           begin: Alignment.topCenter,
                           end: Alignment.bottomCenter,
                         ),
-                        borderRadius:
-                            BorderRadius.circular(20),
+                        borderRadius: BorderRadius.circular(18),
                         boxShadow: [
                           BoxShadow(
-                            color: LoginScreen.raspberry
-                                .withValues(alpha: 0.28),
-                            blurRadius: 26,
-                            offset: const Offset(0, 12),
+                            color: LoginScreen.raspberry.withValues(alpha: 0.30),
+                            blurRadius: 28,
+                            offset: const Offset(0, 14),
                           ),
                         ],
                       ),
                       child: ElevatedButton(
                         onPressed: () {
-                          Navigator.of(context)
-                              .pushReplacement(
+                          Navigator.of(context).pushReplacement(
                             MaterialPageRoute(
-                              builder: (_) =>
-                                  const MainNavigationScreen(),
+                              builder: (_) => const MainNavigationScreen(),
                             ),
                           );
                         },
                         style: ElevatedButton.styleFrom(
                           elevation: 0,
-                          backgroundColor:
-                              Colors.transparent,
-                          shadowColor:
-                              Colors.transparent,
-                          foregroundColor:
-                              Colors.white,
-                          shape:
-                              RoundedRectangleBorder(
-                            borderRadius:
-                                BorderRadius.circular(
-                                    20),
+                          backgroundColor: Colors.transparent,
+                          shadowColor: Colors.transparent,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(18),
                           ),
                         ),
                         child: const Text(
                           'Connexion',
                           style: TextStyle(
                             fontSize: 22,
-                            fontWeight:
-                                FontWeight.w900,
+                            fontWeight: FontWeight.w900,
                           ),
                         ),
                       ),
                     ),
                   ),
-
                   const Spacer(),
-
                   Row(
-                    mainAxisAlignment:
-                        MainAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       const Icon(
                         Icons.verified_user_outlined,
@@ -190,14 +164,11 @@ class _LoginMobileContent extends StatelessWidget {
                           'Données de santé protégées · RGPD · HDS\n'
                           'Réservé aux professionnels de santé habilités',
                           style: TextStyle(
-                            color: const Color(
-                                    0xFF6F8EB9)
-                                .withValues(
-                                    alpha: 0.78),
+                            color: const Color(0xFF6F8EB9)
+                                .withValues(alpha: 0.78),
                             fontSize: 12,
                             height: 1.3,
-                            fontWeight:
-                                FontWeight.w700,
+                            fontWeight: FontWeight.w700,
                           ),
                         ),
                       ),
@@ -207,8 +178,8 @@ class _LoginMobileContent extends StatelessWidget {
               ),
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
@@ -223,8 +194,7 @@ class _FieldLabel extends StatelessWidget {
     return Text(
       text,
       style: TextStyle(
-        color: const Color(0xFF2E66AA)
-            .withValues(alpha: 0.95),
+        color: const Color(0xFF2E66AA).withValues(alpha: 0.95),
         fontSize: 14,
         fontWeight: FontWeight.w900,
         letterSpacing: 1.2,
@@ -274,32 +244,28 @@ class _PremiumTextField extends StatelessWidget {
                   size: 28,
                 ),
           hintText: hint,
-          hintStyle: TextStyle(
-            color: const Color(0xFFB7C3D8),
+          hintStyle: const TextStyle(
+            color: Color(0xFFB7C3D8),
             fontSize: 18,
             fontWeight: FontWeight.w700,
           ),
           filled: true,
           fillColor: Colors.white,
-          contentPadding:
-              const EdgeInsets.symmetric(
+          contentPadding: const EdgeInsets.symmetric(
             horizontal: 20,
             vertical: 22,
           ),
           border: OutlineInputBorder(
-            borderRadius:
-                BorderRadius.circular(24),
+            borderRadius: BorderRadius.all(Radius.circular(24)),
             borderSide: BorderSide.none,
           ),
           enabledBorder: OutlineInputBorder(
-            borderRadius:
-                BorderRadius.circular(24),
+            borderRadius: BorderRadius.all(Radius.circular(24)),
             borderSide: BorderSide.none,
           ),
           focusedBorder: OutlineInputBorder(
-            borderRadius:
-                BorderRadius.circular(24),
-            borderSide: const BorderSide(
+            borderRadius: BorderRadius.all(Radius.circular(24)),
+            borderSide: BorderSide(
               color: Color(0xFF0B6BCB),
               width: 1.2,
             ),
