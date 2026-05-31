@@ -168,21 +168,6 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
   int get totalEvaluations => history.length;
 
-  double get averageScore {
-    if (history.isEmpty) return 0;
-
-    final total = history.fold<double>(0, (sum, item) {
-      final value = item['score'];
-
-      if (value is int) return sum + value;
-      if (value is double) return sum + value;
-
-      return sum + (double.tryParse(value.toString()) ?? 0);
-    });
-
-    return total / history.length;
-  }
-
   int get totalFlags {
     return history.fold<int>(0, (sum, item) {
       final value = item['checkedCount'];
@@ -202,22 +187,6 @@ class _HistoryScreenState extends State<HistoryScreen> {
     }).length;
   }
 
-  String get mostFrequentMotif {
-    if (history.isEmpty) return '-';
-
-    final counts = <String, int>{};
-
-    for (final item in history) {
-      final motif = item['motif']?.toString() ?? 'Non renseigné';
-      counts[motif] = (counts[motif] ?? 0) + 1;
-    }
-
-    final sorted = counts.entries.toList()
-      ..sort((a, b) => b.value.compareTo(a.value));
-
-    return sorted.first.key;
-  }
-
   @override
   Widget build(BuildContext context) {
     final results = filteredHistory;
@@ -228,14 +197,16 @@ class _HistoryScreenState extends State<HistoryScreen> {
         child: RefreshIndicator(
           onRefresh: loadHistory,
           child: ListView(
-            padding: const EdgeInsets.fromLTRB(22, 22, 22, 140),
+            padding: const EdgeInsets.fromLTRB(18, 18, 18, 130),
             children: [
-              buildModernHistoryHero(),
-              const SizedBox(height: 18),
+              buildCompactHeader(),
+              const SizedBox(height: 10),
+              buildStatsRow(),
+              const SizedBox(height: 10),
               buildSearchBar(),
-              const SizedBox(height: 14),
-              buildDeleteHistoryButton(),
-              const SizedBox(height: 18),
+              const SizedBox(height: 10),
+              if (history.isNotEmpty) buildDeleteHistoryButton(),
+              if (history.isNotEmpty) const SizedBox(height: 12),
               if (history.isEmpty) buildEmptyState(),
               if (history.isNotEmpty && results.isEmpty) buildNoResultState(),
               if (results.isNotEmpty) ...results.map(buildHistoryCard),
@@ -246,124 +217,114 @@ class _HistoryScreenState extends State<HistoryScreen> {
     );
   }
 
-  Widget buildModernHistoryHero() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(22, 26, 22, 26),
-      decoration: BoxDecoration(
-        color: const Color(0xFFEFF6FF),
-        borderRadius: BorderRadius.circular(32),
-        border: Border.all(color: const Color(0xFFBFDBFE)),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF2563EB).withValues(alpha: 0.08),
-            blurRadius: 28,
-            offset: const Offset(0, 14),
-          ),
+  Widget buildCompactHeader() {
+  return Container(
+    width: double.infinity,
+    padding: const EdgeInsets.fromLTRB(18, 16, 18, 16),
+    decoration: BoxDecoration(
+      gradient: const LinearGradient(
+        colors: [
+          Color(0xFFEFF6FF),
+          Color(0xFFFFFFFF),
         ],
       ),
-      child: Column(
-        children: [
-          Container(
-            width: 108,
-            height: 108,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: const LinearGradient(
-                colors: [
-                  Color(0xFF60A5FA),
-                  Color(0xFF2563EB),
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFF2563EB).withValues(alpha: 0.22),
-                  blurRadius: 28,
-                  offset: const Offset(0, 14),
-                ),
+      borderRadius: BorderRadius.circular(26),
+      border: Border.all(color: const Color(0xFFBFDBFE)),
+    ),
+    child: Row(
+      children: [
+        Container(
+          width: 52,
+          height: 52,
+          decoration: const BoxDecoration(
+            shape: BoxShape.circle,
+            gradient: LinearGradient(
+              colors: [
+                Color(0xFF60A5FA),
+                Color(0xFF2563EB),
               ],
             ),
-            child: const Icon(
-              Icons.history_rounded,
-              color: Colors.white,
-              size: 56,
+          ),
+          child: const Icon(
+            Icons.history_rounded,
+            color: Colors.white,
+            size: 28,
+          ),
+        ),
+        const SizedBox(width: 14),
+        const Expanded(
+  child: Text(
+    'Évaluations sauvegardées',
+    style: TextStyle(
+      color: Color(0xFF0F172A),
+      fontSize: 17,
+      fontWeight: FontWeight.w900,
+      letterSpacing: -0.2,
+    ),
+  ),
+),
+      ],
+    ),
+  );
+}
+
+  Widget buildStatsRow() => Row(
+        children: [
+          Expanded(
+            child: buildStatCard(
+              label: 'Bilans',
+              value: '$totalEvaluations',
+              icon: Icons.assignment_turned_in_outlined,
             ),
           ),
-          const SizedBox(height: 22),
-          const Text(
-            'HISTORIQUE',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: Color(0xFF2563EB),
-              fontSize: 30,
-              fontWeight: FontWeight.w900,
-              letterSpacing: -1,
+          const SizedBox(width: 8),
+          Expanded(
+            child: buildStatCard(
+              label: 'Élevés',
+              value: '$highRiskCount',
+              icon: Icons.warning_amber_rounded,
             ),
           ),
-          const SizedBox(height: 10),
-          const Text(
-            'Consulter les évaluations enregistrées localement',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: Color(0xFF0F172A),
-              fontSize: 16,
-              height: 1.35,
-              fontWeight: FontWeight.w700,
+          const SizedBox(width: 8),
+          Expanded(
+            child: buildStatCard(
+              label: 'Drapeaux',
+              value: '$totalFlags',
+              icon: Icons.flag_rounded,
             ),
-          ),
-          const SizedBox(height: 22),
-          Row(
-            children: [
-              Expanded(
-                child: buildHeroStat('Bilans', '$totalEvaluations'),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: buildHeroStat('Risques élevés', '$highRiskCount'),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: buildHeroStat('Drapeaux', '$totalFlags'),
-              ),
-            ],
           ),
         ],
-      ),
-    );
-  }
+      );
 
-  Widget buildHeroStat(String label, String value) {
+  Widget buildStatCard({
+    required String label,
+    required String value,
+    required IconData icon,
+  }) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+      padding: const EdgeInsets.fromLTRB(10, 9, 10, 9),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.78),
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: const Color(0xFFBFDBFE)),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
       ),
       child: Column(
         children: [
-          Text(
-            value,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              color: Color(0xFF2563EB),
-              fontSize: 21,
-              fontWeight: FontWeight.w900,
-              letterSpacing: -0.8,
-            ),
-          ),
+          Icon(icon, color: const Color(0xFF2563EB), size: 19),
           const SizedBox(height: 4),
           Text(
+            value,
+            style: const TextStyle(
+              color: Color(0xFF0F172A),
+              fontSize: 18,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+          Text(
             label,
-            textAlign: TextAlign.center,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
             style: const TextStyle(
               color: Color(0xFF64748B),
-              fontSize: 11,
+              fontSize: 10.5,
               fontWeight: FontWeight.w800,
             ),
           ),
@@ -372,89 +333,41 @@ class _HistoryScreenState extends State<HistoryScreen> {
     );
   }
 
-  Widget buildSearchBar() {
-    return TextField(
-      controller: searchController,
-      onChanged: (value) {
-        setState(() {
-          searchQuery = value;
-        });
-      },
-      decoration: InputDecoration(
-        hintText: 'Recherche patient, motif, risque, score...',
-        prefixIcon: const Icon(Icons.search_rounded),
-        suffixIcon: searchQuery.isEmpty
-            ? null
-            : IconButton(
-                onPressed: () {
-                  searchController.clear();
-                  setState(() {
-                    searchQuery = '';
-                  });
-                },
-                icon: const Icon(Icons.close_rounded),
-              ),
-        filled: true,
-        fillColor: Colors.white,
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 18,
-          vertical: 16,
-        ),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(22),
-          borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(22),
-          borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(22),
-          borderSide: const BorderSide(
-            color: Color(0xFF2563EB),
-            width: 2,
+  Widget buildSearchBar() => TextField(
+        controller: searchController,
+        onChanged: (value) => setState(() => searchQuery = value),
+        decoration: InputDecoration(
+          hintText: 'Rechercher patient, motif, risque...',
+          prefixIcon: const Icon(Icons.search_rounded),
+          filled: true,
+          fillColor: Colors.white,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(22),
+            borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
           ),
         ),
-      ),
-    );
-  }
+      );
 
-  Widget buildDeleteHistoryButton() {
-    if (history.isEmpty) return const SizedBox.shrink();
-
-    return Align(
-      alignment: Alignment.centerRight,
-      child: OutlinedButton.icon(
-        onPressed: clearHistory,
-        icon: const Icon(Icons.delete_outline_rounded, size: 18),
-        label: const Text('Supprimer l’historique'),
-        style: OutlinedButton.styleFrom(
-          foregroundColor: const Color(0xFFEF4444),
-          side: const BorderSide(color: Color(0xFFFCA5A5)),
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(18),
-          ),
+  Widget buildDeleteHistoryButton() => Align(
+        alignment: Alignment.centerRight,
+        child: OutlinedButton.icon(
+          onPressed: clearHistory,
+          icon: const Icon(Icons.delete_outline_rounded, size: 18),
+          label: const Text('Supprimer'),
         ),
-      ),
-    );
-  }
+      );
 
-  Widget buildEmptyState() {
-    return buildInfoState(
-      icon: Icons.history_rounded,
-      title: 'Aucun bilan enregistré',
-      text: 'Les évaluations sauvegardées apparaîtront ici.',
-    );
-  }
+  Widget buildEmptyState() => buildInfoState(
+        icon: Icons.history_rounded,
+        title: 'Aucun bilan enregistré',
+        text: 'Les évaluations sauvegardées apparaîtront ici.',
+      );
 
-  Widget buildNoResultState() {
-    return buildInfoState(
-      icon: Icons.search_off_rounded,
-      title: 'Aucun résultat',
-      text: 'Essayez un autre patient, motif, risque ou score.',
-    );
-  }
+  Widget buildNoResultState() => buildInfoState(
+        icon: Icons.search_off_rounded,
+        title: 'Aucun résultat',
+        text: 'Essayez un autre patient ou motif.',
+      );
 
   Widget buildInfoState({
     required IconData icon,
@@ -462,30 +375,32 @@ class _HistoryScreenState extends State<HistoryScreen> {
     required String text,
   }) {
     return Container(
-      padding: const EdgeInsets.all(30),
+      margin: const EdgeInsets.only(top: 6),
+      padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(28),
+        borderRadius: BorderRadius.circular(26),
         border: Border.all(color: const Color(0xFFE2E8F0)),
       ),
       child: Column(
         children: [
-          Icon(icon, size: 46, color: const Color(0xFF94A3B8)),
-          const SizedBox(height: 14),
+          Icon(icon, size: 38, color: const Color(0xFF94A3B8)),
+          const SizedBox(height: 10),
           Text(
             title,
             style: const TextStyle(
-              fontSize: 17,
+              fontSize: 16,
               color: Color(0xFF64748B),
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w900,
             ),
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 5),
           Text(
             text,
             textAlign: TextAlign.center,
             style: const TextStyle(
               color: Color(0xFF94A3B8),
+              fontSize: 13,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -493,188 +408,194 @@ class _HistoryScreenState extends State<HistoryScreen> {
       ),
     );
   }
+Widget buildHistoryCard(Map<String, dynamic> item) {
+  final risk = riskLevel(item);
+  final motif = item['motif']?.toString() ?? 'Motif non renseigné';
+  final scoreValue = item['score']?.toString() ?? '-';
+  final checkedCountValue = item['checkedCount']?.toString() ?? '0';
+  final patientDisplayName = patientName(item);
+  final isAnonymous = patientDisplayName == 'Patient non renseigné';
 
-  Widget buildHistoryCard(Map<String, dynamic> item) {
-    final risk = riskLevel(item);
-    final motif = item['motif']?.toString() ?? 'Motif non renseigné';
-    final scoreValue = item['score']?.toString() ?? '-';
-    final checkedCountValue = item['checkedCount']?.toString() ?? '0';
-    final patientDisplayName = patientName(item);
-    final isAnonymous = patientDisplayName == 'Patient non renseigné';
+  return GestureDetector(
+    onTap: () async {
+      final deleted = await Navigator.push<bool>(
+        context,
+        MaterialPageRoute(
+          builder: (_) => EvaluationDetailScreen(
+            evaluation: item,
+          ),
+        ),
+      );
 
-    return GestureDetector(
-      onTap: () async {
-        final deleted = await Navigator.push<bool>(
-          context,
-          MaterialPageRoute(
-            builder: (_) => EvaluationDetailScreen(
-              evaluation: item,
+      if (deleted == true) {
+        await loadHistory();
+      }
+    },
+    child: Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(15),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(26),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 14,
+            offset: const Offset(0, 7),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            height: 54,
+            width: 54,
+            decoration: BoxDecoration(
+              color: riskColor(risk).withValues(alpha: 0.10),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Icon(
+              motifIcon(motif),
+              color: riskColor(risk),
+              size: 27,
             ),
           ),
-        );
-
-        if (deleted == true) {
-          await loadHistory();
-        }
-      },
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 14),
-        padding: const EdgeInsets.all(18),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(28),
-          border: Border.all(color: const Color(0xFFE2E8F0)),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.035),
-              blurRadius: 16,
-              offset: const Offset(0, 8),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            Container(
-              height: 62,
-              width: 62,
-              decoration: BoxDecoration(
-                color: riskColor(risk).withValues(alpha: 0.10),
-                borderRadius: BorderRadius.circular(22),
-              ),
-              child: Icon(
-                motifIcon(motif),
-                color: riskColor(risk),
-                size: 30,
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    patientDisplayName,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: Color(0xFF0F172A),
-                      fontSize: 17,
-                      fontWeight: FontWeight.w900,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    motif,
-                    style: const TextStyle(
-                      color: Color(0xFF334155),
-                      fontWeight: FontWeight.w700,
-                      fontSize: 14,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    formatDate(item['date']),
-                    style: const TextStyle(
-                      color: Color(0xFF64748B),
-                      fontWeight: FontWeight.w600,
-                      fontSize: 13,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [
-                      buildRiskBadge(risk),
-                      buildSmallBadge('$checkedCountValue drapeau(x)'),
-                      if (isAnonymous) buildAnonymousBadge(),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 12),
-            Column(
+          const SizedBox(width: 13),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Score',
-                  style: TextStyle(
-                    color: Color(0xFF64748B),
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
                 Text(
-                  scoreValue,
+                  patientDisplayName,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     color: Color(0xFF0F172A),
-                    fontSize: 28,
+                    fontSize: 16,
                     fontWeight: FontWeight.w900,
-                    letterSpacing: -1,
                   ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  motif,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Color(0xFF334155),
+                    fontWeight: FontWeight.w700,
+                    fontSize: 13,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  formatDate(item['date']),
+                  style: const TextStyle(
+                    color: Color(0xFF64748B),
+                    fontWeight: FontWeight.w600,
+                    fontSize: 12,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 7,
+                  runSpacing: 7,
+                  children: [
+                    buildRiskBadge(risk),
+                    buildSmallBadge('$checkedCountValue drapeau(x)'),
+                    if (isAnonymous) buildAnonymousBadge(),
+                  ],
                 ),
               ],
             ),
-          ],
-        ),
+          ),
+          const SizedBox(width: 10),
+          Column(
+            children: [
+              const Text(
+                'Score',
+                style: TextStyle(
+                  color: Color(0xFF64748B),
+                  fontSize: 10,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              Text(
+                scoreValue,
+                style: const TextStyle(
+                  color: Color(0xFF0F172A),
+                  fontSize: 25,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: -1,
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
-    );
-  }
-
-  Widget buildRiskBadge(String risk) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-        color: riskColor(risk).withValues(alpha: 0.10),
-        borderRadius: BorderRadius.circular(99),
-        border: Border.all(color: riskColor(risk).withValues(alpha: 0.35)),
-      ),
-      child: Text(
-        risk,
-        style: TextStyle(
-          color: riskColor(risk),
-          fontWeight: FontWeight.w900,
-          fontSize: 12,
-        ),
-      ),
-    );
-  }
-
-  Widget buildSmallBadge(String text) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF8FAFC),
-        borderRadius: BorderRadius.circular(99),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
-      ),
-      child: Text(
-        text,
-        style: const TextStyle(
-          color: Color(0xFF475569),
-          fontWeight: FontWeight.w800,
-          fontSize: 12,
-        ),
-      ),
-    );
-  }
-
-  Widget buildAnonymousBadge() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-        color: const Color(0xFFFFF7ED),
-        borderRadius: BorderRadius.circular(99),
-        border: Border.all(color: const Color(0xFFFED7AA)),
-      ),
-      child: const Text(
-        'Anonyme',
-        style: TextStyle(
-          color: Color(0xFFC2410C),
-          fontWeight: FontWeight.w900,
-          fontSize: 12,
-        ),
-      ),
-    );
-  }
+    ),
+  );
 }
+
+Widget buildRiskBadge(String risk) {
+  return Container(
+    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+    decoration: BoxDecoration(
+      color: riskColor(risk).withValues(alpha: 0.10),
+      borderRadius: BorderRadius.circular(99),
+      border: Border.all(
+        color: riskColor(risk).withValues(alpha: 0.35),
+      ),
+    ),
+    child: Text(
+      risk,
+      style: TextStyle(
+        color: riskColor(risk),
+        fontWeight: FontWeight.w900,
+        fontSize: 11,
+      ),
+    ),
+  );
+}
+
+Widget buildSmallBadge(String text) {
+  return Container(
+    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+    decoration: BoxDecoration(
+      color: const Color(0xFFF8FAFC),
+      borderRadius: BorderRadius.circular(99),
+      border: Border.all(
+        color: const Color(0xFFE2E8F0),
+      ),
+    ),
+    child: Text(
+      text,
+      style: const TextStyle(
+        color: Color(0xFF475569),
+        fontWeight: FontWeight.w800,
+        fontSize: 11,
+      ),
+    ),
+  );
+}
+
+Widget buildAnonymousBadge() {
+  return Container(
+    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+    decoration: BoxDecoration(
+      color: const Color(0xFFFFF7ED),
+      borderRadius: BorderRadius.circular(99),
+      border: Border.all(
+        color: const Color(0xFFFED7AA),
+      ),
+    ),
+    child: const Text(
+      'Anonyme',
+      style: TextStyle(
+        color: Color(0xFFC2410C),
+        fontWeight: FontWeight.w900,
+        fontSize: 11,
+      ),
+    ),
+  );
+}}

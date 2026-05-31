@@ -63,13 +63,9 @@ class _AccessDirectSettingsScreenState
     if (!mounted) return;
 
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Réglages accès direct enregistrés'),
-      ),
+      const SnackBar(content: Text('Réglages accès direct enregistrés')),
     );
   }
-
-  
 
   void simulateDocumentAdded() {
     setState(() {
@@ -90,144 +86,235 @@ class _AccessDirectSettingsScreenState
     final statusIcon = AccessDirectService.statusIcon(model);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF6F8FC),
-      appBar: AppBar(
-        title: const Text('Accès direct'),
-        backgroundColor: Colors.white,
-        foregroundColor: const Color(0xFF0F172A),
-        elevation: 0,
-      ),
-      body: isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : ListView(
-              padding: const EdgeInsets.fromLTRB(18, 16, 18, 120),
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: statusColor,
-                    borderRadius: BorderRadius.circular(28),
+      backgroundColor: const Color(0xFFF8FAFF),
+      body: SafeArea(
+        child: isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : ListView(
+                padding: const EdgeInsets.fromLTRB(18, 18, 18, 120),
+                children: [
+                  buildHeader(context),
+                  const SizedBox(height: 12),
+                  buildStatusCard(
+                    model: model,
+                    statusColor: statusColor,
+                    statusIcon: statusIcon,
                   ),
-                  child: Row(
-                    children: [
-                      Icon(
-                        statusIcon,
-                        color: Colors.white,
-                        size: 36,
-                      ),
-                      const SizedBox(width: 14),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              model.statusLabel,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 20,
-                                fontWeight: FontWeight.w900,
-                              ),
-                            ),
-                            const SizedBox(height: 6),
-                            Text(
-                              model.sessionLabel,
-                              style: TextStyle(
-                                color: Colors.white.withValues(alpha: 0.88),
-                                fontSize: 14,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
+                  const SizedBox(height: 12),
+                  _InfoCard(
+                    text: AccessDirectService.adviceMessage(model),
                   ),
-                ),
-
-                const SizedBox(height: 16),
-
-                _InfoCard(
-                  text: AccessDirectService.adviceMessage(model),
-                ),
-
-                const SizedBox(height: 18),
-
-                _SectionTitle('Conditions d’exercice'),
-
-                _SwitchTile(
-                  title: 'Exercice coordonné',
-                  subtitle: 'MSP, CPTS, centre de santé ou structure coordonnée',
-                  value: isCoordinatedExercise,
-                  onChanged: (value) {
-                    setState(() {
-                      isCoordinatedExercise = value;
-                    });
-                  },
-                ),
-
-                _SwitchTile(
-                  title: 'Département expérimental',
-                  subtitle: 'Le lieu d’exercice est concerné par l’expérimentation',
-                  value: isExperimentalDepartment,
-                  onChanged: (value) {
-                    setState(() {
-                      isExperimentalDepartment = value;
-                    });
-                  },
-                ),
-
-                _SwitchTile(
-                  title: 'Déclaration ARS effectuée',
-                  subtitle: 'Condition administrative déclarée par le praticien',
-                  value: hasArsDeclaration,
-                  onChanged: (value) {
-                    setState(() {
-                      hasArsDeclaration = value;
-                    });
-                  },
-                ),
-
-                const SizedBox(height: 18),
-
-                _SectionTitle('Diagnostic médical préalable'),
-
-                _SwitchTile(
-                  title: 'Diagnostic déjà posé',
-                  subtitle:
-                      'Si oui : pas de limite automatique à 8 séances dans l’app',
-                  value: hasMedicalDiagnosis,
-                  onChanged: (value) {
-                    setState(() {
-                      hasMedicalDiagnosis = value;
-                      if (!value) {
-                        diagnosisDocumentPath = null;
-                      }
-                    });
-                  },
-                ),
-
-                if (hasMedicalDiagnosis) ...[
-                  const SizedBox(height: 10),
-                  _DocumentCard(
-                    documentPath: diagnosisDocumentPath,
-                    onAdd: simulateDocumentAdded,
-                    onRemove: removeDocument,
+                  const SizedBox(height: 16),
+                  const _SectionTitle('Conditions d’exercice'),
+                  const SizedBox(height: 8),
+                  _SwitchTile(
+                    title: 'Exercice coordonné',
+                    subtitle: 'MSP, CPTS, centre de santé ou structure coordonnée.',
+                    value: isCoordinatedExercise,
+                    onChanged: (value) {
+                      setState(() {
+                        isCoordinatedExercise = value;
+                      });
+                    },
                   ),
+                  _SwitchTile(
+                    title: 'Département expérimental',
+                    subtitle: 'Lieu d’exercice concerné par l’expérimentation.',
+                    value: isExperimentalDepartment,
+                    onChanged: (value) {
+                      setState(() {
+                        isExperimentalDepartment = value;
+                      });
+                    },
+                  ),
+                  _SwitchTile(
+                    title: 'Déclaration ARS effectuée',
+                    subtitle: 'Condition administrative déclarée par le praticien.',
+                    value: hasArsDeclaration,
+                    onChanged: (value) {
+                      setState(() {
+                        hasArsDeclaration = value;
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 14),
+                  const _SectionTitle('Diagnostic médical préalable'),
+                  const SizedBox(height: 8),
+                  _SwitchTile(
+                    title: 'Diagnostic déjà posé',
+                    subtitle:
+                        'Si oui : pas de limite automatique à 8 séances dans l’app.',
+                    value: hasMedicalDiagnosis,
+                    onChanged: (value) {
+                      setState(() {
+                        hasMedicalDiagnosis = value;
+                        if (!value) diagnosisDocumentPath = null;
+                      });
+                    },
+                  ),
+                  if (hasMedicalDiagnosis) ...[
+                    const SizedBox(height: 8),
+                    _DocumentCard(
+                      documentPath: diagnosisDocumentPath,
+                      onAdd: simulateDocumentAdded,
+                      onRemove: removeDocument,
+                    ),
+                  ],
                 ],
-
-                const SizedBox(height: 18),
-
-              ],
-            ),
+              ),
+      ),
       bottomNavigationBar: SafeArea(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(18, 8, 18, 18),
           child: FilledButton.icon(
             onPressed: saveSettings,
             icon: const Icon(Icons.save_outlined),
-            label: const Text('Enregistrer les réglages'),
+            label: const Text('Enregistrer'),
+            style: FilledButton.styleFrom(
+              backgroundColor: const Color(0xFF2563EB),
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 15),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+            ),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget buildHeader(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(12, 12, 16, 12),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [
+            Color(0xFFFFF7ED),
+            Color(0xFFFFFFFF),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(26),
+        border: Border.all(color: const Color(0xFFFED7AA)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            height: 44,
+            width: 44,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: const Color(0xFFE2E8F0)),
+            ),
+            child: IconButton(
+              onPressed: () => Navigator.pop(context),
+              icon: const Icon(Icons.arrow_back_ios_new_rounded),
+              iconSize: 18,
+              color: const Color(0xFFEA580C),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Container(
+            width: 52,
+            height: 52,
+            decoration: const BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: LinearGradient(
+                colors: [
+                  Color(0xFFF97316),
+                  Color(0xFFEA580C),
+                ],
+              ),
+            ),
+            child: const Icon(
+              Icons.medical_information_outlined,
+              color: Colors.white,
+              size: 28,
+            ),
+          ),
+          const SizedBox(width: 14),
+          const Expanded(
+            child: Text(
+              'Accès direct',
+              style: TextStyle(
+                color: Color(0xFF0F172A),
+                fontSize: 18,
+                fontWeight: FontWeight.w900,
+                letterSpacing: -0.2,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget buildStatusCard({
+    required AccessDirectModel model,
+    required Color statusColor,
+    required IconData statusIcon,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(17),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            statusColor,
+            statusColor.withValues(alpha: 0.86),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(28),
+        boxShadow: [
+          BoxShadow(
+            color: statusColor.withValues(alpha: 0.18),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            height: 56,
+            width: 56,
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.16),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Icon(
+              statusIcon,
+              color: Colors.white,
+              size: 31,
+            ),
+          ),
+          const SizedBox(width: 13),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  model.statusLabel,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 21,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: -0.5,
+                  ),
+                ),
+                const SizedBox(height: 5),
+                Text(
+                  model.sessionLabel,
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.84),
+                    fontSize: 13.5,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -241,13 +328,14 @@ class _SectionTitle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8, left: 4),
+      padding: const EdgeInsets.only(left: 4),
       child: Text(
         text,
         style: const TextStyle(
-          color: Color(0xFF0F172A),
-          fontSize: 18,
+          color: Color(0xFF64748B),
+          fontSize: 12,
           fontWeight: FontWeight.w900,
+          letterSpacing: 0.7,
         ),
       ),
     );
@@ -262,19 +350,19 @@ class _InfoCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(15),
       decoration: BoxDecoration(
         color: const Color(0xFFEFF6FF),
         borderRadius: BorderRadius.circular(22),
-        border: Border.all(
-          color: const Color(0xFFBFDBFE),
-        ),
+        border: Border.all(color: const Color(0xFFBFDBFE)),
       ),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Icon(
             Icons.info_outline_rounded,
             color: Color(0xFF2563EB),
+            size: 23,
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -282,6 +370,7 @@ class _InfoCard extends StatelessWidget {
               text,
               style: const TextStyle(
                 color: Color(0xFF1E3A8A),
+                fontSize: 13.5,
                 fontWeight: FontWeight.w700,
                 height: 1.35,
               ),
@@ -308,18 +397,34 @@ class _SwitchTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final activeColor = value ? const Color(0xFF2563EB) : const Color(0xFF94A3B8);
+
     return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.all(16),
+      margin: const EdgeInsets.only(bottom: 9),
+      padding: const EdgeInsets.fromLTRB(15, 14, 12, 14),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(22),
         border: Border.all(
-          color: const Color(0xFFE2E8F0),
+          color: value ? const Color(0xFFBFDBFE) : const Color(0xFFE2E8F0),
         ),
       ),
       child: Row(
         children: [
+          Container(
+            height: 42,
+            width: 42,
+            decoration: BoxDecoration(
+              color: activeColor.withValues(alpha: 0.10),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Icon(
+              value ? Icons.check_rounded : Icons.remove_rounded,
+              color: activeColor,
+              size: 24,
+            ),
+          ),
+          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -328,7 +433,7 @@ class _SwitchTile extends StatelessWidget {
                   title,
                   style: const TextStyle(
                     color: Color(0xFF0F172A),
-                    fontSize: 16,
+                    fontSize: 15,
                     fontWeight: FontWeight.w900,
                   ),
                 ),
@@ -337,6 +442,7 @@ class _SwitchTile extends StatelessWidget {
                   subtitle,
                   style: const TextStyle(
                     color: Color(0xFF64748B),
+                    fontSize: 12.5,
                     fontWeight: FontWeight.w600,
                     height: 1.3,
                   ),
@@ -370,10 +476,10 @@ class _DocumentCard extends StatelessWidget {
     final hasDocument = documentPath != null;
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(15),
       decoration: BoxDecoration(
         color: hasDocument ? const Color(0xFFF0FDF4) : Colors.white,
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(22),
         border: Border.all(
           color: hasDocument
               ? const Color(0xFFBBF7D0)

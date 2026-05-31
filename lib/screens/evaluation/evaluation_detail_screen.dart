@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import '../../services/history_service.dart';
 import '../../services/pdf_service.dart';
 import '../../theme/app_text_styles.dart';
-import '../../widgets/urps_banner.dart';
 
 class EvaluationDetailScreen extends StatelessWidget {
   final Map<String, dynamic> evaluation;
@@ -133,7 +132,7 @@ class EvaluationDetailScreen extends StatelessWidget {
       builder: (sheetContext) {
         return SafeArea(
           child: Container(
-            padding: const EdgeInsets.all(18),
+            padding: const EdgeInsets.fromLTRB(18, 12, 18, 18),
             decoration: const BoxDecoration(
               color: Color(0xFFF8FAFC),
               borderRadius: BorderRadius.vertical(
@@ -269,7 +268,7 @@ class EvaluationDetailScreen extends StatelessWidget {
             FilledButton(
               onPressed: () => Navigator.pop(dialogContext, true),
               style: FilledButton.styleFrom(
-                backgroundColor: Color(0xFFEF4444),
+                backgroundColor: const Color(0xFFEF4444),
               ),
               child: const Text('Supprimer'),
             ),
@@ -290,18 +289,17 @@ class EvaluationDetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF6F8FC),
+      backgroundColor: const Color(0xFFF8FAFF),
       body: SafeArea(
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(18, 12, 18, 32),
+          padding: const EdgeInsets.fromLTRB(18, 18, 18, 32),
           children: [
-            const UrpsBanner(isLarge: false),
-            buildCompactHeader(context),
-            const SizedBox(height: 14),
+            buildPatientHeader(context),
+            const SizedBox(height: 12),
             buildRiskCard(),
-            const SizedBox(height: 14),
+            const SizedBox(height: 12),
             buildDecisionCard(),
-            const SizedBox(height: 14),
+            const SizedBox(height: 12),
             buildFlagsSection(),
             const SizedBox(height: 14),
             buildActionButtons(context),
@@ -311,92 +309,128 @@ class EvaluationDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget buildCompactHeader(BuildContext context) {
-    return Row(
-      children: [
-        Container(
-          height: 44,
-          width: 44,
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: const Color(0xFFE2E8F0)),
-          ),
-          child: IconButton(
-            onPressed: () => Navigator.pop(context),
-            icon: const Icon(Icons.arrow_back_ios_new_rounded),
-            iconSize: 18,
-            color: const Color(0xFF2563EB),
-          ),
+  Widget buildPatientHeader(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(12, 12, 16, 12),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [
+            Color(0xFFEFF6FF),
+            Color(0xFFFFFFFF),
+          ],
         ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                patientName,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  color: Color(0xFF0F172A),
-                  fontSize: 17,
-                  fontWeight: FontWeight.w900,
-                ),
-              ),
-              const SizedBox(height: 3),
-              Text(
-                formatDate(evaluation['date']),
-                style: const TextStyle(
-                  color: Color(0xFF64748B),
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
+        borderRadius: BorderRadius.circular(26),
+        border: Border.all(color: const Color(0xFFBFDBFE)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            height: 44,
+            width: 44,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: const Color(0xFFE2E8F0)),
+            ),
+            child: IconButton(
+              onPressed: () => Navigator.pop(context),
+              icon: const Icon(Icons.arrow_back_ios_new_rounded),
+              iconSize: 18,
+              color: const Color(0xFF2563EB),
+            ),
           ),
-        ),
-      ],
+          const SizedBox(width: 12),
+          Container(
+            height: 48,
+            width: 48,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: riskColor.withValues(alpha: 0.12),
+            ),
+            child: Icon(
+              Icons.assignment_turned_in_outlined,
+              color: riskColor,
+              size: 26,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  patientName,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Color(0xFF0F172A),
+                    fontSize: 16,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  formatDate(evaluation['date']),
+                  style: const TextStyle(
+                    color: Color(0xFF64748B),
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 
   Widget buildRiskCard() {
     return Container(
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.all(17),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
             riskColor,
-            riskColor.withValues(alpha: 0.84),
+            riskColor.withValues(alpha: 0.86),
           ],
         ),
         borderRadius: BorderRadius.circular(28),
+        boxShadow: [
+          BoxShadow(
+            color: riskColor.withValues(alpha: 0.18),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
       ),
       child: Row(
         children: [
           Container(
-            height: 58,
-            width: 58,
+            height: 56,
+            width: 56,
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.15),
+              color: Colors.white.withValues(alpha: 0.16),
               borderRadius: BorderRadius.circular(20),
             ),
             child: const Icon(
               Icons.monitor_heart_rounded,
               color: Colors.white,
-              size: 32,
+              size: 31,
             ),
           ),
-          const SizedBox(width: 14),
+          const SizedBox(width: 13),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   riskLevel,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     color: Colors.white,
-                    fontSize: 24,
+                    fontSize: 23,
                     fontWeight: FontWeight.w900,
                     letterSpacing: -0.8,
                   ),
@@ -407,15 +441,17 @@ class EvaluationDetailScreen extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.82),
-                    fontWeight: FontWeight.w700,
+                    color: Colors.white.withValues(alpha: 0.84),
+                    fontSize: 13.5,
+                    fontWeight: FontWeight.w800,
                   ),
                 ),
               ],
             ),
           ),
-          buildMiniStat('Score', '$score'),
           const SizedBox(width: 8),
+          buildMiniStat('Score', '$score'),
+          const SizedBox(width: 7),
           buildMiniStat('DR', '$checkedCount'),
         ],
       ),
@@ -424,29 +460,33 @@ class EvaluationDetailScreen extends StatelessWidget {
 
   Widget buildMiniStat(String label, String value) {
     return Container(
-      width: 56,
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+      width: 52,
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 9),
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.16),
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(17),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.12),
+        ),
       ),
       child: Column(
         children: [
           Text(
             label,
             style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.72),
-              fontSize: 10,
+              color: Colors.white.withValues(alpha: 0.74),
+              fontSize: 9.5,
               fontWeight: FontWeight.w800,
             ),
           ),
-          const SizedBox(height: 3),
+          const SizedBox(height: 2),
           Text(
             value,
             style: const TextStyle(
               color: Colors.white,
-              fontSize: 21,
+              fontSize: 20,
               fontWeight: FontWeight.w900,
+              letterSpacing: -0.6,
             ),
           ),
         ],
@@ -456,7 +496,7 @@ class EvaluationDetailScreen extends StatelessWidget {
 
   Widget buildDecisionCard() {
     return Container(
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.all(17),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(26),
@@ -466,8 +506,8 @@ class EvaluationDetailScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            height: 50,
-            width: 50,
+            height: 48,
+            width: 48,
             decoration: BoxDecoration(
               color: riskColor.withValues(alpha: 0.10),
               borderRadius: BorderRadius.circular(18),
@@ -475,10 +515,10 @@ class EvaluationDetailScreen extends StatelessWidget {
             child: Icon(
               Icons.route_rounded,
               color: riskColor,
-              size: 28,
+              size: 27,
             ),
           ),
-          const SizedBox(width: 14),
+          const SizedBox(width: 13),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -487,7 +527,7 @@ class EvaluationDetailScreen extends StatelessWidget {
                   decisionTitle,
                   style: TextStyle(
                     color: riskColor,
-                    fontSize: 20,
+                    fontSize: 19,
                     fontWeight: FontWeight.w900,
                     letterSpacing: -0.4,
                     height: 1.1,
@@ -498,8 +538,8 @@ class EvaluationDetailScreen extends StatelessWidget {
                   decisionMessage,
                   style: const TextStyle(
                     color: Color(0xFF334155),
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
+                    fontSize: 13.5,
+                    fontWeight: FontWeight.w600,
                     height: 1.45,
                   ),
                 ),
@@ -521,7 +561,7 @@ class EvaluationDetailScreen extends StatelessWidget {
           'Drapeaux rouges cochés',
           style: AppTextStyles.sectionTitle,
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 10),
         ...checkedFlags.map(buildFlagTile),
       ],
     );
@@ -529,7 +569,7 @@ class EvaluationDetailScreen extends StatelessWidget {
 
   Widget buildEmptyFlags() {
     return Container(
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.all(17),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(24),
@@ -540,15 +580,15 @@ class EvaluationDetailScreen extends StatelessWidget {
           Icon(
             Icons.check_circle_outline_rounded,
             color: Color(0xFF22C55E),
-            size: 30,
+            size: 29,
           ),
-          SizedBox(width: 14),
+          SizedBox(width: 13),
           Expanded(
             child: Text(
               'Aucun drapeau rouge coché dans ce bilan.',
               style: TextStyle(
                 color: Color(0xFF334155),
-                fontWeight: FontWeight.w700,
+                fontWeight: FontWeight.w800,
               ),
             ),
           ),
@@ -563,8 +603,8 @@ class EvaluationDetailScreen extends StatelessWidget {
     final category = flag['category']?.toString();
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.all(16),
+      margin: const EdgeInsets.only(bottom: 9),
+      padding: const EdgeInsets.all(15),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(22),
@@ -572,9 +612,18 @@ class EvaluationDetailScreen extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Icon(
-            Icons.flag_rounded,
-            color: riskColor,
+          Container(
+            height: 42,
+            width: 42,
+            decoration: BoxDecoration(
+              color: riskColor.withValues(alpha: 0.10),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Icon(
+              Icons.flag_rounded,
+              color: riskColor,
+              size: 24,
+            ),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -586,7 +635,7 @@ class EvaluationDetailScreen extends StatelessWidget {
                     category,
                     style: const TextStyle(
                       color: Color(0xFF64748B),
-                      fontSize: 12,
+                      fontSize: 11.5,
                       fontWeight: FontWeight.w800,
                     ),
                   ),
@@ -624,10 +673,18 @@ class EvaluationDetailScreen extends StatelessWidget {
           child: FilledButton.icon(
             onPressed: () => showPdfExportChoice(context),
             icon: const Icon(Icons.picture_as_pdf_outlined),
-            label: const Text('PDF'),
+            label: const Text('Exporter PDF'),
+            style: FilledButton.styleFrom(
+              backgroundColor: const Color(0xFF2563EB),
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(18),
+              ),
+            ),
           ),
         ),
-        const SizedBox(width: 12),
+        const SizedBox(width: 10),
         Expanded(
           child: OutlinedButton.icon(
             onPressed: () => confirmDelete(context),
@@ -636,6 +693,10 @@ class EvaluationDetailScreen extends StatelessWidget {
             style: OutlinedButton.styleFrom(
               foregroundColor: const Color(0xFFEF4444),
               side: const BorderSide(color: Color(0xFFFCA5A5)),
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(18),
+              ),
             ),
           ),
         ),

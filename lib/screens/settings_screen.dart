@@ -6,7 +6,6 @@ import '../models/practitioner_profile.dart';
 import '../services/global_statistics_csv_service.dart';
 import '../services/patient_record_service.dart';
 import '../services/practitioner_profile_service.dart';
-
 import 'access_direct_settings_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -167,17 +166,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final practitionerComplete = practitioner.isComplete;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF6F8FC),
+      backgroundColor: const Color(0xFFF8FAFF),
       body: SafeArea(
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(18, 12, 18, 150),
+          padding: const EdgeInsets.fromLTRB(18, 18, 18, 130),
           children: [
-            
-            buildHeroCard(),
-            const SizedBox(height: 26),
+            buildCompactHeader(),
+            const SizedBox(height: 14),
 
             buildSectionLabel('PROFIL MK'),
-            const SizedBox(height: 12),
+            const SizedBox(height: 10),
             settingCard(
               icon: practitionerComplete
                   ? Icons.verified_user_outlined
@@ -197,9 +195,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
               onTap: () => showComingSoon(context, 'Signature praticien'),
             ),
 
-            const SizedBox(height: 22),
+            const SizedBox(height: 14),
             buildSectionLabel('CONFIDENTIALITÉ'),
-            const SizedBox(height: 12),
+            const SizedBox(height: 10),
             settingCard(
               icon: Icons.verified_user_outlined,
               iconColor: const Color(0xFF2563EB),
@@ -223,9 +221,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
               onTap: () => showAnonymousRecordsExport(context),
             ),
 
-            const SizedBox(height: 22),
+            const SizedBox(height: 14),
             buildSectionLabel('EXPORTS'),
-            const SizedBox(height: 12),
+            const SizedBox(height: 10),
             settingCard(
               icon: Icons.picture_as_pdf_outlined,
               iconColor: const Color(0xFFDC2626),
@@ -236,21 +234,27 @@ class _SettingsScreenState extends State<SettingsScreen> {
             settingCard(
               icon: Icons.table_chart_outlined,
               iconColor: const Color(0xFF2563EB),
-              title: 'CSV statistiques pseudonymisées',
-              subtitle: 'Exporter les évaluations locales.',
+              title: 'CSV statistiques',
+              subtitle: 'Exporter les évaluations pseudonymisées.',
               onTap: GlobalStatisticsCsvService.exportGlobalStatisticsCsv,
             ),
-            settingCard(
-              icon: Icons.history_rounded,
-              iconColor: const Color(0xFF0F766E),
-              title: 'Historique et exports',
-              subtitle: 'Retrouver les bilans et exports.',
-              onTap: () => showComingSoon(context, 'Historique et exports'),
-            ),
 
-            const SizedBox(height: 22),
+            const SizedBox(height: 14),
             buildSectionLabel('APPLICATION'),
-            const SizedBox(height: 12),
+            const SizedBox(height: 10),
+            settingCard(
+              icon: Icons.medical_information_outlined,
+              iconColor: const Color(0xFFEA580C),
+              title: 'Accès direct',
+              subtitle: 'Conditions réglementaires et séances.',
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => const AccessDirectSettingsScreen(),
+                  ),
+                );
+              },
+            ),
             settingCard(
               icon: Icons.dark_mode_outlined,
               iconColor: const Color(0xFF7C3AED),
@@ -259,19 +263,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
               onTap: () => showComingSoon(context, 'Apparence'),
             ),
             settingCard(
-  icon: Icons.medical_information_outlined,
-  iconColor: const Color(0xFFEA580C),
-  title: 'Accès direct',
-  subtitle: 'Conditions réglementaires, diagnostic préalable et séances.',
-  onTap: () {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => const AccessDirectSettingsScreen(),
-      ),
-    );
-  },
-),
-            settingCard(
               icon: Icons.restart_alt_rounded,
               iconColor: const Color(0xFFEF4444),
               title: 'Réinitialisation locale',
@@ -279,87 +270,65 @@ class _SettingsScreenState extends State<SettingsScreen> {
               onTap: () => showComingSoon(context, 'Réinitialisation locale'),
             ),
 
-            const SizedBox(height: 22),
+            const SizedBox(height: 14),
             buildVersionCard(),
           ],
         ),
       ),
     );
   }
-  Widget buildHeroCard() {
+
+  Widget buildCompactHeader() {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(26, 34, 26, 34),
+      padding: const EdgeInsets.fromLTRB(18, 16, 18, 16),
       decoration: BoxDecoration(
-        color: const Color(0xFFF8FAFC),
-        borderRadius: BorderRadius.circular(34),
-        border: Border.all(
-          color: const Color(0xFFE2E8F0),
+        gradient: const LinearGradient(
+          colors: [
+            Color(0xFFF8FAFC),
+            Color(0xFFFFFFFF),
+          ],
         ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 22,
-            offset: const Offset(0, 10),
-          ),
-        ],
+        borderRadius: BorderRadius.circular(26),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
       ),
-      child: Column(
+      child: Row(
         children: [
           Container(
-            width: 118,
-            height: 118,
-            decoration: BoxDecoration(
+            width: 52,
+            height: 52,
+            decoration: const BoxDecoration(
               shape: BoxShape.circle,
-              gradient: const LinearGradient(
+              gradient: LinearGradient(
                 colors: [
                   Color(0xFF64748B),
                   Color(0xFF334155),
                 ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
               ),
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFF334155)
-                      .withValues(alpha: 0.20),
-                  blurRadius: 28,
-                  offset: const Offset(0, 14),
-                ),
-              ],
             ),
             child: const Icon(
-              Icons.settings_rounded,
+              Icons.tune_rounded,
               color: Colors.white,
-              size: 58,
+              size: 28,
             ),
           ),
-          const SizedBox(height: 26),
-          const Text(
-            'PARAMÈTRES',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: Color(0xFF334155),
-              fontSize: 30,
-              fontWeight: FontWeight.w900,
-              letterSpacing: -1,
-            ),
-          ),
-          const SizedBox(height: 10),
-          const Text(
-            'Profil praticien, confidentialité, exports et préférences de l’application.',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: Color(0xFF475569),
-              fontSize: 16,
-              height: 1.4,
-              fontWeight: FontWeight.w700,
+          const SizedBox(width: 14),
+          const Expanded(
+            child: Text(
+              'Réglages et données locales',
+              style: TextStyle(
+                color: Color(0xFF0F172A),
+                fontSize: 17,
+                fontWeight: FontWeight.w900,
+                letterSpacing: -0.2,
+              ),
             ),
           ),
         ],
       ),
     );
   }
+
   Widget buildSectionLabel(String text) {
     return Padding(
       padding: const EdgeInsets.only(left: 4),
@@ -367,9 +336,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
         text,
         style: const TextStyle(
           color: Color(0xFF64748B),
-          fontSize: 13,
+          fontSize: 12,
           fontWeight: FontWeight.w900,
-          letterSpacing: 0.6,
+          letterSpacing: 0.7,
         ),
       ),
     );
@@ -383,57 +352,57 @@ class _SettingsScreenState extends State<SettingsScreen> {
     required VoidCallback onTap,
   }) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 10),
+      margin: const EdgeInsets.only(bottom: 9),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(22),
         border: Border.all(color: const Color(0xFFE2E8F0)),
       ),
       child: ListTile(
         onTap: onTap,
         contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 8,
+          horizontal: 14,
+          vertical: 6,
         ),
         leading: Container(
-          height: 48,
-          width: 48,
+          height: 44,
+          width: 44,
           decoration: BoxDecoration(
             color: iconColor.withValues(alpha: 0.10),
-            borderRadius: BorderRadius.circular(17),
+            borderRadius: BorderRadius.circular(16),
           ),
           child: Icon(
             icon,
             color: iconColor,
-            size: 26,
+            size: 24,
           ),
         ),
         title: Text(
-  title,
-  style: const TextStyle(
-    color: Color(0xFF0F172A),
-    fontSize: 15.5,
-    fontWeight: FontWeight.w900,
-  ),
-),
-subtitle: Padding(
-  padding: const EdgeInsets.only(top: 3),
-  child: Text(
-    subtitle,
-    style: const TextStyle(
-      color: Color(0xFF64748B),
-      fontSize: 13,
-      height: 1.35,
-      fontWeight: FontWeight.w600,
-    ),
-  ),
-),
+          title,
+          style: const TextStyle(
+            color: Color(0xFF0F172A),
+            fontSize: 15,
+            fontWeight: FontWeight.w900,
+          ),
+        ),
+        subtitle: Padding(
+          padding: const EdgeInsets.only(top: 2),
+          child: Text(
+            subtitle,
+            style: const TextStyle(
+              color: Color(0xFF64748B),
+              fontSize: 12.5,
+              height: 1.3,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
         trailing: Container(
-          height: 34,
-          width: 34,
+          height: 32,
+          width: 32,
           decoration: BoxDecoration(
             color: const Color(0xFFF8FAFC),
-            borderRadius: BorderRadius.circular(13),
+            borderRadius: BorderRadius.circular(12),
           ),
           child: const Icon(
             Icons.chevron_right_rounded,
@@ -446,10 +415,10 @@ subtitle: Padding(
 
   Widget buildVersionCard() {
     return Container(
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: const Color(0xFFEAF2FF),
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(22),
         border: Border.all(color: const Color(0xFFBFDBFE)),
       ),
       child: const Row(
@@ -457,7 +426,7 @@ subtitle: Padding(
           Icon(
             Icons.verified_rounded,
             color: Color(0xFF2563EB),
-            size: 30,
+            size: 28,
           ),
           SizedBox(width: 12),
           Expanded(
@@ -465,7 +434,7 @@ subtitle: Padding(
               'Drapeaux Rouges — Version 1.0.0',
               style: TextStyle(
                 color: Color(0xFF0F172A),
-                fontSize: 15,
+                fontSize: 14.5,
                 fontWeight: FontWeight.w900,
               ),
             ),

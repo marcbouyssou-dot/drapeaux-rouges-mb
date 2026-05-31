@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'home_screen.dart';
-import 'history_settings/history_settings_screen.dart';
+import 'history_screen.dart';
 import 'settings_screen.dart';
 
 class MainNavigationScreen extends StatefulWidget {
@@ -18,7 +18,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 
   final List<Widget> _pages = const [
     HomeScreen(),
-    HistorySettingsScreen(),
+    HistoryScreen(),
     SettingsScreen(),
   ];
 
