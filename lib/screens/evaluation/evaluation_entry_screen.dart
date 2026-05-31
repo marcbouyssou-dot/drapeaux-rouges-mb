@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../home_screen.dart';
+import '../patient/patient_screen.dart';
+import '../bdk/bdk_type_screen.dart';
+import '../prescription/prescription_type_screen.dart';
 import '../../widgets/design_system/clinical_big_action_button.dart';
 
 class EvaluationEntryScreen extends StatefulWidget {
@@ -11,16 +14,32 @@ class EvaluationEntryScreen extends StatefulWidget {
 }
 
 class _EvaluationEntryScreenState extends State<EvaluationEntryScreen> {
-  bool showEvaluation = false;
+  void _openDrapeauxRouges() {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const HomeScreen()),
+    );
+  }
 
-  void _startEvaluation() {
-    setState(() => showEvaluation = true);
+  void _openPatient() {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const PatientScreen()),
+    );
+  }
+
+  void _openPrescription() {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const PrescriptionTypeScreen()),
+    );
+  }
+
+  void _openBdk() {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const BDKTypeScreen()),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    if (showEvaluation) return const HomeScreen();
-
     return Scaffold(
       backgroundColor: const Color(0xFFEFF4FA),
       body: SafeArea(
@@ -35,9 +54,13 @@ class _EvaluationEntryScreenState extends State<EvaluationEntryScreen> {
                     padding: const EdgeInsets.fromLTRB(16, 16, 16, 110),
                     child: Column(
                       children: [
-                        _HeroCard(onStart: _startEvaluation),
+                        _HeroCard(onStart: _openDrapeauxRouges),
                         const SizedBox(height: 14),
-                        const _ShortcutRow(),
+                        _ShortcutRow(
+                          onPatient: _openPatient,
+                          onPrescription: _openPrescription,
+                          onBdk: _openBdk,
+                        ),
                         const SizedBox(height: 14),
                         const _RiskLegend(),
                         const SizedBox(height: 14),
@@ -247,17 +270,43 @@ class _FlagIcon extends StatelessWidget {
 }
 
 class _ShortcutRow extends StatelessWidget {
-  const _ShortcutRow();
+  const _ShortcutRow({
+    required this.onPatient,
+    required this.onPrescription,
+    required this.onBdk,
+  });
+
+  final VoidCallback onPatient;
+  final VoidCallback onPrescription;
+  final VoidCallback onBdk;
 
   @override
   Widget build(BuildContext context) {
-    return const Row(
+    return Row(
       children: [
-        Expanded(child: _ShortcutTile(icon: Icons.history_rounded, label: 'Historique')),
-        SizedBox(width: 1),
-        Expanded(child: _ShortcutTile(icon: Icons.description_outlined, label: 'Prescription')),
-        SizedBox(width: 1),
-        Expanded(child: _ShortcutTile(icon: Icons.assignment_outlined, label: 'BDK')),
+        Expanded(
+          child: _ShortcutTile(
+            icon: Icons.person_outline_rounded,
+            label: 'Patient',
+            onTap: onPatient,
+          ),
+        ),
+        const SizedBox(width: 1),
+        Expanded(
+          child: _ShortcutTile(
+            icon: Icons.description_outlined,
+            label: 'Prescription',
+            onTap: onPrescription,
+          ),
+        ),
+        const SizedBox(width: 1),
+        Expanded(
+          child: _ShortcutTile(
+            icon: Icons.assignment_outlined,
+            label: 'BDK',
+            onTap: onBdk,
+          ),
+        ),
       ],
     );
   }
@@ -267,37 +316,44 @@ class _ShortcutTile extends StatelessWidget {
   const _ShortcutTile({
     required this.icon,
     required this.label,
+    required this.onTap,
   });
 
   final IconData icon;
   final String label;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 90,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border.all(color: const Color(0xFFE2E8F0)),
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          CircleAvatar(
-            radius: 19,
-            backgroundColor: const Color(0xFFEFF6FF),
-            child: Icon(icon, color: const Color(0xFF2563EB), size: 21),
+    return Material(
+      color: Colors.white,
+      child: InkWell(
+        onTap: onTap,
+        child: Container(
+          height: 90,
+          decoration: BoxDecoration(
+            border: Border.all(color: const Color(0xFFE2E8F0)),
           ),
-          const SizedBox(height: 9),
-          Text(
-            label,
-            style: const TextStyle(
-              color: Color(0xFF0F172A),
-              fontSize: 12,
-              fontWeight: FontWeight.w900,
-            ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              CircleAvatar(
+                radius: 19,
+                backgroundColor: const Color(0xFFEFF6FF),
+                child: Icon(icon, color: const Color(0xFF2563EB), size: 21),
+              ),
+              const SizedBox(height: 9),
+              Text(
+                label,
+                style: const TextStyle(
+                  color: Color(0xFF0F172A),
+                  fontSize: 12,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

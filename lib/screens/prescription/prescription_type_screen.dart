@@ -24,56 +24,56 @@ class PrescriptionTypeScreen extends StatelessWidget {
     final items = [
       _PrescriptionItem(
         title: 'Rééducation',
-        subtitle: 'Prescription de séances de kinésithérapie.',
         icon: Icons.accessibility_new_rounded,
-        color: const Color(0xFF2563EB),
+        color: Color(0xFF2563EB),
       ),
       _PrescriptionItem(
         title: 'Matériel',
-        subtitle: 'Orthèses, aides techniques et matériel médical.',
         icon: Icons.medical_services_outlined,
-        color: const Color(0xFF7C3AED),
+        color: Color(0xFF7C3AED),
       ),
       _PrescriptionItem(
         title: 'Examens',
-        subtitle: 'Bilans, imagerie et examens complémentaires.',
         icon: Icons.biotech_outlined,
-        color: const Color(0xFFF97316),
+        color: Color(0xFFF97316),
       ),
       _PrescriptionItem(
         title: 'Conseils',
-        subtitle: 'Recommandations et conseils au patient.',
         icon: Icons.chat_bubble_outline_rounded,
-        color: const Color(0xFF0F766E),
+        color: Color(0xFF0F766E),
       ),
       _PrescriptionItem(
         title: 'Autres',
-        subtitle: 'Prescription libre et document personnalisé.',
         icon: Icons.more_horiz_rounded,
-        color: const Color(0xFF64748B),
+        color: Color(0xFF64748B),
       ),
     ];
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFF),
+      backgroundColor: const Color(0xFFEFF4FA),
       body: SafeArea(
-        child: ListView.separated(
-          padding: const EdgeInsets.fromLTRB(18, 22, 18, 120),
-          itemCount: items.length,
-          separatorBuilder: (_, __) => const SizedBox(height: 10),
-          itemBuilder: (context, index) {
-            final item = items[index];
-
-            return _PrescriptionTypeCard(
-              item: item,
-              onTap: () {
-                openPrescriptionScreen(
-                  context,
-                  item.title,
-                );
-              },
-            );
-          },
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 430),
+            child: ListView(
+              padding: const EdgeInsets.fromLTRB(16, 18, 16, 120),
+              children: [
+                ...items.map(
+                  (item) => Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: _PrescriptionTypeCard(
+                      item: item,
+                      onTap: () {
+                        openPrescriptionScreen(context, item.title);
+                      },
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                const _PrescriptionInfoBanner(),
+              ],
+            ),
+          ),
         ),
       ),
     );
@@ -83,13 +83,11 @@ class PrescriptionTypeScreen extends StatelessWidget {
 class _PrescriptionItem {
   const _PrescriptionItem({
     required this.title,
-    required this.subtitle,
     required this.icon,
     required this.color,
   });
 
   final String title;
-  final String subtitle;
   final IconData icon;
   final Color color;
 }
@@ -112,7 +110,10 @@ class _PrescriptionTypeCard extends StatelessWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(22),
         child: Container(
-          padding: const EdgeInsets.all(14),
+          padding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 14,
+          ),
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(22),
@@ -133,7 +134,7 @@ class _PrescriptionTypeCard extends StatelessWidget {
                 height: 54,
                 width: 54,
                 decoration: BoxDecoration(
-                  color: item.color.withValues(alpha: 0.12),
+                  color: item.color.withValues(alpha: 0.10),
                   borderRadius: BorderRadius.circular(18),
                 ),
                 child: Icon(
@@ -142,39 +143,18 @@ class _PrescriptionTypeCard extends StatelessWidget {
                   size: 28,
                 ),
               ),
-
               const SizedBox(width: 14),
-
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      item.title,
-                      style: TextStyle(
-                        color: item.color,
-                        fontSize: 17,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-
-                    const SizedBox(height: 4),
-
-                    Text(
-                      item.subtitle,
-                      style: const TextStyle(
-                        color: Color(0xFF64748B),
-                        fontSize: 13,
-                        height: 1.3,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
+                child: Text(
+                  item.title,
+                  style: TextStyle(
+                    color: item.color,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: -0.4,
+                  ),
                 ),
               ),
-
-              const SizedBox(width: 10),
-
               const Icon(
                 Icons.chevron_right_rounded,
                 color: Color(0xFF94A3B8),
@@ -183,6 +163,38 @@ class _PrescriptionTypeCard extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _PrescriptionInfoBanner extends StatelessWidget {
+  const _PrescriptionInfoBanner();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+      ),
+      child: const Row(
+        children: [
+          Icon(Icons.picture_as_pdf_outlined, color: Color(0xFF7C3AED)),
+          SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              'Prescriptions exportables en PDF.',
+              style: TextStyle(
+                color: Color(0xFF64748B),
+                fontWeight: FontWeight.w700,
+                height: 1.35,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

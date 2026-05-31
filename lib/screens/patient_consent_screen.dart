@@ -286,32 +286,104 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
   String patientName(PatientLocal patient) {
     return '${patient.nom.toUpperCase()} ${patient.prenom}'.trim();
   }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFF),
-      body: SafeArea(
-        child: RefreshIndicator(
-          onRefresh: loadPatients,
-          child: ListView(
-            padding: const EdgeInsets.fromLTRB(22, 22, 22, 150),
+  Widget buildPatientHeader() {
+  return Container(
+    height: 88,
+padding: const EdgeInsets.fromLTRB(20, 16, 20, 14),
+    decoration: BoxDecoration(
+      gradient: const LinearGradient(
+        colors: [Color(0xFF1E6DD8), Color(0xFF1552B4)],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      ),
+      borderRadius: BorderRadius.circular(22),
+      boxShadow: [
+        BoxShadow(
+          color: const Color(0xFF1E6DD8).withValues(alpha: 0.18),
+          blurRadius: 24,
+          offset: const Offset(0, 12),
+        ),
+      ],
+    ),
+    child: Row(
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        const Expanded(
+  child: Text(
+    'Patient',
+    style: TextStyle(
+      color: Colors.white,
+      fontSize: 24,
+      fontWeight: FontWeight.w900,
+    ),
+  ),
+),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 7),
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.14),
+            borderRadius: BorderRadius.circular(99),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+          ),
+          child: const Row(
             children: [
-              buildEntryCards(),
-              if (currentPatient != null) ...[
-                const SizedBox(height: 18),
-                buildCurrentPatientBanner(),
-              ],
-              if (currentPatient == null) ...[
-                const SizedBox(height: 18),
-                buildAnonymousBanner(),
-              ],
+              Icon(Icons.lock_outline_rounded, color: Colors.white, size: 14),
+              SizedBox(width: 6),
+              Text(
+                'Local',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
             ],
           ),
         ),
+      ],
+    ),
+  );
+}
+
+  @override
+Widget build(BuildContext context) {
+  final visiblePatients = filteredPatients;
+  final foundPatient = existingPatient;
+
+  return Scaffold(
+    backgroundColor: const Color(0xFFEFF4FA),
+    body: SafeArea(
+      child: RefreshIndicator(
+        onRefresh: loadPatients,
+        child: ListView(
+          physics: isSigning
+              ? const NeverScrollableScrollPhysics()
+              : const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.fromLTRB(22, 18, 22, 130),
+          children: [
+            buildPatientHeader(),
+            const SizedBox(height: 18),
+
+            if (currentPatient != null)
+              buildCurrentPatientBanner()
+            else
+              buildAnonymousBanner(),
+
+            const SizedBox(height: 18),
+            buildSearchBar(),
+            const SizedBox(height: 18),
+            buildPatientForm(foundPatient),
+            const SizedBox(height: 26),
+            buildPatientsList(visiblePatients),
+            const SizedBox(height: 20),
+            buildDeleteAllButton(),
+          ],
+        ),
       ),
-    );
-  }
+    ),
+    bottomNavigationBar: buildBottomSaveBar(foundPatient),
+  );
+}
 
   Widget buildEntryCards() {
     return LayoutBuilder(
@@ -491,7 +563,7 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
 
   Widget buildAnonymousBanner() {
     return Container(
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
         color: const Color(0xFFF8FAFC),
         borderRadius: BorderRadius.circular(22),
@@ -768,7 +840,7 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
         });
       },
       child: Container(
-        height: 155,
+        height: 112,
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(22),

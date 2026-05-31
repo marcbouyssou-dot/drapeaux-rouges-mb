@@ -19,8 +19,8 @@ import '../widgets/clinical_category_picker.dart';
 import 'evaluation/red_flags_category_screen.dart';
 import 'evaluation/evaluation_result_screen.dart';
 import 'patient/patient_screen.dart';
-import 'bdk/bdk_entry_screen.dart';
-import 'prescription/prescription_entry_screen.dart';
+import 'bdk/bdk_type_screen.dart';
+import 'prescription/prescription_type_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({
@@ -863,7 +863,7 @@ Widget buildEvaluationShortcutRow() {
             subtitle: 'Bilan',
             onTap: () {
   Navigator.of(context).push(
-    MaterialPageRoute(builder: (_) => const BDKEntryScreen()),
+    MaterialPageRoute(builder: (_) => const BDKTypeScreen()),
   );
 },
           ),
@@ -876,7 +876,7 @@ Widget buildEvaluationShortcutRow() {
             subtitle: 'Ordonnance',
             onTap: () {
   Navigator.of(context).push(
-    MaterialPageRoute(builder: (_) => const PrescriptionEntryScreen()),
+    MaterialPageRoute(builder: (_) => const PrescriptionTypeScreen()),
   );
 },
           ),

@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 
-import 'patient_consent_screen.dart';
 import 'home_screen.dart';
-import 'bdk/bdk_entry_screen.dart';
-import 'prescription/prescription_entry_screen.dart';
 import 'history_settings/history_settings_screen.dart';
+import 'settings_screen.dart';
 
 class MainNavigationScreen extends StatefulWidget {
   const MainNavigationScreen({super.key});
@@ -19,11 +17,9 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   final PageController _pageController = PageController(initialPage: 0);
 
   final List<Widget> _pages = const [
-    PatientConsentScreen(),
     HomeScreen(),
-    BDKEntryScreen(),
-    PrescriptionEntryScreen(),
     HistorySettingsScreen(),
+    SettingsScreen(),
   ];
 
   void goToPage(int index) {
@@ -101,7 +97,6 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                 labelTextStyle: WidgetStateProperty.resolveWith(
                   (states) {
                     final selected = states.contains(WidgetState.selected);
-
                     return TextStyle(
                       fontSize: 10.5,
                       fontWeight: selected ? FontWeight.w900 : FontWeight.w600,
@@ -115,7 +110,6 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                 iconTheme: WidgetStateProperty.resolveWith(
                   (states) {
                     final selected = states.contains(WidgetState.selected);
-
                     return IconThemeData(
                       color: selected
                           ? const Color(0xFF2563EB)
@@ -134,29 +128,19 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                 onDestinationSelected: goToPage,
                 destinations: [
                   buildDestination(
-                    icon: Icons.person_outline_rounded,
-                    selectedIcon: Icons.person_rounded,
-                    label: 'Patient',
-                  ),
-                  buildDestination(
-                    icon: Icons.flag_outlined,
-                    selectedIcon: Icons.flag_rounded,
-                    label: 'Drapeaux',
-                  ),
-                  buildDestination(
-                    icon: Icons.assignment_outlined,
-                    selectedIcon: Icons.assignment_rounded,
-                    label: 'BDK',
-                  ),
-                  buildDestination(
-                    icon: Icons.description_outlined,
-                    selectedIcon: Icons.description_rounded,
-                    label: 'Prescription',
+                    icon: Icons.health_and_safety_outlined,
+                    selectedIcon: Icons.health_and_safety_rounded,
+                    label: 'Évaluation',
                   ),
                   buildDestination(
                     icon: Icons.history_outlined,
                     selectedIcon: Icons.history_rounded,
                     label: 'Historique',
+                  ),
+                  buildDestination(
+                    icon: Icons.tune_outlined,
+                    selectedIcon: Icons.tune_rounded,
+                    label: 'Réglages',
                   ),
                 ],
               ),
