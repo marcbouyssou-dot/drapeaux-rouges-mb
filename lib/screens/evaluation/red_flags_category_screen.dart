@@ -234,7 +234,7 @@ class _RedFlagsCategoryScreenState extends State<RedFlagsCategoryScreen> {
       child: Container(
         padding: const EdgeInsets.fromLTRB(18, 10, 18, 22),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.96),
+          color: Colors.white.withValues(alpha: 0.96),
           border: const Border(
             top: BorderSide(color: Color(0xFFE5E7EB)),
           ),

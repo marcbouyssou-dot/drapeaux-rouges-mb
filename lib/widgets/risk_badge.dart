@@ -17,17 +17,15 @@ class RiskBadge extends StatelessWidget {
   final RiskLevel level;
 
   Color get backgroundColor {
-    switch (level) {
-      case RiskLevel.low:
-        return Colors.green.withOpacity(0.15);
-
-      case RiskLevel.moderate:
-        return Colors.orange.withOpacity(0.15);
-
-      case RiskLevel.high:
-        return Colors.red.withOpacity(0.15);
-    }
+  switch (level) {
+    case RiskLevel.low:
+      return Colors.green.withValues(alpha: 0.15);
+    case RiskLevel.moderate:
+      return Colors.orange.withValues(alpha: 0.15);
+    case RiskLevel.high:
+      return Colors.red.withValues(alpha: 0.15);
   }
+}
 
   Color get textColor {
     switch (level) {

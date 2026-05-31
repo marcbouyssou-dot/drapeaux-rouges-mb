@@ -13,7 +13,7 @@ class AppTheme {
     colorScheme: ColorScheme.fromSeed(
       seedColor: primary,
       primary: primary,
-      background: background,
+      surface: background,
     ),
     fontFamily: 'SF Pro',
 

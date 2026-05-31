@@ -27,7 +27,7 @@ class ClinicalCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
           color: borderColor ??
-              theme.colorScheme.outline.withOpacity(0.08),
+              theme.colorScheme.outline.withValues(alpha: 0.08),
         ),
       ),
       child: Padding(

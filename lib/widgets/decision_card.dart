@@ -20,11 +20,11 @@ class DecisionCard extends StatelessWidget {
         color: Colors.white,
         borderRadius: BorderRadius.circular(32),
         border: Border.all(
-          color: color.withOpacity(0.18),
+          color: color.withValues(alpha: 0.18),
         ),
         boxShadow: [
           BoxShadow(
-            color: color.withOpacity(0.06),
+            color: color.withValues(alpha: 0.06),
             blurRadius: 22,
             offset: const Offset(0, 10),
           ),
@@ -40,7 +40,7 @@ class DecisionCard extends StatelessWidget {
                 height: 58,
                 width: 58,
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.10),
+                  color: color.withValues(alpha: 0.10),
                   borderRadius:
                       BorderRadius.circular(
                     20,
