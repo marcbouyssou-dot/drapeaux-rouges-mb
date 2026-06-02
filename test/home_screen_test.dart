@@ -49,7 +49,14 @@ void main() {
   testWidgets('opens patient screen from Patient card', (tester) async {
     await pumpHomeScreen(tester);
 
-    await tester.tap(find.text('Patient'));
+    final patientCardSubtitle = find.text('Dossier patient et consentement');
+    final patientCard = find.ancestor(
+      of: patientCardSubtitle,
+      matching: find.byType(InkWell),
+    );
+
+    await tester.ensureVisible(patientCardSubtitle);
+    await tester.tap(patientCard);
     await tester.pumpAndSettle();
 
     expect(find.text('Patient'), findsOneWidget);
