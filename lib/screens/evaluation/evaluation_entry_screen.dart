@@ -5,6 +5,7 @@ import '../patient/patient_screen.dart';
 import '../bdk/bdk_type_screen.dart';
 import '../prescription/prescription_type_screen.dart';
 import '../../widgets/design_system/clinical_big_action_button.dart';
+import '../../widgets/design_system/clinical_responsive_page.dart';
 
 class EvaluationEntryScreen extends StatefulWidget {
   const EvaluationEntryScreen({super.key});
@@ -40,47 +41,70 @@ class _EvaluationEntryScreenState extends State<EvaluationEntryScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return ClinicalResponsivePage(
       backgroundColor: const Color(0xFFEFF4FA),
-      body: SafeArea(
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 430),
-            child: Column(
-              children: [
-                const _Header(),
-                Expanded(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 110),
-                    child: Column(
-                      children: [
-                        _HeroCard(onStart: _openDrapeauxRouges),
-                        const SizedBox(height: 14),
-                        _ShortcutRow(
-                          onPatient: _openPatient,
-                          onPrescription: _openPrescription,
-                          onBdk: _openBdk,
-                        ),
-                        const SizedBox(height: 14),
-                        const _RiskLegend(),
-                        const SizedBox(height: 14),
-                        const Text(
-                          'Outil d’aide clinique · Ne remplace pas le diagnostic médical',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: Color(0xFF94A3B8),
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    ),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final isWide = constraints.maxWidth >= 700;
+
+          return Column(
+            children: [
+              const _Header(),
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: EdgeInsets.fromLTRB(
+                    isWide ? 22 : 16,
+                    16,
+                    isWide ? 22 : 16,
+                    110,
                   ),
+                  child: isWide
+                      ? Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              flex: 5,
+                              child: _HeroCard(onStart: _openDrapeauxRouges),
+                            ),
+                            const SizedBox(width: 18),
+                            Expanded(
+                              flex: 4,
+                              child: Column(
+                                children: [
+                                  _ShortcutRow(
+                                    onPatient: _openPatient,
+                                    onPrescription: _openPrescription,
+                                    onBdk: _openBdk,
+                                  ),
+                                  const SizedBox(height: 14),
+                                  const _RiskLegend(),
+                                  const SizedBox(height: 14),
+                                  const _FooterNote(),
+                                ],
+                              ),
+                            ),
+                          ],
+                        )
+                      : Column(
+                          children: [
+                            _HeroCard(onStart: _openDrapeauxRouges),
+                            const SizedBox(height: 14),
+                            _ShortcutRow(
+                              onPatient: _openPatient,
+                              onPrescription: _openPrescription,
+                              onBdk: _openBdk,
+                            ),
+                            const SizedBox(height: 14),
+                            const _RiskLegend(),
+                            const SizedBox(height: 14),
+                            const _FooterNote(),
+                          ],
+                        ),
                 ),
-              ],
-            ),
-          ),
-        ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
@@ -282,6 +306,32 @@ class _ShortcutRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isWide = MediaQuery.of(context).size.width >= 700;
+
+    if (isWide) {
+      return Column(
+        children: [
+          _ShortcutTile(
+            icon: Icons.person_outline_rounded,
+            label: 'Patient',
+            onTap: onPatient,
+          ),
+          const SizedBox(height: 10),
+          _ShortcutTile(
+            icon: Icons.description_outlined,
+            label: 'Prescription',
+            onTap: onPrescription,
+          ),
+          const SizedBox(height: 10),
+          _ShortcutTile(
+            icon: Icons.assignment_outlined,
+            label: 'BDK',
+            onTap: onBdk,
+          ),
+        ],
+      );
+    }
+
     return Row(
       children: [
         Expanded(
@@ -325,32 +375,54 @@ class _ShortcutTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isWide = MediaQuery.of(context).size.width >= 700;
+
     return Material(
       color: Colors.white,
+      borderRadius: BorderRadius.circular(isWide ? 18 : 0),
       child: InkWell(
         onTap: onTap,
+        borderRadius: BorderRadius.circular(isWide ? 18 : 0),
         child: Container(
-          height: 90,
+          height: isWide ? 78 : 90,
           decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(isWide ? 18 : 0),
             border: Border.all(color: const Color(0xFFE2E8F0)),
           ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+          child: Row(
+            mainAxisAlignment:
+                isWide ? MainAxisAlignment.start : MainAxisAlignment.center,
             children: [
+              SizedBox(width: isWide ? 18 : 0),
               CircleAvatar(
                 radius: 19,
                 backgroundColor: const Color(0xFFEFF6FF),
                 child: Icon(icon, color: const Color(0xFF2563EB), size: 21),
               ),
-              const SizedBox(height: 9),
-              Text(
-                label,
-                style: const TextStyle(
-                  color: Color(0xFF0F172A),
-                  fontSize: 12,
-                  fontWeight: FontWeight.w900,
+              SizedBox(width: isWide ? 12 : 0),
+              if (isWide)
+                Expanded(
+                  child: Text(
+                    label,
+                    style: const TextStyle(
+                      color: Color(0xFF0F172A),
+                      fontSize: 14,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                )
+              else
+                Padding(
+                  padding: const EdgeInsets.only(top: 47),
+                  child: Text(
+                    label,
+                    style: const TextStyle(
+                      color: Color(0xFF0F172A),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
                 ),
-              ),
             ],
           ),
         ),
@@ -387,13 +459,37 @@ class _RiskLegend extends StatelessWidget {
           SizedBox(height: 12),
           Row(
             children: [
-              Expanded(child: _RiskChip('Faible', Color(0xFFE8F7ED), Color(0xFF16A34A))),
+              Expanded(
+                child: _RiskChip(
+                  'Faible',
+                  Color(0xFFE8F7ED),
+                  Color(0xFF16A34A),
+                ),
+              ),
               SizedBox(width: 7),
-              Expanded(child: _RiskChip('Modéré', Color(0xFFFFF1DE), Color(0xFFF97316))),
+              Expanded(
+                child: _RiskChip(
+                  'Modéré',
+                  Color(0xFFFFF1DE),
+                  Color(0xFFF97316),
+                ),
+              ),
               SizedBox(width: 7),
-              Expanded(child: _RiskChip('Élevé', Color(0xFFFFE4EC), Color(0xFFE11D48))),
+              Expanded(
+                child: _RiskChip(
+                  'Élevé',
+                  Color(0xFFFFE4EC),
+                  Color(0xFFE11D48),
+                ),
+              ),
               SizedBox(width: 7),
-              Expanded(child: _RiskChip('Critique', Color(0xFF7F1D1D), Colors.white)),
+              Expanded(
+                child: _RiskChip(
+                  'Critique',
+                  Color(0xFF7F1D1D),
+                  Colors.white,
+                ),
+              ),
             ],
           ),
         ],
@@ -426,6 +522,23 @@ class _RiskChip extends StatelessWidget {
           fontSize: 10,
           fontWeight: FontWeight.w900,
         ),
+      ),
+    );
+  }
+}
+
+class _FooterNote extends StatelessWidget {
+  const _FooterNote();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Text(
+      'Outil d’aide clinique · Ne remplace pas le diagnostic médical',
+      textAlign: TextAlign.center,
+      style: TextStyle(
+        color: Color(0xFF94A3B8),
+        fontSize: 11,
+        fontWeight: FontWeight.w600,
       ),
     );
   }
