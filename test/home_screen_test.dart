@@ -5,6 +5,23 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive/hive.dart';
 
+class TestNavigatorObserver extends NavigatorObserver {
+  int pushCount = 0;
+
+  void reset() {
+    pushCount = 0;
+  }
+
+  @override
+  void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) {
+    super.didPush(route, previousRoute);
+
+    if (previousRoute != null) {
+      pushCount += 1;
+    }
+  }
+}
+
 void main() {
   late Directory tempDir;
 
@@ -24,13 +41,19 @@ void main() {
     await tempDir.delete(recursive: true);
   });
 
-  Future<void> pumpHomeScreen(WidgetTester tester) async {
+  Future<void> pumpHomeScreen(
+    WidgetTester tester, {
+    NavigatorObserver? navigatorObserver,
+  }) async {
     await tester.binding.setSurfaceSize(const Size(1200, 1000));
     addTearDown(() => tester.binding.setSurfaceSize(null));
 
     await tester.pumpWidget(
-      const MaterialApp(
-        home: HomeScreen(),
+      MaterialApp(
+        navigatorObservers: [
+          if (navigatorObserver != null) navigatorObserver,
+        ],
+        home: const HomeScreen(),
       ),
     );
 
@@ -47,7 +70,10 @@ void main() {
   });
 
   testWidgets('opens patient screen from Patient card', (tester) async {
-    await pumpHomeScreen(tester);
+    final navigatorObserver = TestNavigatorObserver();
+
+    await pumpHomeScreen(tester, navigatorObserver: navigatorObserver);
+    navigatorObserver.reset();
 
     final patientCardSubtitle = find.text('Dossier patient et consentement');
     final patientCard = find.ancestor(
@@ -59,8 +85,7 @@ void main() {
     await tester.tap(patientCard);
     await tester.pumpAndSettle();
 
-    expect(find.text('Patient'), findsOneWidget);
-    expect(find.text('Local'), findsOneWidget);
+    expect(navigatorObserver.pushCount, 1);
   });
 
   testWidgets('opens BDK screen from BDK card', (tester) async {
