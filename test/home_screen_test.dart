@@ -51,7 +51,7 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         navigatorObservers: [
-          if (navigatorObserver != null) navigatorObserver,
+          ?navigatorObserver,
         ],
         home: const HomeScreen(),
       ),
