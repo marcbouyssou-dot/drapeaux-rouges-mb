@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../home_screen.dart';
-import '../patient/patient_screen.dart';
+import '../patient_consent_screen.dart';
 import '../bdk/bdk_type_screen.dart';
 import '../prescription/prescription_type_screen.dart';
 import '../../widgets/design_system/clinical_big_action_button.dart';
@@ -16,27 +16,27 @@ class EvaluationEntryScreen extends StatefulWidget {
 
 class _EvaluationEntryScreenState extends State<EvaluationEntryScreen> {
   void _openDrapeauxRouges() {
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => const HomeScreen()),
-    );
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => const HomeScreen()));
   }
 
   void _openPatient() {
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => const PatientScreen()),
-    );
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => const PatientConsentScreen()));
   }
 
   void _openPrescription() {
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => const PrescriptionTypeScreen()),
-    );
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => const PrescriptionTypeScreen()));
   }
 
   void _openBdk() {
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => const BDKTypeScreen()),
-    );
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => const BDKTypeScreen()));
   }
 
   @override
@@ -255,10 +255,7 @@ class _HeroCard extends StatelessWidget {
             child: ClinicalBigActionButton(
               title: 'Commencer l’évaluation',
               icon: Icons.arrow_forward_rounded,
-              colors: const [
-                Color(0xFFFF7AAA),
-                Color(0xFFE91E63),
-              ],
+              colors: const [Color(0xFFFF7AAA), Color(0xFFE91E63)],
               shadowColor: Colors.white,
               onTap: onStart,
               diameter: 92,
@@ -284,11 +281,7 @@ class _FlagIcon extends StatelessWidget {
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: Colors.white.withValues(alpha: 0.25)),
       ),
-      child: const Icon(
-        Icons.flag_outlined,
-        color: Colors.white,
-        size: 30,
-      ),
+      child: const Icon(Icons.flag_outlined, color: Colors.white, size: 30),
     );
   }
 }
@@ -390,8 +383,9 @@ class _ShortcutTile extends StatelessWidget {
             border: Border.all(color: const Color(0xFFE2E8F0)),
           ),
           child: Row(
-            mainAxisAlignment:
-                isWide ? MainAxisAlignment.start : MainAxisAlignment.center,
+            mainAxisAlignment: isWide
+                ? MainAxisAlignment.start
+                : MainAxisAlignment.center,
             children: [
               SizedBox(width: isWide ? 18 : 0),
               CircleAvatar(
@@ -476,19 +470,11 @@ class _RiskLegend extends StatelessWidget {
               ),
               SizedBox(width: 7),
               Expanded(
-                child: _RiskChip(
-                  'Élevé',
-                  Color(0xFFFFE4EC),
-                  Color(0xFFE11D48),
-                ),
+                child: _RiskChip('Élevé', Color(0xFFFFE4EC), Color(0xFFE11D48)),
               ),
               SizedBox(width: 7),
               Expanded(
-                child: _RiskChip(
-                  'Critique',
-                  Color(0xFF7F1D1D),
-                  Colors.white,
-                ),
+                child: _RiskChip('Critique', Color(0xFF7F1D1D), Colors.white),
               ),
             ],
           ),

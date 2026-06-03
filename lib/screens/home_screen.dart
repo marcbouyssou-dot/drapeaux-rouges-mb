@@ -18,7 +18,7 @@ import '../widgets/clinical_category_picker.dart';
 
 import 'evaluation/red_flags_category_screen.dart';
 import 'evaluation/evaluation_result_screen.dart';
-import 'patient/patient_screen.dart';
+import 'patient_consent_screen.dart';
 import 'bdk/bdk_type_screen.dart';
 import 'prescription/prescription_type_screen.dart';
 import '../widgets/design_system/clinical_responsive_page.dart';
@@ -93,6 +93,16 @@ class _HomeScreenState extends State<HomeScreen> {
       currentPatient = patient;
       accessDirect = accessDirectSettings;
     });
+  }
+
+  Future<void> openPatientScreen() async {
+    await Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => const PatientConsentScreen()));
+
+    if (!mounted) return;
+
+    await loadInitialData();
   }
 
   int get checkedCount =>
@@ -778,11 +788,7 @@ class _HomeScreenState extends State<HomeScreen> {
               icon: Icons.person_outline_rounded,
               title: 'Patient',
               subtitle: 'Dossier',
-              onTap: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(builder: (_) => const PatientScreen()),
-                );
-              },
+              onTap: openPatientScreen,
             ),
           ),
           buildToolbarDivider(),
@@ -826,11 +832,7 @@ class _HomeScreenState extends State<HomeScreen> {
           title: 'Patient',
           subtitle: 'Dossier patient et consentement',
           color: const Color(0xFF2563EB),
-          onTap: () {
-            Navigator.of(
-              context,
-            ).push(MaterialPageRoute(builder: (_) => const PatientScreen()));
-          },
+          onTap: openPatientScreen,
         ),
         const SizedBox(height: 12),
         buildDesktopActionButton(

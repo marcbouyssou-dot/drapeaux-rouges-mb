@@ -17,6 +17,7 @@ void main() {
     await Hive.openBox('patients_box');
     await Hive.openBox('evaluations_box');
     await Hive.openBox('settings_box');
+    await Hive.openBox('access_direct_box');
   });
 
   tearDownAll(() async {
@@ -28,11 +29,7 @@ void main() {
     await tester.binding.setSurfaceSize(const Size(1200, 1000));
     addTearDown(() => tester.binding.setSurfaceSize(null));
 
-    await tester.pumpWidget(
-      const MaterialApp(
-        home: HomeScreen(),
-      ),
-    );
+    await tester.pumpWidget(const MaterialApp(home: HomeScreen()));
 
     await tester.pumpAndSettle();
   }
@@ -72,7 +69,9 @@ void main() {
     expect(find.text('BDK Lombalgie'), findsOneWidget);
   });
 
-  testWidgets('opens prescription screen from Prescription card', (tester) async {
+  testWidgets('opens prescription screen from Prescription card', (
+    tester,
+  ) async {
     await pumpHomeScreen(tester);
 
     await tester.tap(find.text('Prescription'));

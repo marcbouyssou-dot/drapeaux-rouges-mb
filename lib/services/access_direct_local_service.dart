@@ -1,6 +1,7 @@
 import 'package:hive_flutter/hive_flutter.dart';
 
 import '../models/access_direct_model.dart';
+import 'secure_hive_service.dart';
 
 class AccessDirectLocalService {
   static const String _boxName = 'access_direct_box';
@@ -10,7 +11,7 @@ class AccessDirectLocalService {
     if (Hive.isBoxOpen(_boxName)) {
       return Hive.box(_boxName);
     }
-    return Hive.openBox(_boxName);
+    return SecureHiveService.openProtectedBox(_boxName);
   }
 
   static Future<AccessDirectModel> loadSettings() async {
@@ -18,9 +19,7 @@ class AccessDirectLocalService {
     final data = box.get(_key);
 
     if (data is Map) {
-      return AccessDirectModel.fromJson(
-        Map<String, dynamic>.from(data),
-      );
+      return AccessDirectModel.fromJson(Map<String, dynamic>.from(data));
     }
 
     return AccessDirectModel.empty;
