@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../prescription_screen.dart';
@@ -8,7 +9,7 @@ class PrescriptionTypeScreen extends StatelessWidget {
   void openPrescriptionScreen(BuildContext context, String type) {
     Navigator.push(
       context,
-      MaterialPageRoute(
+      CupertinoPageRoute(
         builder: (_) => PrescriptionScreen(initialPrescriptionType: type),
       ),
     );

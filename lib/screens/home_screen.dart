@@ -818,7 +818,7 @@ class _HomeScreenState extends State<HomeScreen> {
               subtitle: 'Ordonnance',
               onTap: () {
                 Navigator.of(context).push(
-                  MaterialPageRoute(
+                  CupertinoPageRoute(
                     builder: (_) => const PrescriptionTypeScreen(),
                   ),
                 );
@@ -860,7 +860,9 @@ class _HomeScreenState extends State<HomeScreen> {
           color: const Color(0xFFE0005B),
           onTap: () {
             Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => const PrescriptionTypeScreen()),
+              CupertinoPageRoute(
+                builder: (_) => const PrescriptionTypeScreen(),
+              ),
             );
           },
         ),

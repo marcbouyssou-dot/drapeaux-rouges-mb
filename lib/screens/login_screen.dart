@@ -84,7 +84,15 @@ class _LoginContent extends StatelessWidget {
                   Align(
                     alignment: Alignment.centerRight,
                     child: TextButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                              'Réinitialisation du mot de passe non disponible pour le moment.',
+                            ),
+                          ),
+                        );
+                      },
                       style: TextButton.styleFrom(
                         foregroundColor: const Color(0xFF0066C9),
                         padding: EdgeInsets.zero,
@@ -116,7 +124,9 @@ class _LoginContent extends StatelessWidget {
                         borderRadius: BorderRadius.circular(18),
                         boxShadow: [
                           BoxShadow(
-                            color: LoginScreen.raspberry.withValues(alpha: 0.30),
+                            color: LoginScreen.raspberry.withValues(
+                              alpha: 0.30,
+                            ),
                             blurRadius: 28,
                             offset: const Offset(0, 14),
                           ),
@@ -164,8 +174,9 @@ class _LoginContent extends StatelessWidget {
                           'Données de santé protégées · RGPD · HDS\n'
                           'Réservé aux professionnels de santé habilités',
                           style: TextStyle(
-                            color: const Color(0xFF6F8EB9)
-                                .withValues(alpha: 0.78),
+                            color: const Color(
+                              0xFF6F8EB9,
+                            ).withValues(alpha: 0.78),
                             fontSize: 12,
                             height: 1.3,
                             fontWeight: FontWeight.w700,
@@ -238,11 +249,7 @@ class _PremiumTextField extends StatelessWidget {
           ),
           suffixIcon: suffixIcon == null
               ? null
-              : Icon(
-                  suffixIcon,
-                  color: const Color(0xFF8AA0C7),
-                  size: 28,
-                ),
+              : Icon(suffixIcon, color: const Color(0xFF8AA0C7), size: 28),
           hintText: hint,
           hintStyle: const TextStyle(
             color: Color(0xFFB7C3D8),
@@ -265,10 +272,7 @@ class _PremiumTextField extends StatelessWidget {
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.all(Radius.circular(24)),
-            borderSide: BorderSide(
-              color: Color(0xFF0B6BCB),
-              width: 1.2,
-            ),
+            borderSide: BorderSide(color: Color(0xFF0B6BCB), width: 1.2),
           ),
         ),
       ),

@@ -31,7 +31,7 @@ class _EvaluationEntryScreenState extends State<EvaluationEntryScreen> {
   void _openPrescription() {
     Navigator.of(
       context,
-    ).push(MaterialPageRoute(builder: (_) => const PrescriptionTypeScreen()));
+    ).push(CupertinoPageRoute(builder: (_) => const PrescriptionTypeScreen()));
   }
 
   void _openBdk() {

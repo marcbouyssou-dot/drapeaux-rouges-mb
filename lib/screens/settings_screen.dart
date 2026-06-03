@@ -6,6 +6,7 @@ import '../models/practitioner_profile.dart';
 import '../services/global_statistics_csv_service.dart';
 import '../services/patient_record_service.dart';
 import '../services/practitioner_profile_service.dart';
+import '../services/rgpd_local_service.dart';
 import 'access_direct_settings_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -45,9 +46,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         return AlertDialog(
           title: const Text('Export pseudonymisé'),
           content: SingleChildScrollView(
-            child: Text(
-              const JsonEncoder.withIndent('  ').convert(data),
-            ),
+            child: Text(const JsonEncoder.withIndent('  ').convert(data)),
           ),
           actions: [
             TextButton(
@@ -148,16 +147,51 @@ class _SettingsScreenState extends State<SettingsScreen> {
         labelText: label,
         filled: true,
         fillColor: const Color(0xFFF8FAFC),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
       ),
     );
   }
 
   void showComingSoon(BuildContext context, String title) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('$title : fonctionnalité à venir.')),
+      SnackBar(content: Text('$title : option non disponible pour le moment.')),
+    );
+  }
+
+  Future<void> confirmResetLocalData() async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('Réinitialiser les données locales ?'),
+          content: const Text(
+            'Cette action efface les patients, le patient actif et l’historique des évaluations stockés sur cet appareil.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: const Text('Annuler'),
+            ),
+            FilledButton(
+              style: FilledButton.styleFrom(
+                backgroundColor: const Color(0xFFEF4444),
+              ),
+              onPressed: () => Navigator.pop(dialogContext, true),
+              child: const Text('Réinitialiser'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirm != true) return;
+
+    await RgpdLocalService.deleteAllLocalData();
+
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Données locales réinitialisées')),
     );
   }
 
@@ -267,7 +301,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               iconColor: const Color(0xFFEF4444),
               title: 'Réinitialisation locale',
               subtitle: 'Effacer les données stockées sur cet appareil.',
-              onTap: () => showComingSoon(context, 'Réinitialisation locale'),
+              onTap: confirmResetLocalData,
             ),
 
             const SizedBox(height: 14),
@@ -284,10 +318,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       padding: const EdgeInsets.fromLTRB(18, 16, 18, 16),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [
-            Color(0xFFF8FAFC),
-            Color(0xFFFFFFFF),
-          ],
+          colors: [Color(0xFFF8FAFC), Color(0xFFFFFFFF)],
         ),
         borderRadius: BorderRadius.circular(26),
         border: Border.all(color: const Color(0xFFE2E8F0)),
@@ -300,10 +331,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             decoration: const BoxDecoration(
               shape: BoxShape.circle,
               gradient: LinearGradient(
-                colors: [
-                  Color(0xFF64748B),
-                  Color(0xFF334155),
-                ],
+                colors: [Color(0xFF64748B), Color(0xFF334155)],
               ),
             ),
             child: const Icon(
@@ -360,10 +388,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
       child: ListTile(
         onTap: onTap,
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 14,
-          vertical: 6,
-        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
         leading: Container(
           height: 44,
           width: 44,
@@ -371,11 +396,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             color: iconColor.withValues(alpha: 0.10),
             borderRadius: BorderRadius.circular(16),
           ),
-          child: Icon(
-            icon,
-            color: iconColor,
-            size: 24,
-          ),
+          child: Icon(icon, color: iconColor, size: 24),
         ),
         title: Text(
           title,
@@ -423,11 +444,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
       child: const Row(
         children: [
-          Icon(
-            Icons.verified_rounded,
-            color: Color(0xFF2563EB),
-            size: 28,
-          ),
+          Icon(Icons.verified_rounded, color: Color(0xFF2563EB), size: 28),
           SizedBox(width: 12),
           Expanded(
             child: Text(

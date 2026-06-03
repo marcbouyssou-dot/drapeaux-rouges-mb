@@ -1,16 +1,10 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../services/history_service.dart';
 import 'evaluation/evaluation_detail_screen.dart';
 
-enum HistoryFilter {
-  all,
-  critical,
-  high,
-  moderate,
-  low,
-  anonymous,
-}
+enum HistoryFilter { all, critical, high, moderate, low, anonymous }
 
 class HistoryScreen extends StatefulWidget {
   const HistoryScreen({super.key});
@@ -52,7 +46,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
     final query = searchQuery.trim().toLowerCase();
 
     final filtered = history.where((item) {
-      final matchesSearch = query.isEmpty || searchableText(item).contains(query);
+      final matchesSearch =
+          query.isEmpty || searchableText(item).contains(query);
       final matchesFilter = filterMatches(item);
 
       return matchesSearch && matchesFilter;
@@ -91,14 +86,16 @@ class _HistoryScreenState extends State<HistoryScreen> {
     final raw = item['checkedFlags'];
     if (raw is! List) return '';
 
-    return raw.map((flag) {
-      if (flag is! Map) return '';
-      return [
-        flag['title']?.toString() ?? '',
-        flag['severity']?.toString() ?? '',
-        flag['category']?.toString() ?? '',
-      ].join(' ');
-    }).join(' ');
+    return raw
+        .map((flag) {
+          if (flag is! Map) return '';
+          return [
+            flag['title']?.toString() ?? '',
+            flag['severity']?.toString() ?? '',
+            flag['category']?.toString() ?? '',
+          ].join(' ');
+        })
+        .join(' ');
   }
 
   bool filterMatches(Map<String, dynamic> item) {
@@ -154,9 +151,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
     if (!mounted) return;
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Historique supprimé')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Historique supprimé')));
   }
 
   String patientName(Map<String, dynamic> item) {
@@ -277,10 +274,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
       padding: const EdgeInsets.fromLTRB(18, 16, 18, 16),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [
-            Color(0xFFEFF6FF),
-            Color(0xFFFFFFFF),
-          ],
+          colors: [Color(0xFFEFF6FF), Color(0xFFFFFFFF)],
         ),
         borderRadius: BorderRadius.circular(26),
         border: Border.all(color: const Color(0xFFBFDBFE)),
@@ -293,10 +287,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
             decoration: const BoxDecoration(
               shape: BoxShape.circle,
               gradient: LinearGradient(
-                colors: [
-                  Color(0xFF60A5FA),
-                  Color(0xFF2563EB),
-                ],
+                colors: [Color(0xFF60A5FA), Color(0xFF2563EB)],
               ),
             ),
             child: const Icon(
@@ -427,10 +418,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(22),
-          borderSide: const BorderSide(
-            color: Color(0xFF2563EB),
-            width: 2,
-          ),
+          borderSide: const BorderSide(color: Color(0xFF2563EB), width: 2),
         ),
       ),
     );
@@ -475,9 +463,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
         side: BorderSide(
           color: selected ? const Color(0xFFBFDBFE) : const Color(0xFFE2E8F0),
         ),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(99),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(99)),
       ),
     );
   }
@@ -569,10 +555,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
       onTap: () async {
         final deleted = await Navigator.push<bool>(
           context,
-          MaterialPageRoute(
-            builder: (_) => EvaluationDetailScreen(
-              evaluation: item,
-            ),
+          CupertinoPageRoute(
+            builder: (_) => EvaluationDetailScreen(evaluation: item),
           ),
         );
 
@@ -604,11 +588,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                 color: riskColor(risk).withValues(alpha: 0.10),
                 borderRadius: BorderRadius.circular(20),
               ),
-              child: Icon(
-                motifIcon(motif),
-                color: riskColor(risk),
-                size: 27,
-              ),
+              child: Icon(motifIcon(motif), color: riskColor(risk), size: 27),
             ),
             const SizedBox(width: 13),
             Expanded(
@@ -692,9 +672,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
       decoration: BoxDecoration(
         color: riskColor(risk).withValues(alpha: 0.10),
         borderRadius: BorderRadius.circular(99),
-        border: Border.all(
-          color: riskColor(risk).withValues(alpha: 0.35),
-        ),
+        border: Border.all(color: riskColor(risk).withValues(alpha: 0.35)),
       ),
       child: Text(
         risk,
@@ -713,9 +691,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
       decoration: BoxDecoration(
         color: const Color(0xFFF8FAFC),
         borderRadius: BorderRadius.circular(99),
-        border: Border.all(
-          color: const Color(0xFFE2E8F0),
-        ),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
       ),
       child: Text(
         text,
@@ -734,9 +710,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
       decoration: BoxDecoration(
         color: const Color(0xFFFFF7ED),
         borderRadius: BorderRadius.circular(99),
-        border: Border.all(
-          color: const Color(0xFFFED7AA),
-        ),
+        border: Border.all(color: const Color(0xFFFED7AA)),
       ),
       child: const Text(
         'Anonyme',
