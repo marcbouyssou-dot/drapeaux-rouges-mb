@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../../services/bdk_session_service.dart';
@@ -151,11 +152,7 @@ class EvaluationResultScreen extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(18, 10, 18, 22),
           decoration: BoxDecoration(
             color: Colors.white.withValues(alpha: 0.96),
-            border: const Border(
-              top: BorderSide(
-                color: Color(0xFFE5E7EB),
-              ),
-            ),
+            border: const Border(top: BorderSide(color: Color(0xFFE5E7EB))),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -212,9 +209,7 @@ class EvaluationResultScreen extends StatelessWidget {
 
                     Navigator.push(
                       context,
-                      MaterialPageRoute(
-                        builder: (_) => const BDKTypeScreen(),
-                      ),
+                      CupertinoPageRoute(builder: (_) => const BDKTypeScreen()),
                     );
                   },
                   icon: const Icon(Icons.assignment_outlined),
@@ -249,9 +244,7 @@ class _ResultCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(26),
-        border: Border.all(
-          color: color.withValues(alpha: 0.18),
-        ),
+        border: Border.all(color: color.withValues(alpha: 0.18)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.03),
@@ -263,11 +256,7 @@ class _ResultCard extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(
-            icon,
-            color: color,
-            size: 30,
-          ),
+          Icon(icon, color: color, size: 30),
 
           const SizedBox(width: 14),
 
@@ -314,9 +303,7 @@ class _SafetyNote extends StatelessWidget {
       decoration: BoxDecoration(
         color: const Color(0xFFF8FAFC),
         borderRadius: BorderRadius.circular(22),
-        border: Border.all(
-          color: const Color(0xFFE2E8F0),
-        ),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
       ),
       child: const Text(
         'Aide au repérage clinique uniquement. Cette application ne remplace pas une évaluation médicale professionnelle.',

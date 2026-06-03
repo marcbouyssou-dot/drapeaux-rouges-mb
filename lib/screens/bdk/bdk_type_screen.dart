@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'bdk_detail_screen.dart';
@@ -54,7 +55,7 @@ class BDKTypeScreen extends StatelessWidget {
                       onTap: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(
+                          CupertinoPageRoute(
                             builder: (_) => BDKDetailScreen(title: item.title),
                           ),
                         );

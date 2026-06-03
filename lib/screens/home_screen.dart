@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 
@@ -98,7 +99,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> openPatientScreen() async {
     await Navigator.of(
       context,
-    ).push(MaterialPageRoute(builder: (_) => const PatientConsentScreen()));
+    ).push(CupertinoPageRoute(builder: (_) => const PatientConsentScreen()));
 
     if (!mounted) return;
 
@@ -464,8 +465,13 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  void resetSession() {
+  void resetSession() async {
+    await RgpdLocalService.clearCurrentPatient();
+
+    if (!mounted) return;
+
     setState(() {
+      currentPatient = null;
       for (final category in categories.values) {
         for (final item in category) {
           item['checked'] = false;
@@ -799,7 +805,7 @@ class _HomeScreenState extends State<HomeScreen> {
               subtitle: 'Bilan',
               onTap: () {
                 Navigator.of(context).push(
-                  MaterialPageRoute(builder: (_) => const BDKTypeScreen()),
+                  CupertinoPageRoute(builder: (_) => const BDKTypeScreen()),
                 );
               },
             ),
@@ -843,7 +849,7 @@ class _HomeScreenState extends State<HomeScreen> {
           onTap: () {
             Navigator.of(
               context,
-            ).push(MaterialPageRoute(builder: (_) => const BDKTypeScreen()));
+            ).push(CupertinoPageRoute(builder: (_) => const BDKTypeScreen()));
           },
         ),
         const SizedBox(height: 12),

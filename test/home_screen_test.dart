@@ -115,6 +115,14 @@ void main() {
     expect(source, contains('await loadInitialData();'));
   });
 
+  test('resetting evaluation clears persisted current patient', () {
+    final source = File('lib/screens/home_screen.dart').readAsStringSync();
+
+    expect(source, contains('void resetSession() async'));
+    expect(source, contains('RgpdLocalService.clearCurrentPatient()'));
+    expect(source, contains('currentPatient = null'));
+  });
+
   testWidgets('opens BDK screen from BDK card', (tester) async {
     await pumpHomeScreen(tester);
 

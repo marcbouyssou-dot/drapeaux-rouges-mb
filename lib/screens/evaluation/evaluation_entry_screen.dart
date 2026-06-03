@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../home_screen.dart';
@@ -24,7 +25,7 @@ class _EvaluationEntryScreenState extends State<EvaluationEntryScreen> {
   void _openPatient() {
     Navigator.of(
       context,
-    ).push(MaterialPageRoute(builder: (_) => const PatientConsentScreen()));
+    ).push(CupertinoPageRoute(builder: (_) => const PatientConsentScreen()));
   }
 
   void _openPrescription() {
@@ -36,7 +37,7 @@ class _EvaluationEntryScreenState extends State<EvaluationEntryScreen> {
   void _openBdk() {
     Navigator.of(
       context,
-    ).push(MaterialPageRoute(builder: (_) => const BDKTypeScreen()));
+    ).push(CupertinoPageRoute(builder: (_) => const BDKTypeScreen()));
   }
 
   @override

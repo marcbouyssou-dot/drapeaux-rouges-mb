@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 
+import '../../models/patient_local.dart';
+import '../../services/bdk_pdf_service.dart';
 import '../../services/bdk_session_service.dart';
+import '../../services/rgpd_local_service.dart';
 import '../../theme/app_design_system.dart';
 import '../../widgets/design_system/clinical_auto_summary_card.dart';
 import '../../widgets/design_system/clinical_bottom_action_bar.dart';
@@ -10,10 +13,7 @@ import '../../widgets/design_system/clinical_text_field.dart';
 import '../../widgets/design_system/expandable_clinical_section.dart';
 
 class BDKDetailScreen extends StatefulWidget {
-  const BDKDetailScreen({
-    super.key,
-    required this.title,
-  });
+  const BDKDetailScreen({super.key, required this.title});
 
   final String title;
 
@@ -36,36 +36,61 @@ class _BDKDetailScreenState extends State<BDKDetailScreen> {
   late final TextEditingController objectifsController;
   late final TextEditingController planTraitementController;
   late final TextEditingController criteresReevaluationController;
+  PatientLocal? currentPatient;
 
   @override
   void initState() {
     super.initState();
 
     motifController = TextEditingController(text: BDKSessionService.motif);
-    contexteController = TextEditingController(text: BDKSessionService.contexte);
-    antecedentsController =
-        TextEditingController(text: BDKSessionService.antecedents);
+    contexteController = TextEditingController(
+      text: BDKSessionService.contexte,
+    );
+    antecedentsController = TextEditingController(
+      text: BDKSessionService.antecedents,
+    );
 
-    evaluationController =
-        TextEditingController(text: BDKSessionService.evaluation);
+    evaluationController = TextEditingController(
+      text: BDKSessionService.evaluation,
+    );
     testsController = TextEditingController(text: BDKSessionService.tests);
-    limitationsController =
-        TextEditingController(text: BDKSessionService.limitations);
+    limitationsController = TextEditingController(
+      text: BDKSessionService.limitations,
+    );
 
-    diagnosticController =
-        TextEditingController(text: BDKSessionService.diagnostic);
-    vigilanceController =
-        TextEditingController(text: BDKSessionService.vigilance);
+    diagnosticController = TextEditingController(
+      text: BDKSessionService.diagnostic,
+    );
+    vigilanceController = TextEditingController(
+      text: BDKSessionService.vigilance,
+    );
 
-    objectifsController =
-        TextEditingController(text: BDKSessionService.objectifs);
-    planTraitementController =
-        TextEditingController(text: BDKSessionService.planTraitement);
-    criteresReevaluationController =
-        TextEditingController(text: BDKSessionService.criteresReevaluation);
+    objectifsController = TextEditingController(
+      text: BDKSessionService.objectifs,
+    );
+    planTraitementController = TextEditingController(
+      text: BDKSessionService.planTraitement,
+    );
+    criteresReevaluationController = TextEditingController(
+      text: BDKSessionService.criteresReevaluation,
+    );
 
     _addListeners();
+    _loadCurrentPatient();
   }
+
+  Future<void> _loadCurrentPatient() async {
+    final patient = await RgpdLocalService.getCurrentPatient();
+
+    if (!mounted) return;
+
+    setState(() {
+      currentPatient = patient;
+    });
+  }
+
+  String get patientDisplayName =>
+      RgpdLocalService.patientDisplayName(currentPatient);
 
   void _addListeners() {
     motifController.addListener(() {
@@ -136,11 +161,7 @@ class _BDKDetailScreenState extends State<BDKDetailScreen> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(
-            Icons.auto_awesome,
-            color: AppColors.primaryBlue,
-            size: 28,
-          ),
+          Icon(Icons.auto_awesome, color: AppColors.primaryBlue, size: 28),
           const SizedBox(width: 12),
           Expanded(
             child: Text(
@@ -163,7 +184,8 @@ class _BDKDetailScreenState extends State<BDKDetailScreen> {
 
   void _generateClinicalSummary() {
     setState(() {
-      BDKSessionService.syntheseClinique = '''
+      BDKSessionService.syntheseClinique =
+          '''
 Patient présentant ${motifController.text.trim().isEmpty ? 'un motif non renseigné' : motifController.text.trim()}.
 
 Le contexte clinique retrouve :
@@ -201,6 +223,25 @@ Une prise en charge kinésithérapique adaptée semble indiquée avec surveillan
     });
   }
 
+  Future<void> _exportPdf() async {
+    await BdkPdfService.exportBdkPdf(
+      title: widget.title,
+      patient: currentPatient,
+      motif: motifController.text,
+      contexte: contexteController.text,
+      antecedents: antecedentsController.text,
+      evaluation: evaluationController.text,
+      tests: testsController.text,
+      limitations: limitationsController.text,
+      diagnostic: diagnosticController.text,
+      vigilance: vigilanceController.text,
+      objectifs: objectifsController.text,
+      planTraitement: planTraitementController.text,
+      criteresReevaluation: criteresReevaluationController.text,
+      syntheseClinique: BDKSessionService.syntheseClinique,
+    );
+  }
+
   @override
   void dispose() {
     motifController.dispose();
@@ -231,15 +272,14 @@ Une prise en charge kinésithérapique adaptée semble indiquée avec surveillan
         onSecondaryPressed: _resetBDK,
         primaryLabel: 'Exporter PDF',
         primaryIcon: Icons.picture_as_pdf_outlined,
-        onPrimaryPressed: () {
-          // Export PDF BDK à brancher ensuite
-        },
+        onPrimaryPressed: _exportPdf,
       ),
       body: Column(
         children: [
           ClinicalPageHeader(
             title: widget.title,
-            subtitle: 'Bilan structuré avec auto-remplissage clinique.',
+            subtitle:
+                'Bilan structuré avec auto-remplissage clinique · $patientDisplayName',
           ),
           Expanded(
             child: ListView(
@@ -288,8 +328,7 @@ Une prise en charge kinésithérapique adaptée semble indiquée avec surveillan
                   children: [
                     ClinicalTextField(
                       label: 'Données issues de l’évaluation',
-                      hint:
-                          'Auto-remplissage depuis l’onglet Évaluation.',
+                      hint: 'Auto-remplissage depuis l’onglet Évaluation.',
                       maxLines: 4,
                       controller: evaluationController,
                     ),
@@ -363,16 +402,14 @@ Une prise en charge kinésithérapique adaptée semble indiquée avec surveillan
                     const SizedBox(height: 16),
                     ClinicalTextField(
                       label: 'Plan de traitement',
-                      hint:
-                          'Fréquence, techniques, exercices, progression...',
+                      hint: 'Fréquence, techniques, exercices, progression...',
                       maxLines: 4,
                       controller: planTraitementController,
                     ),
                     const SizedBox(height: 16),
                     ClinicalTextField(
                       label: 'Critères de réévaluation',
-                      hint:
-                          'Douleur, fonction, autonomie, tests de suivi...',
+                      hint: 'Douleur, fonction, autonomie, tests de suivi...',
                       maxLines: 3,
                       controller: criteresReevaluationController,
                     ),
