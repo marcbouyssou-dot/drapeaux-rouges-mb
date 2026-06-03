@@ -31,8 +31,9 @@ class PdfService {
       });
     }).toList();
 
-    final primaryColor =
-        printable ? PdfColors.black : PdfColor.fromHex('#1D4ED8');
+    final primaryColor = printable
+        ? PdfColors.black
+        : PdfColor.fromHex('#1D4ED8');
 
     PdfColor riskPdfColor() {
       if (printable) return PdfColors.black;
@@ -49,10 +50,7 @@ class PdfService {
         pageTheme: pw.PageTheme(
           pageFormat: PdfPageFormat.a4,
           margin: const pw.EdgeInsets.fromLTRB(36, 32, 36, 32),
-          theme: pw.ThemeData.withFont(
-            base: regularFont,
-            bold: boldFont,
-          ),
+          theme: pw.ThemeData.withFont(base: regularFont, bold: boldFont),
         ),
         footer: (context) {
           return pw.Row(
@@ -133,16 +131,9 @@ class PdfService {
             sectionTitle('Drapeaux rouges cochés'),
             pw.SizedBox(height: 10),
             checkedRows.isEmpty
-                ? neutralBox(
-                    'Aucun drapeau rouge coché.',
-                    printable: printable,
-                  )
+                ? neutralBox('Aucun drapeau rouge coché.', printable: printable)
                 : pw.TableHelper.fromTextArray(
-                    headers: const [
-                      'Catégorie',
-                      'Drapeau rouge',
-                      'Niveau',
-                    ],
+                    headers: const ['Catégorie', 'Drapeau rouge', 'Niveau'],
                     data: checkedRows,
                     headerDecoration: pw.BoxDecoration(
                       color: printable ? PdfColors.white : primaryColor,
@@ -164,9 +155,7 @@ class PdfService {
       ),
     );
 
-    await Printing.layoutPdf(
-      onLayout: (_) async => pdf.save(),
-    );
+    await Printing.layoutPdf(onLayout: (_) async => pdf.save());
   }
 
   static pw.Widget buildHeader({
@@ -182,10 +171,7 @@ class PdfService {
         color: printable ? PdfColors.white : PdfColor.fromHex('#EEF4FF'),
         borderRadius: pw.BorderRadius.circular(16),
         border: printable
-            ? pw.Border.all(
-                color: PdfColors.grey700,
-                width: 0.8,
-              )
+            ? pw.Border.all(color: PdfColors.grey700, width: 0.8)
             : null,
       ),
       child: pw.Row(
@@ -208,7 +194,7 @@ class PdfService {
                 pw.Text('Motif : $motif'),
                 pw.Text('Date : ${formatDate(now)}'),
                 pw.Text('Heure : ${formatTime(now)}'),
-                pw.Text('Patient / identifiant local : $patientCode'),
+                pw.Text('Identifiant pseudonymisé : $patientCode'),
               ],
             ),
           ),
@@ -220,10 +206,7 @@ class PdfService {
               color: printable ? PdfColors.white : primaryColor,
               borderRadius: pw.BorderRadius.circular(15),
               border: printable
-                  ? pw.Border.all(
-                      color: PdfColors.black,
-                      width: 0.8,
-                    )
+                  ? pw.Border.all(color: PdfColors.black, width: 0.8)
                   : null,
             ),
             child: pw.Text(
@@ -261,10 +244,7 @@ class PdfService {
         children: [
           pw.Text(
             title,
-            style: const pw.TextStyle(
-              fontSize: 10,
-              color: PdfColors.grey600,
-            ),
+            style: const pw.TextStyle(fontSize: 10, color: PdfColors.grey600),
           ),
           pw.SizedBox(height: 6),
           pw.Text(
@@ -322,20 +302,14 @@ class PdfService {
           pw.SizedBox(height: 8),
           pw.Text(
             text,
-            style: const pw.TextStyle(
-              fontSize: 10,
-              lineSpacing: 4,
-            ),
+            style: const pw.TextStyle(fontSize: 10, lineSpacing: 4),
           ),
         ],
       ),
     );
   }
 
-  static pw.Widget neutralBox(
-    String text, {
-    required bool printable,
-  }) {
+  static pw.Widget neutralBox(String text, {required bool printable}) {
     return pw.Container(
       width: double.infinity,
       padding: const pw.EdgeInsets.all(16),
@@ -349,10 +323,7 @@ class PdfService {
       ),
       child: pw.Text(
         text,
-        style: const pw.TextStyle(
-          fontSize: 10,
-          lineSpacing: 4,
-        ),
+        style: const pw.TextStyle(fontSize: 10, lineSpacing: 4),
       ),
     );
   }

@@ -24,13 +24,13 @@ class LocalDatabaseService {
     return evaluations;
   }
 
-  static Future<void> saveEvaluation(
-    Map<String, dynamic> evaluation,
-  ) async {
+  static Future<void> saveEvaluation(Map<String, dynamic> evaluation) async {
     final evaluationId = evaluation['evaluationId']?.toString();
 
     if (evaluationId == null || evaluationId.isEmpty) {
-      throw Exception('Evaluation impossible à sauvegarder : evaluationId manquant.');
+      throw Exception(
+        'Evaluation impossible à sauvegarder : evaluationId manquant.',
+      );
     }
 
     await _box.put(evaluationId, evaluation);
@@ -40,6 +40,27 @@ class LocalDatabaseService {
     if (evaluationId.isEmpty) return;
 
     await _box.delete(evaluationId);
+  }
+
+  static Future<void> anonymizeEvaluationsForPatient(
+    String patientLocalId,
+  ) async {
+    if (patientLocalId.isEmpty) return;
+
+    for (final key in _box.keys) {
+      final raw = _box.get(key);
+      if (raw is! Map) continue;
+
+      final evaluation = Map<String, dynamic>.from(raw);
+      if (evaluation['patientLocalId']?.toString() != patientLocalId) {
+        continue;
+      }
+
+      evaluation['patientLocalId'] = null;
+      evaluation['patientDisplayName'] = 'Patient non renseigné';
+
+      await _box.put(key, evaluation);
+    }
   }
 
   static Future<void> clearEvaluations() async {

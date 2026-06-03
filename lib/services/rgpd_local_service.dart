@@ -2,6 +2,7 @@ import 'package:hive/hive.dart';
 import 'package:uuid/uuid.dart';
 
 import '../models/patient_local.dart';
+import 'local_database_service.dart';
 
 class RgpdLocalService {
   static const String _patientsBoxName = 'patients_box';
@@ -32,9 +33,7 @@ class RgpdLocalService {
 
   static Future<List<PatientLocal>> getPatients() async {
     final patients = _patientsBox.values.map((item) {
-      return PatientLocal.fromJson(
-        Map<String, dynamic>.from(item as Map),
-      );
+      return PatientLocal.fromJson(Map<String, dynamic>.from(item as Map));
     }).toList();
 
     patients.sort((a, b) {
@@ -73,9 +72,7 @@ class RgpdLocalService {
 
     if (raw == null) return null;
 
-    return PatientLocal.fromJson(
-      Map<String, dynamic>.from(raw as Map),
-    );
+    return PatientLocal.fromJson(Map<String, dynamic>.from(raw as Map));
   }
 
   static Future<void> clearCurrentPatient() async {
@@ -83,6 +80,7 @@ class RgpdLocalService {
   }
 
   static Future<void> deletePatient(String localId) async {
+    await LocalDatabaseService.anonymizeEvaluationsForPatient(localId);
     await _patientsBox.delete(localId);
 
     final currentId = await getCurrentPatientId();
@@ -94,6 +92,7 @@ class RgpdLocalService {
 
   static Future<void> deleteAllLocalData() async {
     await _patientsBox.clear();
+    await LocalDatabaseService.clearEvaluations();
     await clearCurrentPatient();
   }
 

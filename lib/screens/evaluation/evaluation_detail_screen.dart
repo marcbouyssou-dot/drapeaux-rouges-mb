@@ -7,15 +7,18 @@ import '../../theme/app_text_styles.dart';
 class EvaluationDetailScreen extends StatelessWidget {
   final Map<String, dynamic> evaluation;
 
-  const EvaluationDetailScreen({
-    super.key,
-    required this.evaluation,
-  });
+  const EvaluationDetailScreen({super.key, required this.evaluation});
 
   String get evaluationId => evaluation['evaluationId']?.toString() ?? '';
 
   String get patientName {
     return evaluation['patientDisplayName']?.toString() ??
+        evaluation['patientCode']?.toString() ??
+        'Patient non renseigné';
+  }
+
+  String get patientExportCode {
+    return evaluation['patientAnonymousId']?.toString() ??
         evaluation['patientCode']?.toString() ??
         'Patient non renseigné';
   }
@@ -108,15 +111,13 @@ class EvaluationDetailScreen extends StatelessWidget {
     return result;
   }
 
-  Future<void> exportPdf({
-    required bool printable,
-  }) async {
+  Future<void> exportPdf({required bool printable}) async {
     await PdfService.exportPdf(
       categories: buildPdfCategories(),
       score: score,
       checkedCount: checkedCount,
       riskLevel: riskLevel,
-      patientCode: patientName,
+      patientCode: patientExportCode,
       motif: motif,
       decisionTitle: decisionTitle,
       decisionMessage: decisionMessage,
@@ -135,9 +136,7 @@ class EvaluationDetailScreen extends StatelessWidget {
             padding: const EdgeInsets.fromLTRB(18, 12, 18, 18),
             decoration: const BoxDecoration(
               color: Color(0xFFF8FAFC),
-              borderRadius: BorderRadius.vertical(
-                top: Radius.circular(30),
-              ),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -228,10 +227,7 @@ class EvaluationDetailScreen extends StatelessWidget {
                   ],
                 ),
               ),
-              const Icon(
-                Icons.chevron_right_rounded,
-                color: Color(0xFF94A3B8),
-              ),
+              const Icon(Icons.chevron_right_rounded, color: Color(0xFF94A3B8)),
             ],
           ),
         ),
@@ -314,10 +310,7 @@ class EvaluationDetailScreen extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(12, 12, 16, 12),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [
-            Color(0xFFEFF6FF),
-            Color(0xFFFFFFFF),
-          ],
+          colors: [Color(0xFFEFF6FF), Color(0xFFFFFFFF)],
         ),
         borderRadius: BorderRadius.circular(26),
         border: Border.all(color: const Color(0xFFBFDBFE)),
@@ -390,10 +383,7 @@ class EvaluationDetailScreen extends StatelessWidget {
       padding: const EdgeInsets.all(17),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [
-            riskColor,
-            riskColor.withValues(alpha: 0.86),
-          ],
+          colors: [riskColor, riskColor.withValues(alpha: 0.86)],
         ),
         borderRadius: BorderRadius.circular(28),
         boxShadow: [
@@ -465,9 +455,7 @@ class EvaluationDetailScreen extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.16),
         borderRadius: BorderRadius.circular(17),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.12),
-        ),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
       ),
       child: Column(
         children: [
@@ -512,11 +500,7 @@ class EvaluationDetailScreen extends StatelessWidget {
               color: riskColor.withValues(alpha: 0.10),
               borderRadius: BorderRadius.circular(18),
             ),
-            child: Icon(
-              Icons.route_rounded,
-              color: riskColor,
-              size: 27,
-            ),
+            child: Icon(Icons.route_rounded, color: riskColor, size: 27),
           ),
           const SizedBox(width: 13),
           Expanded(
@@ -557,10 +541,7 @@ class EvaluationDetailScreen extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Drapeaux rouges cochés',
-          style: AppTextStyles.sectionTitle,
-        ),
+        const Text('Drapeaux rouges cochés', style: AppTextStyles.sectionTitle),
         const SizedBox(height: 10),
         ...checkedFlags.map(buildFlagTile),
       ],
@@ -619,11 +600,7 @@ class EvaluationDetailScreen extends StatelessWidget {
               color: riskColor.withValues(alpha: 0.10),
               borderRadius: BorderRadius.circular(16),
             ),
-            child: Icon(
-              Icons.flag_rounded,
-              color: riskColor,
-              size: 24,
-            ),
+            child: Icon(Icons.flag_rounded, color: riskColor, size: 24),
           ),
           const SizedBox(width: 12),
           Expanded(

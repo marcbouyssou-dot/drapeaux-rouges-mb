@@ -110,6 +110,9 @@ class _HomeScreenState extends State<HomeScreen> {
   String get patientDisplayName =>
       RgpdLocalService.patientDisplayName(currentPatient);
 
+  String get patientExportCode =>
+      currentPatient?.anonymousId ?? 'Patient non renseigné';
+
   String get decisionTitle => DecisionEngineService.decisionTitle(
     score: score,
     selectedCategory: selectedCategory,
@@ -428,7 +431,7 @@ class _HomeScreenState extends State<HomeScreen> {
       score: score,
       checkedCount: checkedCount,
       riskLevel: riskLevel,
-      patientCode: patientDisplayName,
+      patientCode: patientExportCode,
       motif: selectedCategory,
       decisionTitle: decisionTitle,
       decisionMessage: decisionMessage,
@@ -447,7 +450,7 @@ class _HomeScreenState extends State<HomeScreen> {
       categories: categories,
       score: score,
       riskLevel: riskLevel,
-      patientCode: currentPatient?.anonymousId ?? 'Patient non renseigné',
+      patientCode: patientExportCode,
     );
   }
 
@@ -754,7 +757,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget buildEvaluationShortcutRow() {
     return Container(
-      height: 74,
+      height: 86,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
@@ -1027,14 +1030,13 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
           const SizedBox(height: 9),
-          Row(
+          Wrap(
+            spacing: 7,
+            runSpacing: 7,
             children: [
               buildPremiumRiskChip('Faible', const Color(0xFF16A34A), false),
-              const SizedBox(width: 7),
               buildPremiumRiskChip('Modéré', const Color(0xFFF97316), false),
-              const SizedBox(width: 7),
               buildPremiumRiskChip('Élevé', const Color(0xFFEF4444), false),
-              const SizedBox(width: 7),
               buildPremiumRiskChip('Critique', const Color(0xFF7F0000), true),
             ],
           ),
