@@ -44,6 +44,8 @@ class BDKTypeScreen extends StatelessWidget {
             child: ListView(
               padding: const EdgeInsets.fromLTRB(16, 18, 16, 120),
               children: [
+                const _BackButtonTile(),
+                const SizedBox(height: 12),
                 ...items.map(
                   (item) => Padding(
                     padding: const EdgeInsets.only(bottom: 12),
@@ -53,9 +55,7 @@ class BDKTypeScreen extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => BDKDetailScreen(
-                              title: item.title,
-                            ),
+                            builder: (_) => BDKDetailScreen(title: item.title),
                           ),
                         );
                       },
@@ -67,6 +67,27 @@ class BDKTypeScreen extends StatelessWidget {
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _BackButtonTile extends StatelessWidget {
+  const _BackButtonTile();
+
+  @override
+  Widget build(BuildContext context) {
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Material(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        child: IconButton(
+          tooltip: 'Retour',
+          icon: const Icon(Icons.arrow_back_rounded),
+          color: const Color(0xFF0F172A),
+          onPressed: () => Navigator.pop(context),
         ),
       ),
     );
@@ -86,10 +107,7 @@ class _BDKItem {
 }
 
 class _BDKTypeCard extends StatelessWidget {
-  const _BDKTypeCard({
-    required this.item,
-    required this.onTap,
-  });
+  const _BDKTypeCard({required this.item, required this.onTap});
 
   final _BDKItem item;
   final VoidCallback onTap;
@@ -103,16 +121,11 @@ class _BDKTypeCard extends StatelessWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(22),
         child: Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 14,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(22),
-            border: Border.all(
-              color: const Color(0xFFE2E8F0),
-            ),
+            border: Border.all(color: const Color(0xFFE2E8F0)),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withValues(alpha: 0.035),
@@ -130,11 +143,7 @@ class _BDKTypeCard extends StatelessWidget {
                   color: item.color.withValues(alpha: 0.10),
                   borderRadius: BorderRadius.circular(18),
                 ),
-                child: Icon(
-                  item.icon,
-                  color: item.color,
-                  size: 28,
-                ),
+                child: Icon(item.icon, color: item.color, size: 28),
               ),
               const SizedBox(width: 14),
               Expanded(
