@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'package:drapeaux_rouges_mb/models/patient_local.dart';
+import 'package:drapeaux_rouges_mb/screens/patient_consent_screen.dart';
 import 'package:drapeaux_rouges_mb/screens/home_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -20,18 +22,46 @@ void main() {
     await Hive.openBox('access_direct_box');
   });
 
+  setUp(() async {
+    await Hive.box('patients_box').clear();
+    await Hive.box('evaluations_box').clear();
+    await Hive.box('settings_box').clear();
+    await Hive.box('access_direct_box').clear();
+  });
+
   tearDownAll(() async {
     await Hive.close();
     await tempDir.delete(recursive: true);
   });
 
-  Future<void> pumpHomeScreen(WidgetTester tester) async {
+  PatientLocal buildPatient({
+    String localId = 'patient-1',
+    String anonymousId = 'DR-patient-1',
+  }) {
+    return PatientLocal(
+      localId: localId,
+      anonymousId: anonymousId,
+      nom: 'Dupont',
+      prenom: 'Alice',
+      dateNaissance: '01/01/1980',
+      consentementValide: true,
+      dateConsentement: DateTime(2026, 1, 1),
+    );
+  }
+
+  Future<void> pumpHomeScreen(WidgetTester tester, {bool settle = true}) async {
     await tester.binding.setSurfaceSize(const Size(1200, 1000));
     addTearDown(() => tester.binding.setSurfaceSize(null));
 
     await tester.pumpWidget(const MaterialApp(home: HomeScreen()));
 
-    await tester.pumpAndSettle();
+    if (settle) {
+      await tester.pumpAndSettle();
+      return;
+    }
+
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
   }
 
   testWidgets('shows home screen actions and start button', (tester) async {
@@ -56,8 +86,33 @@ void main() {
     expect(patientCardSubtitle.hitTestable(), findsOneWidget);
 
     await tester.tap(patientCard);
+    await tester.pump();
 
     expect(tester.takeException(), isNull);
+
+    if (find.byType(PatientConsentScreen).evaluate().isNotEmpty) {
+      Navigator.of(tester.element(find.byType(PatientConsentScreen))).pop();
+      await tester.pump(const Duration(milliseconds: 300));
+    }
+  });
+
+  testWidgets('uses pseudonymized patient id for default PDF and CSV exports', (
+    tester,
+  ) async {
+    await pumpHomeScreen(tester, settle: false);
+
+    final state = tester.state(find.byType(HomeScreen)) as dynamic;
+    state.currentPatient = buildPatient();
+
+    expect(state.patientExportCode, 'DR-patient-1');
+    expect(state.patientExportCode, isNot(state.patientDisplayName));
+  });
+
+  test('HomeScreen reloads patient data after patient screen returns', () {
+    final source = File('lib/screens/home_screen.dart').readAsStringSync();
+
+    expect(source, contains('Future<void> openPatientScreen() async'));
+    expect(source, contains('await loadInitialData();'));
   });
 
   testWidgets('opens BDK screen from BDK card', (tester) async {
