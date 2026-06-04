@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 
+import '../../theme/app_colors.dart';
+import '../../theme/app_radius.dart';
+import '../../theme/app_spacing.dart';
+
 class HomeHeroSection extends StatelessWidget {
   const HomeHeroSection({super.key});
 
@@ -9,7 +13,7 @@ class HomeHeroSection extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(22, 42, 22, 34),
       decoration: const BoxDecoration(
         gradient: LinearGradient(
-          colors: [Color(0xFF004A8F), Color(0xFF0A5FB8)],
+          colors: [AppColors.medicalBlue, AppColors.medicalBlueLight],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -21,7 +25,7 @@ class HomeHeroSection extends StatelessWidget {
             height: 38,
             decoration: BoxDecoration(
               color: Colors.white.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(AppRadius.md),
               border: Border.all(color: Colors.white.withValues(alpha: 0.22)),
             ),
             child: const Icon(
@@ -47,7 +51,7 @@ class HomeHeroSection extends StatelessWidget {
                 Text(
                   'Nouvelle-Aquitaine',
                   style: TextStyle(
-                    color: Color(0xFFBFD7FF),
+                    color: AppColors.primaryLight,
                     fontSize: 10,
                     fontWeight: FontWeight.w700,
                   ),
@@ -59,12 +63,12 @@ class HomeHeroSection extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
             decoration: BoxDecoration(
               color: Colors.white.withValues(alpha: 0.13),
-              borderRadius: BorderRadius.circular(99),
+              borderRadius: BorderRadius.circular(AppRadius.pill),
               border: Border.all(color: Colors.white.withValues(alpha: 0.22)),
             ),
             child: const Row(
               children: [
-                Icon(Icons.circle, color: Color(0xFF22C55E), size: 7),
+                Icon(Icons.circle, color: AppColors.success, size: 7),
                 SizedBox(width: 7),
                 Text(
                   'Accès Direct MK',
@@ -99,7 +103,7 @@ class HomePatientClinicalCard extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(22, 20, 22, 22),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.surface,
         borderRadius: const BorderRadius.vertical(
           top: Radius.circular(18),
           bottom: Radius.circular(2),
@@ -121,7 +125,7 @@ class HomePatientClinicalCard extends StatelessWidget {
                 const Text(
                   'BILAN DE DÉPISTAGE CLINIQUE',
                   style: TextStyle(
-                    color: Color(0xFFE91E63),
+                    color: AppColors.raspberry,
                     fontSize: 10,
                     fontWeight: FontWeight.w900,
                     letterSpacing: 1.7,
@@ -133,7 +137,7 @@ class HomePatientClinicalCard extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
-                    color: Color(0xFF004A8F),
+                    color: AppColors.medicalBlue,
                     fontSize: 22,
                     fontWeight: FontWeight.w900,
                     letterSpacing: -0.4,
@@ -145,7 +149,7 @@ class HomePatientClinicalCard extends StatelessWidget {
                       ? 'Évaluation clinique en cours'
                       : 'Aucun patient sélectionné',
                   style: const TextStyle(
-                    color: Color(0xFF64748B),
+                    color: AppColors.textSecondary,
                     fontSize: 12,
                     fontWeight: FontWeight.w700,
                   ),
@@ -157,13 +161,13 @@ class HomePatientClinicalCard extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 7),
             decoration: BoxDecoration(
               color: const Color(0xFFEFFAF4),
-              borderRadius: BorderRadius.circular(99),
+              borderRadius: BorderRadius.circular(AppRadius.pill),
               border: Border.all(color: const Color(0xFFCBEED8)),
             ),
             child: const Row(
               children: [
-                Icon(Icons.circle, color: Color(0xFF16A34A), size: 7),
-                SizedBox(width: 7),
+                Icon(Icons.circle, color: AppColors.successDark, size: 7),
+                SizedBox(width: AppSpacing.sm - 1),
                 Text(
                   'SÉCURISÉ',
                   style: TextStyle(

@@ -1,27 +1,42 @@
 import 'package:flutter/material.dart';
 
 class AppColors {
-  // Primary
-  static const Color primary = Color(0xFF0066FF);
-  static const Color primaryLight = Color(0xFF4D94FF);
+  // Brand
+  static const Color primary = Color(0xFF2563EB);
+  static const Color primaryDark = Color(0xFF1E40AF);
+  static const Color primaryLight = Color(0xFF60A5FA);
+  static const Color medicalBlue = Color(0xFF004A8F);
+  static const Color medicalBlueLight = Color(0xFF0A5FB8);
 
-  // Clinical alerts
-  static const Color danger = Color(0xFFE53935);
-  static const Color warning = Color(0xFFFF9800);
-  static const Color success = Color(0xFF43A047);
+  // Clinical status
+  static const Color success = Color(0xFF22C55E);
+  static const Color successDark = Color(0xFF16A34A);
+  static const Color warning = Color(0xFFF59E0B);
+  static const Color warningDark = Color(0xFFF97316);
+  static const Color danger = Color(0xFFEF4444);
+  static const Color dangerDark = Color(0xFFDC2626);
+  static const Color critical = Color(0xFF7F0000);
+  static const Color raspberry = Color(0xFFE91E63);
+  static const Color raspberryDark = Color(0xFFC2185B);
 
-  // Neutral
-  static const Color background = Color(0xFFF5F7FA);
-  static const Color surface = Colors.white;
-
-  // Dark mode
-  static const Color darkBackground = Color(0xFF121212);
-  static const Color darkSurface = Color(0xFF1E1E1E);
+  // Surfaces
+  static const Color background = Color(0xFFF8FAFC);
+  static const Color appBackground = Color(0xFFF4F8FD);
+  static const Color surface = Color(0xFFFFFFFF);
+  static const Color surfaceAlt = Color(0xFFEFF6FF);
 
   // Text
-  static const Color textPrimary = Color(0xFF1A1A1A);
-  static const Color textSecondary = Color(0xFF666666);
+  static const Color textPrimary = Color(0xFF0F172A);
+  static const Color textSecondary = Color(0xFF64748B);
+  static const Color textMuted = Color(0xFF94A3B8);
+  static const Color textOnDark = Color(0xFFFFFFFF);
 
   // Borders
-  static const Color border = Color(0xFFE0E0E0);
+  static const Color border = Color(0xFFE2E8F0);
+  static const Color borderStrong = Color(0xFFD8E6F5);
+
+  // Dark surfaces
+  static const Color darkBackground = Color(0xFF030B18);
+  static const Color darkSurface = Color(0xFF081A34);
+  static const Color darkSurfaceAlt = Color(0xFF16254A);
 }

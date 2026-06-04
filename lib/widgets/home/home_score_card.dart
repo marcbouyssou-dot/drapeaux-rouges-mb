@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 
+import '../../theme/app_colors.dart';
+import '../../theme/app_radius.dart';
+import '../../theme/app_spacing.dart';
+
 class HomeScoreCard extends StatelessWidget {
   const HomeScoreCard({
     super.key,
@@ -24,7 +28,7 @@ class HomeScoreCard extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(22),
+        borderRadius: BorderRadius.circular(AppRadius.xl - 2),
         child: Container(
           width: double.infinity,
           constraints: const BoxConstraints(minHeight: 370),
@@ -35,16 +39,16 @@ class HomeScoreCard extends StatelessWidget {
               radius: 1.25,
               colors: [Color(0xFF16254A), Color(0xFF081A34), Color(0xFF030B18)],
             ),
-            borderRadius: BorderRadius.circular(22),
+            borderRadius: BorderRadius.circular(AppRadius.xl - 2),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF2563EB).withValues(alpha: 0.10),
+                color: AppColors.primary.withValues(alpha: 0.10),
                 blurRadius: 60,
                 spreadRadius: 8,
                 offset: const Offset(0, 22),
               ),
               BoxShadow(
-                color: const Color(0xFFE91E63).withValues(alpha: 0.14),
+                color: AppColors.raspberry.withValues(alpha: 0.14),
                 blurRadius: 50,
                 spreadRadius: 2,
                 offset: const Offset(0, 18),
@@ -77,10 +81,10 @@ class HomeScoreCard extends StatelessWidget {
                     width: 58,
                     height: 58,
                     decoration: BoxDecoration(
-                      color: const Color(0xFFE91E63).withValues(alpha: 0.13),
-                      borderRadius: BorderRadius.circular(14),
+                      color: AppColors.raspberry.withValues(alpha: 0.13),
+                      borderRadius: BorderRadius.circular(AppRadius.lg - 2),
                       border: Border.all(
-                        color: const Color(0xFFE91E63).withValues(alpha: 0.38),
+                        color: AppColors.raspberry.withValues(alpha: 0.38),
                       ),
                     ),
                     child: Column(
@@ -89,7 +93,7 @@ class HomeScoreCard extends StatelessWidget {
                         Text(
                           '$riskPercent%',
                           style: const TextStyle(
-                            color: Colors.white,
+                            color: AppColors.textOnDark,
                             fontSize: 20,
                             fontWeight: FontWeight.w900,
                             height: 1,
@@ -99,7 +103,7 @@ class HomeScoreCard extends StatelessWidget {
                         const Text(
                           'RISQUE',
                           style: TextStyle(
-                            color: Color(0xFFE91E63),
+                            color: AppColors.raspberry,
                             fontSize: 8,
                             fontWeight: FontWeight.w900,
                             letterSpacing: .7,
@@ -110,20 +114,20 @@ class HomeScoreCard extends StatelessWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 6),
+              const SizedBox(height: AppSpacing.sm - 2),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text(
                     checkedCount == 0 ? '0' : '$checkedCount',
                     style: const TextStyle(
-                      color: Colors.white,
+                      color: AppColors.textOnDark,
                       fontSize: 28,
                       fontWeight: FontWeight.w900,
                       height: 1,
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: AppSpacing.sm),
                   Expanded(
                     child: Text(
                       checkedCount <= 1
@@ -156,7 +160,7 @@ class HomeScoreCard extends StatelessWidget {
                 children: [
                   Expanded(
                     child: HomeDecisionIndicator(
-                      dotColor: const Color(0xFFEF4444),
+                      dotColor: AppColors.danger,
                       value: checkedCount == 0 ? 'À évaluer' : 'Critique',
                       label: 'NIVEAU DE RISQUE',
                     ),
@@ -181,21 +185,21 @@ class HomeScoreCard extends StatelessWidget {
               ),
               const SizedBox(height: 14),
               Container(height: 1, color: Colors.white.withValues(alpha: 0.10)),
-              const SizedBox(height: 16),
+              const SizedBox(height: AppSpacing.md),
               Container(
                 width: double.infinity,
                 height: 58,
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
-                    colors: [Color(0xFFE91E63), Color(0xFFC2185B)],
+                    colors: [AppColors.raspberry, AppColors.raspberryDark],
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                   ),
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(AppRadius.lg - 2),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFFE91E63).withValues(alpha: 0.28),
+                      color: AppColors.raspberry.withValues(alpha: 0.28),
                       blurRadius: 18,
                       offset: const Offset(0, 8),
                     ),
@@ -204,7 +208,7 @@ class HomeScoreCard extends StatelessWidget {
                 child: const Text(
                   'Commencer le dépistage clinique',
                   style: TextStyle(
-                    color: Colors.white,
+                    color: AppColors.textOnDark,
                     fontSize: 15,
                     fontWeight: FontWeight.w900,
                   ),
@@ -251,7 +255,7 @@ class HomeDecisionIndicator extends StatelessWidget {
                 value,
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
-                  color: Colors.white,
+                  color: AppColors.textOnDark,
                   fontSize: 12,
                   fontWeight: FontWeight.w900,
                 ),
@@ -259,7 +263,7 @@ class HomeDecisionIndicator extends StatelessWidget {
             ),
           ],
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: AppSpacing.xs),
         Text(
           label,
           textAlign: TextAlign.center,

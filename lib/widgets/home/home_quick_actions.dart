@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 
+import '../../theme/app_colors.dart';
+import '../../theme/app_radius.dart';
+import '../../theme/app_shadows.dart';
+import '../../theme/app_spacing.dart';
 import 'home_action_card.dart';
 
 class HomeEvaluationShortcutRow extends StatelessWidget {
@@ -19,16 +23,10 @@ class HomeEvaluationShortcutRow extends StatelessWidget {
     return Container(
       height: 86,
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFD8E6F5)),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF004A8F).withValues(alpha: 0.08),
-            blurRadius: 18,
-            offset: const Offset(0, 8),
-          ),
-        ],
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        border: Border.all(color: AppColors.borderStrong),
+        boxShadow: AppShadows.soft,
       ),
       clipBehavior: Clip.antiAlias,
       child: Row(
@@ -85,10 +83,10 @@ class HomeDesktopQuickActions extends StatelessWidget {
           icon: Icons.person_outline_rounded,
           title: 'Patient',
           subtitle: 'Dossier patient et consentement',
-          color: const Color(0xFF2563EB),
+          color: AppColors.primary,
           onTap: onPatientTap,
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: AppSpacing.md - 4),
         HomeDesktopActionButton(
           icon: Icons.description_outlined,
           title: 'BDK',
@@ -96,12 +94,12 @@ class HomeDesktopQuickActions extends StatelessWidget {
           color: const Color(0xFF0F766E),
           onTap: onBdkTap,
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: AppSpacing.md - 4),
         HomeDesktopActionButton(
           icon: Icons.medication_liquid_outlined,
           title: 'Prescription',
           subtitle: 'Ordonnance et recommandations',
-          color: const Color(0xFFE0005B),
+          color: AppColors.raspberry,
           onTap: onPrescriptionTap,
         ),
       ],

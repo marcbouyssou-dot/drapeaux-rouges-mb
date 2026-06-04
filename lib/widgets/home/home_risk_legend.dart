@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
 
+import '../../theme/app_colors.dart';
+import '../../theme/app_radius.dart';
+import '../../theme/app_shadows.dart';
+import '../../theme/app_spacing.dart';
+
 class HomeRiskLegendCard extends StatelessWidget {
   const HomeRiskLegendCard({super.key});
 
@@ -9,16 +14,10 @@ class HomeRiskLegendCard extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.035),
-            blurRadius: 14,
-            offset: const Offset(0, 6),
-          ),
-        ],
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        border: Border.all(color: AppColors.border),
+        boxShadow: AppShadows.card,
       ),
       child: const Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -32,15 +31,15 @@ class HomeRiskLegendCard extends StatelessWidget {
               letterSpacing: 1.2,
             ),
           ),
-          SizedBox(height: 9),
+          SizedBox(height: AppSpacing.sm + 1),
           Wrap(
             spacing: 7,
             runSpacing: 7,
             children: [
-              HomeRiskChip('Faible', Color(0xFF16A34A), false),
-              HomeRiskChip('Modéré', Color(0xFFF97316), false),
-              HomeRiskChip('Élevé', Color(0xFFEF4444), false),
-              HomeRiskChip('Critique', Color(0xFF7F0000), true),
+              HomeRiskChip('Faible', AppColors.successDark, false),
+              HomeRiskChip('Modéré', AppColors.warningDark, false),
+              HomeRiskChip('Élevé', AppColors.danger, false),
+              HomeRiskChip('Critique', AppColors.critical, true),
             ],
           ),
         ],
@@ -61,8 +60,8 @@ class HomeRiskChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: active ? color : Colors.white,
-        borderRadius: BorderRadius.circular(99),
+        color: active ? color : AppColors.surface,
+        borderRadius: BorderRadius.circular(AppRadius.pill),
         border: Border.all(color: color.withValues(alpha: active ? 1 : 0.22)),
       ),
       child: Row(
@@ -118,15 +117,15 @@ class HomeDesktopInfoNote extends StatelessWidget {
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFFEFF6FF), Colors.white],
+          colors: [AppColors.surfaceAlt, AppColors.surface],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(22),
+        borderRadius: BorderRadius.circular(AppRadius.xl - 2),
         border: Border.all(color: const Color(0xFFBFDBFE)),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF2563EB).withValues(alpha: 0.08),
+            color: AppColors.primary.withValues(alpha: 0.08),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -137,7 +136,7 @@ class HomeDesktopInfoNote extends StatelessWidget {
         children: [
           Icon(
             Icons.verified_user_outlined,
-            color: Color(0xFF2563EB),
+            color: AppColors.primary,
             size: 28,
           ),
           SizedBox(width: 14),
