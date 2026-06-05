@@ -13,6 +13,8 @@ class AppColors {
   static const Color successDark = Color(0xFF16A34A);
   static const Color warning = Color(0xFFF59E0B);
   static const Color warningDark = Color(0xFFF97316);
+  static const Color info = Color(0xFF38BDF8);
+  static const Color teal = Color(0xFF0F766E);
   static const Color danger = Color(0xFFEF4444);
   static const Color dangerDark = Color(0xFFDC2626);
   static const Color critical = Color(0xFF7F0000);
@@ -24,6 +26,8 @@ class AppColors {
   static const Color appBackground = Color(0xFFF4F8FD);
   static const Color surface = Color(0xFFFFFFFF);
   static const Color surfaceAlt = Color(0xFFEFF6FF);
+  static const Color surfaceBlue = Color(0xFFE6F2FF);
+  static const Color surfaceSuccess = Color(0xFFEFFAF4);
 
   // Text
   static const Color textPrimary = Color(0xFF0F172A);

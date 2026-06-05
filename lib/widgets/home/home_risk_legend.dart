@@ -12,10 +12,10 @@ class HomeRiskLegendCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
       decoration: BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppRadius.lg),
+        borderRadius: BorderRadius.circular(AppRadius.xl - 2),
         border: Border.all(color: AppColors.border),
         boxShadow: AppShadows.card,
       ),
@@ -25,7 +25,7 @@ class HomeRiskLegendCard extends StatelessWidget {
           Text(
             'NIVEAUX DE RISQUE',
             style: TextStyle(
-              color: Color(0xFFB7C5D8),
+              color: AppColors.textMuted,
               fontSize: 9,
               fontWeight: FontWeight.w900,
               letterSpacing: 1.2,
@@ -58,7 +58,7 @@ class HomeRiskChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 7),
       decoration: BoxDecoration(
         color: active ? color : AppColors.surface,
         borderRadius: BorderRadius.circular(AppRadius.pill),
@@ -68,8 +68,8 @@ class HomeRiskChip extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            width: 4,
-            height: 4,
+            width: 5,
+            height: 5,
             decoration: BoxDecoration(
               color: active ? const Color(0xFFFF6B6B) : color,
               shape: BoxShape.circle,
@@ -99,7 +99,7 @@ class HomeFooterNote extends StatelessWidget {
       'Outil d’aide clinique · Ne remplace pas le diagnostic médical',
       textAlign: TextAlign.center,
       style: TextStyle(
-        color: Color(0xFF334155),
+        color: AppColors.textPrimary,
         fontSize: 10,
         fontWeight: FontWeight.w700,
       ),
@@ -114,22 +114,16 @@ class HomeDesktopInfoNote extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(AppSpacing.lg - 2),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           colors: [AppColors.surfaceAlt, AppColors.surface],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(AppRadius.xl - 2),
+        borderRadius: BorderRadius.circular(AppRadius.xl),
         border: Border.all(color: const Color(0xFFBFDBFE)),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.primary.withValues(alpha: 0.08),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
-          ),
-        ],
+        boxShadow: AppShadows.card,
       ),
       child: const Row(
         crossAxisAlignment: CrossAxisAlignment.start,

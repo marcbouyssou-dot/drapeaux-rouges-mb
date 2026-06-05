@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../theme/app_colors.dart';
 import '../../theme/app_radius.dart';
+import '../../theme/app_shadows.dart';
 import '../../theme/app_spacing.dart';
 
 class HomeDesktopActionButton extends StatelessWidget {
@@ -30,8 +31,8 @@ class HomeDesktopActionButton extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppRadius.xl + 2),
         child: Container(
           width: double.infinity,
-          constraints: const BoxConstraints(minHeight: 112),
-          padding: const EdgeInsets.all(20),
+          constraints: const BoxConstraints(minHeight: 86),
+          padding: const EdgeInsets.all(AppSpacing.md),
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [color.withValues(alpha: 0.11), AppColors.surface],
@@ -40,25 +41,19 @@ class HomeDesktopActionButton extends StatelessWidget {
             ),
             borderRadius: BorderRadius.circular(AppRadius.xl + 2),
             border: Border.all(color: color.withValues(alpha: 0.20)),
-            boxShadow: [
-              BoxShadow(
-                color: color.withValues(alpha: 0.10),
-                blurRadius: 24,
-                offset: const Offset(0, 12),
-              ),
-            ],
+            boxShadow: AppShadows.card,
           ),
           child: Row(
             children: [
               Container(
-                width: 62,
-                height: 62,
+                width: 50,
+                height: 50,
                 decoration: BoxDecoration(
                   color: color.withValues(alpha: 0.13),
                   borderRadius: BorderRadius.circular(AppRadius.xl - 2),
                   border: Border.all(color: color.withValues(alpha: 0.24)),
                 ),
-                child: Icon(icon, color: color, size: 32),
+                child: Icon(icon, color: color, size: 26),
               ),
               const SizedBox(width: AppSpacing.md),
               Expanded(
@@ -69,7 +64,7 @@ class HomeDesktopActionButton extends StatelessWidget {
                       title,
                       style: TextStyle(
                         color: color,
-                        fontSize: 20,
+                        fontSize: 17,
                         fontWeight: FontWeight.w900,
                         letterSpacing: -0.4,
                       ),
@@ -79,7 +74,7 @@ class HomeDesktopActionButton extends StatelessWidget {
                       subtitle,
                       style: const TextStyle(
                         color: AppColors.textSecondary,
-                        fontSize: 13.5,
+                        fontSize: 12.5,
                         height: 1.3,
                         fontWeight: FontWeight.w700,
                       ),
@@ -88,8 +83,8 @@ class HomeDesktopActionButton extends StatelessWidget {
                 ),
               ),
               Container(
-                width: 34,
-                height: 34,
+                width: 32,
+                height: 32,
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.72),
                   borderRadius: BorderRadius.circular(AppRadius.md + 1),
@@ -98,7 +93,7 @@ class HomeDesktopActionButton extends StatelessWidget {
                 child: Icon(
                   Icons.chevron_right_rounded,
                   color: color.withValues(alpha: 0.70),
-                  size: 26,
+                  size: 24,
                 ),
               ),
             ],
@@ -131,11 +126,11 @@ class HomeToolbarItem extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
-            width: 28,
-            height: 28,
+            width: 30,
+            height: 30,
             decoration: BoxDecoration(
-              color: const Color(0xFFE6F2FF),
-              borderRadius: BorderRadius.circular(AppRadius.sm + 1),
+              color: AppColors.surfaceBlue,
+              borderRadius: BorderRadius.circular(AppRadius.md),
               border: Border.all(color: const Color(0xFFC9DDF4)),
             ),
             child: Icon(icon, color: AppColors.medicalBlue, size: 16),

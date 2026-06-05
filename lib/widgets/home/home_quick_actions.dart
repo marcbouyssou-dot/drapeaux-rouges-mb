@@ -21,10 +21,10 @@ class HomeEvaluationShortcutRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 86,
+      height: 92,
       decoration: BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppRadius.lg),
+        borderRadius: BorderRadius.circular(AppRadius.xl - 2),
         border: Border.all(color: AppColors.borderStrong),
         boxShadow: AppShadows.soft,
       ),
@@ -91,7 +91,7 @@ class HomeDesktopQuickActions extends StatelessWidget {
           icon: Icons.description_outlined,
           title: 'BDK',
           subtitle: 'Bilan diagnostic kinésithérapique',
-          color: const Color(0xFF0F766E),
+          color: AppColors.teal,
           onTap: onBdkTap,
         ),
         const SizedBox(height: AppSpacing.md - 4),

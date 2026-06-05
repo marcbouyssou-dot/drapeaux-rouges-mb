@@ -16,10 +16,14 @@ import '../services/rgpd_local_service.dart';
 import '../services/risk_score_service.dart';
 
 import '../widgets/clinical_category_picker.dart';
+import '../widgets/home/home_clinical_assistant_card.dart';
 import '../widgets/home/home_hero_section.dart';
 import '../widgets/home/home_quick_actions.dart';
 import '../widgets/home/home_risk_legend.dart';
 import '../widgets/home/home_score_card.dart';
+import '../theme/app_colors.dart';
+import '../theme/app_radius.dart';
+import '../theme/app_spacing.dart';
 
 import 'evaluation/red_flags_category_screen.dart';
 import 'evaluation/evaluation_result_screen.dart';
@@ -186,8 +190,10 @@ class _HomeScreenState extends State<HomeScreen> {
         return Container(
           height: screenHeight * 0.96,
           decoration: const BoxDecoration(
-            color: Color(0xFFF8FAFC),
-            borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
+            color: AppColors.background,
+            borderRadius: BorderRadius.vertical(
+              top: Radius.circular(AppRadius.xxl),
+            ),
           ),
           child: ClinicalCategoryPicker(
             categories: categories,
@@ -347,8 +353,10 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Container(
             padding: const EdgeInsets.all(18),
             decoration: const BoxDecoration(
-              color: Color(0xFFF8FAFC),
-              borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
+              color: AppColors.background,
+              borderRadius: BorderRadius.vertical(
+                top: Radius.circular(AppRadius.xxl),
+              ),
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -358,14 +366,14 @@ class _HomeScreenState extends State<HomeScreen> {
                   width: 54,
                   decoration: BoxDecoration(
                     color: const Color(0xFFCBD5E1),
-                    borderRadius: BorderRadius.circular(99),
+                    borderRadius: BorderRadius.circular(AppRadius.pill),
                   ),
                 ),
                 const SizedBox(height: 18),
                 const Text(
                   'Exporter le PDF',
                   style: TextStyle(
-                    color: Color(0xFF0F172A),
+                    color: AppColors.textPrimary,
                     fontSize: 22,
                     fontWeight: FontWeight.w900,
                   ),
@@ -405,16 +413,16 @@ class _HomeScreenState extends State<HomeScreen> {
     required VoidCallback onTap,
   }) {
     return Material(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(22),
+      color: AppColors.surface,
+      borderRadius: BorderRadius.circular(AppRadius.xl - 2),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(22),
+        borderRadius: BorderRadius.circular(AppRadius.xl - 2),
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(AppSpacing.md),
           child: Row(
             children: [
-              Icon(icon, color: const Color(0xFF2563EB), size: 28),
+              Icon(icon, color: AppColors.primary, size: 28),
               const SizedBox(width: 14),
               Expanded(
                 child: Column(
@@ -423,7 +431,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     Text(
                       title,
                       style: const TextStyle(
-                        color: Color(0xFF0F172A),
+                        color: AppColors.textPrimary,
                         fontSize: 16,
                         fontWeight: FontWeight.w900,
                       ),
@@ -432,7 +440,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     Text(
                       subtitle,
                       style: const TextStyle(
-                        color: Color(0xFF64748B),
+                        color: AppColors.textSecondary,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -499,7 +507,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return ClinicalResponsivePage(
-      backgroundColor: const Color(0xFFF4F8FD),
+      backgroundColor: AppColors.appBackground,
       mobileMaxWidth: 430,
       desktopMaxWidth: 1040,
       child: LayoutBuilder(
@@ -509,12 +517,15 @@ class _HomeScreenState extends State<HomeScreen> {
           if (isWide) {
             return Column(
               children: [
-                const HomeHeroSection(),
                 Expanded(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.fromLTRB(22, 18, 22, 150),
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(
+                      AppSpacing.lg,
+                      AppSpacing.xl,
+                      AppSpacing.lg,
+                      AppSpacing.md,
+                    ),
                     child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Expanded(
                           flex: 6,
@@ -524,18 +535,20 @@ class _HomeScreenState extends State<HomeScreen> {
                                 hasPatient: currentPatient != null,
                                 patientDisplayName: patientDisplayName,
                               ),
-                              const SizedBox(height: 18),
-                              HomeScoreCard(
-                                score: score,
-                                checkedCount: checkedCount,
-                                hasPatient: currentPatient != null,
-                                patientDisplayName: patientDisplayName,
-                                onTap: openCategoryPicker,
+                              const SizedBox(height: AppSpacing.lg),
+                              Expanded(
+                                child: HomeScoreCard(
+                                  score: score,
+                                  checkedCount: checkedCount,
+                                  hasPatient: currentPatient != null,
+                                  patientDisplayName: patientDisplayName,
+                                  onTap: openCategoryPicker,
+                                ),
                               ),
                             ],
                           ),
                         ),
-                        const SizedBox(width: 22),
+                        const SizedBox(width: AppSpacing.lg),
                         Expanded(
                           flex: 5,
                           child: Column(
@@ -545,10 +558,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                 onBdkTap: openBdkTypeScreen,
                                 onPrescriptionTap: openPrescriptionTypeScreen,
                               ),
-                              const SizedBox(height: 18),
-                              const HomeRiskLegendCard(),
-                              const SizedBox(height: 18),
-                              const HomeDesktopInfoNote(),
+                              const SizedBox(height: AppSpacing.lg),
+                              Expanded(child: HomeClinicalAssistantCard()),
                             ],
                           ),
                         ),
@@ -556,23 +567,28 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                 ),
+                const HomeLegalBottomBand(),
               ],
             );
           }
 
           return Column(
             children: [
-              const HomeHeroSection(),
               Expanded(
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.fromLTRB(14, 0, 14, 150),
+                  padding: const EdgeInsets.fromLTRB(
+                    AppSpacing.md,
+                    AppSpacing.lg,
+                    AppSpacing.md,
+                    150,
+                  ),
                   child: Column(
                     children: [
                       HomePatientClinicalCard(
                         hasPatient: currentPatient != null,
                         patientDisplayName: patientDisplayName,
                       ),
-                      const SizedBox(height: 14),
+                      const SizedBox(height: AppSpacing.md),
                       HomeScoreCard(
                         score: score,
                         checkedCount: checkedCount,
@@ -580,13 +596,13 @@ class _HomeScreenState extends State<HomeScreen> {
                         patientDisplayName: patientDisplayName,
                         onTap: openCategoryPicker,
                       ),
-                      const SizedBox(height: 14),
+                      const SizedBox(height: AppSpacing.md),
                       HomeEvaluationShortcutRow(
                         onPatientTap: openPatientScreen,
                         onBdkTap: openBdkTypeScreen,
                         onPrescriptionTap: openPrescriptionTypeScreen,
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: AppSpacing.md),
                       const HomeRiskLegendCard(),
                       const SizedBox(height: 70),
                       const HomeFooterNote(),

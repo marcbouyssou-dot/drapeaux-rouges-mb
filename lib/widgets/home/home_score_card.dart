@@ -32,12 +32,16 @@ class HomeScoreCard extends StatelessWidget {
         child: Container(
           width: double.infinity,
           constraints: const BoxConstraints(minHeight: 370),
-          padding: const EdgeInsets.fromLTRB(18, 22, 18, 20),
+          padding: const EdgeInsets.fromLTRB(20, 22, 20, 20),
           decoration: BoxDecoration(
             gradient: const RadialGradient(
               center: Alignment.topRight,
               radius: 1.25,
-              colors: [Color(0xFF16254A), Color(0xFF081A34), Color(0xFF030B18)],
+              colors: [
+                AppColors.darkSurfaceAlt,
+                AppColors.darkSurface,
+                AppColors.darkBackground,
+              ],
             ),
             borderRadius: BorderRadius.circular(AppRadius.xl - 2),
             boxShadow: [
@@ -66,25 +70,54 @@ class HomeScoreCard extends StatelessWidget {
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Expanded(
-                    child: Text(
-                      'DRAPEAUX ROUGES DÉTECTÉS',
-                      style: TextStyle(
-                        color: Color(0xFF7D8AA0),
-                        fontSize: 10,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: 2,
-                      ),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'DRAPEAUX ROUGES DÉTECTÉS',
+                          style: TextStyle(
+                            color: Color(0xFF8EA0B8),
+                            fontSize: 10,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 2,
+                          ),
+                        ),
+                        const SizedBox(height: AppSpacing.sm),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.textOnDark.withValues(alpha: 0.08),
+                            borderRadius: BorderRadius.circular(AppRadius.pill),
+                            border: Border.all(
+                              color: AppColors.textOnDark.withValues(
+                                alpha: 0.10,
+                              ),
+                            ),
+                          ),
+                          child: const Text(
+                            'Évaluation clinique',
+                            style: TextStyle(
+                              color: Color(0xFFDDE7F3),
+                              fontSize: 11,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                   Container(
-                    width: 58,
-                    height: 58,
+                    width: 64,
+                    height: 64,
                     decoration: BoxDecoration(
-                      color: AppColors.raspberry.withValues(alpha: 0.13),
-                      borderRadius: BorderRadius.circular(AppRadius.lg - 2),
+                      color: AppColors.raspberry.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(AppRadius.lg),
                       border: Border.all(
-                        color: AppColors.raspberry.withValues(alpha: 0.38),
+                        color: AppColors.raspberry.withValues(alpha: 0.42),
                       ),
                     ),
                     child: Column(
@@ -114,7 +147,7 @@ class HomeScoreCard extends StatelessWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: AppSpacing.sm - 2),
+              const SizedBox(height: AppSpacing.md),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
@@ -122,12 +155,12 @@ class HomeScoreCard extends StatelessWidget {
                     checkedCount == 0 ? '0' : '$checkedCount',
                     style: const TextStyle(
                       color: AppColors.textOnDark,
-                      fontSize: 28,
+                      fontSize: 36,
                       fontWeight: FontWeight.w900,
                       height: 1,
                     ),
                   ),
-                  const SizedBox(width: AppSpacing.sm),
+                  const SizedBox(width: 10),
                   Expanded(
                     child: Text(
                       checkedCount <= 1
@@ -135,14 +168,14 @@ class HomeScoreCard extends StatelessWidget {
                           : 'signaux critiques',
                       style: const TextStyle(
                         color: Color(0xFFDDE7F3),
-                        fontSize: 14,
+                        fontSize: 15,
                         fontWeight: FontWeight.w800,
                       ),
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 9),
+              const SizedBox(height: AppSpacing.md),
               Text(
                 hasPatient
                     ? '$patientDisplayName · Évaluation en cours'
@@ -153,9 +186,9 @@ class HomeScoreCard extends StatelessWidget {
                   fontWeight: FontWeight.w700,
                 ),
               ),
-              const SizedBox(height: 14),
+              const SizedBox(height: AppSpacing.md),
               Container(height: 1, color: Colors.white.withValues(alpha: 0.10)),
-              const SizedBox(height: 20),
+              const SizedBox(height: AppSpacing.lg),
               Row(
                 children: [
                   Expanded(
@@ -168,7 +201,7 @@ class HomeScoreCard extends StatelessWidget {
                   const HomeMetricDivider(),
                   const Expanded(
                     child: HomeDecisionIndicator(
-                      dotColor: Color(0xFFF59E0B),
+                      dotColor: AppColors.warning,
                       value: 'Réf. requise',
                       label: 'STATUT CLINIQUE',
                     ),
@@ -176,19 +209,19 @@ class HomeScoreCard extends StatelessWidget {
                   const HomeMetricDivider(),
                   const Expanded(
                     child: HomeDecisionIndicator(
-                      dotColor: Color(0xFF38BDF8),
+                      dotColor: AppColors.info,
                       value: 'Médecin',
                       label: 'ORIENTATION',
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 14),
+              const SizedBox(height: AppSpacing.lg),
               Container(height: 1, color: Colors.white.withValues(alpha: 0.10)),
               const SizedBox(height: AppSpacing.md),
               Container(
                 width: double.infinity,
-                height: 58,
+                height: 60,
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
@@ -196,7 +229,7 @@ class HomeScoreCard extends StatelessWidget {
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                   ),
-                  borderRadius: BorderRadius.circular(AppRadius.lg - 2),
+                  borderRadius: BorderRadius.circular(AppRadius.lg),
                   boxShadow: [
                     BoxShadow(
                       color: AppColors.raspberry.withValues(alpha: 0.28),
@@ -205,13 +238,27 @@ class HomeScoreCard extends StatelessWidget {
                     ),
                   ],
                 ),
-                child: const Text(
-                  'Commencer le dépistage clinique',
-                  style: TextStyle(
-                    color: AppColors.textOnDark,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w900,
-                  ),
+                child: const Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.play_arrow_rounded,
+                      color: AppColors.textOnDark,
+                      size: 22,
+                    ),
+                    SizedBox(width: AppSpacing.sm),
+                    Flexible(
+                      child: Text(
+                        'Commencer le dépistage clinique',
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: AppColors.textOnDark,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
