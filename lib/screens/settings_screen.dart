@@ -69,30 +69,83 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final adresseController = TextEditingController(text: practitioner.adresse);
     final adeliController = TextEditingController(text: practitioner.adeli);
     final rppsController = TextEditingController(text: practitioner.rpps);
+    final professionController = TextEditingController(
+      text: practitioner.profession,
+    );
+    final emailController = TextEditingController(text: practitioner.email);
+    final telephoneController = TextEditingController(
+      text: practitioner.telephone,
+    );
+    final structureController = TextEditingController(
+      text: practitioner.nomStructure,
+    );
+    var exerciceCoordonne = practitioner.exerciceCoordonne;
 
     final saved = await showDialog<bool>(
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
           title: const Text('Informations MK'),
-          content: SingleChildScrollView(
-            child: Column(
-              children: [
-                buildDialogField(controller: nomController, label: 'Nom'),
-                const SizedBox(height: 10),
-                buildDialogField(controller: prenomController, label: 'Prénom'),
-                const SizedBox(height: 10),
-                buildDialogField(
-                  controller: adresseController,
-                  label: 'Adresse professionnelle',
-                  maxLines: 3,
+          content: StatefulBuilder(
+            builder: (context, setDialogState) {
+              return SingleChildScrollView(
+                child: Column(
+                  children: [
+                    buildDialogField(controller: nomController, label: 'Nom'),
+                    const SizedBox(height: 10),
+                    buildDialogField(
+                      controller: prenomController,
+                      label: 'Prénom',
+                    ),
+                    const SizedBox(height: 10),
+                    buildDialogField(
+                      controller: professionController,
+                      label: 'Profession',
+                    ),
+                    const SizedBox(height: 10),
+                    buildDialogField(
+                      controller: adresseController,
+                      label: 'Adresse professionnelle',
+                      maxLines: 3,
+                    ),
+                    const SizedBox(height: 10),
+                    buildDialogField(
+                      controller: emailController,
+                      label: 'Email professionnel',
+                    ),
+                    const SizedBox(height: 10),
+                    buildDialogField(
+                      controller: telephoneController,
+                      label: 'Téléphone professionnel',
+                    ),
+                    const SizedBox(height: 10),
+                    buildDialogField(
+                      controller: adeliController,
+                      label: 'ADELI',
+                    ),
+                    const SizedBox(height: 10),
+                    buildDialogField(controller: rppsController, label: 'RPPS'),
+                    const SizedBox(height: 10),
+                    SwitchListTile(
+                      value: exerciceCoordonne,
+                      contentPadding: EdgeInsets.zero,
+                      title: const Text('Structure d’exercice coordonné'),
+                      subtitle: const Text('MSP, CPTS, centre de santé...'),
+                      onChanged: (value) {
+                        setDialogState(() {
+                          exerciceCoordonne = value;
+                        });
+                      },
+                    ),
+                    const SizedBox(height: 10),
+                    buildDialogField(
+                      controller: structureController,
+                      label: 'Nom de structure',
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 10),
-                buildDialogField(controller: adeliController, label: 'ADELI'),
-                const SizedBox(height: 10),
-                buildDialogField(controller: rppsController, label: 'RPPS'),
-              ],
-            ),
+              );
+            },
           ),
           actions: [
             TextButton(
@@ -107,6 +160,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   adresse: adresseController.text.trim(),
                   adeli: adeliController.text.trim(),
                   rpps: rppsController.text.trim(),
+                  profession: professionController.text.trim(),
+                  email: emailController.text.trim(),
+                  telephone: telephoneController.text.trim(),
+                  exerciceCoordonne: exerciceCoordonne,
+                  nomStructure: structureController.text.trim(),
                 );
 
                 await PractitionerProfileService.saveProfile(profile);
@@ -127,6 +185,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
     adresseController.dispose();
     adeliController.dispose();
     rppsController.dispose();
+    professionController.dispose();
+    emailController.dispose();
+    telephoneController.dispose();
+    structureController.dispose();
 
     if (saved == true) {
       await loadPractitioner();

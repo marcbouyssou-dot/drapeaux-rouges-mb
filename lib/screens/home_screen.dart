@@ -12,6 +12,7 @@ import '../services/csv_service.dart';
 import '../services/decision_engine_service.dart';
 import '../services/history_service.dart';
 import '../services/pdf_service.dart';
+import '../services/practitioner_profile_service.dart';
 import '../services/rgpd_local_service.dart';
 import '../services/risk_score_service.dart';
 
@@ -473,6 +474,8 @@ class _HomeScreenState extends State<HomeScreen> {
     if (!canContinue) return;
     if (!mounted) return;
 
+    final practitioner = await PractitionerProfileService.getProfile();
+
     await PdfService.exportPdf(
       categories: categories,
       score: score,
@@ -484,6 +487,7 @@ class _HomeScreenState extends State<HomeScreen> {
       decisionMessage: decisionMessage,
       aiSummary: aiSummary,
       printable: printable,
+      practitioner: practitioner,
     );
   }
 

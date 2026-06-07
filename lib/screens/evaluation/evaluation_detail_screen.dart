@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../services/history_service.dart';
 import '../../services/pdf_service.dart';
+import '../../services/practitioner_profile_service.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_radius.dart';
 import '../../theme/app_shadows.dart';
@@ -116,6 +117,8 @@ class EvaluationDetailScreen extends StatelessWidget {
   }
 
   Future<void> exportPdf({required bool printable}) async {
+    final practitioner = await PractitionerProfileService.getProfile();
+
     await PdfService.exportPdf(
       categories: buildPdfCategories(),
       score: score,
@@ -127,6 +130,7 @@ class EvaluationDetailScreen extends StatelessWidget {
       decisionMessage: decisionMessage,
       aiSummary: aiSummary,
       printable: printable,
+      practitioner: practitioner,
     );
   }
 

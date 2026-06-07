@@ -3,6 +3,7 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 
 import '../models/patient_local.dart';
+import '../models/practitioner_profile.dart';
 import 'rgpd_local_service.dart';
 
 class BdkPdfService {
@@ -21,6 +22,7 @@ class BdkPdfService {
     required String planTraitement,
     required String criteresReevaluation,
     required String syntheseClinique,
+    PractitionerProfile? practitioner,
   }) async {
     final pdf = pw.Document();
     final regularFont = await PdfGoogleFonts.robotoRegular();
@@ -35,6 +37,10 @@ class BdkPdfService {
         ),
         build: (context) {
           return [
+            if (practitioner != null) ...[
+              _practitionerBlock(practitioner),
+              pw.SizedBox(height: 18),
+            ],
             pw.Text(
               title,
               style: pw.TextStyle(fontSize: 26, fontWeight: pw.FontWeight.bold),
@@ -90,5 +96,69 @@ class BdkPdfService {
         ],
       ),
     );
+  }
+
+  static pw.Widget _practitionerBlock(PractitionerProfile practitioner) {
+    return pw.Container(
+      width: double.infinity,
+      padding: const pw.EdgeInsets.all(12),
+      decoration: pw.BoxDecoration(
+        color: PdfColors.grey100,
+        border: pw.Border.all(color: PdfColors.grey300, width: 0.6),
+      ),
+      child: pw.Column(
+        crossAxisAlignment: pw.CrossAxisAlignment.start,
+        children: [
+          pw.Text(
+            practitioner.professionLabel,
+            style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold),
+          ),
+          if (practitioner.fullName.isNotEmpty)
+            pw.Text(
+              practitioner.fullName,
+              style: const pw.TextStyle(fontSize: 10),
+            ),
+          if (practitioner.adresse.trim().isNotEmpty)
+            pw.Text(
+              practitioner.adresse.trim(),
+              style: const pw.TextStyle(fontSize: 10),
+            ),
+          if (practitioner.email.trim().isNotEmpty)
+            pw.Text(
+              'Email : ${practitioner.email.trim()}',
+              style: const pw.TextStyle(fontSize: 10),
+            ),
+          if (practitioner.telephone.trim().isNotEmpty)
+            pw.Text(
+              'Téléphone : ${practitioner.telephone.trim()}',
+              style: const pw.TextStyle(fontSize: 10),
+            ),
+          if (practitioner.adeli.trim().isNotEmpty)
+            pw.Text(
+              'ADELI : ${practitioner.adeli.trim()}',
+              style: const pw.TextStyle(fontSize: 10),
+            ),
+          if (practitioner.rpps.trim().isNotEmpty)
+            pw.Text(
+              'RPPS : ${practitioner.rpps.trim()}',
+              style: const pw.TextStyle(fontSize: 10),
+            ),
+          if (practitioner.hasStructure)
+            pw.Text(
+              _structureLine(practitioner),
+              style: const pw.TextStyle(fontSize: 10),
+            ),
+        ],
+      ),
+    );
+  }
+
+  static String _structureLine(PractitionerProfile practitioner) {
+    final name = practitioner.nomStructure.trim();
+    if (name.isEmpty) return 'Structure d’exercice coordonné';
+
+    return practitioner.exerciceCoordonne
+        ? 'Structure coordonnée : $name'
+        : 'Structure : $name';
   }
 }

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../../models/patient_local.dart';
+import '../../models/practitioner_profile.dart';
 import '../../services/bdk_pdf_service.dart';
 import '../../services/bdk_session_service.dart';
+import '../../services/practitioner_profile_service.dart';
 import '../../services/rgpd_local_service.dart';
 import '../../theme/app_design_system.dart';
 import '../../widgets/design_system/clinical_auto_summary_card.dart';
@@ -36,6 +38,7 @@ class _BDKDetailScreenState extends State<BDKDetailScreen> {
   late final TextEditingController planTraitementController;
   late final TextEditingController criteresReevaluationController;
   PatientLocal? currentPatient;
+  PractitionerProfile practitioner = PractitionerProfile.empty();
 
   @override
   void initState() {
@@ -80,11 +83,13 @@ class _BDKDetailScreenState extends State<BDKDetailScreen> {
 
   Future<void> _loadCurrentPatient() async {
     final patient = await RgpdLocalService.getCurrentPatient();
+    final loadedPractitioner = await PractitionerProfileService.getProfile();
 
     if (!mounted) return;
 
     setState(() {
       currentPatient = patient;
+      practitioner = loadedPractitioner;
     });
   }
 
@@ -515,6 +520,7 @@ Une prise en charge kinésithérapique adaptée semble indiquée avec surveillan
       planTraitement: planTraitementController.text,
       criteresReevaluation: criteresReevaluationController.text,
       syntheseClinique: BDKSessionService.syntheseClinique,
+      practitioner: practitioner,
     );
   }
 

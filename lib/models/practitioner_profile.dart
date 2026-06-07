@@ -4,6 +4,11 @@ class PractitionerProfile {
   final String adresse;
   final String adeli;
   final String rpps;
+  final String profession;
+  final String email;
+  final String telephone;
+  final bool exerciceCoordonne;
+  final String nomStructure;
 
   const PractitionerProfile({
     required this.nom,
@@ -11,6 +16,11 @@ class PractitionerProfile {
     required this.adresse,
     required this.adeli,
     required this.rpps,
+    this.profession = '',
+    this.email = '',
+    this.telephone = '',
+    this.exerciceCoordonne = false,
+    this.nomStructure = '',
   });
 
   bool get isComplete {
@@ -23,6 +33,15 @@ class PractitionerProfile {
     return '${prenom.trim()} ${nom.trim().toUpperCase()}'.trim();
   }
 
+  String get professionLabel {
+    final value = profession.trim();
+    return value.isEmpty ? 'Masseur-kinésithérapeute' : value;
+  }
+
+  bool get hasStructure {
+    return exerciceCoordonne || nomStructure.trim().isNotEmpty;
+  }
+
   Map<String, dynamic> toJson() {
     return {
       'nom': nom,
@@ -30,6 +49,11 @@ class PractitionerProfile {
       'adresse': adresse,
       'adeli': adeli,
       'rpps': rpps,
+      'profession': profession,
+      'email': email,
+      'telephone': telephone,
+      'exerciceCoordonne': exerciceCoordonne,
+      'nomStructure': nomStructure,
     };
   }
 
@@ -40,6 +64,11 @@ class PractitionerProfile {
       adresse: json['adresse']?.toString() ?? '',
       adeli: json['adeli']?.toString() ?? '',
       rpps: json['rpps']?.toString() ?? '',
+      profession: json['profession']?.toString() ?? '',
+      email: json['email']?.toString() ?? '',
+      telephone: json['telephone']?.toString() ?? '',
+      exerciceCoordonne: json['exerciceCoordonne'] == true,
+      nomStructure: json['nomStructure']?.toString() ?? '',
     );
   }
 
@@ -50,6 +79,11 @@ class PractitionerProfile {
       adresse: '',
       adeli: '',
       rpps: '',
+      profession: '',
+      email: '',
+      telephone: '',
+      exerciceCoordonne: false,
+      nomStructure: '',
     );
   }
 }

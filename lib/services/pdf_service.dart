@@ -2,6 +2,8 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 
+import '../models/practitioner_profile.dart';
+
 class PdfService {
   static Future<void> exportPdf({
     required Map<String, List<Map<String, dynamic>>> categories,
@@ -14,6 +16,7 @@ class PdfService {
     required String decisionMessage,
     required String aiSummary,
     bool printable = false,
+    PractitionerProfile? practitioner,
   }) async {
     final pdf = pw.Document();
     final now = DateTime.now();
@@ -81,6 +84,7 @@ class PdfService {
               patientCode: patientCode,
               primaryColor: primaryColor,
               printable: printable,
+              practitioner: practitioner,
             ),
             pw.SizedBox(height: 22),
             pw.Row(
@@ -164,6 +168,7 @@ class PdfService {
     required String patientCode,
     required PdfColor primaryColor,
     required bool printable,
+    PractitionerProfile? practitioner,
   }) {
     return pw.Container(
       padding: const pw.EdgeInsets.all(18),
@@ -195,6 +200,10 @@ class PdfService {
                 pw.Text('Date : ${formatDate(now)}'),
                 pw.Text('Heure : ${formatTime(now)}'),
                 pw.Text('Identifiant pseudonymisé : $patientCode'),
+                if (practitioner != null) ...[
+                  pw.SizedBox(height: 8),
+                  ...practitionerLines(practitioner),
+                ],
               ],
             ),
           ),
@@ -221,6 +230,56 @@ class PdfService {
         ],
       ),
     );
+  }
+
+  static List<pw.Widget> practitionerLines(PractitionerProfile practitioner) {
+    return [
+      pw.Text(
+        'Praticien : ${practitioner.professionLabel}',
+        style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 10),
+      ),
+      if (practitioner.fullName.isNotEmpty)
+        pw.Text(practitioner.fullName, style: const pw.TextStyle(fontSize: 10)),
+      if (practitioner.adresse.trim().isNotEmpty)
+        pw.Text(
+          practitioner.adresse.trim(),
+          style: const pw.TextStyle(fontSize: 10),
+        ),
+      if (practitioner.email.trim().isNotEmpty)
+        pw.Text(
+          'Email : ${practitioner.email.trim()}',
+          style: const pw.TextStyle(fontSize: 10),
+        ),
+      if (practitioner.telephone.trim().isNotEmpty)
+        pw.Text(
+          'Téléphone : ${practitioner.telephone.trim()}',
+          style: const pw.TextStyle(fontSize: 10),
+        ),
+      if (practitioner.adeli.trim().isNotEmpty)
+        pw.Text(
+          'ADELI : ${practitioner.adeli.trim()}',
+          style: const pw.TextStyle(fontSize: 10),
+        ),
+      if (practitioner.rpps.trim().isNotEmpty)
+        pw.Text(
+          'RPPS : ${practitioner.rpps.trim()}',
+          style: const pw.TextStyle(fontSize: 10),
+        ),
+      if (practitioner.hasStructure)
+        pw.Text(
+          structureLine(practitioner),
+          style: const pw.TextStyle(fontSize: 10),
+        ),
+    ];
+  }
+
+  static String structureLine(PractitionerProfile practitioner) {
+    final name = practitioner.nomStructure.trim();
+    if (name.isEmpty) return 'Structure d’exercice coordonné';
+
+    return practitioner.exerciceCoordonne
+        ? 'Structure coordonnée : $name'
+        : 'Structure : $name';
   }
 
   static pw.Widget statBox({

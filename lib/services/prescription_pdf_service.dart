@@ -21,19 +21,15 @@ class PrescriptionPdfService {
     final baseFont = pw.Font.helvetica();
     final boldFont = pw.Font.helveticaBold();
 
-    final pw.MemoryImage? justificatifPdfImage =
-        justificatifImage != null
-            ? pw.MemoryImage(justificatifImage.readAsBytesSync())
-            : null;
+    final pw.MemoryImage? justificatifPdfImage = justificatifImage != null
+        ? pw.MemoryImage(justificatifImage.readAsBytesSync())
+        : null;
 
     pdf.addPage(
       pw.MultiPage(
         pageFormat: PdfPageFormat.a4,
         margin: const pw.EdgeInsets.fromLTRB(42, 36, 42, 36),
-        theme: pw.ThemeData.withFont(
-          base: baseFont,
-          bold: boldFont,
-        ),
+        theme: pw.ThemeData.withFont(base: baseFont, bold: boldFont),
         build: (context) {
           return [
             _practitionerBlock(practitioner),
@@ -98,10 +94,7 @@ class PrescriptionPdfService {
                 decoration: pw.BoxDecoration(
                   border: pw.Border.all(color: PdfColors.grey400),
                 ),
-                child: pw.Image(
-                  justificatifPdfImage,
-                  fit: pw.BoxFit.contain,
-                ),
+                child: pw.Image(justificatifPdfImage, fit: pw.BoxFit.contain),
               ),
             ],
 
@@ -117,11 +110,7 @@ class PrescriptionPdfService {
                     style: const pw.TextStyle(fontSize: 11),
                   ),
                   pw.SizedBox(height: 54),
-                  pw.Container(
-                    width: 180,
-                    height: 1,
-                    color: PdfColors.grey700,
-                  ),
+                  pw.Container(width: 180, height: 1, color: PdfColors.grey700),
                 ],
               ),
             ),
@@ -130,9 +119,7 @@ class PrescriptionPdfService {
       ),
     );
 
-    await Printing.layoutPdf(
-      onLayout: (_) async => pdf.save(),
-    );
+    await Printing.layoutPdf(onLayout: (_) async => pdf.save());
   }
 
   static String _documentTitle(String type) {
@@ -170,20 +157,11 @@ class PrescriptionPdfService {
   static pw.Widget _boxedText(String text) {
     return pw.Container(
       width: double.infinity,
-      padding: const pw.EdgeInsets.symmetric(
-        horizontal: 12,
-        vertical: 14,
-      ),
+      padding: const pw.EdgeInsets.symmetric(horizontal: 12, vertical: 14),
       decoration: pw.BoxDecoration(
-        border: pw.Border.all(
-          color: PdfColors.grey700,
-          width: 0.8,
-        ),
+        border: pw.Border.all(color: PdfColors.grey700, width: 0.8),
       ),
-      child: pw.Text(
-        text,
-        style: const pw.TextStyle(fontSize: 14),
-      ),
+      child: pw.Text(text, style: const pw.TextStyle(fontSize: 14)),
     );
   }
 
@@ -197,17 +175,11 @@ class PrescriptionPdfService {
       padding: const pw.EdgeInsets.all(12),
       decoration: pw.BoxDecoration(
         color: PdfColors.grey100,
-        border: pw.Border.all(
-          color: PdfColors.grey400,
-          width: 0.6,
-        ),
+        border: pw.Border.all(color: PdfColors.grey400, width: 0.6),
       ),
       child: pw.Text(
         text,
-        style: const pw.TextStyle(
-          fontSize: 9.5,
-          color: PdfColors.grey800,
-        ),
+        style: const pw.TextStyle(fontSize: 9.5, color: PdfColors.grey800),
       ),
     );
   }
@@ -217,11 +189,8 @@ class PrescriptionPdfService {
       crossAxisAlignment: pw.CrossAxisAlignment.start,
       children: [
         pw.Text(
-          'Masseur-kinésithérapeute',
-          style: pw.TextStyle(
-            fontSize: 13,
-            fontWeight: pw.FontWeight.bold,
-          ),
+          practitioner.professionLabel,
+          style: pw.TextStyle(fontSize: 13, fontWeight: pw.FontWeight.bold),
         ),
         pw.SizedBox(height: 6),
         pw.Text(
@@ -235,6 +204,16 @@ class PrescriptionPdfService {
             practitioner.adresse.trim(),
             style: const pw.TextStyle(fontSize: 11),
           ),
+        if (practitioner.email.trim().isNotEmpty)
+          pw.Text(
+            'Email : ${practitioner.email.trim()}',
+            style: const pw.TextStyle(fontSize: 11),
+          ),
+        if (practitioner.telephone.trim().isNotEmpty)
+          pw.Text(
+            'Téléphone : ${practitioner.telephone.trim()}',
+            style: const pw.TextStyle(fontSize: 11),
+          ),
         if (practitioner.adeli.trim().isNotEmpty)
           pw.Text(
             'ADELI : ${practitioner.adeli.trim()}',
@@ -245,27 +224,35 @@ class PrescriptionPdfService {
             'RPPS : ${practitioner.rpps.trim()}',
             style: const pw.TextStyle(fontSize: 11),
           ),
+        if (practitioner.hasStructure)
+          pw.Text(
+            _structureLine(practitioner),
+            style: const pw.TextStyle(fontSize: 11),
+          ),
       ],
     );
+  }
+
+  static String _structureLine(PractitionerProfile practitioner) {
+    final name = practitioner.nomStructure.trim();
+    if (name.isEmpty) return 'Structure d’exercice coordonné';
+
+    return practitioner.exerciceCoordonne
+        ? 'Structure coordonnée : $name'
+        : 'Structure : $name';
   }
 
   static pw.Widget _sectionTitle(String title) {
     return pw.Text(
       title,
-      style: pw.TextStyle(
-        fontSize: 13,
-        fontWeight: pw.FontWeight.bold,
-      ),
+      style: pw.TextStyle(fontSize: 13, fontWeight: pw.FontWeight.bold),
     );
   }
 
   static pw.Widget _simpleLine(String text) {
     return pw.Padding(
       padding: const pw.EdgeInsets.only(bottom: 4),
-      child: pw.Text(
-        text,
-        style: const pw.TextStyle(fontSize: 11),
-      ),
+      child: pw.Text(text, style: const pw.TextStyle(fontSize: 11)),
     );
   }
 

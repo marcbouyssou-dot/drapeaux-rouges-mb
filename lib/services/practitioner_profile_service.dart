@@ -11,9 +11,7 @@ class PractitionerProfileService {
     final raw = box.get(_profileKey);
 
     if (raw is Map) {
-      return PractitionerProfile.fromJson(
-        Map<String, dynamic>.from(raw),
-      );
+      return PractitionerProfile.fromJson(Map<String, dynamic>.from(raw));
     }
 
     return PractitionerProfile.empty();
