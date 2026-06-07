@@ -7,6 +7,10 @@ import '../services/global_statistics_csv_service.dart';
 import '../services/patient_record_service.dart';
 import '../services/practitioner_profile_service.dart';
 import '../services/rgpd_local_service.dart';
+import '../theme/app_colors.dart' as ds;
+import '../theme/app_radius.dart';
+import '../theme/app_shadows.dart';
+import '../theme/app_spacing.dart' as spacing;
 import 'access_direct_settings_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -200,113 +204,126 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final practitionerComplete = practitioner.isComplete;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFF),
+      backgroundColor: ds.AppColors.background,
       body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(18, 18, 18, 130),
-          children: [
-            buildCompactHeader(),
-            const SizedBox(height: 14),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 720),
+            child: ListView(
+              padding: const EdgeInsets.fromLTRB(
+                spacing.AppSpacing.md,
+                spacing.AppSpacing.md,
+                spacing.AppSpacing.md,
+                130,
+              ),
+              children: [
+                buildCompactHeader(),
+                const SizedBox(height: 14),
 
-            buildSectionLabel('PROFIL MK'),
-            const SizedBox(height: 10),
-            settingCard(
-              icon: practitionerComplete
-                  ? Icons.verified_user_outlined
-                  : Icons.badge_outlined,
-              iconColor: const Color(0xFF2563EB),
-              title: 'Informations MK',
-              subtitle: practitionerComplete
-                  ? practitioner.fullName
-                  : 'Nom, RPPS, ADELI, cabinet.',
-              onTap: showPractitionerDialog,
-            ),
-            settingCard(
-              icon: Icons.draw_outlined,
-              iconColor: const Color(0xFF2563EB),
-              title: 'Signature praticien',
-              subtitle: 'Signature pour prescriptions et PDF.',
-              onTap: () => showComingSoon(context, 'Signature praticien'),
-            ),
+                buildSectionLabel('PROFIL MK'),
+                const SizedBox(height: 10),
+                settingCard(
+                  icon: practitionerComplete
+                      ? Icons.verified_user_outlined
+                      : Icons.badge_outlined,
+                  iconColor: ds.AppColors.primary,
+                  title: 'Informations MK',
+                  subtitle: practitionerComplete
+                      ? practitioner.fullName
+                      : 'Nom, RPPS, ADELI, cabinet.',
+                  onTap: showPractitionerDialog,
+                ),
+                settingCard(
+                  icon: Icons.draw_outlined,
+                  iconColor: ds.AppColors.primary,
+                  title: 'Signature praticien',
+                  subtitle: 'Signature pour prescriptions et PDF.',
+                  onTap: () => showComingSoon(context, 'Signature praticien'),
+                ),
 
-            const SizedBox(height: 14),
-            buildSectionLabel('CONFIDENTIALITÉ'),
-            const SizedBox(height: 10),
-            settingCard(
-              icon: Icons.verified_user_outlined,
-              iconColor: const Color(0xFF2563EB),
-              title: 'Consentement et confidentialité',
-              subtitle: 'Gestion RGPD et consentement patient.',
-              onTap: () =>
-                  showComingSoon(context, 'Consentement et confidentialité'),
-            ),
-            settingCard(
-              icon: Icons.storage_rounded,
-              iconColor: const Color(0xFF0F766E),
-              title: 'Stockage local sécurisé',
-              subtitle: 'Aucune transmission automatique.',
-              onTap: () => showComingSoon(context, 'Stockage local sécurisé'),
-            ),
-            settingCard(
-              icon: Icons.ios_share_outlined,
-              iconColor: const Color(0xFF7C3AED),
-              title: 'Export pseudonymisé',
-              subtitle: 'Données cliniques sans nom ni prénom.',
-              onTap: () => showAnonymousRecordsExport(context),
-            ),
-
-            const SizedBox(height: 14),
-            buildSectionLabel('EXPORTS'),
-            const SizedBox(height: 10),
-            settingCard(
-              icon: Icons.picture_as_pdf_outlined,
-              iconColor: const Color(0xFFDC2626),
-              title: 'Préférences PDF',
-              subtitle: 'Couleur, impression et signature.',
-              onTap: () => showComingSoon(context, 'Préférences PDF'),
-            ),
-            settingCard(
-              icon: Icons.table_chart_outlined,
-              iconColor: const Color(0xFF2563EB),
-              title: 'CSV statistiques',
-              subtitle: 'Exporter les évaluations pseudonymisées.',
-              onTap: GlobalStatisticsCsvService.exportGlobalStatisticsCsv,
-            ),
-
-            const SizedBox(height: 14),
-            buildSectionLabel('APPLICATION'),
-            const SizedBox(height: 10),
-            settingCard(
-              icon: Icons.medical_information_outlined,
-              iconColor: const Color(0xFFEA580C),
-              title: 'Accès direct',
-              subtitle: 'Conditions réglementaires et séances.',
-              onTap: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) => const AccessDirectSettingsScreen(),
+                const SizedBox(height: 14),
+                buildSectionLabel('CONFIDENTIALITÉ'),
+                const SizedBox(height: 10),
+                settingCard(
+                  icon: Icons.verified_user_outlined,
+                  iconColor: ds.AppColors.primary,
+                  title: 'Consentement et confidentialité',
+                  subtitle: 'Gestion RGPD et consentement patient.',
+                  onTap: () => showComingSoon(
+                    context,
+                    'Consentement et confidentialité',
                   ),
-                );
-              },
-            ),
-            settingCard(
-              icon: Icons.dark_mode_outlined,
-              iconColor: const Color(0xFF7C3AED),
-              title: 'Apparence',
-              subtitle: 'Thème, taille de texte et affichage.',
-              onTap: () => showComingSoon(context, 'Apparence'),
-            ),
-            settingCard(
-              icon: Icons.restart_alt_rounded,
-              iconColor: const Color(0xFFEF4444),
-              title: 'Réinitialisation locale',
-              subtitle: 'Effacer les données stockées sur cet appareil.',
-              onTap: confirmResetLocalData,
-            ),
+                ),
+                settingCard(
+                  icon: Icons.storage_rounded,
+                  iconColor: ds.AppColors.teal,
+                  title: 'Stockage local sécurisé',
+                  subtitle: 'Aucune transmission automatique.',
+                  onTap: () =>
+                      showComingSoon(context, 'Stockage local sécurisé'),
+                ),
+                settingCard(
+                  icon: Icons.ios_share_outlined,
+                  iconColor: ds.AppColors.raspberryDark,
+                  title: 'Export pseudonymisé',
+                  subtitle: 'Données cliniques sans nom ni prénom.',
+                  onTap: () => showAnonymousRecordsExport(context),
+                ),
 
-            const SizedBox(height: 14),
-            buildVersionCard(),
-          ],
+                const SizedBox(height: 14),
+                buildSectionLabel('EXPORTS'),
+                const SizedBox(height: 10),
+                settingCard(
+                  icon: Icons.picture_as_pdf_outlined,
+                  iconColor: ds.AppColors.dangerDark,
+                  title: 'Préférences PDF',
+                  subtitle: 'Couleur, impression et signature.',
+                  onTap: () => showComingSoon(context, 'Préférences PDF'),
+                ),
+                settingCard(
+                  icon: Icons.table_chart_outlined,
+                  iconColor: ds.AppColors.primary,
+                  title: 'CSV statistiques',
+                  subtitle: 'Exporter les évaluations pseudonymisées.',
+                  onTap: GlobalStatisticsCsvService.exportGlobalStatisticsCsv,
+                ),
+
+                const SizedBox(height: 14),
+                buildSectionLabel('APPLICATION'),
+                const SizedBox(height: 10),
+                settingCard(
+                  icon: Icons.medical_information_outlined,
+                  iconColor: ds.AppColors.warningDark,
+                  title: 'Accès direct',
+                  subtitle: 'Conditions réglementaires et séances.',
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => const AccessDirectSettingsScreen(),
+                      ),
+                    );
+                  },
+                ),
+                settingCard(
+                  icon: Icons.dark_mode_outlined,
+                  iconColor: ds.AppColors.raspberryDark,
+                  title: 'Apparence',
+                  subtitle: 'Thème, taille de texte et affichage.',
+                  onTap: () => showComingSoon(context, 'Apparence'),
+                ),
+                settingCard(
+                  icon: Icons.restart_alt_rounded,
+                  iconColor: ds.AppColors.danger,
+                  title: 'Réinitialisation locale',
+                  subtitle: 'Effacer les données stockées sur cet appareil.',
+                  onTap: confirmResetLocalData,
+                ),
+
+                const SizedBox(height: 14),
+                buildVersionCard(),
+              ],
+            ),
+          ),
         ),
       ),
     );
@@ -320,8 +337,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
         gradient: const LinearGradient(
           colors: [Color(0xFFF8FAFC), Color(0xFFFFFFFF)],
         ),
-        borderRadius: BorderRadius.circular(26),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+        borderRadius: BorderRadius.circular(AppRadius.xl),
+        border: Border.all(color: ds.AppColors.border),
+        boxShadow: AppShadows.soft,
       ),
       child: Row(
         children: [
@@ -344,6 +362,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           const Expanded(
             child: Text(
               'Réglages et données locales',
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 color: Color(0xFF0F172A),
                 fontSize: 17,
@@ -382,9 +402,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return Container(
       margin: const EdgeInsets.only(bottom: 9),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+        color: ds.AppColors.surface,
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        border: Border.all(color: ds.AppColors.border),
+        boxShadow: AppShadows.soft,
       ),
       child: ListTile(
         onTap: onTap,
@@ -400,6 +421,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ),
         title: Text(
           title,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
           style: const TextStyle(
             color: Color(0xFF0F172A),
             fontSize: 15,
@@ -410,6 +433,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           padding: const EdgeInsets.only(top: 2),
           child: Text(
             subtitle,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
             style: const TextStyle(
               color: Color(0xFF64748B),
               fontSize: 12.5,
@@ -422,7 +447,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           height: 32,
           width: 32,
           decoration: BoxDecoration(
-            color: const Color(0xFFF8FAFC),
+            color: ds.AppColors.background,
             borderRadius: BorderRadius.circular(12),
           ),
           child: const Icon(
@@ -438,9 +463,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFFEAF2FF),
-        borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: const Color(0xFFBFDBFE)),
+        color: ds.AppColors.surfaceAlt,
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        border: Border.all(color: ds.AppColors.borderStrong),
+        boxShadow: AppShadows.soft,
       ),
       child: const Row(
         children: [
@@ -449,6 +475,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           Expanded(
             child: Text(
               'Drapeaux Rouges — Version 1.0.0',
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 color: Color(0xFF0F172A),
                 fontSize: 14.5,
