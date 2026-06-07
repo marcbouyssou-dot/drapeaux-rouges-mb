@@ -12,7 +12,6 @@ import '../services/rgpd_local_service.dart';
 import '../theme/app_design_system.dart';
 import '../widgets/design_system/clinical_bottom_action_bar.dart';
 import '../widgets/design_system/clinical_info_banner.dart';
-import '../widgets/design_system/clinical_page_header.dart';
 import '../widgets/design_system/clinical_text_field.dart';
 
 class PrescriptionScreen extends StatefulWidget {
@@ -327,9 +326,7 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
         labelText: label,
         filled: true,
         fillColor: AppColors.background,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
       ),
     );
   }
@@ -337,9 +334,9 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
   void showMessage(String message) {
     if (!mounted) return;
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   String get patientName {
@@ -360,46 +357,249 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
       ),
       body: Column(
         children: [
-          ClinicalPageHeader(
-            title: selectedPrescriptionType,
-            subtitle: 'Prescription clinique et document thérapeutique.',
-          ),
+          buildPrescriptionHeader(context),
           Expanded(
-            child: ListView(
-              padding: EdgeInsets.fromLTRB(
-                AppSpacing.screenPadding,
-                0,
-                AppSpacing.screenPadding,
-                120,
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 960),
+                child: ListView(
+                  padding: EdgeInsets.fromLTRB(
+                    AppSpacing.screenPadding,
+                    0,
+                    AppSpacing.screenPadding,
+                    120,
+                  ),
+                  children: [
+                    buildReadinessSummary(),
+                    const SizedBox(height: 14),
+                    buildPatientCard(),
+                    const SizedBox(height: 14),
+                    buildPractitionerCard(),
+                    const SizedBox(height: 14),
+                    buildAccessDirectPrescriptionCard(),
+                    const SizedBox(height: 14),
+                    buildPrescriptionCard(),
+                    const SizedBox(height: 14),
+                    ClinicalInfoBanner(
+                      text:
+                          'Les prescriptions et recommandations doivent rester conformes aux compétences, droits de prescription et conditions réglementaires du masseur-kinésithérapeute.',
+                      icon: Icons.gavel_rounded,
+                      color: AppColors.warningOrange,
+                      backgroundColor: AppColors.softOrange,
+                    ),
+                    const SizedBox(height: 14),
+                    ClinicalInfoBanner(
+                      text: 'PDF sobre, lisible et économique à imprimer.',
+                      icon: Icons.print_outlined,
+                      color: AppColors.textSecondary,
+                      backgroundColor: AppColors.card,
+                    ),
+                  ],
+                ),
               ),
-              children: [
-                buildPatientCard(),
-                const SizedBox(height: 14),
-                buildPractitionerCard(),
-                const SizedBox(height: 14),
-                buildAccessDirectPrescriptionCard(),
-                const SizedBox(height: 14),
-                buildPrescriptionCard(),
-                const SizedBox(height: 14),
-                ClinicalInfoBanner(
-                  text:
-                      'Les prescriptions et recommandations doivent rester conformes aux compétences, droits de prescription et conditions réglementaires du masseur-kinésithérapeute.',
-                  icon: Icons.gavel_rounded,
-                  color: AppColors.warningOrange,
-                  backgroundColor: AppColors.softOrange,
-                ),
-                const SizedBox(height: 14),
-                ClinicalInfoBanner(
-                  text: 'PDF sobre, lisible et économique à imprimer.',
-                  icon: Icons.print_outlined,
-                  color: AppColors.textSecondary,
-                  backgroundColor: AppColors.card,
-                ),
-              ],
             ),
           ),
         ],
       ),
+    );
+  }
+
+  Widget buildPrescriptionHeader(BuildContext context) {
+    return Container(
+      margin: EdgeInsets.all(AppSpacing.screenPadding),
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [
+            AppColors.primaryBlue,
+            AppColors.warningOrange,
+            AppColors.primaryBlue,
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(28),
+        boxShadow: AppShadows.softShadow,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              InkWell(
+                borderRadius: BorderRadius.circular(16),
+                onTap: () => Navigator.pop(context),
+                child: Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.16),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.20),
+                    ),
+                  ),
+                  child: const Icon(
+                    Icons.arrow_back_rounded,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.16),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.20),
+                  ),
+                ),
+                child: const Icon(Icons.edit_document, color: Colors.white),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      selectedPrescriptionType,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppTextStyles.screenTitle.copyWith(
+                        color: Colors.white,
+                        fontSize: 25,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      'Prescription clinique · document thérapeutique · PDF',
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.84),
+                        fontSize: 13,
+                        height: 1.35,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              buildHeaderChip(Icons.person_outline_rounded, patientName),
+              buildHeaderChip(
+                practitioner.isComplete
+                    ? Icons.verified_user_outlined
+                    : Icons.edit_note_rounded,
+                practitioner.isComplete ? 'Profil prêt' : 'Profil à compléter',
+              ),
+              buildHeaderChip(Icons.picture_as_pdf_outlined, 'Export PDF'),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget buildHeaderChip(IconData icon, String label) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.14),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.20)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: Colors.white, size: 14),
+          const SizedBox(width: 4),
+          Flexible(
+            child: Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 11,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget buildReadinessSummary() {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final items = [
+          _ReadinessItem(
+            icon: currentPatient == null
+                ? Icons.warning_amber_rounded
+                : Icons.check_circle_outline_rounded,
+            label: 'Patient',
+            value: currentPatient == null ? 'À sélectionner' : 'Actif',
+            color: currentPatient == null
+                ? AppColors.warningOrange
+                : AppColors.successGreen,
+          ),
+          _ReadinessItem(
+            icon: practitioner.isComplete
+                ? Icons.check_circle_outline_rounded
+                : Icons.edit_note_rounded,
+            label: 'Professionnel',
+            value: practitioner.isComplete ? 'Prêt' : 'À compléter',
+            color: practitioner.isComplete
+                ? AppColors.successGreen
+                : AppColors.warningOrange,
+          ),
+          _ReadinessItem(
+            icon: Icons.library_books_outlined,
+            label: 'Type',
+            value: selectedPrescriptionType,
+            color: AppColors.primaryBlue,
+          ),
+        ];
+
+        if (constraints.maxWidth >= 620) {
+          return Row(
+            children: items
+                .map(
+                  (item) => Expanded(
+                    child: Padding(
+                      padding: EdgeInsets.only(
+                        right: item == items.last ? 0 : 10,
+                      ),
+                      child: item,
+                    ),
+                  ),
+                )
+                .toList(),
+          );
+        }
+
+        return Column(
+          children: items
+              .map(
+                (item) => Padding(
+                  padding: EdgeInsets.only(bottom: item == items.last ? 0 : 10),
+                  child: item,
+                ),
+              )
+              .toList(),
+        );
+      },
     );
   }
 
@@ -417,6 +617,7 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
         boxShadow: AppShadows.softShadow,
       ),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
             height: 52,
@@ -427,8 +628,9 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
             ),
             child: Icon(
               hasPatient ? Icons.person_rounded : Icons.warning_amber_rounded,
-              color:
-                  hasPatient ? AppColors.primaryBlue : AppColors.warningOrange,
+              color: hasPatient
+                  ? AppColors.primaryBlue
+                  : AppColors.warningOrange,
               size: 30,
             ),
           ),
@@ -440,10 +642,17 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
                     children: [
                       Text('Patient', style: AppTextStyles.cardSubtitle),
                       const SizedBox(height: 4),
-                      Text(patientName, style: AppTextStyles.cardTitle),
+                      Text(
+                        patientName,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppTextStyles.cardTitle,
+                      ),
                       const SizedBox(height: 2),
                       Text(
-                        'Né(e) le ${currentPatient!.dateNaissance}',
+                        '${currentPatient!.anonymousId} · Né(e) le ${currentPatient!.dateNaissance}',
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                         style: AppTextStyles.cardSubtitle,
                       ),
                     ],
@@ -461,6 +670,7 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
             onPressed: loadInitialData,
             icon: const Icon(Icons.refresh_rounded),
             tooltip: 'Actualiser',
+            color: AppColors.textSecondary,
           ),
         ],
       ),
@@ -481,6 +691,7 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
         boxShadow: AppShadows.softShadow,
       ),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
             height: 52,
@@ -491,8 +702,7 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
             ),
             child: Icon(
               complete ? Icons.badge_rounded : Icons.edit_note_rounded,
-              color:
-                  complete ? AppColors.primaryBlue : AppColors.warningOrange,
+              color: complete ? AppColors.primaryBlue : AppColors.warningOrange,
               size: 30,
             ),
           ),
@@ -506,6 +716,8 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
                       const SizedBox(height: 4),
                       Text(
                         practitioner.fullName,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                         style: AppTextStyles.cardTitle,
                       ),
                       const SizedBox(height: 2),
@@ -516,6 +728,8 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
                           if (practitioner.rpps.trim().isNotEmpty)
                             'RPPS ${practitioner.rpps.trim()}',
                         ].join(' • '),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                         style: AppTextStyles.cardSubtitle,
                       ),
                     ],
@@ -533,6 +747,7 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
             onPressed: showPractitionerDialog,
             icon: const Icon(Icons.edit_rounded),
             tooltip: 'Modifier',
+            color: AppColors.textSecondary,
           ),
         ],
       ),
@@ -601,10 +816,12 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
                   hasImage ? 'Justificatif ajouté' : 'Ajouter un justificatif',
                 ),
                 style: OutlinedButton.styleFrom(
-                  foregroundColor:
-                      hasImage ? AppColors.successGreen : AppColors.primaryBlue,
-                  backgroundColor:
-                      hasImage ? AppColors.softGreen : AppColors.softBlue,
+                  foregroundColor: hasImage
+                      ? AppColors.successGreen
+                      : AppColors.primaryBlue,
+                  backgroundColor: hasImage
+                      ? AppColors.softGreen
+                      : AppColors.softBlue,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(18),
@@ -642,7 +859,42 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(activeTitle, style: AppTextStyles.sectionTitle),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: AppColors.softBlue,
+                  borderRadius: BorderRadius.circular(18),
+                ),
+                child: const Icon(
+                  Icons.edit_note_rounded,
+                  color: AppColors.primaryBlue,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      activeTitle,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppTextStyles.sectionTitle,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Complétez les champs utiles au PDF de prescription.',
+                      style: AppTextStyles.cardSubtitle,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
           const SizedBox(height: 16),
           ...buildPrescriptionFields(),
           buildTemplatesSection(),
@@ -665,7 +917,8 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
           const SizedBox(height: 16),
           ClinicalTextField(
             label: 'Objectifs de rééducation',
-            hint: 'Exemple : diminution de la douleur, récupération fonctionnelle...',
+            hint:
+                'Exemple : diminution de la douleur, récupération fonctionnelle...',
             maxLines: 3,
             controller: reeducationObjectifsController,
           ),
@@ -749,20 +1002,82 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
     final templates = prescriptionTemplates[selectedPrescriptionType] ?? [];
 
     if (templates.isEmpty) {
-      return const SizedBox.shrink();
+      return Container(
+        margin: const EdgeInsets.only(top: 18),
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: AppColors.background,
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: AppColors.border),
+        ),
+        child: const Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(Icons.info_outline_rounded, color: AppColors.textSecondary),
+            SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                'Aucun modèle rapide pour ce type. Renseignez librement le contenu.',
+                style: TextStyle(
+                  color: AppColors.textSecondary,
+                  fontWeight: FontWeight.w700,
+                  height: 1.35,
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
     }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const SizedBox(height: 18),
-        Text(
-          'Modèles rapides',
-          style: TextStyle(
-            color: AppColors.textSecondary,
-            fontSize: 13,
-            fontWeight: FontWeight.w900,
-            letterSpacing: 0.4,
+        Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: AppColors.background,
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(color: AppColors.border),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 38,
+                height: 38,
+                decoration: BoxDecoration(
+                  color: AppColors.softBlue,
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: const Icon(
+                  Icons.library_books_outlined,
+                  color: AppColors.primaryBlue,
+                  size: 21,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Modèles rapides',
+                      style: TextStyle(
+                        color: AppColors.textPrimary,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'Ajoutent du texte dans le champ principal.',
+                      style: AppTextStyles.cardSubtitle.copyWith(fontSize: 12),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
         ),
         const SizedBox(height: 10),
@@ -781,8 +1096,9 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
               onPressed: () {
                 final currentText = activeController.text.trim();
 
-                activeController.text =
-                    currentText.isEmpty ? template : '$currentText\n• $template';
+                activeController.text = currentText.isEmpty
+                    ? template
+                    : '$currentText\n• $template';
 
                 activeController.selection = TextSelection.fromPosition(
                   TextPosition(offset: activeController.text.length),
@@ -819,13 +1135,82 @@ class _MiniRegulatoryLine extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(title, style: AppTextStyles.cardTitle.copyWith(fontSize: 15)),
+              Text(
+                title,
+                style: AppTextStyles.cardTitle.copyWith(fontSize: 15),
+              ),
               const SizedBox(height: 2),
               Text(subtitle, style: AppTextStyles.cardSubtitle),
             ],
           ),
         ),
       ],
+    );
+  }
+}
+
+class _ReadinessItem extends StatelessWidget {
+  const _ReadinessItem({
+    required this.icon,
+    required this.label,
+    required this.value,
+    required this.color,
+  });
+
+  final IconData icon;
+  final String label;
+  final String value;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppColors.card,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppColors.border),
+        boxShadow: AppShadows.softShadow,
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 38,
+            height: 38,
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.10),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Icon(icon, color: color, size: 20),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  value,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTextStyles.cardTitle.copyWith(fontSize: 15),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
