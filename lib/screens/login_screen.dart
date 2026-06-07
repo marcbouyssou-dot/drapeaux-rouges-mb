@@ -4,7 +4,6 @@ import '../theme/app_colors.dart';
 import '../theme/app_radius.dart';
 import '../theme/app_shadows.dart';
 import '../theme/app_spacing.dart';
-import '../theme/app_typography.dart';
 import 'main_navigation_screen.dart';
 
 class LoginScreen extends StatelessWidget {
@@ -117,8 +116,6 @@ class _MobileIdentityBlock extends StatelessWidget {
         _IdentityDivider(compact: true),
         SizedBox(height: AppSpacing.sm),
         _ProductBlock(compact: true),
-        SizedBox(height: AppSpacing.sm),
-        _TrustBadges(compact: true, onDark: true),
       ],
     );
   }
@@ -149,7 +146,6 @@ class _DesktopIdentityPanel extends StatelessWidget {
           const SizedBox(height: AppSpacing.xl),
           const _ProductBlock(compact: false),
           const Spacer(),
-          const _TrustBadges(compact: false, onDark: true),
         ],
       ),
     );
@@ -240,51 +236,28 @@ class _ProductBlock extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
+    return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Container(
-          width: compact ? 42 : 66,
-          height: compact ? 42 : 66,
-          decoration: BoxDecoration(
-            color: AppColors.primary.withValues(alpha: 0.16),
-            shape: BoxShape.circle,
-            border: Border.all(
-              color: AppColors.primaryLight.withValues(alpha: 0.48),
-            ),
-          ),
-          child: Icon(
-            Icons.psychology_alt_outlined,
+        Text(
+          'Outil d’aide au raisonnement',
+          textAlign: TextAlign.center,
+          style: TextStyle(
             color: AppColors.textOnDark,
-            size: compact ? 24 : 35,
+            fontSize: compact ? 16 : 25,
+            height: 1.12,
+            fontWeight: FontWeight.w900,
           ),
         ),
-        SizedBox(width: compact ? AppSpacing.sm : AppSpacing.md),
-        Flexible(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Outil clinique d’aide au raisonnement',
-                style: TextStyle(
-                  color: AppColors.textOnDark,
-                  fontSize: compact ? 16 : 25,
-                  height: 1.12,
-                  fontWeight: FontWeight.w900,
-                ),
-              ),
-              SizedBox(height: compact ? 3 : AppSpacing.sm),
-              Text(
-                'Dépistage clinique • Orientation • Traçabilité patient',
-                style: TextStyle(
-                  color: const Color(0xFFDDE7F3),
-                  fontSize: compact ? 11 : 15,
-                  height: compact ? 1.18 : 1.32,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ],
+        SizedBox(height: compact ? 3 : AppSpacing.sm),
+        Text(
+          'Dépistage • Orientation',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: const Color(0xFFDDE7F3),
+            fontSize: compact ? 11 : 15,
+            height: compact ? 1.18 : 1.32,
+            fontWeight: FontWeight.w700,
           ),
         ),
       ],
@@ -307,25 +280,38 @@ class _UrpsMark extends StatelessWidget {
       child: Stack(
         alignment: Alignment.center,
         children: [
-          Positioned.fill(
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                gradient: RadialGradient(
-                  colors: [
-                    AppColors.primaryLight.withValues(alpha: 0.30),
-                    AppColors.primary.withValues(alpha: 0.13),
-                    Colors.transparent,
-                  ],
-                ),
-              ),
-            ),
-          ),
           Image.asset(
             'assets/icons/urps_pictogram_official_transparent.png',
             height: height,
             fit: BoxFit.contain,
             filterQuality: FilterQuality.high,
             isAntiAlias: true,
+          ),
+          Opacity(
+            opacity: 0.22,
+            child: ShaderMask(
+              blendMode: BlendMode.srcIn,
+              shaderCallback: (bounds) {
+                return const LinearGradient(
+                  colors: [
+                    Color(0xFFFFFFFF),
+                    Color(0xFFEAF6FF),
+                    Color(0x00FFFFFF),
+                    Color(0xFFFFEDF4),
+                  ],
+                  stops: [0.02, 0.22, 0.58, 1],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ).createShader(bounds);
+              },
+              child: Image.asset(
+                'assets/icons/urps_pictogram_official_transparent.png',
+                height: height,
+                fit: BoxFit.contain,
+                filterQuality: FilterQuality.high,
+                isAntiAlias: true,
+              ),
+            ),
           ),
         ],
       ),
@@ -377,24 +363,6 @@ class _LoginForm extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text(
-          'Connexion',
-          style: AppTypography.title.copyWith(
-            color: AppColors.textPrimary,
-            fontSize: compact ? 22 : 30,
-            fontWeight: FontWeight.w900,
-          ),
-        ),
-        SizedBox(height: compact ? AppSpacing.xs : AppSpacing.sm),
-        const Text(
-          'Espace professionnel sécurisé',
-          style: TextStyle(
-            color: AppColors.textSecondary,
-            fontSize: 12,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-        SizedBox(height: compact ? AppSpacing.md : AppSpacing.xl),
         const _FieldLabel('ADRESSE E-MAIL'),
         const SizedBox(height: AppSpacing.xs),
         _PremiumTextField(
@@ -440,8 +408,6 @@ class _LoginForm extends StatelessWidget {
         ),
         SizedBox(height: compact ? AppSpacing.sm : AppSpacing.lg),
         _LoginButton(compact: compact),
-        SizedBox(height: compact ? AppSpacing.sm : AppSpacing.xl),
-        _SecurityCard(compact: compact),
       ],
     );
   }
@@ -488,131 +454,10 @@ class _LoginButton extends StatelessWidget {
             ),
           ),
           child: const Text(
-            'Se connecter →',
+            'Se connecter',
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900),
           ),
         ),
-      ),
-    );
-  }
-}
-
-class _TrustBadges extends StatelessWidget {
-  const _TrustBadges({required this.compact, required this.onDark});
-
-  final bool compact;
-  final bool onDark;
-
-  @override
-  Widget build(BuildContext context) {
-    return Wrap(
-      alignment: WrapAlignment.center,
-      spacing: AppSpacing.sm,
-      runSpacing: AppSpacing.sm,
-      children: [
-        _TrustBadge(
-          icon: Icons.cloud_done_outlined,
-          label: 'Cloud HDS',
-          compact: compact,
-          onDark: onDark,
-        ),
-        _TrustBadge(
-          icon: Icons.verified_user_outlined,
-          label: 'Données de santé sécurisées',
-          compact: compact,
-          onDark: onDark,
-        ),
-      ],
-    );
-  }
-}
-
-class _TrustBadge extends StatelessWidget {
-  const _TrustBadge({
-    required this.icon,
-    required this.label,
-    required this.compact,
-    required this.onDark,
-  });
-
-  final IconData icon;
-  final String label;
-  final bool compact;
-  final bool onDark;
-
-  @override
-  Widget build(BuildContext context) {
-    final foreground = onDark ? AppColors.textOnDark : AppColors.primary;
-    final background = onDark
-        ? AppColors.textOnDark.withValues(alpha: 0.12)
-        : AppColors.surfaceAlt;
-
-    return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: compact ? 10 : AppSpacing.md,
-        vertical: compact ? 7 : AppSpacing.sm,
-      ),
-      decoration: BoxDecoration(
-        color: background,
-        borderRadius: BorderRadius.circular(AppRadius.pill),
-        border: Border.all(color: foreground.withValues(alpha: 0.18)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, color: foreground, size: compact ? 14 : 16),
-          const SizedBox(width: AppSpacing.xs),
-          Text(
-            label,
-            style: TextStyle(
-              color: foreground,
-              fontSize: compact ? 10 : 11,
-              fontWeight: FontWeight.w900,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _SecurityCard extends StatelessWidget {
-  const _SecurityCard({required this.compact});
-
-  final bool compact;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.all(compact ? 10 : AppSpacing.md),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceAlt,
-        borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: AppColors.borderStrong),
-      ),
-      child: const Row(
-        children: [
-          Icon(
-            Icons.health_and_safety_outlined,
-            color: AppColors.primary,
-            size: 24,
-          ),
-          SizedBox(width: AppSpacing.sm),
-          Expanded(
-            child: Text(
-              'Données de santé protégées · RGPD · HDS\n'
-              'Réservé aux professionnels de santé habilités',
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                color: AppColors.textSecondary,
-                fontSize: 10.5,
-                height: 1.25,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }
