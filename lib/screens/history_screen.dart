@@ -2,6 +2,11 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../services/history_service.dart';
+import '../theme/app_colors.dart';
+import '../theme/app_radius.dart';
+import '../theme/app_shadows.dart';
+import '../theme/app_spacing.dart';
+import '../theme/app_typography.dart';
 import 'evaluation/evaluation_detail_screen.dart';
 
 enum HistoryFilter { all, critical, high, moderate, low, anonymous }
@@ -241,27 +246,40 @@ class _HistoryScreenState extends State<HistoryScreen> {
     final results = filteredHistory;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFF),
+      backgroundColor: AppColors.background,
       body: SafeArea(
         child: RefreshIndicator(
           onRefresh: loadHistory,
-          child: ListView(
-            padding: const EdgeInsets.fromLTRB(18, 18, 18, 130),
-            children: [
-              buildCompactHeader(),
-              const SizedBox(height: 10),
-              buildStatsRow(),
-              const SizedBox(height: 10),
-              buildSearchBar(),
-              const SizedBox(height: 10),
-              buildFilterChips(),
-              const SizedBox(height: 10),
-              if (history.isNotEmpty) buildDeleteHistoryButton(),
-              if (history.isNotEmpty) const SizedBox(height: 12),
-              if (history.isEmpty) buildEmptyState(),
-              if (history.isNotEmpty && results.isEmpty) buildNoResultState(),
-              if (results.isNotEmpty) ...results.map(buildHistoryCard),
-            ],
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 960),
+              child: ListView(
+                padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.md,
+                  AppSpacing.md,
+                  AppSpacing.md,
+                  130,
+                ),
+                children: [
+                  buildCompactHeader(),
+                  const SizedBox(height: AppSpacing.md),
+                  buildStatsRow(),
+                  const SizedBox(height: AppSpacing.md),
+                  buildSearchBar(),
+                  const SizedBox(height: AppSpacing.sm),
+                  buildFilterChips(),
+                  if (history.isNotEmpty) ...[
+                    const SizedBox(height: AppSpacing.sm),
+                    buildDeleteHistoryButton(),
+                  ],
+                  const SizedBox(height: AppSpacing.md),
+                  if (history.isEmpty) buildEmptyState(),
+                  if (history.isNotEmpty && results.isEmpty)
+                    buildNoResultState(),
+                  if (results.isNotEmpty) ...results.map(buildHistoryCard),
+                ],
+              ),
+            ),
           ),
         ),
       ),
@@ -271,41 +289,113 @@ class _HistoryScreenState extends State<HistoryScreen> {
   Widget buildCompactHeader() {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(18, 16, 18, 16),
+      padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFFEFF6FF), Color(0xFFFFFFFF)],
+          colors: [
+            AppColors.medicalBlue,
+            AppColors.primaryDark,
+            AppColors.primary,
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(26),
-        border: Border.all(color: const Color(0xFFBFDBFE)),
+        borderRadius: BorderRadius.circular(AppRadius.xl),
+        boxShadow: AppShadows.elevated,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 52,
+                height: 52,
+                decoration: BoxDecoration(
+                  color: AppColors.textOnDark.withValues(alpha: 0.14),
+                  borderRadius: BorderRadius.circular(AppRadius.lg),
+                  border: Border.all(
+                    color: AppColors.textOnDark.withValues(alpha: 0.20),
+                  ),
+                ),
+                child: const Icon(
+                  Icons.history_rounded,
+                  color: AppColors.textOnDark,
+                  size: 29,
+                ),
+              ),
+              const SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Historique',
+                      style: AppTypography.title.copyWith(
+                        color: AppColors.textOnDark,
+                        fontSize: 27,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.xs),
+                    Text(
+                      'Évaluations sauvegardées, patients liés et décisions cliniques.',
+                      style: TextStyle(
+                        color: AppColors.textOnDark.withValues(alpha: 0.82),
+                        fontSize: 13,
+                        height: 1.35,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.md),
+          Wrap(
+            spacing: AppSpacing.sm,
+            runSpacing: AppSpacing.sm,
+            children: [
+              buildHeaderBadge(
+                icon: Icons.assignment_turned_in_outlined,
+                label: '$totalEvaluations bilan(s)',
+              ),
+              buildHeaderBadge(
+                icon: Icons.warning_amber_rounded,
+                label: '$highRiskCount risque(s) élevé(s)',
+              ),
+              buildHeaderBadge(
+                icon: Icons.flag_rounded,
+                label: '$totalFlags drapeau(x)',
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget buildHeaderBadge({required IconData icon, required String label}) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+      decoration: BoxDecoration(
+        color: AppColors.textOnDark.withValues(alpha: 0.14),
+        borderRadius: BorderRadius.circular(AppRadius.pill),
+        border: Border.all(color: AppColors.textOnDark.withValues(alpha: 0.20)),
       ),
       child: Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Container(
-            width: 52,
-            height: 52,
-            decoration: const BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: LinearGradient(
-                colors: [Color(0xFF60A5FA), Color(0xFF2563EB)],
-              ),
-            ),
-            child: const Icon(
-              Icons.history_rounded,
-              color: Colors.white,
-              size: 28,
-            ),
-          ),
-          const SizedBox(width: 14),
-          const Expanded(
-            child: Text(
-              'Évaluations sauvegardées',
-              style: TextStyle(
-                color: Color(0xFF0F172A),
-                fontSize: 17,
-                fontWeight: FontWeight.w900,
-                letterSpacing: -0.2,
-              ),
+          Icon(icon, color: AppColors.textOnDark, size: 14),
+          const SizedBox(width: AppSpacing.xs),
+          Text(
+            label,
+            style: const TextStyle(
+              color: AppColors.textOnDark,
+              fontSize: 11,
+              fontWeight: FontWeight.w900,
             ),
           ),
         ],
@@ -314,32 +404,62 @@ class _HistoryScreenState extends State<HistoryScreen> {
   }
 
   Widget buildStatsRow() {
-    return Row(
-      children: [
-        Expanded(
-          child: buildStatCard(
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isWide = constraints.maxWidth >= 620;
+        final cards = [
+          buildStatCard(
             label: 'Bilans',
             value: '$totalEvaluations',
             icon: Icons.assignment_turned_in_outlined,
+            color: AppColors.primary,
           ),
-        ),
-        const SizedBox(width: 8),
-        Expanded(
-          child: buildStatCard(
-            label: 'Élevés',
+          buildStatCard(
+            label: 'Risques élevés',
             value: '$highRiskCount',
             icon: Icons.warning_amber_rounded,
+            color: AppColors.warningDark,
           ),
-        ),
-        const SizedBox(width: 8),
-        Expanded(
-          child: buildStatCard(
+          buildStatCard(
             label: 'Drapeaux',
             value: '$totalFlags',
             icon: Icons.flag_rounded,
+            color: AppColors.danger,
           ),
-        ),
-      ],
+        ];
+
+        if (isWide) {
+          return Row(
+            children: cards
+                .map(
+                  (card) => Expanded(
+                    child: Padding(
+                      padding: EdgeInsets.only(
+                        right: card == cards.last ? 0 : AppSpacing.sm,
+                      ),
+                      child: card,
+                    ),
+                  ),
+                )
+                .toList(),
+          );
+        }
+
+        return Row(
+          children: cards
+              .map(
+                (card) => Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.only(
+                      right: card == cards.last ? 0 : AppSpacing.sm,
+                    ),
+                    child: card,
+                  ),
+                ),
+              )
+              .toList(),
+        );
+      },
     );
   }
 
@@ -347,30 +467,36 @@ class _HistoryScreenState extends State<HistoryScreen> {
     required String label,
     required String value,
     required IconData icon,
+    required Color color,
   }) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(10, 9, 10, 9),
+      padding: const EdgeInsets.fromLTRB(10, 11, 10, 11),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        border: Border.all(color: AppColors.border),
+        boxShadow: AppShadows.soft,
       ),
       child: Column(
         children: [
-          Icon(icon, color: const Color(0xFF2563EB), size: 19),
+          Icon(icon, color: color, size: 19),
           const SizedBox(height: 4),
           Text(
             value,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
             style: const TextStyle(
-              color: Color(0xFF0F172A),
+              color: AppColors.textPrimary,
               fontSize: 18,
               fontWeight: FontWeight.w900,
             ),
           ),
           Text(
             label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
             style: const TextStyle(
-              color: Color(0xFF64748B),
+              color: AppColors.textSecondary,
               fontSize: 10.5,
               fontWeight: FontWeight.w800,
             ),
@@ -381,44 +507,54 @@ class _HistoryScreenState extends State<HistoryScreen> {
   }
 
   Widget buildSearchBar() {
-    return TextField(
-      controller: searchController,
-      onChanged: (value) {
-        setState(() {
-          searchQuery = value;
-        });
-      },
-      decoration: InputDecoration(
-        hintText: 'Rechercher patient, motif, décision...',
-        prefixIcon: const Icon(Icons.search_rounded),
-        suffixIcon: searchQuery.isEmpty
-            ? null
-            : IconButton(
-                onPressed: () {
-                  searchController.clear();
-                  setState(() {
-                    searchQuery = '';
-                  });
-                },
-                icon: const Icon(Icons.close_rounded),
-              ),
-        filled: true,
-        fillColor: Colors.white,
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 15,
-        ),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(22),
-          borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(22),
-          borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(22),
-          borderSide: const BorderSide(color: Color(0xFF2563EB), width: 2),
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.sm),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(AppRadius.xl),
+        border: Border.all(color: AppColors.border),
+        boxShadow: AppShadows.soft,
+      ),
+      child: TextField(
+        controller: searchController,
+        onChanged: (value) {
+          setState(() {
+            searchQuery = value;
+          });
+        },
+        decoration: InputDecoration(
+          hintText: 'Rechercher patient, motif, décision...',
+          prefixIcon: const Icon(Icons.search_rounded),
+          suffixIcon: searchQuery.isEmpty
+              ? null
+              : IconButton(
+                  tooltip: 'Effacer la recherche',
+                  onPressed: () {
+                    searchController.clear();
+                    setState(() {
+                      searchQuery = '';
+                    });
+                  },
+                  icon: const Icon(Icons.close_rounded),
+                ),
+          filled: true,
+          fillColor: AppColors.background,
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.md,
+            vertical: 14,
+          ),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(AppRadius.lg),
+            borderSide: const BorderSide(color: AppColors.border),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(AppRadius.lg),
+            borderSide: const BorderSide(color: AppColors.border),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(AppRadius.lg),
+            borderSide: const BorderSide(color: AppColors.primary, width: 1.6),
+          ),
         ),
       ),
     );
@@ -429,24 +565,49 @@ class _HistoryScreenState extends State<HistoryScreen> {
       scrollDirection: Axis.horizontal,
       child: Row(
         children: [
-          buildFilterChip('Tous', HistoryFilter.all),
-          buildFilterChip('Critique', HistoryFilter.critical),
-          buildFilterChip('Élevé', HistoryFilter.high),
-          buildFilterChip('Modéré', HistoryFilter.moderate),
-          buildFilterChip('Faible', HistoryFilter.low),
-          buildFilterChip('Anonyme', HistoryFilter.anonymous),
+          buildFilterChip('Tous', HistoryFilter.all, Icons.all_inbox_rounded),
+          buildFilterChip(
+            'Critique',
+            HistoryFilter.critical,
+            Icons.priority_high_rounded,
+          ),
+          buildFilterChip(
+            'Élevé',
+            HistoryFilter.high,
+            Icons.warning_amber_rounded,
+          ),
+          buildFilterChip(
+            'Modéré',
+            HistoryFilter.moderate,
+            Icons.report_gmailerrorred_rounded,
+          ),
+          buildFilterChip(
+            'Faible',
+            HistoryFilter.low,
+            Icons.check_circle_outline_rounded,
+          ),
+          buildFilterChip(
+            'Anonyme',
+            HistoryFilter.anonymous,
+            Icons.no_accounts_outlined,
+          ),
         ],
       ),
     );
   }
 
-  Widget buildFilterChip(String label, HistoryFilter filter) {
+  Widget buildFilterChip(String label, HistoryFilter filter, IconData icon) {
     final selected = selectedFilter == filter;
 
     return Padding(
       padding: const EdgeInsets.only(right: 8),
       child: ChoiceChip(
         selected: selected,
+        avatar: Icon(
+          icon,
+          size: 16,
+          color: selected ? AppColors.primary : AppColors.textSecondary,
+        ),
         label: Text(label),
         onSelected: (_) {
           setState(() {
@@ -454,33 +615,47 @@ class _HistoryScreenState extends State<HistoryScreen> {
           });
         },
         labelStyle: TextStyle(
-          color: selected ? const Color(0xFF2563EB) : const Color(0xFF64748B),
+          color: selected ? AppColors.primary : AppColors.textSecondary,
           fontWeight: FontWeight.w900,
           fontSize: 12,
         ),
-        selectedColor: const Color(0xFFEFF6FF),
-        backgroundColor: Colors.white,
+        selectedColor: AppColors.surfaceAlt,
+        backgroundColor: AppColors.surface,
         side: BorderSide(
-          color: selected ? const Color(0xFFBFDBFE) : const Color(0xFFE2E8F0),
+          color: selected ? AppColors.borderStrong : AppColors.border,
         ),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(99)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadius.pill),
+        ),
       ),
     );
   }
 
   Widget buildDeleteHistoryButton() {
     return Align(
-      alignment: Alignment.centerRight,
-      child: OutlinedButton.icon(
-        onPressed: clearHistory,
-        icon: const Icon(Icons.delete_outline_rounded, size: 18),
-        label: const Text('Supprimer'),
-        style: OutlinedButton.styleFrom(
-          foregroundColor: const Color(0xFFEF4444),
-          side: const BorderSide(color: Color(0xFFFCA5A5)),
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(18),
+      alignment: Alignment.center,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(AppSpacing.sm),
+        decoration: BoxDecoration(
+          color: AppColors.danger.withValues(alpha: 0.06),
+          borderRadius: BorderRadius.circular(AppRadius.lg),
+          border: Border.all(color: AppColors.danger.withValues(alpha: 0.16)),
+        ),
+        child: Align(
+          alignment: Alignment.centerRight,
+          child: OutlinedButton.icon(
+            onPressed: clearHistory,
+            icon: const Icon(Icons.delete_outline_rounded, size: 18),
+            label: const Text('Supprimer l’historique'),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: AppColors.danger,
+              side: BorderSide(color: AppColors.danger.withValues(alpha: 0.35)),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(AppRadius.lg),
+              ),
+            ),
           ),
         ),
       ),
@@ -491,7 +666,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
     return buildInfoState(
       icon: Icons.history_rounded,
       title: 'Aucun bilan enregistré',
-      text: 'Les évaluations sauvegardées apparaîtront ici.',
+      text:
+          'Les évaluations sauvegardées apparaîtront ici avec leur patient, leur date et leur niveau de risque.',
     );
   }
 
@@ -509,22 +685,31 @@ class _HistoryScreenState extends State<HistoryScreen> {
     required String text,
   }) {
     return Container(
-      margin: const EdgeInsets.only(top: 6),
-      padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
+      margin: const EdgeInsets.only(top: AppSpacing.xs),
+      padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(26),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(AppRadius.xl),
+        border: Border.all(color: AppColors.border),
+        boxShadow: AppShadows.soft,
       ),
       child: Column(
         children: [
-          Icon(icon, size: 38, color: const Color(0xFF94A3B8)),
-          const SizedBox(height: 10),
+          Container(
+            width: 58,
+            height: 58,
+            decoration: BoxDecoration(
+              color: AppColors.surfaceAlt,
+              borderRadius: BorderRadius.circular(AppRadius.lg),
+            ),
+            child: Icon(icon, size: 31, color: AppColors.primary),
+          ),
+          const SizedBox(height: AppSpacing.md),
           Text(
             title,
             style: const TextStyle(
               fontSize: 16,
-              color: Color(0xFF64748B),
+              color: AppColors.textPrimary,
               fontWeight: FontWeight.w900,
             ),
           ),
@@ -533,9 +718,10 @@ class _HistoryScreenState extends State<HistoryScreen> {
             text,
             textAlign: TextAlign.center,
             style: const TextStyle(
-              color: Color(0xFF94A3B8),
+              color: AppColors.textSecondary,
               fontSize: 13,
               fontWeight: FontWeight.w600,
+              height: 1.35,
             ),
           ),
         ],
@@ -565,103 +751,124 @@ class _HistoryScreenState extends State<HistoryScreen> {
         }
       },
       child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.all(15),
+        margin: const EdgeInsets.only(bottom: AppSpacing.sm),
+        padding: const EdgeInsets.all(AppSpacing.md),
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(26),
-          border: Border.all(color: const Color(0xFFE2E8F0)),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.03),
-              blurRadius: 14,
-              offset: const Offset(0, 7),
-            ),
-          ],
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(AppRadius.xl),
+          border: Border.all(color: AppColors.border),
+          boxShadow: AppShadows.soft,
         ),
-        child: Row(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              height: 54,
-              width: 54,
-              decoration: BoxDecoration(
-                color: riskColor(risk).withValues(alpha: 0.10),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Icon(motifIcon(motif), color: riskColor(risk), size: 27),
-            ),
-            const SizedBox(width: 13),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    patientDisplayName,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: Color(0xFF0F172A),
-                      fontSize: 16,
-                      fontWeight: FontWeight.w900,
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  height: 56,
+                  width: 56,
+                  decoration: BoxDecoration(
+                    color: riskColor(risk).withValues(alpha: 0.10),
+                    borderRadius: BorderRadius.circular(AppRadius.lg),
+                    border: Border.all(
+                      color: riskColor(risk).withValues(alpha: 0.18),
                     ),
                   ),
-                  const SizedBox(height: 3),
-                  Text(
-                    motif,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: Color(0xFF334155),
-                      fontWeight: FontWeight.w700,
-                      fontSize: 13,
-                    ),
+                  child: Icon(
+                    motifIcon(motif),
+                    color: riskColor(risk),
+                    size: 28,
                   ),
-                  const SizedBox(height: 3),
-                  Text(
-                    formatDate(item['date']),
-                    style: const TextStyle(
-                      color: Color(0xFF64748B),
-                      fontWeight: FontWeight.w600,
-                      fontSize: 12,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Wrap(
-                    spacing: 7,
-                    runSpacing: 7,
+                ),
+                const SizedBox(width: AppSpacing.sm),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      buildRiskBadge(risk),
-                      buildSmallBadge('$checkedCountValue drapeau(x)'),
-                      if (isAnonymous) buildAnonymousBadge(),
+                      Text(
+                        patientDisplayName,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: AppColors.textPrimary,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w900,
+                          height: 1.15,
+                        ),
+                      ),
+                      const SizedBox(height: 5),
+                      Text(
+                        motif,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: AppColors.textPrimary,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 13,
+                          height: 1.25,
+                        ),
+                      ),
                     ],
                   ),
-                ],
-              ),
+                ),
+                const SizedBox(width: AppSpacing.sm),
+                buildScorePill(scoreValue),
+              ],
             ),
-            const SizedBox(width: 10),
-            Column(
+            const SizedBox(height: AppSpacing.md),
+            Wrap(
+              spacing: AppSpacing.sm,
+              runSpacing: AppSpacing.sm,
               children: [
-                const Text(
-                  'Score',
-                  style: TextStyle(
-                    color: Color(0xFF64748B),
-                    fontSize: 10,
-                    fontWeight: FontWeight.w700,
-                  ),
+                buildRiskBadge(risk),
+                buildSmallBadge(
+                  icon: Icons.flag_rounded,
+                  text: '$checkedCountValue drapeau(x)',
                 ),
-                Text(
-                  scoreValue,
-                  style: const TextStyle(
-                    color: Color(0xFF0F172A),
-                    fontSize: 25,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: -1,
-                  ),
+                buildSmallBadge(
+                  icon: Icons.event_outlined,
+                  text: formatDate(item['date']),
                 ),
+                if (isAnonymous) buildAnonymousBadge(),
               ],
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget buildScorePill(String scoreValue) {
+    return Container(
+      width: 58,
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 9),
+      decoration: BoxDecoration(
+        color: AppColors.background,
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Column(
+        children: [
+          const Text(
+            'Score',
+            style: TextStyle(
+              color: AppColors.textSecondary,
+              fontSize: 10,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          Text(
+            scoreValue,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              color: AppColors.textPrimary,
+              fontSize: 24,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -671,7 +878,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
         color: riskColor(risk).withValues(alpha: 0.10),
-        borderRadius: BorderRadius.circular(99),
+        borderRadius: BorderRadius.circular(AppRadius.pill),
         border: Border.all(color: riskColor(risk).withValues(alpha: 0.35)),
       ),
       child: Text(
@@ -685,21 +892,28 @@ class _HistoryScreenState extends State<HistoryScreen> {
     );
   }
 
-  Widget buildSmallBadge(String text) {
+  Widget buildSmallBadge({required IconData icon, required String text}) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
-        color: const Color(0xFFF8FAFC),
-        borderRadius: BorderRadius.circular(99),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+        color: AppColors.background,
+        borderRadius: BorderRadius.circular(AppRadius.pill),
+        border: Border.all(color: AppColors.border),
       ),
-      child: Text(
-        text,
-        style: const TextStyle(
-          color: Color(0xFF475569),
-          fontWeight: FontWeight.w800,
-          fontSize: 11,
-        ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: AppColors.textSecondary, size: 13),
+          const SizedBox(width: AppSpacing.xs),
+          Text(
+            text,
+            style: const TextStyle(
+              color: AppColors.textSecondary,
+              fontWeight: FontWeight.w800,
+              fontSize: 11,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -708,17 +922,30 @@ class _HistoryScreenState extends State<HistoryScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
-        color: const Color(0xFFFFF7ED),
-        borderRadius: BorderRadius.circular(99),
-        border: Border.all(color: const Color(0xFFFED7AA)),
-      ),
-      child: const Text(
-        'Anonyme',
-        style: TextStyle(
-          color: Color(0xFFC2410C),
-          fontWeight: FontWeight.w900,
-          fontSize: 11,
+        color: AppColors.warningDark.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(AppRadius.pill),
+        border: Border.all(
+          color: AppColors.warningDark.withValues(alpha: 0.25),
         ),
+      ),
+      child: const Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            Icons.no_accounts_outlined,
+            color: AppColors.warningDark,
+            size: 13,
+          ),
+          SizedBox(width: AppSpacing.xs),
+          Text(
+            'Anonyme',
+            style: TextStyle(
+              color: AppColors.warningDark,
+              fontWeight: FontWeight.w900,
+              fontSize: 11,
+            ),
+          ),
+        ],
       ),
     );
   }

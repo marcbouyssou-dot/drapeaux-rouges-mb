@@ -2,7 +2,11 @@ import 'package:flutter/material.dart';
 
 import '../../services/history_service.dart';
 import '../../services/pdf_service.dart';
-import '../../theme/app_text_styles.dart';
+import '../../theme/app_colors.dart';
+import '../../theme/app_radius.dart';
+import '../../theme/app_shadows.dart';
+import '../../theme/app_spacing.dart';
+import '../../theme/app_typography.dart';
 
 class EvaluationDetailScreen extends StatelessWidget {
   final Map<String, dynamic> evaluation;
@@ -135,8 +139,10 @@ class EvaluationDetailScreen extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.fromLTRB(18, 12, 18, 18),
             decoration: const BoxDecoration(
-              color: Color(0xFFF8FAFC),
-              borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
+              color: AppColors.background,
+              borderRadius: BorderRadius.vertical(
+                top: Radius.circular(AppRadius.xxl),
+              ),
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -145,15 +151,15 @@ class EvaluationDetailScreen extends StatelessWidget {
                   height: 5,
                   width: 54,
                   decoration: BoxDecoration(
-                    color: const Color(0xFFCBD5E1),
-                    borderRadius: BorderRadius.circular(99),
+                    color: AppColors.borderStrong,
+                    borderRadius: BorderRadius.circular(AppRadius.pill),
                   ),
                 ),
                 const SizedBox(height: 18),
-                const Text(
+                Text(
                   'Exporter le PDF',
-                  style: TextStyle(
-                    color: Color(0xFF0F172A),
+                  style: AppTypography.title.copyWith(
+                    color: AppColors.textPrimary,
                     fontSize: 22,
                     fontWeight: FontWeight.w900,
                   ),
@@ -193,17 +199,25 @@ class EvaluationDetailScreen extends StatelessWidget {
     required VoidCallback onTap,
   }) {
     return Material(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(22),
+      color: AppColors.surface,
+      borderRadius: BorderRadius.circular(AppRadius.lg),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(22),
+        borderRadius: BorderRadius.circular(AppRadius.lg),
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(AppSpacing.md),
           child: Row(
             children: [
-              Icon(icon, color: const Color(0xFF2563EB), size: 28),
-              const SizedBox(width: 14),
+              Container(
+                width: 42,
+                height: 42,
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceAlt,
+                  borderRadius: BorderRadius.circular(AppRadius.md),
+                ),
+                child: Icon(icon, color: AppColors.primary, size: 24),
+              ),
+              const SizedBox(width: AppSpacing.sm),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -211,7 +225,7 @@ class EvaluationDetailScreen extends StatelessWidget {
                     Text(
                       title,
                       style: const TextStyle(
-                        color: Color(0xFF0F172A),
+                        color: AppColors.textPrimary,
                         fontSize: 16,
                         fontWeight: FontWeight.w900,
                       ),
@@ -220,14 +234,17 @@ class EvaluationDetailScreen extends StatelessWidget {
                     Text(
                       subtitle,
                       style: const TextStyle(
-                        color: Color(0xFF64748B),
+                        color: AppColors.textSecondary,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
                   ],
                 ),
               ),
-              const Icon(Icons.chevron_right_rounded, color: Color(0xFF94A3B8)),
+              const Icon(
+                Icons.chevron_right_rounded,
+                color: AppColors.textMuted,
+              ),
             ],
           ),
         ),
@@ -285,21 +302,31 @@ class EvaluationDetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFF),
+      backgroundColor: AppColors.background,
       body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(18, 18, 18, 32),
-          children: [
-            buildPatientHeader(context),
-            const SizedBox(height: 12),
-            buildRiskCard(),
-            const SizedBox(height: 12),
-            buildDecisionCard(),
-            const SizedBox(height: 12),
-            buildFlagsSection(),
-            const SizedBox(height: 14),
-            buildActionButtons(context),
-          ],
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 960),
+            child: ListView(
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.md,
+                AppSpacing.md,
+                AppSpacing.md,
+                AppSpacing.xl,
+              ),
+              children: [
+                buildPatientHeader(context),
+                const SizedBox(height: AppSpacing.md),
+                buildRiskCard(),
+                const SizedBox(height: AppSpacing.md),
+                buildDecisionCard(),
+                const SizedBox(height: AppSpacing.md),
+                buildFlagsSection(),
+                const SizedBox(height: AppSpacing.md),
+                buildActionButtons(context),
+              ],
+            ),
+          ),
         ),
       ),
     );
@@ -307,70 +334,193 @@ class EvaluationDetailScreen extends StatelessWidget {
 
   Widget buildPatientHeader(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(12, 12, 16, 12),
+      padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFFEFF6FF), Color(0xFFFFFFFF)],
+          colors: [
+            AppColors.medicalBlue,
+            AppColors.primaryDark,
+            AppColors.primary,
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(26),
-        border: Border.all(color: const Color(0xFFBFDBFE)),
+        borderRadius: BorderRadius.circular(AppRadius.xl),
+        boxShadow: AppShadows.elevated,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                height: 44,
+                width: 44,
+                decoration: BoxDecoration(
+                  color: AppColors.textOnDark.withValues(alpha: 0.14),
+                  borderRadius: BorderRadius.circular(AppRadius.lg),
+                  border: Border.all(
+                    color: AppColors.textOnDark.withValues(alpha: 0.20),
+                  ),
+                ),
+                child: IconButton(
+                  tooltip: 'Retour',
+                  onPressed: () => Navigator.pop(context),
+                  icon: const Icon(Icons.arrow_back_ios_new_rounded),
+                  iconSize: 18,
+                  color: AppColors.textOnDark,
+                ),
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              Container(
+                height: 44,
+                width: 44,
+                decoration: BoxDecoration(
+                  color: AppColors.textOnDark.withValues(alpha: 0.14),
+                  borderRadius: BorderRadius.circular(AppRadius.lg),
+                  border: Border.all(
+                    color: AppColors.textOnDark.withValues(alpha: 0.20),
+                  ),
+                ),
+                child: const Icon(
+                  Icons.assignment_turned_in_outlined,
+                  color: AppColors.textOnDark,
+                  size: 24,
+                ),
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      patientName,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppTypography.title.copyWith(
+                        color: AppColors.textOnDark,
+                        fontSize: 20,
+                        fontWeight: FontWeight.w900,
+                        height: 1.15,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      formatDate(evaluation['date']),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: AppColors.textOnDark.withValues(alpha: 0.82),
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.md),
+          Wrap(
+            spacing: AppSpacing.sm,
+            runSpacing: AppSpacing.sm,
+            children: [
+              buildHeaderChip(
+                icon: Icons.monitor_heart_outlined,
+                label: riskLevel,
+                color: AppColors.textOnDark,
+              ),
+              buildHeaderChip(
+                icon: Icons.medical_services_outlined,
+                label: motif,
+                color: AppColors.textOnDark,
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget buildHeaderChip({
+    required IconData icon,
+    required String label,
+    required Color color,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.14),
+        borderRadius: BorderRadius.circular(AppRadius.pill),
+        border: Border.all(color: color.withValues(alpha: 0.20)),
       ),
       child: Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Container(
-            height: 44,
-            width: 44,
-            decoration: BoxDecoration(
+          Icon(icon, color: color, size: 14),
+          const SizedBox(width: AppSpacing.xs),
+          Flexible(
+            child: Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: color,
+                fontSize: 11,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget buildSectionCard({required Widget child, Color? borderColor}) {
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.md),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(AppRadius.xl),
+        border: Border.all(color: borderColor ?? AppColors.border),
+        boxShadow: AppShadows.soft,
+      ),
+      child: child,
+    );
+  }
+
+  Widget buildMetricChip(String label, String value, IconData icon) {
+    return Container(
+      width: 76,
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 10),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.16),
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.14)),
+      ),
+      child: Column(
+        children: [
+          Icon(icon, color: Colors.white.withValues(alpha: 0.78), size: 16),
+          const SizedBox(height: 2),
+          Text(
+            value,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: const Color(0xFFE2E8F0)),
-            ),
-            child: IconButton(
-              onPressed: () => Navigator.pop(context),
-              icon: const Icon(Icons.arrow_back_ios_new_rounded),
-              iconSize: 18,
-              color: const Color(0xFF2563EB),
+              fontSize: 20,
+              fontWeight: FontWeight.w900,
             ),
           ),
-          const SizedBox(width: 12),
-          Container(
-            height: 48,
-            width: 48,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: riskColor.withValues(alpha: 0.12),
-            ),
-            child: Icon(
-              Icons.assignment_turned_in_outlined,
-              color: riskColor,
-              size: 26,
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  patientName,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: Color(0xFF0F172A),
-                    fontSize: 16,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
-                const SizedBox(height: 3),
-                Text(
-                  formatDate(evaluation['date']),
-                  style: const TextStyle(
-                    color: Color(0xFF64748B),
-                    fontSize: 12.5,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ],
+          Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: Colors.white.withValues(alpha: 0.78),
+              fontSize: 9.5,
+              fontWeight: FontWeight.w800,
             ),
           ),
         ],
@@ -380,12 +530,12 @@ class EvaluationDetailScreen extends StatelessWidget {
 
   Widget buildRiskCard() {
     return Container(
-      padding: const EdgeInsets.all(17),
+      padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [riskColor, riskColor.withValues(alpha: 0.86)],
         ),
-        borderRadius: BorderRadius.circular(28),
+        borderRadius: BorderRadius.circular(AppRadius.xl),
         boxShadow: [
           BoxShadow(
             color: riskColor.withValues(alpha: 0.18),
@@ -394,88 +544,69 @@ class EvaluationDetailScreen extends StatelessWidget {
           ),
         ],
       ),
-      child: Row(
-        children: [
-          Container(
-            height: 56,
-            width: 56,
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.16),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: const Icon(
-              Icons.monitor_heart_rounded,
-              color: Colors.white,
-              size: 31,
-            ),
-          ),
-          const SizedBox(width: 13),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  riskLevel,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 23,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: -0.8,
-                  ),
-                ),
-                const SizedBox(height: 5),
-                Text(
-                  motif,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.84),
-                    fontSize: 13.5,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 8),
-          buildMiniStat('Score', '$score'),
-          const SizedBox(width: 7),
-          buildMiniStat('DR', '$checkedCount'),
-        ],
-      ),
-    );
-  }
-
-  Widget buildMiniStat(String label, String value) {
-    return Container(
-      width: 52,
-      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 9),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.16),
-        borderRadius: BorderRadius.circular(17),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
-      ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            label,
-            style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.74),
-              fontSize: 9.5,
-              fontWeight: FontWeight.w800,
-            ),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                height: 56,
+                width: 56,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.16),
+                  borderRadius: BorderRadius.circular(AppRadius.lg),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.14),
+                  ),
+                ),
+                child: const Icon(
+                  Icons.monitor_heart_rounded,
+                  color: Colors.white,
+                  size: 31,
+                ),
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      riskLevel,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 24,
+                        fontWeight: FontWeight.w900,
+                        height: 1.1,
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.xs),
+                    Text(
+                      motif,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.84),
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.w800,
+                        height: 1.25,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 2),
-          Text(
-            value,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 20,
-              fontWeight: FontWeight.w900,
-              letterSpacing: -0.6,
-            ),
+          const SizedBox(height: AppSpacing.md),
+          Wrap(
+            spacing: AppSpacing.sm,
+            runSpacing: AppSpacing.sm,
+            children: [
+              buildMetricChip('Score', '$score', Icons.speed_rounded),
+              buildMetricChip('Drapeaux', '$checkedCount', Icons.flag_rounded),
+            ],
           ),
         ],
       ),
@@ -483,13 +614,8 @@ class EvaluationDetailScreen extends StatelessWidget {
   }
 
   Widget buildDecisionCard() {
-    return Container(
-      padding: const EdgeInsets.all(17),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(26),
-        border: Border.all(color: riskColor.withValues(alpha: 0.20)),
-      ),
+    return buildSectionCard(
+      borderColor: riskColor.withValues(alpha: 0.22),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -498,11 +624,12 @@ class EvaluationDetailScreen extends StatelessWidget {
             width: 48,
             decoration: BoxDecoration(
               color: riskColor.withValues(alpha: 0.10),
-              borderRadius: BorderRadius.circular(18),
+              borderRadius: BorderRadius.circular(AppRadius.lg),
+              border: Border.all(color: riskColor.withValues(alpha: 0.16)),
             ),
             child: Icon(Icons.route_rounded, color: riskColor, size: 27),
           ),
-          const SizedBox(width: 13),
+          const SizedBox(width: AppSpacing.sm),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -513,15 +640,14 @@ class EvaluationDetailScreen extends StatelessWidget {
                     color: riskColor,
                     fontSize: 19,
                     fontWeight: FontWeight.w900,
-                    letterSpacing: -0.4,
-                    height: 1.1,
+                    height: 1.15,
                   ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: AppSpacing.sm),
                 Text(
                   decisionMessage,
                   style: const TextStyle(
-                    color: Color(0xFF334155),
+                    color: AppColors.textPrimary,
                     fontSize: 13.5,
                     fontWeight: FontWeight.w600,
                     height: 1.45,
@@ -538,38 +664,47 @@ class EvaluationDetailScreen extends StatelessWidget {
   Widget buildFlagsSection() {
     if (checkedFlags.isEmpty) return buildEmptyFlags();
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text('Drapeaux rouges cochés', style: AppTextStyles.sectionTitle),
-        const SizedBox(height: 10),
-        ...checkedFlags.map(buildFlagTile),
-      ],
+    return buildSectionCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          buildSectionTitle(
+            icon: Icons.flag_rounded,
+            title: 'Drapeaux rouges cochés',
+            subtitle: '$checkedCount élément(s) retenu(s) dans ce bilan.',
+          ),
+          const SizedBox(height: AppSpacing.md),
+          ...checkedFlags.map(buildFlagTile),
+        ],
+      ),
     );
   }
 
   Widget buildEmptyFlags() {
-    return Container(
-      padding: const EdgeInsets.all(17),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
-      ),
-      child: const Row(
+    return buildSectionCard(
+      child: Row(
         children: [
-          Icon(
-            Icons.check_circle_outline_rounded,
-            color: Color(0xFF22C55E),
-            size: 29,
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: AppColors.surfaceSuccess,
+              borderRadius: BorderRadius.circular(AppRadius.lg),
+            ),
+            child: const Icon(
+              Icons.check_circle_outline_rounded,
+              color: AppColors.successDark,
+              size: 26,
+            ),
           ),
-          SizedBox(width: 13),
-          Expanded(
+          const SizedBox(width: AppSpacing.sm),
+          const Expanded(
             child: Text(
               'Aucun drapeau rouge coché dans ce bilan.',
               style: TextStyle(
-                color: Color(0xFF334155),
+                color: AppColors.textPrimary,
                 fontWeight: FontWeight.w800,
+                height: 1.3,
               ),
             ),
           ),
@@ -584,25 +719,27 @@ class EvaluationDetailScreen extends StatelessWidget {
     final category = flag['category']?.toString();
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 9),
-      padding: const EdgeInsets.all(15),
+      margin: const EdgeInsets.only(bottom: AppSpacing.sm),
+      padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+        color: AppColors.background,
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        border: Border.all(color: AppColors.border),
       ),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
             height: 42,
             width: 42,
             decoration: BoxDecoration(
               color: riskColor.withValues(alpha: 0.10),
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(AppRadius.md),
+              border: Border.all(color: riskColor.withValues(alpha: 0.14)),
             ),
             child: Icon(Icons.flag_rounded, color: riskColor, size: 24),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: AppSpacing.sm),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -611,7 +748,7 @@ class EvaluationDetailScreen extends StatelessWidget {
                   Text(
                     category,
                     style: const TextStyle(
-                      color: Color(0xFF64748B),
+                      color: AppColors.textSecondary,
                       fontSize: 11.5,
                       fontWeight: FontWeight.w800,
                     ),
@@ -621,18 +758,34 @@ class EvaluationDetailScreen extends StatelessWidget {
                 Text(
                   title,
                   style: const TextStyle(
-                    color: Color(0xFF0F172A),
+                    color: AppColors.textPrimary,
                     fontWeight: FontWeight.w800,
                     height: 1.3,
                   ),
                 ),
-                const SizedBox(height: 6),
-                Text(
-                  severity,
-                  style: TextStyle(
-                    color: riskColor,
-                    fontWeight: FontWeight.w900,
-                    fontSize: 12,
+                const SizedBox(height: AppSpacing.sm),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 5,
+                    ),
+                    decoration: BoxDecoration(
+                      color: riskColor.withValues(alpha: 0.10),
+                      borderRadius: BorderRadius.circular(AppRadius.pill),
+                      border: Border.all(
+                        color: riskColor.withValues(alpha: 0.25),
+                      ),
+                    ),
+                    child: Text(
+                      severity,
+                      style: TextStyle(
+                        color: riskColor,
+                        fontWeight: FontWeight.w900,
+                        fontSize: 12,
+                      ),
+                    ),
                   ),
                 ),
               ],
@@ -644,37 +797,89 @@ class EvaluationDetailScreen extends StatelessWidget {
   }
 
   Widget buildActionButtons(BuildContext context) {
-    return Row(
+    return Column(
       children: [
-        Expanded(
+        SizedBox(
+          width: double.infinity,
           child: FilledButton.icon(
             onPressed: () => showPdfExportChoice(context),
             icon: const Icon(Icons.picture_as_pdf_outlined),
             label: const Text('Exporter PDF'),
             style: FilledButton.styleFrom(
-              backgroundColor: const Color(0xFF2563EB),
+              backgroundColor: AppColors.primary,
               foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(vertical: 14),
+              padding: const EdgeInsets.symmetric(vertical: 15),
+              textStyle: const TextStyle(fontWeight: FontWeight.w900),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(18),
+                borderRadius: BorderRadius.circular(AppRadius.lg),
               ),
             ),
           ),
         ),
-        const SizedBox(width: 10),
-        Expanded(
+        const SizedBox(height: AppSpacing.sm),
+        SizedBox(
+          width: double.infinity,
           child: OutlinedButton.icon(
             onPressed: () => confirmDelete(context),
             icon: const Icon(Icons.delete_outline_rounded),
             label: const Text('Supprimer'),
             style: OutlinedButton.styleFrom(
-              foregroundColor: const Color(0xFFEF4444),
-              side: const BorderSide(color: Color(0xFFFCA5A5)),
-              padding: const EdgeInsets.symmetric(vertical: 14),
+              foregroundColor: AppColors.danger,
+              side: BorderSide(color: AppColors.danger.withValues(alpha: 0.35)),
+              padding: const EdgeInsets.symmetric(vertical: 15),
+              textStyle: const TextStyle(fontWeight: FontWeight.w900),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(18),
+                borderRadius: BorderRadius.circular(AppRadius.lg),
               ),
             ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget buildSectionTitle({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+  }) {
+    return Row(
+      children: [
+        Container(
+          width: 38,
+          height: 38,
+          decoration: BoxDecoration(
+            color: AppColors.surfaceAlt,
+            borderRadius: BorderRadius.circular(AppRadius.md),
+          ),
+          child: Icon(icon, color: AppColors.primary, size: 20),
+        ),
+        const SizedBox(width: AppSpacing.sm),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: AppTypography.subtitle.copyWith(
+                  color: AppColors.textPrimary,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                subtitle,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: AppTypography.caption.copyWith(
+                  color: AppColors.textSecondary,
+                  fontWeight: FontWeight.w600,
+                  height: 1.25,
+                ),
+              ),
+            ],
           ),
         ),
       ],
