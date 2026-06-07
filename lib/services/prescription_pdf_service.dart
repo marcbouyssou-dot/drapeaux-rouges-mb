@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:pdf/pdf.dart';
@@ -24,6 +25,7 @@ class PrescriptionPdfService {
     final pw.MemoryImage? justificatifPdfImage = justificatifImage != null
         ? pw.MemoryImage(justificatifImage.readAsBytesSync())
         : null;
+    final signaturePdfImage = _signatureImage(practitioner);
 
     pdf.addPage(
       pw.MultiPage(
@@ -100,20 +102,7 @@ class PrescriptionPdfService {
 
             pw.SizedBox(height: 40),
 
-            pw.Align(
-              alignment: pw.Alignment.centerRight,
-              child: pw.Column(
-                crossAxisAlignment: pw.CrossAxisAlignment.center,
-                children: [
-                  pw.Text(
-                    'Signature et cachet',
-                    style: const pw.TextStyle(fontSize: 11),
-                  ),
-                  pw.SizedBox(height: 54),
-                  pw.Container(width: 180, height: 1, color: PdfColors.grey700),
-                ],
-              ),
-            ),
+            _signatureBlock(signaturePdfImage),
           ];
         },
       ),
@@ -230,6 +219,43 @@ class PrescriptionPdfService {
             style: const pw.TextStyle(fontSize: 11),
           ),
       ],
+    );
+  }
+
+  static pw.MemoryImage? _signatureImage(PractitionerProfile practitioner) {
+    if (!practitioner.hasSignature) return null;
+
+    try {
+      return pw.MemoryImage(base64Decode(practitioner.signatureBase64));
+    } catch (_) {
+      return null;
+    }
+  }
+
+  static pw.Widget _signatureBlock(pw.MemoryImage? signaturePdfImage) {
+    return pw.Align(
+      alignment: pw.Alignment.centerRight,
+      child: pw.Column(
+        crossAxisAlignment: pw.CrossAxisAlignment.center,
+        children: [
+          pw.Text(
+            'Signature et cachet',
+            style: const pw.TextStyle(fontSize: 11),
+          ),
+          pw.SizedBox(height: 10),
+          if (signaturePdfImage != null)
+            pw.Container(
+              width: 180,
+              height: 72,
+              alignment: pw.Alignment.center,
+              child: pw.Image(signaturePdfImage, fit: pw.BoxFit.contain),
+            )
+          else ...[
+            pw.SizedBox(height: 54),
+            pw.Container(width: 180, height: 1, color: PdfColors.grey700),
+          ],
+        ],
+      ),
     );
   }
 

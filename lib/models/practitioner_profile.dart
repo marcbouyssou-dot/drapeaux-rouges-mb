@@ -9,6 +9,7 @@ class PractitionerProfile {
   final String telephone;
   final bool exerciceCoordonne;
   final String nomStructure;
+  final String signatureBase64;
 
   const PractitionerProfile({
     required this.nom,
@@ -21,6 +22,7 @@ class PractitionerProfile {
     this.telephone = '',
     this.exerciceCoordonne = false,
     this.nomStructure = '',
+    this.signatureBase64 = '',
   });
 
   bool get isComplete {
@@ -42,6 +44,38 @@ class PractitionerProfile {
     return exerciceCoordonne || nomStructure.trim().isNotEmpty;
   }
 
+  bool get hasSignature {
+    return signatureBase64.trim().isNotEmpty;
+  }
+
+  PractitionerProfile copyWith({
+    String? nom,
+    String? prenom,
+    String? adresse,
+    String? adeli,
+    String? rpps,
+    String? profession,
+    String? email,
+    String? telephone,
+    bool? exerciceCoordonne,
+    String? nomStructure,
+    String? signatureBase64,
+  }) {
+    return PractitionerProfile(
+      nom: nom ?? this.nom,
+      prenom: prenom ?? this.prenom,
+      adresse: adresse ?? this.adresse,
+      adeli: adeli ?? this.adeli,
+      rpps: rpps ?? this.rpps,
+      profession: profession ?? this.profession,
+      email: email ?? this.email,
+      telephone: telephone ?? this.telephone,
+      exerciceCoordonne: exerciceCoordonne ?? this.exerciceCoordonne,
+      nomStructure: nomStructure ?? this.nomStructure,
+      signatureBase64: signatureBase64 ?? this.signatureBase64,
+    );
+  }
+
   Map<String, dynamic> toJson() {
     return {
       'nom': nom,
@@ -54,6 +88,7 @@ class PractitionerProfile {
       'telephone': telephone,
       'exerciceCoordonne': exerciceCoordonne,
       'nomStructure': nomStructure,
+      'signatureBase64': signatureBase64,
     };
   }
 
@@ -69,6 +104,7 @@ class PractitionerProfile {
       telephone: json['telephone']?.toString() ?? '',
       exerciceCoordonne: json['exerciceCoordonne'] == true,
       nomStructure: json['nomStructure']?.toString() ?? '',
+      signatureBase64: json['signatureBase64']?.toString() ?? '',
     );
   }
 
@@ -84,6 +120,7 @@ class PractitionerProfile {
       telephone: '',
       exerciceCoordonne: false,
       nomStructure: '',
+      signatureBase64: '',
     );
   }
 }

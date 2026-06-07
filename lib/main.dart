@@ -29,7 +29,10 @@ Future<void> _configureSmartphoneOrientation() async {
   final view = views.first;
   final logicalSize = view.physicalSize / view.devicePixelRatio;
   final isSmartphone = logicalSize.shortestSide < 600;
-  if (!isSmartphone) return;
+  if (!isSmartphone) {
+    await SystemChrome.setPreferredOrientations([]);
+    return;
+  }
 
   // Smartphones stay in portrait; tablets, desktop and web keep full rotation.
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);

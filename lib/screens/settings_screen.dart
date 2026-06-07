@@ -1,6 +1,8 @@
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:signature/signature.dart';
 
 import '../models/practitioner_profile.dart';
 import '../services/global_statistics_csv_service.dart';
@@ -165,6 +167,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   telephone: telephoneController.text.trim(),
                   exerciceCoordonne: exerciceCoordonne,
                   nomStructure: structureController.text.trim(),
+                  signatureBase64: practitioner.signatureBase64,
                 );
 
                 await PractitionerProfileService.saveProfile(profile);
@@ -199,6 +202,187 @@ class _SettingsScreenState extends State<SettingsScreen> {
         const SnackBar(content: Text('Informations MK enregistrées')),
       );
     }
+  }
+
+  Future<void> showPractitionerSignatureDialog() async {
+    final signatureController = SignatureController(
+      penStrokeWidth: 3,
+      penColor: Colors.black,
+      exportBackgroundColor: Colors.white,
+    );
+
+    var signaturePreview = practitioner.signatureBase64;
+    var saved = false;
+
+    try {
+      saved =
+          await showDialog<bool>(
+            context: context,
+            builder: (dialogContext) {
+              return StatefulBuilder(
+                builder: (context, setDialogState) {
+                  return AlertDialog(
+                    title: const Text('Signature praticien'),
+                    content: SingleChildScrollView(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          if (signaturePreview.trim().isNotEmpty) ...[
+                            const Text(
+                              'Signature enregistrée',
+                              style: TextStyle(fontWeight: FontWeight.w800),
+                            ),
+                            const SizedBox(height: 8),
+                            _signaturePreview(signaturePreview),
+                            const SizedBox(height: 14),
+                          ],
+                          const Text(
+                            'Nouvelle signature',
+                            style: TextStyle(fontWeight: FontWeight.w800),
+                          ),
+                          const SizedBox(height: 8),
+                          _signaturePad(signatureController),
+                          const SizedBox(height: 10),
+                          TextButton.icon(
+                            onPressed: signatureController.clear,
+                            icon: const Icon(Icons.backspace_outlined),
+                            label: const Text('Effacer le tracé'),
+                          ),
+                        ],
+                      ),
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(dialogContext, false),
+                        child: const Text('Annuler'),
+                      ),
+                      TextButton(
+                        onPressed: () async {
+                          final updatedProfile = practitioner.copyWith(
+                            signatureBase64: '',
+                          );
+
+                          await PractitionerProfileService.saveProfile(
+                            updatedProfile,
+                          );
+
+                          if (!dialogContext.mounted) return;
+
+                          setDialogState(() {
+                            signaturePreview = '';
+                            signatureController.clear();
+                          });
+
+                          Navigator.pop(dialogContext, true);
+                        },
+                        child: const Text('Supprimer'),
+                      ),
+                      FilledButton(
+                        onPressed: () async {
+                          if (signatureController.isEmpty) {
+                            Navigator.pop(dialogContext, false);
+                            return;
+                          }
+
+                          final signatureBytes = await signatureController
+                              .toPngBytes();
+
+                          if (signatureBytes == null) {
+                            if (!dialogContext.mounted) return;
+                            Navigator.pop(dialogContext, false);
+                            return;
+                          }
+
+                          final updatedProfile = practitioner.copyWith(
+                            signatureBase64: base64Encode(signatureBytes),
+                          );
+
+                          await PractitionerProfileService.saveProfile(
+                            updatedProfile,
+                          );
+
+                          if (!dialogContext.mounted) return;
+
+                          Navigator.pop(dialogContext, true);
+                        },
+                        child: const Text('Enregistrer'),
+                      ),
+                    ],
+                  );
+                },
+              );
+            },
+          ) ??
+          false;
+    } finally {
+      signatureController.dispose();
+    }
+
+    if (!saved) return;
+
+    await loadPractitioner();
+
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Signature praticien mise à jour')),
+    );
+  }
+
+  Widget _signaturePad(SignatureController controller) {
+    return Container(
+      height: 132,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: ds.AppColors.border),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: Stack(
+          children: [
+            Signature(controller: controller, backgroundColor: Colors.white),
+            const Center(
+              child: IgnorePointer(
+                child: Text(
+                  'Signer ici',
+                  style: TextStyle(
+                    color: Color(0xFF94A3B8),
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _signaturePreview(String signatureBase64) {
+    Uint8List? bytes;
+
+    try {
+      bytes = base64Decode(signatureBase64);
+    } catch (_) {
+      bytes = null;
+    }
+
+    if (bytes == null) {
+      return const Text('Signature enregistrée illisible.');
+    }
+
+    return Container(
+      height: 92,
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: ds.AppColors.border),
+      ),
+      child: Image.memory(bytes, fit: BoxFit.contain),
+    );
   }
 
   Widget buildDialogField({
@@ -299,8 +483,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   icon: Icons.draw_outlined,
                   iconColor: ds.AppColors.primary,
                   title: 'Signature praticien',
-                  subtitle: 'Signature pour prescriptions et PDF.',
-                  onTap: () => showComingSoon(context, 'Signature praticien'),
+                  subtitle: practitioner.hasSignature
+                      ? 'Signature enregistrée pour les prescriptions.'
+                      : 'Signature pour prescriptions et PDF.',
+                  onTap: showPractitionerSignatureDialog,
                 ),
 
                 const SizedBox(height: 14),

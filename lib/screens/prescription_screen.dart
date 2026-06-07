@@ -342,6 +342,7 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
                   telephone: telephoneController.text.trim(),
                   exerciceCoordonne: exerciceCoordonne,
                   nomStructure: structureController.text.trim(),
+                  signatureBase64: practitioner.signatureBase64,
                 );
 
                 await PractitionerProfileService.saveProfile(profile);
