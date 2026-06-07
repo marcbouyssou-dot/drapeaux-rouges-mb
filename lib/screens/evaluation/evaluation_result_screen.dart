@@ -3,6 +3,11 @@ import 'package:flutter/material.dart';
 
 import '../../services/bdk_session_service.dart';
 import '../../services/decision_engine_service.dart';
+import '../../theme/app_colors.dart';
+import '../../theme/app_radius.dart';
+import '../../theme/app_shadows.dart';
+import '../../theme/app_spacing.dart';
+import '../../theme/app_typography.dart';
 import '../bdk/bdk_type_screen.dart';
 
 class EvaluationResultScreen extends StatelessWidget {
@@ -48,17 +53,22 @@ class EvaluationResultScreen extends StatelessWidget {
     );
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF6F8FC),
+      backgroundColor: AppColors.background,
       appBar: AppBar(
         title: const Text('Résultat'),
-        backgroundColor: const Color(0xFFF6F8FC),
+        backgroundColor: AppColors.background,
         elevation: 0,
       ),
       body: ListView(
-        padding: const EdgeInsets.fromLTRB(18, 12, 18, 120),
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.md,
+          AppSpacing.sm,
+          AppSpacing.md,
+          120,
+        ),
         children: [
           Container(
-            padding: const EdgeInsets.all(22),
+            padding: const EdgeInsets.all(AppSpacing.lg),
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
@@ -68,7 +78,7 @@ class EvaluationResultScreen extends StatelessWidget {
                   medicalRiskColor.withValues(alpha: 0.86),
                 ],
               ),
-              borderRadius: BorderRadius.circular(30),
+              borderRadius: BorderRadius.circular(AppRadius.xxl),
               boxShadow: [
                 BoxShadow(
                   color: medicalRiskColor.withValues(alpha: 0.20),
@@ -80,41 +90,78 @@ class EvaluationResultScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Icon(
-                  Icons.monitor_heart_rounded,
-                  color: Colors.white,
-                  size: 42,
+                Row(
+                  children: [
+                    Container(
+                      width: 54,
+                      height: 54,
+                      decoration: BoxDecoration(
+                        color: AppColors.textOnDark.withValues(alpha: 0.16),
+                        borderRadius: BorderRadius.circular(AppRadius.lg),
+                        border: Border.all(
+                          color: AppColors.textOnDark.withValues(alpha: 0.18),
+                        ),
+                      ),
+                      child: const Icon(
+                        Icons.monitor_heart_rounded,
+                        color: AppColors.textOnDark,
+                        size: 32,
+                      ),
+                    ),
+                    const Spacer(),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.md,
+                        vertical: AppSpacing.sm,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.textOnDark.withValues(alpha: 0.16),
+                        borderRadius: BorderRadius.circular(AppRadius.pill),
+                        border: Border.all(
+                          color: AppColors.textOnDark.withValues(alpha: 0.20),
+                        ),
+                      ),
+                      child: Text(
+                        'Score $score',
+                        style: const TextStyle(
+                          color: AppColors.textOnDark,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
 
-                const SizedBox(height: 18),
+                const SizedBox(height: AppSpacing.lg),
 
                 Text(
                   riskLevel,
                   style: const TextStyle(
-                    color: Colors.white,
+                    color: AppColors.textOnDark,
                     fontSize: 30,
                     fontWeight: FontWeight.w900,
-                    letterSpacing: -1,
+                    height: 1.05,
                   ),
                 ),
 
-                const SizedBox(height: 8),
+                const SizedBox(height: AppSpacing.sm),
 
                 Text(
-                  '$checkedCount drapeau(x) — score $score',
+                  '$checkedCount drapeau(x) rouge(s) détecté(s)',
                   style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.90),
+                    color: AppColors.textOnDark.withValues(alpha: 0.90),
                     fontSize: 15,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
 
-                const SizedBox(height: 6),
+                const SizedBox(height: AppSpacing.xs),
 
                 Text(
                   patientDisplayName,
                   style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.76),
+                    color: AppColors.textOnDark.withValues(alpha: 0.76),
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
                   ),
@@ -123,25 +170,25 @@ class EvaluationResultScreen extends StatelessWidget {
             ),
           ),
 
-          const SizedBox(height: 16),
+          const SizedBox(height: AppSpacing.md),
 
           _ResultCard(
             icon: Icons.route_rounded,
-            title: decisionTitle,
-            text: decisionMessage,
+            title: 'Orientation recommandée',
+            text: '$decisionTitle\n$decisionMessage',
             color: medicalRiskColor,
           ),
 
-          const SizedBox(height: 16),
+          const SizedBox(height: AppSpacing.md),
 
           _ResultCard(
             icon: Icons.psychology_alt_outlined,
-            title: 'Synthèse clinique',
+            title: 'Résumé clinique',
             text: aiSummary,
-            color: const Color(0xFF2563EB),
+            color: AppColors.primary,
           ),
 
-          const SizedBox(height: 16),
+          const SizedBox(height: AppSpacing.md),
 
           const _SafetyNote(),
         ],
@@ -149,10 +196,16 @@ class EvaluationResultScreen extends StatelessWidget {
 
       bottomNavigationBar: SafeArea(
         child: Container(
-          padding: const EdgeInsets.fromLTRB(18, 10, 18, 22),
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.md,
+            AppSpacing.sm,
+            AppSpacing.md,
+            AppSpacing.lg,
+          ),
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.96),
-            border: const Border(top: BorderSide(color: Color(0xFFE5E7EB))),
+            color: AppColors.surface.withValues(alpha: 0.96),
+            border: const Border(top: BorderSide(color: AppColors.border)),
+            boxShadow: AppShadows.card,
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -240,25 +293,28 @@ class _ResultCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(26),
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(AppRadius.xl),
         border: Border.all(color: color.withValues(alpha: 0.18)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 14,
-            offset: const Offset(0, 8),
-          ),
-        ],
+        boxShadow: AppShadows.soft,
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, color: color, size: 30),
+          Container(
+            width: 46,
+            height: 46,
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.10),
+              borderRadius: BorderRadius.circular(AppRadius.lg),
+              border: Border.all(color: color.withValues(alpha: 0.16)),
+            ),
+            child: Icon(icon, color: color, size: 27),
+          ),
 
-          const SizedBox(width: 14),
+          const SizedBox(width: AppSpacing.md),
 
           Expanded(
             child: Column(
@@ -266,19 +322,19 @@ class _ResultCard extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: TextStyle(
+                  style: AppTypography.title.copyWith(
                     color: color,
-                    fontSize: 18,
+                    fontSize: 17,
                     fontWeight: FontWeight.w900,
                   ),
                 ),
 
-                const SizedBox(height: 8),
+                const SizedBox(height: AppSpacing.sm),
 
                 Text(
                   text,
-                  style: const TextStyle(
-                    color: Color(0xFF334155),
+                  style: AppTypography.body.copyWith(
+                    color: AppColors.textPrimary,
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
                     height: 1.4,
@@ -299,16 +355,16 @@ class _SafetyNote extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: const Color(0xFFF8FAFC),
-        borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        border: Border.all(color: AppColors.border),
       ),
-      child: const Text(
+      child: Text(
         'Aide au repérage clinique uniquement. Cette application ne remplace pas une évaluation médicale professionnelle.',
-        style: TextStyle(
-          color: Color(0xFF64748B),
+        style: AppTypography.caption.copyWith(
+          color: AppColors.textSecondary,
           fontSize: 12,
           fontWeight: FontWeight.w600,
           height: 1.35,
@@ -322,16 +378,16 @@ Color _medicalRiskColor(String riskLevel) {
   final risk = riskLevel.toLowerCase();
 
   if (risk.contains('critique')) {
-    return const Color(0xFFDC2626);
+    return AppColors.danger;
   }
 
   if (risk.contains('élevé') || risk.contains('eleve')) {
-    return const Color(0xFFEA580C);
+    return AppColors.danger;
   }
 
   if (risk.contains('modéré') || risk.contains('modere')) {
-    return const Color(0xFFF59E0B);
+    return AppColors.warning;
   }
 
-  return const Color(0xFF16A34A);
+  return AppColors.success;
 }

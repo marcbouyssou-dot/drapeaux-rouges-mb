@@ -223,6 +223,15 @@ class _HomeScreenState extends State<HomeScreen> {
 
     final items = categories[category] ?? [];
     final itemLabels = items.map(itemTitle).toList();
+    final itemScores = {
+      for (final item in items)
+        itemTitle(item): RiskScoreService.severityPoints(
+          item['severity']?.toString() ?? '',
+        ),
+    };
+    final baseScore = score - RiskScoreService.computeScore(items);
+    final baseCheckedCount =
+        checkedCount - RiskScoreService.computeCheckedCount(items);
 
     final initiallySelected = items
         .where((item) => item['checked'] == true)
@@ -239,6 +248,9 @@ class _HomeScreenState extends State<HomeScreen> {
             title: category,
             items: itemLabels,
             initiallySelected: initiallySelected,
+            itemScores: itemScores,
+            baseScore: baseScore,
+            baseCheckedCount: baseCheckedCount,
           );
         },
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
