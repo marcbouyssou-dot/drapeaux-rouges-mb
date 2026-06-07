@@ -6,10 +6,14 @@ import '../../theme/app_shadows.dart';
 import '../../theme/app_spacing.dart';
 
 class HomeRiskLegendCard extends StatelessWidget {
-  const HomeRiskLegendCard({super.key});
+  const HomeRiskLegendCard({super.key, required this.riskLevel});
+
+  final String riskLevel;
 
   @override
   Widget build(BuildContext context) {
+    final normalized = riskLevel.toLowerCase();
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
@@ -19,10 +23,10 @@ class HomeRiskLegendCard extends StatelessWidget {
         border: Border.all(color: AppColors.border),
         boxShadow: AppShadows.card,
       ),
-      child: const Column(
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
+          const Text(
             'NIVEAUX DE RISQUE',
             style: TextStyle(
               color: AppColors.textMuted,
@@ -31,15 +35,31 @@ class HomeRiskLegendCard extends StatelessWidget {
               letterSpacing: 1.2,
             ),
           ),
-          SizedBox(height: AppSpacing.sm + 1),
+          const SizedBox(height: AppSpacing.sm + 1),
           Wrap(
             spacing: 7,
             runSpacing: 7,
             children: [
-              HomeRiskChip('Faible', AppColors.successDark, false),
-              HomeRiskChip('Modéré', AppColors.warningDark, false),
-              HomeRiskChip('Élevé', AppColors.danger, false),
-              HomeRiskChip('Critique', AppColors.critical, true),
+              HomeRiskChip(
+                'Faible',
+                AppColors.successDark,
+                normalized.contains('faible'),
+              ),
+              HomeRiskChip(
+                'Modéré',
+                AppColors.warningDark,
+                normalized.contains('modéré') || normalized.contains('modere'),
+              ),
+              HomeRiskChip(
+                'Élevé',
+                AppColors.danger,
+                normalized.contains('élevé') || normalized.contains('eleve'),
+              ),
+              HomeRiskChip(
+                'Critique',
+                AppColors.critical,
+                normalized.contains('critique'),
+              ),
             ],
           ),
         ],

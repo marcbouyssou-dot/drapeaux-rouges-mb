@@ -9,6 +9,8 @@ class HomeScoreCard extends StatelessWidget {
     super.key,
     required this.score,
     required this.checkedCount,
+    required this.riskLevel,
+    required this.riskColor,
     required this.hasPatient,
     required this.patientDisplayName,
     required this.onTap,
@@ -16,6 +18,8 @@ class HomeScoreCard extends StatelessWidget {
 
   final int score;
   final int checkedCount;
+  final String riskLevel;
+  final Color riskColor;
   final bool hasPatient;
   final String patientDisplayName;
   final VoidCallback onTap;
@@ -23,6 +27,7 @@ class HomeScoreCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final riskPercent = (score * 10).clamp(0, 100).toInt();
+    final hasSignals = checkedCount > 0;
 
     return Material(
       color: Colors.transparent,
@@ -31,8 +36,8 @@ class HomeScoreCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppRadius.xl - 2),
         child: Container(
           width: double.infinity,
-          constraints: const BoxConstraints(minHeight: 370),
-          padding: const EdgeInsets.fromLTRB(20, 22, 20, 20),
+          constraints: const BoxConstraints(minHeight: 332),
+          padding: const EdgeInsets.fromLTRB(18, 20, 18, 18),
           decoration: BoxDecoration(
             gradient: const RadialGradient(
               center: Alignment.topRight,
@@ -75,7 +80,7 @@ class HomeScoreCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text(
-                          'DRAPEAUX ROUGES DÉTECTÉS',
+                          'DÉPISTAGE CLINIQUE',
                           style: TextStyle(
                             color: Color(0xFF8EA0B8),
                             fontSize: 10,
@@ -99,7 +104,7 @@ class HomeScoreCard extends StatelessWidget {
                             ),
                           ),
                           child: const Text(
-                            'Évaluation clinique',
+                            'Score actuel',
                             style: TextStyle(
                               color: Color(0xFFDDE7F3),
                               fontSize: 11,
@@ -134,7 +139,7 @@ class HomeScoreCard extends StatelessWidget {
                         ),
                         const SizedBox(height: 4),
                         const Text(
-                          'RISQUE',
+                          'SCORE',
                           style: TextStyle(
                             color: AppColors.raspberry,
                             fontSize: 8,
@@ -152,10 +157,10 @@ class HomeScoreCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text(
-                    checkedCount == 0 ? '0' : '$checkedCount',
+                    '$score',
                     style: const TextStyle(
                       color: AppColors.textOnDark,
-                      fontSize: 36,
+                      fontSize: 38,
                       fontWeight: FontWeight.w900,
                       height: 1,
                     ),
@@ -163,13 +168,14 @@ class HomeScoreCard extends StatelessWidget {
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
-                      checkedCount <= 1
-                          ? 'signal critique'
-                          : 'signaux critiques',
+                      riskLevel,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
                         color: Color(0xFFDDE7F3),
-                        fontSize: 15,
-                        fontWeight: FontWeight.w800,
+                        fontSize: 17,
+                        fontWeight: FontWeight.w900,
+                        height: 1.15,
                       ),
                     ),
                   ),
@@ -193,30 +199,32 @@ class HomeScoreCard extends StatelessWidget {
                 children: [
                   Expanded(
                     child: HomeDecisionIndicator(
-                      dotColor: AppColors.danger,
-                      value: checkedCount == 0 ? 'À évaluer' : 'Critique',
+                      dotColor: riskColor,
+                      value: hasSignals ? '$checkedCount signe(s)' : 'Aucun',
                       label: 'NIVEAU DE RISQUE',
                     ),
                   ),
                   const HomeMetricDivider(),
-                  const Expanded(
+                  Expanded(
                     child: HomeDecisionIndicator(
-                      dotColor: AppColors.warning,
-                      value: 'Réf. requise',
+                      dotColor: hasPatient
+                          ? AppColors.success
+                          : AppColors.warning,
+                      value: hasPatient ? 'Patient actif' : 'Anonyme',
                       label: 'STATUT CLINIQUE',
                     ),
                   ),
                   const HomeMetricDivider(),
-                  const Expanded(
+                  Expanded(
                     child: HomeDecisionIndicator(
                       dotColor: AppColors.info,
-                      value: 'Médecin',
+                      value: hasSignals ? 'Voir décision' : 'Démarrer',
                       label: 'ORIENTATION',
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: AppSpacing.lg),
+              const SizedBox(height: AppSpacing.md),
               Container(height: 1, color: Colors.white.withValues(alpha: 0.10)),
               const SizedBox(height: AppSpacing.md),
               Container(

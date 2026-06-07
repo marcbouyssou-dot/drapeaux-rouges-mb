@@ -552,6 +552,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                 child: HomeScoreCard(
                                   score: score,
                                   checkedCount: checkedCount,
+                                  riskLevel: riskLevel,
+                                  riskColor: riskColor,
                                   hasPatient: currentPatient != null,
                                   patientDisplayName: patientDisplayName,
                                   onTap: openCategoryPicker,
@@ -604,6 +606,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       HomeScoreCard(
                         score: score,
                         checkedCount: checkedCount,
+                        riskLevel: riskLevel,
+                        riskColor: riskColor,
                         hasPatient: currentPatient != null,
                         patientDisplayName: patientDisplayName,
                         onTap: openCategoryPicker,
@@ -615,8 +619,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         onPrescriptionTap: openPrescriptionTypeScreen,
                       ),
                       const SizedBox(height: AppSpacing.md),
-                      const HomeRiskLegendCard(),
-                      const SizedBox(height: 70),
+                      HomeRiskLegendCard(riskLevel: riskLevel),
+                      const SizedBox(height: AppSpacing.lg),
                       const HomeFooterNote(),
                     ],
                   ),

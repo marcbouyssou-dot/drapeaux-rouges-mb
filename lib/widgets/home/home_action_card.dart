@@ -62,6 +62,8 @@ class HomeDesktopActionButton extends StatelessWidget {
                   children: [
                     Text(
                       title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         color: color,
                         fontSize: 17,
@@ -72,6 +74,8 @@ class HomeDesktopActionButton extends StatelessWidget {
                     const SizedBox(height: 6),
                     Text(
                       subtitle,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
                         color: AppColors.textSecondary,
                         fontSize: 12.5,
@@ -138,15 +142,19 @@ class HomeToolbarItem extends StatelessWidget {
           const SizedBox(height: 7),
           Text(
             title,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
             style: const TextStyle(
               color: AppColors.medicalBlue,
-              fontSize: 12,
+              fontSize: 11.5,
               fontWeight: FontWeight.w900,
             ),
           ),
           const SizedBox(height: 1),
           Text(
             subtitle,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
             style: const TextStyle(
               color: AppColors.textSecondary,
               fontSize: 9,

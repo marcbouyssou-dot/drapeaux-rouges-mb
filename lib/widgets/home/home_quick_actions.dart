@@ -21,7 +21,7 @@ class HomeEvaluationShortcutRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 92,
+      height: 98,
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(AppRadius.xl - 2),
@@ -35,14 +35,14 @@ class HomeEvaluationShortcutRow extends StatelessWidget {
             child: HomeToolbarItem(
               icon: Icons.person_outline_rounded,
               title: 'Patient',
-              subtitle: 'Dossier',
+              subtitle: 'Identité',
               onTap: onPatientTap,
             ),
           ),
           const HomeToolbarDivider(),
           Expanded(
             child: HomeToolbarItem(
-              icon: Icons.description_outlined,
+              icon: Icons.assignment_turned_in_outlined,
               title: 'BDK',
               subtitle: 'Bilan',
               onTap: onBdkTap,
@@ -51,9 +51,9 @@ class HomeEvaluationShortcutRow extends StatelessWidget {
           const HomeToolbarDivider(),
           Expanded(
             child: HomeToolbarItem(
-              icon: Icons.medication_liquid_outlined,
+              icon: Icons.edit_document,
               title: 'Prescription',
-              subtitle: 'Ordonnance',
+              subtitle: 'PDF',
               onTap: onPrescriptionTap,
             ),
           ),
@@ -88,17 +88,17 @@ class HomeDesktopQuickActions extends StatelessWidget {
         ),
         const SizedBox(height: AppSpacing.md - 4),
         HomeDesktopActionButton(
-          icon: Icons.description_outlined,
+          icon: Icons.assignment_turned_in_outlined,
           title: 'BDK',
-          subtitle: 'Bilan diagnostic kinésithérapique',
+          subtitle: 'Bilan diagnostique kinésithérapique',
           color: AppColors.teal,
           onTap: onBdkTap,
         ),
         const SizedBox(height: AppSpacing.md - 4),
         HomeDesktopActionButton(
-          icon: Icons.medication_liquid_outlined,
+          icon: Icons.edit_document,
           title: 'Prescription',
-          subtitle: 'Ordonnance et recommandations',
+          subtitle: 'Document clinique et export PDF',
           color: AppColors.raspberry,
           onTap: onPrescriptionTap,
         ),
