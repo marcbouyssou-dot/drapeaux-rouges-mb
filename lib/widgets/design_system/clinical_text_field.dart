@@ -18,6 +18,8 @@ class ClinicalTextField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final compact = MediaQuery.sizeOf(context).width < 430;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -30,7 +32,7 @@ class ClinicalTextField extends StatelessWidget {
           ),
         ),
 
-        const SizedBox(height: 10),
+        SizedBox(height: compact ? 6 : 10),
 
         TextField(
           controller: controller,
@@ -39,35 +41,26 @@ class ClinicalTextField extends StatelessWidget {
           decoration: InputDecoration(
             hintText: hint,
 
-            hintStyle: TextStyle(
-              color: AppColors.textSecondary,
-            ),
+            hintStyle: TextStyle(color: AppColors.textSecondary),
 
             filled: true,
             fillColor: Colors.white,
 
-            contentPadding: const EdgeInsets.all(18),
+            contentPadding: EdgeInsets.all(compact ? 14 : 18),
 
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(22),
-              borderSide: BorderSide(
-                color: AppColors.border,
-              ),
+              borderSide: BorderSide(color: AppColors.border),
             ),
 
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(22),
-              borderSide: BorderSide(
-                color: AppColors.border,
-              ),
+              borderSide: BorderSide(color: AppColors.border),
             ),
 
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(22),
-              borderSide: BorderSide(
-                color: AppColors.primaryBlue,
-                width: 1.6,
-              ),
+              borderSide: BorderSide(color: AppColors.primaryBlue, width: 1.6),
             ),
           ),
         ),

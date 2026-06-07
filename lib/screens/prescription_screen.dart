@@ -451,28 +451,37 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
                   ),
                   children: [
                     buildReadinessSummary(),
-                    const SizedBox(height: 14),
+                    const SizedBox(height: 10),
                     buildPatientCard(),
-                    const SizedBox(height: 14),
+                    const SizedBox(height: 10),
                     buildPractitionerCard(),
-                    const SizedBox(height: 14),
+                    const SizedBox(height: 10),
                     buildAccessDirectPrescriptionCard(),
-                    const SizedBox(height: 14),
+                    const SizedBox(height: 10),
                     buildPrescriptionCard(),
-                    const SizedBox(height: 14),
-                    ClinicalInfoBanner(
-                      text:
-                          'Les prescriptions et recommandations doivent rester conformes aux compétences, droits de prescription et conditions réglementaires du masseur-kinésithérapeute.',
-                      icon: Icons.gavel_rounded,
-                      color: AppColors.warningOrange,
-                      backgroundColor: AppColors.softOrange,
-                    ),
-                    const SizedBox(height: 14),
-                    ClinicalInfoBanner(
-                      text: 'PDF sobre, lisible et économique à imprimer.',
-                      icon: Icons.print_outlined,
-                      color: AppColors.textSecondary,
-                      backgroundColor: AppColors.card,
+                    const SizedBox(height: 8),
+                    ExpansionTile(
+                      tilePadding: EdgeInsets.zero,
+                      title: const Text(
+                        'Notes réglementaires',
+                        style: TextStyle(fontWeight: FontWeight.w900),
+                      ),
+                      children: const [
+                        ClinicalInfoBanner(
+                          text:
+                              'Les prescriptions et recommandations doivent rester conformes aux compétences, droits de prescription et conditions réglementaires du masseur-kinésithérapeute.',
+                          icon: Icons.gavel_rounded,
+                          color: AppColors.warningOrange,
+                          backgroundColor: AppColors.softOrange,
+                        ),
+                        SizedBox(height: 10),
+                        ClinicalInfoBanner(
+                          text: 'PDF sobre, lisible et économique à imprimer.',
+                          icon: Icons.print_outlined,
+                          color: AppColors.textSecondary,
+                          backgroundColor: AppColors.card,
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -485,9 +494,11 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
   }
 
   Widget buildPrescriptionHeader(BuildContext context) {
+    final compact = MediaQuery.sizeOf(context).width < 430;
+
     return Container(
-      margin: EdgeInsets.all(AppSpacing.screenPadding),
-      padding: const EdgeInsets.all(18),
+      margin: EdgeInsets.all(compact ? 10 : AppSpacing.screenPadding),
+      padding: EdgeInsets.all(compact ? 12 : 18),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           colors: [
@@ -526,19 +537,21 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
                   ),
                 ),
               ),
-              const SizedBox(width: 12),
-              Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.16),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.20),
+              if (!compact) ...[
+                const SizedBox(width: 12),
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.16),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.20),
+                    ),
                   ),
+                  child: const Icon(Icons.edit_document, color: Colors.white),
                 ),
-                child: const Icon(Icons.edit_document, color: Colors.white),
-              ),
+              ],
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
@@ -550,41 +563,47 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
                       overflow: TextOverflow.ellipsis,
                       style: AppTextStyles.screenTitle.copyWith(
                         color: Colors.white,
-                        fontSize: 25,
+                        fontSize: compact ? 20 : 25,
                       ),
                     ),
-                    const SizedBox(height: 6),
-                    Text(
-                      'Prescription clinique · document thérapeutique · PDF',
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.84),
-                        fontSize: 13,
-                        height: 1.35,
-                        fontWeight: FontWeight.w700,
+                    if (!compact) ...[
+                      const SizedBox(height: 6),
+                      Text(
+                        'Prescription clinique · document thérapeutique · PDF',
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.84),
+                          fontSize: 13,
+                          height: 1.35,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
-                    ),
+                    ],
                   ],
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 16),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              buildHeaderChip(Icons.person_outline_rounded, patientName),
-              buildHeaderChip(
-                practitioner.isComplete
-                    ? Icons.verified_user_outlined
-                    : Icons.edit_note_rounded,
-                practitioner.isComplete ? 'Profil prêt' : 'Profil à compléter',
-              ),
-              buildHeaderChip(Icons.picture_as_pdf_outlined, 'Export PDF'),
-            ],
-          ),
+          if (!compact) ...[
+            const SizedBox(height: 16),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                buildHeaderChip(Icons.person_outline_rounded, patientName),
+                buildHeaderChip(
+                  practitioner.isComplete
+                      ? Icons.verified_user_outlined
+                      : Icons.edit_note_rounded,
+                  practitioner.isComplete
+                      ? 'Profil prêt'
+                      : 'Profil à compléter',
+                ),
+                buildHeaderChip(Icons.picture_as_pdf_outlined, 'Export PDF'),
+              ],
+            ),
+          ],
         ],
       ),
     );

@@ -26,12 +26,12 @@ class BDKEntryScreen extends StatelessWidget {
                 120,
               ),
               children: [
-                _premiumHeader(),
-                const SizedBox(height: AppSpacing.md),
+                _premiumHeader(context),
+                const SizedBox(height: AppSpacing.sm),
                 _startCard(context),
-                const SizedBox(height: AppSpacing.md),
+                const SizedBox(height: AppSpacing.sm),
                 _workflowCards(),
-                const SizedBox(height: AppSpacing.md),
+                const SizedBox(height: AppSpacing.sm),
                 _infoCard(),
               ],
             ),
@@ -41,9 +41,11 @@ class BDKEntryScreen extends StatelessWidget {
     );
   }
 
-  Widget _premiumHeader() {
+  Widget _premiumHeader(BuildContext context) {
+    final compact = MediaQuery.sizeOf(context).width < 430;
+
     return Container(
-      padding: const EdgeInsets.all(AppSpacing.lg),
+      padding: EdgeInsets.all(compact ? AppSpacing.md : AppSpacing.lg),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           colors: [AppColors.teal, AppColors.successDark, AppColors.success],
@@ -57,8 +59,8 @@ class BDKEntryScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            width: 52,
-            height: 52,
+            width: compact ? 42 : 52,
+            height: compact ? 42 : 52,
             decoration: BoxDecoration(
               color: AppColors.textOnDark.withValues(alpha: 0.14),
               borderRadius: BorderRadius.circular(AppRadius.lg),
@@ -66,13 +68,13 @@ class BDKEntryScreen extends StatelessWidget {
                 color: AppColors.textOnDark.withValues(alpha: 0.20),
               ),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.assignment_rounded,
               color: AppColors.textOnDark,
-              size: 29,
+              size: compact ? 24 : 29,
             ),
           ),
-          const SizedBox(width: AppSpacing.md),
+          SizedBox(width: compact ? AppSpacing.sm : AppSpacing.md),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -81,20 +83,22 @@ class BDKEntryScreen extends StatelessWidget {
                   'BDK',
                   style: AppTypography.title.copyWith(
                     color: AppColors.textOnDark,
-                    fontSize: 28,
+                    fontSize: compact ? 22 : 28,
                     fontWeight: FontWeight.w900,
                   ),
                 ),
-                const SizedBox(height: AppSpacing.xs),
-                Text(
-                  'Bilan diagnostique kinésithérapique structuré, synthèse clinique et export PDF.',
-                  style: TextStyle(
-                    color: AppColors.textOnDark.withValues(alpha: 0.84),
-                    fontSize: 13,
-                    height: 1.35,
-                    fontWeight: FontWeight.w700,
+                if (!compact) ...[
+                  const SizedBox(height: AppSpacing.xs),
+                  Text(
+                    'Bilan diagnostique kinésithérapique structuré, synthèse clinique et export PDF.',
+                    style: TextStyle(
+                      color: AppColors.textOnDark.withValues(alpha: 0.84),
+                      fontSize: 13,
+                      height: 1.35,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
-                ),
+                ],
               ],
             ),
           ),
@@ -104,6 +108,8 @@ class BDKEntryScreen extends StatelessWidget {
   }
 
   Widget _startCard(BuildContext context) {
+    final compact = MediaQuery.sizeOf(context).width < 430;
+
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -116,7 +122,7 @@ class BDKEntryScreen extends StatelessWidget {
         },
         child: Container(
           width: double.infinity,
-          padding: const EdgeInsets.all(AppSpacing.lg),
+          padding: EdgeInsets.all(compact ? AppSpacing.md : AppSpacing.lg),
           decoration: BoxDecoration(
             color: AppColors.surfaceSuccess,
             borderRadius: BorderRadius.circular(AppRadius.xl),
@@ -128,8 +134,8 @@ class BDKEntryScreen extends StatelessWidget {
           child: Column(
             children: [
               Container(
-                width: 104,
-                height: 104,
+                width: compact ? 72 : 104,
+                height: compact ? 72 : 104,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   gradient: const LinearGradient(
@@ -145,33 +151,35 @@ class BDKEntryScreen extends StatelessWidget {
                     ),
                   ],
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.playlist_add_check_circle_outlined,
                   color: Colors.white,
-                  size: 54,
+                  size: compact ? 38 : 54,
                 ),
               ),
-              const SizedBox(height: AppSpacing.lg),
+              SizedBox(height: compact ? AppSpacing.sm : AppSpacing.lg),
               Text(
                 'Commencer un BDK',
                 textAlign: TextAlign.center,
                 style: AppTypography.title.copyWith(
                   color: AppColors.successDark,
-                  fontSize: 25,
+                  fontSize: compact ? 21 : 25,
                   fontWeight: FontWeight.w900,
                 ),
               ),
-              const SizedBox(height: AppSpacing.sm),
-              Text(
-                'Choisissez le type de bilan, complétez les sections cliniques puis exportez le PDF.',
-                textAlign: TextAlign.center,
-                style: AppTypography.body.copyWith(
-                  color: AppColors.textPrimary,
-                  height: 1.4,
-                  fontWeight: FontWeight.w700,
+              if (!compact) ...[
+                const SizedBox(height: AppSpacing.sm),
+                Text(
+                  'Choisissez le type de bilan, complétez les sections cliniques puis exportez le PDF.',
+                  textAlign: TextAlign.center,
+                  style: AppTypography.body.copyWith(
+                    color: AppColors.textPrimary,
+                    height: 1.4,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
-              ),
-              const SizedBox(height: AppSpacing.lg),
+              ],
+              SizedBox(height: compact ? AppSpacing.sm : AppSpacing.lg),
               Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 16,

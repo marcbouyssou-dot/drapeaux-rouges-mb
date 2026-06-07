@@ -71,7 +71,7 @@ class PrescriptionTypeScreen extends StatelessWidget {
               ),
               children: [
                 const _PrescriptionTypeHeader(),
-                const SizedBox(height: AppSpacing.md),
+                const SizedBox(height: AppSpacing.sm),
                 ...items.map(
                   (item) => Padding(
                     padding: const EdgeInsets.only(bottom: AppSpacing.sm),
@@ -99,8 +99,10 @@ class _PrescriptionTypeHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final compact = MediaQuery.sizeOf(context).width < 430;
+
     return Container(
-      padding: const EdgeInsets.all(AppSpacing.lg),
+      padding: EdgeInsets.all(compact ? AppSpacing.md : AppSpacing.lg),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           colors: [
@@ -137,23 +139,25 @@ class _PrescriptionTypeHeader extends StatelessWidget {
                   onPressed: () => Navigator.pop(context),
                 ),
               ),
-              const SizedBox(width: AppSpacing.sm),
-              Container(
-                height: 44,
-                width: 44,
-                decoration: BoxDecoration(
-                  color: AppColors.textOnDark.withValues(alpha: 0.14),
-                  borderRadius: BorderRadius.circular(AppRadius.lg),
-                  border: Border.all(
-                    color: AppColors.textOnDark.withValues(alpha: 0.20),
+              if (!compact) ...[
+                const SizedBox(width: AppSpacing.sm),
+                Container(
+                  height: 44,
+                  width: 44,
+                  decoration: BoxDecoration(
+                    color: AppColors.textOnDark.withValues(alpha: 0.14),
+                    borderRadius: BorderRadius.circular(AppRadius.lg),
+                    border: Border.all(
+                      color: AppColors.textOnDark.withValues(alpha: 0.20),
+                    ),
+                  ),
+                  child: const Icon(
+                    Icons.library_books_outlined,
+                    color: AppColors.textOnDark,
+                    size: 24,
                   ),
                 ),
-                child: const Icon(
-                  Icons.library_books_outlined,
-                  color: AppColors.textOnDark,
-                  size: 24,
-                ),
-              ),
+              ],
               const SizedBox(width: AppSpacing.sm),
               Expanded(
                 child: Column(
@@ -163,35 +167,42 @@ class _PrescriptionTypeHeader extends StatelessWidget {
                       'Type de prescription',
                       style: AppTypography.title.copyWith(
                         color: AppColors.textOnDark,
-                        fontSize: 24,
+                        fontSize: compact ? 21 : 24,
                         fontWeight: FontWeight.w900,
                       ),
                     ),
-                    const SizedBox(height: AppSpacing.xs),
-                    Text(
-                      'Choisissez le document clinique à préparer.',
-                      style: TextStyle(
-                        color: AppColors.textOnDark.withValues(alpha: 0.82),
-                        fontSize: 13,
-                        height: 1.35,
-                        fontWeight: FontWeight.w700,
+                    if (!compact) ...[
+                      const SizedBox(height: AppSpacing.xs),
+                      Text(
+                        'Choisissez le document clinique à préparer.',
+                        style: TextStyle(
+                          color: AppColors.textOnDark.withValues(alpha: 0.82),
+                          fontSize: 13,
+                          height: 1.35,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
-                    ),
+                    ],
                   ],
                 ),
               ),
             ],
           ),
-          const SizedBox(height: AppSpacing.md),
-          Wrap(
-            spacing: AppSpacing.sm,
-            runSpacing: AppSpacing.sm,
-            children: const [
-              _HeaderChip(icon: Icons.library_books_outlined, label: 'Modèles'),
-              _HeaderChip(icon: Icons.picture_as_pdf_outlined, label: 'PDF'),
-              _HeaderChip(icon: Icons.badge_outlined, label: 'Patient lié'),
-            ],
-          ),
+          if (!compact) ...[
+            const SizedBox(height: AppSpacing.md),
+            Wrap(
+              spacing: AppSpacing.sm,
+              runSpacing: AppSpacing.sm,
+              children: const [
+                _HeaderChip(
+                  icon: Icons.library_books_outlined,
+                  label: 'Modèles',
+                ),
+                _HeaderChip(icon: Icons.picture_as_pdf_outlined, label: 'PDF'),
+                _HeaderChip(icon: Icons.badge_outlined, label: 'Patient lié'),
+              ],
+            ),
+          ],
         ],
       ),
     );
@@ -220,6 +231,8 @@ class _PrescriptionTypeCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final compact = MediaQuery.sizeOf(context).width < 430;
+
     return Material(
       color: Colors.transparent,
       borderRadius: BorderRadius.circular(AppRadius.xl),
@@ -227,7 +240,7 @@ class _PrescriptionTypeCard extends StatelessWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(AppRadius.xl),
         child: Container(
-          padding: const EdgeInsets.all(AppSpacing.md),
+          padding: EdgeInsets.all(compact ? 12 : AppSpacing.md),
           decoration: BoxDecoration(
             color: AppColors.surface,
             borderRadius: BorderRadius.circular(AppRadius.xl),
@@ -238,14 +251,18 @@ class _PrescriptionTypeCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
-                height: 56,
-                width: 56,
+                height: compact ? 46 : 56,
+                width: compact ? 46 : 56,
                 decoration: BoxDecoration(
                   color: item.color.withValues(alpha: 0.10),
                   borderRadius: BorderRadius.circular(AppRadius.lg),
                   border: Border.all(color: item.color.withValues(alpha: 0.18)),
                 ),
-                child: Icon(item.icon, color: item.color, size: 28),
+                child: Icon(
+                  item.icon,
+                  color: item.color,
+                  size: compact ? 24 : 28,
+                ),
               ),
               const SizedBox(width: AppSpacing.sm),
               Expanded(
@@ -258,22 +275,24 @@ class _PrescriptionTypeCard extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         color: item.color,
-                        fontSize: 18,
+                        fontSize: compact ? 16 : 18,
                         fontWeight: FontWeight.w900,
                       ),
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      item.subtitle,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: AppColors.textSecondary,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        height: 1.3,
+                    if (!compact) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        item.subtitle,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: AppColors.textSecondary,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          height: 1.3,
+                        ),
                       ),
-                    ),
+                    ],
                   ],
                 ),
               ),

@@ -19,11 +19,13 @@ class ClinicalModuleCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final compact = MediaQuery.sizeOf(context).width < 430;
+
     return InkWell(
       borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.all(22),
+        padding: EdgeInsets.all(compact ? 16 : 22),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
@@ -34,30 +36,28 @@ class ClinicalModuleCard extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              width: 70,
-              height: 70,
+              width: compact ? 54 : 70,
+              height: compact ? 54 : 70,
               decoration: BoxDecoration(
                 color: color.withValues(alpha: 0.12),
                 shape: BoxShape.circle,
               ),
-              child: Icon(
-                icon,
-                color: color,
-                size: 34,
-              ),
+              child: Icon(icon, color: color, size: compact ? 28 : 34),
             ),
-            const SizedBox(height: 18),
+            SizedBox(height: compact ? 10 : 18),
             Text(
               title,
               textAlign: TextAlign.center,
               style: AppTextStyles.cardTitle,
             ),
-            const SizedBox(height: 8),
-            Text(
-              subtitle,
-              textAlign: TextAlign.center,
-              style: AppTextStyles.cardSubtitle,
-            ),
+            if (!compact) ...[
+              const SizedBox(height: 8),
+              Text(
+                subtitle,
+                textAlign: TextAlign.center,
+                style: AppTextStyles.cardSubtitle,
+              ),
+            ],
           ],
         ),
       ),

@@ -314,19 +314,19 @@ class EvaluationDetailScreen extends StatelessWidget {
             child: ListView(
               padding: const EdgeInsets.fromLTRB(
                 AppSpacing.md,
-                AppSpacing.md,
+                AppSpacing.sm,
                 AppSpacing.md,
                 AppSpacing.xl,
               ),
               children: [
                 buildPatientHeader(context),
-                const SizedBox(height: AppSpacing.md),
+                const SizedBox(height: AppSpacing.sm),
                 buildRiskCard(),
-                const SizedBox(height: AppSpacing.md),
+                const SizedBox(height: AppSpacing.sm),
                 buildDecisionCard(),
-                const SizedBox(height: AppSpacing.md),
+                const SizedBox(height: AppSpacing.sm),
                 buildFlagsSection(),
-                const SizedBox(height: AppSpacing.md),
+                const SizedBox(height: AppSpacing.sm),
                 buildActionButtons(context),
               ],
             ),
@@ -337,8 +337,10 @@ class EvaluationDetailScreen extends StatelessWidget {
   }
 
   Widget buildPatientHeader(BuildContext context) {
+    final compact = MediaQuery.sizeOf(context).width < 430;
+
     return Container(
-      padding: const EdgeInsets.all(AppSpacing.md),
+      padding: EdgeInsets.all(compact ? 12 : AppSpacing.md),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           colors: [
@@ -376,23 +378,25 @@ class EvaluationDetailScreen extends StatelessWidget {
                   color: AppColors.textOnDark,
                 ),
               ),
-              const SizedBox(width: AppSpacing.sm),
-              Container(
-                height: 44,
-                width: 44,
-                decoration: BoxDecoration(
-                  color: AppColors.textOnDark.withValues(alpha: 0.14),
-                  borderRadius: BorderRadius.circular(AppRadius.lg),
-                  border: Border.all(
-                    color: AppColors.textOnDark.withValues(alpha: 0.20),
+              if (!compact) ...[
+                const SizedBox(width: AppSpacing.sm),
+                Container(
+                  height: 44,
+                  width: 44,
+                  decoration: BoxDecoration(
+                    color: AppColors.textOnDark.withValues(alpha: 0.14),
+                    borderRadius: BorderRadius.circular(AppRadius.lg),
+                    border: Border.all(
+                      color: AppColors.textOnDark.withValues(alpha: 0.20),
+                    ),
+                  ),
+                  child: const Icon(
+                    Icons.assignment_turned_in_outlined,
+                    color: AppColors.textOnDark,
+                    size: 24,
                   ),
                 ),
-                child: const Icon(
-                  Icons.assignment_turned_in_outlined,
-                  color: AppColors.textOnDark,
-                  size: 24,
-                ),
-              ),
+              ],
               const SizedBox(width: AppSpacing.sm),
               Expanded(
                 child: Column(
@@ -425,23 +429,25 @@ class EvaluationDetailScreen extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: AppSpacing.md),
-          Wrap(
-            spacing: AppSpacing.sm,
-            runSpacing: AppSpacing.sm,
-            children: [
-              buildHeaderChip(
-                icon: Icons.monitor_heart_outlined,
-                label: riskLevel,
-                color: AppColors.textOnDark,
-              ),
-              buildHeaderChip(
-                icon: Icons.medical_services_outlined,
-                label: motif,
-                color: AppColors.textOnDark,
-              ),
-            ],
-          ),
+          if (!compact) ...[
+            const SizedBox(height: AppSpacing.md),
+            Wrap(
+              spacing: AppSpacing.sm,
+              runSpacing: AppSpacing.sm,
+              children: [
+                buildHeaderChip(
+                  icon: Icons.monitor_heart_outlined,
+                  label: riskLevel,
+                  color: AppColors.textOnDark,
+                ),
+                buildHeaderChip(
+                  icon: Icons.medical_services_outlined,
+                  label: motif,
+                  color: AppColors.textOnDark,
+                ),
+              ],
+            ),
+          ],
         ],
       ),
     );

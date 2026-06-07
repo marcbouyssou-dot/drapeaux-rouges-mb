@@ -288,15 +288,15 @@ class _HistoryScreenState extends State<HistoryScreen> {
               child: ListView(
                 padding: const EdgeInsets.fromLTRB(
                   AppSpacing.md,
-                  AppSpacing.md,
+                  AppSpacing.sm,
                   AppSpacing.md,
                   130,
                 ),
                 children: [
                   buildCompactHeader(),
-                  const SizedBox(height: AppSpacing.md),
+                  const SizedBox(height: AppSpacing.sm),
                   buildStatsRow(),
-                  const SizedBox(height: AppSpacing.md),
+                  const SizedBox(height: AppSpacing.sm),
                   buildSearchBar(),
                   const SizedBox(height: AppSpacing.sm),
                   buildHistoryViewSwitch(),
@@ -331,9 +331,11 @@ class _HistoryScreenState extends State<HistoryScreen> {
   }
 
   Widget buildCompactHeader() {
+    final compact = MediaQuery.sizeOf(context).width < 430;
+
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(AppSpacing.lg),
+      padding: EdgeInsets.all(compact ? AppSpacing.md : AppSpacing.lg),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           colors: [
@@ -378,48 +380,52 @@ class _HistoryScreenState extends State<HistoryScreen> {
                       'Historique',
                       style: AppTypography.title.copyWith(
                         color: AppColors.textOnDark,
-                        fontSize: 27,
+                        fontSize: compact ? 22 : 27,
                         fontWeight: FontWeight.w900,
                       ),
                     ),
-                    const SizedBox(height: AppSpacing.xs),
-                    Text(
-                      'Évaluations sauvegardées, patients liés et décisions cliniques.',
-                      style: TextStyle(
-                        color: AppColors.textOnDark.withValues(alpha: 0.82),
-                        fontSize: 13,
-                        height: 1.35,
-                        fontWeight: FontWeight.w700,
+                    if (!compact) ...[
+                      const SizedBox(height: AppSpacing.xs),
+                      Text(
+                        'Évaluations sauvegardées, patients liés et décisions cliniques.',
+                        style: TextStyle(
+                          color: AppColors.textOnDark.withValues(alpha: 0.82),
+                          fontSize: 13,
+                          height: 1.35,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
-                    ),
+                    ],
                   ],
                 ),
               ),
             ],
           ),
-          const SizedBox(height: AppSpacing.md),
-          Wrap(
-            spacing: AppSpacing.sm,
-            runSpacing: AppSpacing.sm,
-            children: [
-              buildHeaderBadge(
-                icon: Icons.assignment_turned_in_outlined,
-                label: '$totalEvaluations bilan(s)',
-              ),
-              buildHeaderBadge(
-                icon: Icons.description_outlined,
-                label: '$totalPrescriptions prescription(s)',
-              ),
-              buildHeaderBadge(
-                icon: Icons.warning_amber_rounded,
-                label: '$highRiskCount risque(s) élevé(s)',
-              ),
-              buildHeaderBadge(
-                icon: Icons.flag_rounded,
-                label: '$totalFlags drapeau(x)',
-              ),
-            ],
-          ),
+          if (!compact) ...[
+            const SizedBox(height: AppSpacing.md),
+            Wrap(
+              spacing: AppSpacing.sm,
+              runSpacing: AppSpacing.sm,
+              children: [
+                buildHeaderBadge(
+                  icon: Icons.assignment_turned_in_outlined,
+                  label: '$totalEvaluations bilan(s)',
+                ),
+                buildHeaderBadge(
+                  icon: Icons.description_outlined,
+                  label: '$totalPrescriptions prescription(s)',
+                ),
+                buildHeaderBadge(
+                  icon: Icons.warning_amber_rounded,
+                  label: '$highRiskCount risque(s) élevé(s)',
+                ),
+                buildHeaderBadge(
+                  icon: Icons.flag_rounded,
+                  label: '$totalFlags drapeau(x)',
+                ),
+              ],
+            ),
+          ],
         ],
       ),
     );

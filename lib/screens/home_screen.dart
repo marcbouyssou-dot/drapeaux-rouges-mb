@@ -596,7 +596,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: SingleChildScrollView(
                   padding: const EdgeInsets.fromLTRB(
                     AppSpacing.md,
-                    AppSpacing.lg,
+                    AppSpacing.sm,
                     AppSpacing.md,
                     150,
                   ),
@@ -606,7 +606,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         hasPatient: currentPatient != null,
                         patientDisplayName: patientDisplayName,
                       ),
-                      const SizedBox(height: AppSpacing.md),
+                      const SizedBox(height: AppSpacing.sm),
                       HomeScoreCard(
                         score: score,
                         checkedCount: checkedCount,
@@ -616,15 +616,15 @@ class _HomeScreenState extends State<HomeScreen> {
                         patientDisplayName: patientDisplayName,
                         onTap: openCategoryPicker,
                       ),
-                      const SizedBox(height: AppSpacing.md),
+                      const SizedBox(height: AppSpacing.sm),
                       HomeEvaluationShortcutRow(
                         onPatientTap: openPatientScreen,
                         onBdkTap: openBdkTypeScreen,
                         onPrescriptionTap: openPrescriptionTypeScreen,
                       ),
-                      const SizedBox(height: AppSpacing.md),
+                      const SizedBox(height: AppSpacing.sm),
                       HomeRiskLegendCard(riskLevel: riskLevel),
-                      const SizedBox(height: AppSpacing.lg),
+                      const SizedBox(height: AppSpacing.sm),
                       const HomeFooterNote(),
                     ],
                   ),

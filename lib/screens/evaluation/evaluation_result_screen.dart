@@ -45,6 +45,7 @@ class EvaluationResultScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final Color medicalRiskColor = _medicalRiskColor(riskLevel);
+    final compact = MediaQuery.sizeOf(context).width < 430;
 
     final decisionTitle = DecisionEngineService.decisionTitle(
       score: score,
@@ -60,15 +61,15 @@ class EvaluationResultScreen extends StatelessWidget {
         elevation: 0,
       ),
       body: ListView(
-        padding: const EdgeInsets.fromLTRB(
+        padding: EdgeInsets.fromLTRB(
           AppSpacing.md,
-          AppSpacing.sm,
+          compact ? AppSpacing.xs : AppSpacing.sm,
           AppSpacing.md,
           120,
         ),
         children: [
           Container(
-            padding: const EdgeInsets.all(AppSpacing.lg),
+            padding: EdgeInsets.all(compact ? AppSpacing.md : AppSpacing.lg),
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
@@ -93,8 +94,8 @@ class EvaluationResultScreen extends StatelessWidget {
                 Row(
                   children: [
                     Container(
-                      width: 54,
-                      height: 54,
+                      width: compact ? 44 : 54,
+                      height: compact ? 44 : 54,
                       decoration: BoxDecoration(
                         color: AppColors.textOnDark.withValues(alpha: 0.16),
                         borderRadius: BorderRadius.circular(AppRadius.lg),
@@ -102,10 +103,10 @@ class EvaluationResultScreen extends StatelessWidget {
                           color: AppColors.textOnDark.withValues(alpha: 0.18),
                         ),
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.monitor_heart_rounded,
                         color: AppColors.textOnDark,
-                        size: 32,
+                        size: compact ? 26 : 32,
                       ),
                     ),
                     const Spacer(),
@@ -133,19 +134,19 @@ class EvaluationResultScreen extends StatelessWidget {
                   ],
                 ),
 
-                const SizedBox(height: AppSpacing.lg),
+                SizedBox(height: compact ? AppSpacing.sm : AppSpacing.lg),
 
                 Text(
                   riskLevel,
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: AppColors.textOnDark,
-                    fontSize: 30,
+                    fontSize: compact ? 24 : 30,
                     fontWeight: FontWeight.w900,
                     height: 1.05,
                   ),
                 ),
 
-                const SizedBox(height: AppSpacing.sm),
+                const SizedBox(height: AppSpacing.xs),
 
                 Text(
                   '$checkedCount drapeau(x) rouge(s) détecté(s)',
@@ -156,16 +157,17 @@ class EvaluationResultScreen extends StatelessWidget {
                   ),
                 ),
 
-                const SizedBox(height: AppSpacing.xs),
-
-                Text(
-                  patientDisplayName,
-                  style: TextStyle(
-                    color: AppColors.textOnDark.withValues(alpha: 0.76),
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
+                if (!compact) ...[
+                  const SizedBox(height: AppSpacing.xs),
+                  Text(
+                    patientDisplayName,
+                    style: TextStyle(
+                      color: AppColors.textOnDark.withValues(alpha: 0.76),
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
-                ),
+                ],
               ],
             ),
           ),

@@ -61,7 +61,7 @@ class BDKTypeScreen extends StatelessWidget {
               ),
               children: [
                 const _BDKTypeHeader(),
-                const SizedBox(height: AppSpacing.md),
+                const SizedBox(height: AppSpacing.sm),
                 ...items.map(
                   (item) => Padding(
                     padding: const EdgeInsets.only(bottom: AppSpacing.sm),
@@ -94,8 +94,10 @@ class _BDKTypeHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final compact = MediaQuery.sizeOf(context).width < 430;
+
     return Container(
-      padding: const EdgeInsets.all(AppSpacing.lg),
+      padding: EdgeInsets.all(compact ? AppSpacing.md : AppSpacing.lg),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           colors: [AppColors.medicalBlue, AppColors.primaryDark],
@@ -128,23 +130,25 @@ class _BDKTypeHeader extends StatelessWidget {
                   onPressed: () => Navigator.pop(context),
                 ),
               ),
-              const SizedBox(width: AppSpacing.sm),
-              Container(
-                height: 44,
-                width: 44,
-                decoration: BoxDecoration(
-                  color: AppColors.textOnDark.withValues(alpha: 0.14),
-                  borderRadius: BorderRadius.circular(AppRadius.lg),
-                  border: Border.all(
-                    color: AppColors.textOnDark.withValues(alpha: 0.20),
+              if (!compact) ...[
+                const SizedBox(width: AppSpacing.sm),
+                Container(
+                  height: 44,
+                  width: 44,
+                  decoration: BoxDecoration(
+                    color: AppColors.textOnDark.withValues(alpha: 0.14),
+                    borderRadius: BorderRadius.circular(AppRadius.lg),
+                    border: Border.all(
+                      color: AppColors.textOnDark.withValues(alpha: 0.20),
+                    ),
+                  ),
+                  child: const Icon(
+                    Icons.fact_check_outlined,
+                    color: AppColors.textOnDark,
+                    size: 24,
                   ),
                 ),
-                child: const Icon(
-                  Icons.fact_check_outlined,
-                  color: AppColors.textOnDark,
-                  size: 24,
-                ),
-              ),
+              ],
               const SizedBox(width: AppSpacing.sm),
               Expanded(
                 child: Column(
@@ -154,35 +158,42 @@ class _BDKTypeHeader extends StatelessWidget {
                       'Type de BDK',
                       style: AppTypography.title.copyWith(
                         color: AppColors.textOnDark,
-                        fontSize: 24,
+                        fontSize: compact ? 21 : 24,
                         fontWeight: FontWeight.w900,
                       ),
                     ),
-                    const SizedBox(height: AppSpacing.xs),
-                    Text(
-                      'Sélectionnez le contexte clinique à structurer.',
-                      style: TextStyle(
-                        color: AppColors.textOnDark.withValues(alpha: 0.82),
-                        fontSize: 13,
-                        height: 1.35,
-                        fontWeight: FontWeight.w700,
+                    if (!compact) ...[
+                      const SizedBox(height: AppSpacing.xs),
+                      Text(
+                        'Sélectionnez le contexte clinique à structurer.',
+                        style: TextStyle(
+                          color: AppColors.textOnDark.withValues(alpha: 0.82),
+                          fontSize: 13,
+                          height: 1.35,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
-                    ),
+                    ],
                   ],
                 ),
               ),
             ],
           ),
-          const SizedBox(height: AppSpacing.md),
-          Wrap(
-            spacing: AppSpacing.sm,
-            runSpacing: AppSpacing.sm,
-            children: const [
-              _HeaderChip(icon: Icons.auto_awesome, label: 'Auto-remplissage'),
-              _HeaderChip(icon: Icons.picture_as_pdf_outlined, label: 'PDF'),
-              _HeaderChip(icon: Icons.edit_note_rounded, label: 'Structuré'),
-            ],
-          ),
+          if (!compact) ...[
+            const SizedBox(height: AppSpacing.md),
+            Wrap(
+              spacing: AppSpacing.sm,
+              runSpacing: AppSpacing.sm,
+              children: const [
+                _HeaderChip(
+                  icon: Icons.auto_awesome,
+                  label: 'Auto-remplissage',
+                ),
+                _HeaderChip(icon: Icons.picture_as_pdf_outlined, label: 'PDF'),
+                _HeaderChip(icon: Icons.edit_note_rounded, label: 'Structuré'),
+              ],
+            ),
+          ],
         ],
       ),
     );

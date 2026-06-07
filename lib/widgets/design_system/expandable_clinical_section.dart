@@ -22,8 +22,10 @@ class ExpandableClinicalSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final compact = MediaQuery.sizeOf(context).width < 430;
+
     return Container(
-      margin: const EdgeInsets.only(bottom: 14),
+      margin: EdgeInsets.only(bottom: compact ? 9 : 14),
       decoration: BoxDecoration(
         color: AppColors.card,
         borderRadius: BorderRadius.circular(24),
@@ -38,32 +40,29 @@ class ExpandableClinicalSection extends StatelessWidget {
         ),
         child: ExpansionTile(
           initiallyExpanded: initiallyExpanded,
-          tilePadding: const EdgeInsets.symmetric(
-            horizontal: 18,
-            vertical: 8,
+          tilePadding: EdgeInsets.symmetric(
+            horizontal: compact ? 14 : 18,
+            vertical: compact ? 2 : 8,
           ),
-          childrenPadding: const EdgeInsets.fromLTRB(18, 0, 18, 18),
+          childrenPadding: EdgeInsets.fromLTRB(
+            compact ? 14 : 18,
+            0,
+            compact ? 14 : 18,
+            compact ? 12 : 18,
+          ),
           leading: Container(
-            width: 48,
-            height: 48,
+            width: compact ? 40 : 48,
+            height: compact ? 40 : 48,
             decoration: BoxDecoration(
               color: color.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(16),
             ),
-            child: Icon(
-              icon,
-              color: color,
-              size: 26,
-            ),
+            child: Icon(icon, color: color, size: compact ? 22 : 26),
           ),
-          title: Text(
-            title,
-            style: AppTextStyles.cardTitle,
-          ),
-          subtitle: Text(
-            subtitle,
-            style: AppTextStyles.cardSubtitle,
-          ),
+          title: Text(title, style: AppTextStyles.cardTitle),
+          subtitle: compact
+              ? null
+              : Text(subtitle, style: AppTextStyles.cardSubtitle),
           children: children,
         ),
       ),

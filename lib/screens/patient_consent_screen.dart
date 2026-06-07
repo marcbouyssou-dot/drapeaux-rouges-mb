@@ -291,8 +291,10 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
   }
 
   Widget buildPatientHeader() {
+    final compact = MediaQuery.sizeOf(context).width < 430;
+
     return Container(
-      padding: const EdgeInsets.all(AppSpacing.lg),
+      padding: EdgeInsets.all(compact ? AppSpacing.md : AppSpacing.lg),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           colors: [
@@ -313,8 +315,8 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
-                width: 50,
-                height: 50,
+                width: compact ? 42 : 50,
+                height: compact ? 42 : 50,
                 decoration: BoxDecoration(
                   color: AppColors.textOnDark.withValues(alpha: 0.14),
                   borderRadius: BorderRadius.circular(AppRadius.lg),
@@ -322,13 +324,13 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
                     color: AppColors.textOnDark.withValues(alpha: 0.20),
                   ),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.verified_user_outlined,
                   color: AppColors.textOnDark,
-                  size: 27,
+                  size: compact ? 23 : 27,
                 ),
               ),
-              const SizedBox(width: AppSpacing.md),
+              SizedBox(width: compact ? AppSpacing.sm : AppSpacing.md),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -337,46 +339,50 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
                       'Patient',
                       style: AppTypography.title.copyWith(
                         color: AppColors.textOnDark,
-                        fontSize: 27,
+                        fontSize: compact ? 22 : 27,
                         fontWeight: FontWeight.w900,
                       ),
                     ),
-                    const SizedBox(height: AppSpacing.xs),
-                    Text(
-                      'Identité locale, consentement RGPD et patient actif.',
-                      style: TextStyle(
-                        color: AppColors.textOnDark.withValues(alpha: 0.82),
-                        fontSize: 13,
-                        height: 1.35,
-                        fontWeight: FontWeight.w700,
+                    if (!compact) ...[
+                      const SizedBox(height: AppSpacing.xs),
+                      Text(
+                        'Identité locale, consentement RGPD et patient actif.',
+                        style: TextStyle(
+                          color: AppColors.textOnDark.withValues(alpha: 0.82),
+                          fontSize: 13,
+                          height: 1.35,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
-                    ),
+                    ],
                   ],
                 ),
               ),
             ],
           ),
-          const SizedBox(height: AppSpacing.md),
-          Wrap(
-            spacing: AppSpacing.sm,
-            runSpacing: AppSpacing.sm,
-            children: [
-              _HeaderBadge(
-                label: '${patients.length} local',
-                icon: Icons.people_alt_outlined,
-              ),
-              const _HeaderBadge(
-                label: 'Données appareil',
-                icon: Icons.lock_outline_rounded,
-              ),
-              _HeaderBadge(
-                label: currentPatient == null ? 'Anonyme' : 'Actif',
-                icon: currentPatient == null
-                    ? Icons.no_accounts_outlined
-                    : Icons.check_circle_outline_rounded,
-              ),
-            ],
-          ),
+          if (!compact) ...[
+            const SizedBox(height: AppSpacing.md),
+            Wrap(
+              spacing: AppSpacing.sm,
+              runSpacing: AppSpacing.sm,
+              children: [
+                _HeaderBadge(
+                  label: '${patients.length} local',
+                  icon: Icons.people_alt_outlined,
+                ),
+                const _HeaderBadge(
+                  label: 'Données appareil',
+                  icon: Icons.lock_outline_rounded,
+                ),
+                _HeaderBadge(
+                  label: currentPatient == null ? 'Anonyme' : 'Actif',
+                  icon: currentPatient == null
+                      ? Icons.no_accounts_outlined
+                      : Icons.check_circle_outline_rounded,
+                ),
+              ],
+            ),
+          ],
         ],
       ),
     );
@@ -773,23 +779,25 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
                     : const AlwaysScrollableScrollPhysics(),
                 padding: const EdgeInsets.fromLTRB(
                   AppSpacing.md,
-                  AppSpacing.md,
+                  AppSpacing.sm,
                   AppSpacing.md,
                   120,
                 ),
                 children: [
                   buildPatientHeader(),
-                  const SizedBox(height: AppSpacing.md),
-                  buildPatientWorkspaceIntro(),
-                  const SizedBox(height: AppSpacing.md),
+                  if (MediaQuery.sizeOf(context).width >= 430) ...[
+                    const SizedBox(height: AppSpacing.md),
+                    buildPatientWorkspaceIntro(),
+                  ],
+                  const SizedBox(height: AppSpacing.sm),
                   buildStatusPanel(),
-                  const SizedBox(height: AppSpacing.md),
+                  const SizedBox(height: AppSpacing.sm),
                   buildSearchBar(),
-                  const SizedBox(height: AppSpacing.md),
+                  const SizedBox(height: AppSpacing.sm),
                   buildPatientForm(foundPatient),
-                  const SizedBox(height: AppSpacing.lg),
+                  const SizedBox(height: AppSpacing.sm),
                   buildPatientsList(visiblePatients),
-                  const SizedBox(height: AppSpacing.md),
+                  const SizedBox(height: AppSpacing.sm),
                   buildDeleteAllButton(),
                 ],
               ),

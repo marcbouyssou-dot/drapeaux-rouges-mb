@@ -458,16 +458,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
             child: ListView(
               padding: const EdgeInsets.fromLTRB(
                 spacing.AppSpacing.md,
-                spacing.AppSpacing.md,
+                spacing.AppSpacing.sm,
                 spacing.AppSpacing.md,
                 130,
               ),
               children: [
                 buildCompactHeader(),
-                const SizedBox(height: 14),
+                const SizedBox(height: 10),
 
                 buildSectionLabel('PROFIL MK'),
-                const SizedBox(height: 10),
+                const SizedBox(height: 6),
                 settingCard(
                   icon: practitionerComplete
                       ? Icons.verified_user_outlined
@@ -489,9 +489,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   onTap: showPractitionerSignatureDialog,
                 ),
 
-                const SizedBox(height: 14),
-                buildSectionLabel('CONFIDENTIALITÉ'),
                 const SizedBox(height: 10),
+                buildSectionLabel('CONFIDENTIALITÉ'),
+                const SizedBox(height: 6),
                 settingCard(
                   icon: Icons.verified_user_outlined,
                   iconColor: ds.AppColors.primary,
@@ -518,9 +518,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   onTap: () => showAnonymousRecordsExport(context),
                 ),
 
-                const SizedBox(height: 14),
-                buildSectionLabel('EXPORTS'),
                 const SizedBox(height: 10),
+                buildSectionLabel('EXPORTS'),
+                const SizedBox(height: 6),
                 settingCard(
                   icon: Icons.picture_as_pdf_outlined,
                   iconColor: ds.AppColors.dangerDark,
@@ -536,9 +536,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   onTap: GlobalStatisticsCsvService.exportGlobalStatisticsCsv,
                 ),
 
-                const SizedBox(height: 14),
-                buildSectionLabel('APPLICATION'),
                 const SizedBox(height: 10),
+                buildSectionLabel('APPLICATION'),
+                const SizedBox(height: 6),
                 settingCard(
                   icon: Icons.medical_information_outlined,
                   iconColor: ds.AppColors.warningDark,
@@ -567,7 +567,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   onTap: confirmResetLocalData,
                 ),
 
-                const SizedBox(height: 14),
+                const SizedBox(height: 10),
                 buildVersionCard(),
               ],
             ),
@@ -578,9 +578,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Widget buildCompactHeader() {
+    final compact = MediaQuery.sizeOf(context).width < 430;
+
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(18, 16, 18, 16),
+      padding: EdgeInsets.fromLTRB(
+        16,
+        compact ? 12 : 16,
+        16,
+        compact ? 12 : 16,
+      ),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           colors: [Color(0xFFF8FAFC), Color(0xFFFFFFFF)],
@@ -592,29 +599,29 @@ class _SettingsScreenState extends State<SettingsScreen> {
       child: Row(
         children: [
           Container(
-            width: 52,
-            height: 52,
+            width: compact ? 42 : 52,
+            height: compact ? 42 : 52,
             decoration: const BoxDecoration(
               shape: BoxShape.circle,
               gradient: LinearGradient(
                 colors: [Color(0xFF64748B), Color(0xFF334155)],
               ),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.tune_rounded,
               color: Colors.white,
-              size: 28,
+              size: compact ? 23 : 28,
             ),
           ),
-          const SizedBox(width: 14),
-          const Expanded(
+          const SizedBox(width: 12),
+          Expanded(
             child: Text(
               'Réglages et données locales',
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 color: Color(0xFF0F172A),
-                fontSize: 17,
+                fontSize: compact ? 15.5 : 17,
                 fontWeight: FontWeight.w900,
                 letterSpacing: -0.2,
               ),
@@ -648,7 +655,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     required VoidCallback onTap,
   }) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 9),
+      margin: const EdgeInsets.only(bottom: 7),
       decoration: BoxDecoration(
         color: ds.AppColors.surface,
         borderRadius: BorderRadius.circular(AppRadius.lg),
@@ -657,15 +664,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
       child: ListTile(
         onTap: onTap,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
         leading: Container(
-          height: 44,
-          width: 44,
+          height: 38,
+          width: 38,
           decoration: BoxDecoration(
             color: iconColor.withValues(alpha: 0.10),
             borderRadius: BorderRadius.circular(16),
           ),
-          child: Icon(icon, color: iconColor, size: 24),
+          child: Icon(icon, color: iconColor, size: 21),
         ),
         title: Text(
           title,
@@ -681,7 +688,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           padding: const EdgeInsets.only(top: 2),
           child: Text(
             subtitle,
-            maxLines: 2,
+            maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: const TextStyle(
               color: Color(0xFF64748B),

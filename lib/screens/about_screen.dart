@@ -20,13 +20,13 @@ class AboutScreen extends StatelessWidget {
             child: ListView(
               padding: const EdgeInsets.fromLTRB(
                 AppSpacing.md,
-                AppSpacing.md,
+                AppSpacing.sm,
                 AppSpacing.md,
                 120,
               ),
               children: [
-                infoHeader(),
-                const SizedBox(height: AppSpacing.md),
+                infoHeader(context),
+                const SizedBox(height: AppSpacing.sm),
                 infoCard(
                   icon: Icons.person_outline,
                   title: 'Éditeur',
@@ -63,9 +63,11 @@ class AboutScreen extends StatelessWidget {
     );
   }
 
-  Widget infoHeader() {
+  Widget infoHeader(BuildContext context) {
+    final compact = MediaQuery.sizeOf(context).width < 430;
+
     return Container(
-      padding: const EdgeInsets.all(AppSpacing.lg),
+      padding: EdgeInsets.all(compact ? AppSpacing.md : AppSpacing.lg),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           colors: [AppColors.medicalBlue, AppColors.primaryDark],
@@ -79,8 +81,8 @@ class AboutScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            width: 52,
-            height: 52,
+            width: compact ? 42 : 52,
+            height: compact ? 42 : 52,
             decoration: BoxDecoration(
               color: AppColors.textOnDark.withValues(alpha: 0.14),
               borderRadius: BorderRadius.circular(AppRadius.lg),
@@ -88,33 +90,35 @@ class AboutScreen extends StatelessWidget {
                 color: AppColors.textOnDark.withValues(alpha: 0.20),
               ),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.medical_information_rounded,
               color: Colors.white,
-              size: 30,
+              size: compact ? 24 : 30,
             ),
           ),
-          const SizedBox(height: AppSpacing.md),
+          SizedBox(height: compact ? AppSpacing.sm : AppSpacing.md),
           Text(
             'drapeaux_rouges_MB',
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
             style: AppTypography.title.copyWith(
               color: AppColors.textOnDark,
-              fontSize: 25,
+              fontSize: compact ? 20 : 25,
               fontWeight: FontWeight.bold,
             ),
           ),
-          const SizedBox(height: AppSpacing.xs),
-          Text(
-            'Application clinique de repérage rapide',
-            style: TextStyle(
-              color: AppColors.textOnDark.withValues(alpha: 0.82),
-              fontSize: 14,
-              height: 1.35,
-              fontWeight: FontWeight.w700,
+          if (!compact) ...[
+            const SizedBox(height: AppSpacing.xs),
+            Text(
+              'Application clinique de repérage rapide',
+              style: TextStyle(
+                color: AppColors.textOnDark.withValues(alpha: 0.82),
+                fontSize: 14,
+                height: 1.35,
+                fontWeight: FontWeight.w700,
+              ),
             ),
-          ),
+          ],
         ],
       ),
     );
@@ -126,8 +130,8 @@ class AboutScreen extends StatelessWidget {
     required String text,
   }) {
     return Container(
-      margin: const EdgeInsets.only(bottom: AppSpacing.sm),
-      padding: const EdgeInsets.all(AppSpacing.md),
+      margin: const EdgeInsets.only(bottom: 7),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(AppRadius.lg),
@@ -138,13 +142,13 @@ class AboutScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            width: 42,
-            height: 42,
+            width: 36,
+            height: 36,
             decoration: BoxDecoration(
               color: AppColors.surfaceAlt,
               borderRadius: BorderRadius.circular(AppRadius.md),
             ),
-            child: Icon(icon, color: AppColors.primary, size: 24),
+            child: Icon(icon, color: AppColors.primary, size: 21),
           ),
           const SizedBox(width: AppSpacing.sm),
           Expanded(
@@ -160,9 +164,11 @@ class AboutScreen extends StatelessWidget {
                     fontWeight: FontWeight.w900,
                   ),
                 ),
-                const SizedBox(height: AppSpacing.xs),
+                const SizedBox(height: 3),
                 Text(
                   text,
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     color: AppColors.textSecondary,
                     height: 1.4,

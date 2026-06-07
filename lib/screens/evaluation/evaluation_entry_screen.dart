@@ -50,12 +50,12 @@ class _EvaluationEntryScreenState extends State<EvaluationEntryScreen> {
 
           return Column(
             children: [
-              const _Header(),
+              _Header(compact: !isWide),
               Expanded(
                 child: SingleChildScrollView(
                   padding: EdgeInsets.fromLTRB(
                     isWide ? 22 : 16,
-                    16,
+                    isWide ? 16 : 10,
                     isWide ? 22 : 16,
                     110,
                   ),
@@ -89,15 +89,15 @@ class _EvaluationEntryScreenState extends State<EvaluationEntryScreen> {
                       : Column(
                           children: [
                             _HeroCard(onStart: _openDrapeauxRouges),
-                            const SizedBox(height: 14),
+                            const SizedBox(height: 10),
                             _ShortcutRow(
                               onPatient: _openPatient,
                               onPrescription: _openPrescription,
                               onBdk: _openBdk,
                             ),
-                            const SizedBox(height: 14),
+                            const SizedBox(height: 10),
                             const _RiskLegend(),
-                            const SizedBox(height: 14),
+                            const SizedBox(height: 10),
                             const _FooterNote(),
                           ],
                         ),
@@ -112,13 +112,20 @@ class _EvaluationEntryScreenState extends State<EvaluationEntryScreen> {
 }
 
 class _Header extends StatelessWidget {
-  const _Header();
+  const _Header({required this.compact});
+
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 108,
-      padding: const EdgeInsets.fromLTRB(20, 22, 20, 16),
+      height: compact ? 68 : 108,
+      padding: EdgeInsets.fromLTRB(
+        20,
+        compact ? 10 : 22,
+        20,
+        compact ? 10 : 16,
+      ),
       decoration: const BoxDecoration(
         gradient: LinearGradient(
           colors: [Color(0xFF1E6DD8), Color(0xFF1552B4)],
@@ -126,7 +133,7 @@ class _Header extends StatelessWidget {
           end: Alignment.bottomRight,
         ),
       ),
-      child: const Row(
+      child: Row(
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           Expanded(
@@ -138,19 +145,21 @@ class _Header extends StatelessWidget {
                   'Évaluation clinique',
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: 20,
+                    fontSize: compact ? 18 : 20,
                     fontWeight: FontWeight.w900,
                   ),
                 ),
-                SizedBox(height: 4),
-                Text(
-                  'Accès direct · Sécurisation clinique',
-                  style: TextStyle(
-                    color: Color(0xFFBFD7FF),
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
+                if (!compact) ...[
+                  const SizedBox(height: 4),
+                  const Text(
+                    'Accès direct · Sécurisation clinique',
+                    style: TextStyle(
+                      color: Color(0xFFBFD7FF),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
-                ),
+                ],
               ],
             ),
           ),
@@ -198,10 +207,12 @@ class _HeroCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final compact = MediaQuery.sizeOf(context).width < 430;
+
     return Container(
       width: double.infinity,
-      constraints: const BoxConstraints(minHeight: 322),
-      padding: const EdgeInsets.all(26),
+      constraints: BoxConstraints(minHeight: compact ? 210 : 322),
+      padding: EdgeInsets.all(compact ? 18 : 26),
       decoration: BoxDecoration(
         color: const Color(0xFFE91E63),
         borderRadius: BorderRadius.circular(22),
@@ -232,26 +243,28 @@ class _HeroCard extends StatelessWidget {
               _FlagIcon(),
             ],
           ),
-          const SizedBox(height: 46),
-          const Text(
+          SizedBox(height: compact ? 22 : 46),
+          Text(
             'DRAPEAUX',
             style: TextStyle(
               color: Colors.white,
-              fontSize: 44,
+              fontSize: compact ? 34 : 44,
               fontWeight: FontWeight.w900,
               letterSpacing: -1.8,
             ),
           ),
-          const SizedBox(height: 8),
-          const Text(
-            'Évaluer les signes d’alerte',
-            style: TextStyle(
-              color: Color(0xFFFFE4EF),
-              fontSize: 16,
-              fontWeight: FontWeight.w800,
+          if (!compact) ...[
+            const SizedBox(height: 8),
+            const Text(
+              'Évaluer les signes d’alerte',
+              style: TextStyle(
+                color: Color(0xFFFFE4EF),
+                fontSize: 16,
+                fontWeight: FontWeight.w800,
+              ),
             ),
-          ),
-          const SizedBox(height: 28),
+          ],
+          SizedBox(height: compact ? 18 : 28),
           Center(
             child: ClinicalBigActionButton(
               title: 'Commencer l’évaluation',
@@ -259,8 +272,8 @@ class _HeroCard extends StatelessWidget {
               colors: const [Color(0xFFFF7AAA), Color(0xFFE91E63)],
               shadowColor: Colors.white,
               onTap: onStart,
-              diameter: 92,
-              iconSize: 42,
+              diameter: compact ? 76 : 92,
+              iconSize: compact ? 34 : 42,
             ),
           ),
         ],

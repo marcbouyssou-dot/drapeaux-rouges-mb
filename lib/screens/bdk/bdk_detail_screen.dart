@@ -258,9 +258,11 @@ class _BDKDetailScreenState extends State<BDKDetailScreen> {
   }
 
   Widget buildBdkHeader(BuildContext context) {
+    final compact = MediaQuery.sizeOf(context).width < 430;
+
     return Container(
-      margin: EdgeInsets.all(AppSpacing.screenPadding),
-      padding: const EdgeInsets.all(18),
+      margin: EdgeInsets.all(compact ? 10 : AppSpacing.screenPadding),
+      padding: EdgeInsets.all(compact ? 12 : 18),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [AppColors.primaryBlue, AppColors.successGreen],
@@ -295,22 +297,24 @@ class _BDKDetailScreenState extends State<BDKDetailScreen> {
                   ),
                 ),
               ),
-              const SizedBox(width: 12),
-              Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.16),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.20),
+              if (!compact) ...[
+                const SizedBox(width: 12),
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.16),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.20),
+                    ),
+                  ),
+                  child: const Icon(
+                    Icons.assignment_turned_in_outlined,
+                    color: Colors.white,
                   ),
                 ),
-                child: const Icon(
-                  Icons.assignment_turned_in_outlined,
-                  color: Colors.white,
-                ),
-              ),
+              ],
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
@@ -322,41 +326,48 @@ class _BDKDetailScreenState extends State<BDKDetailScreen> {
                       overflow: TextOverflow.ellipsis,
                       style: AppTextStyles.screenTitle.copyWith(
                         color: Colors.white,
-                        fontSize: 25,
+                        fontSize: compact ? 20 : 25,
                       ),
                     ),
-                    const SizedBox(height: 6),
-                    Text(
-                      'Bilan clinique structuré · export PDF',
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.84),
-                        fontSize: 13,
-                        height: 1.35,
-                        fontWeight: FontWeight.w700,
+                    if (!compact) ...[
+                      const SizedBox(height: 6),
+                      Text(
+                        'Bilan clinique structuré · export PDF',
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.84),
+                          fontSize: 13,
+                          height: 1.35,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
-                    ),
+                    ],
                   ],
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 16),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              buildHeaderChip(Icons.person_outline_rounded, patientDisplayName),
-              buildHeaderChip(
-                hasImportedEvaluation
-                    ? Icons.auto_awesome
-                    : Icons.edit_note_rounded,
-                hasImportedEvaluation ? 'Prérempli' : 'Saisie manuelle',
-              ),
-              buildHeaderChip(Icons.picture_as_pdf_outlined, 'PDF'),
-            ],
-          ),
+          if (!compact) ...[
+            const SizedBox(height: 16),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                buildHeaderChip(
+                  Icons.person_outline_rounded,
+                  patientDisplayName,
+                ),
+                buildHeaderChip(
+                  hasImportedEvaluation
+                      ? Icons.auto_awesome
+                      : Icons.edit_note_rounded,
+                  hasImportedEvaluation ? 'Prérempli' : 'Saisie manuelle',
+                ),
+                buildHeaderChip(Icons.picture_as_pdf_outlined, 'PDF'),
+              ],
+            ),
+          ],
         ],
       ),
     );
@@ -568,7 +579,7 @@ Une prise en charge kinésithérapique adaptée semble indiquée avec surveillan
                     AppSpacing.screenPadding,
                     0,
                     AppSpacing.screenPadding,
-                    AppSpacing.screenPadding,
+                    96,
                   ),
                   children: [
                     buildPatientSummaryCard(),

@@ -99,9 +99,11 @@ class HomePatientClinicalCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final compact = MediaQuery.sizeOf(context).width < 430;
+
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(AppSpacing.lg),
+      padding: EdgeInsets.all(compact ? AppSpacing.md : AppSpacing.lg),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           colors: [AppColors.surface, AppColors.surfaceAlt],
@@ -122,8 +124,8 @@ class HomePatientClinicalCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            width: 48,
-            height: 48,
+            width: compact ? 40 : 48,
+            height: compact ? 40 : 48,
             decoration: BoxDecoration(
               color: hasPatient
                   ? AppColors.success.withValues(alpha: 0.12)
@@ -140,54 +142,59 @@ class HomePatientClinicalCard extends StatelessWidget {
                   ? Icons.verified_user_outlined
                   : Icons.no_accounts_outlined,
               color: hasPatient ? AppColors.successDark : AppColors.warningDark,
-              size: 25,
+              size: compact ? 22 : 25,
             ),
           ),
-          const SizedBox(width: AppSpacing.md),
+          SizedBox(width: compact ? AppSpacing.sm : AppSpacing.md),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'BILAN DE DÉPISTAGE CLINIQUE',
+                Text(
+                  'BILAN CLINIQUE',
                   style: TextStyle(
                     color: AppColors.raspberry,
-                    fontSize: 10,
+                    fontSize: compact ? 9.5 : 10,
                     fontWeight: FontWeight.w900,
-                    letterSpacing: 1.7,
+                    letterSpacing: compact ? 1.1 : 1.7,
                   ),
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: compact ? 4 : 8),
                 Text(
                   hasPatient ? patientDisplayName : 'Patient non renseigné',
-                  maxLines: 2,
+                  maxLines: compact ? 1 : 2,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: AppColors.medicalBlue,
-                    fontSize: 21,
+                    fontSize: compact ? 18 : 21,
                     fontWeight: FontWeight.w900,
                     height: 1.12,
                   ),
                 ),
-                const SizedBox(height: AppSpacing.xs),
-                Text(
-                  hasPatient
-                      ? 'Évaluation clinique en cours'
-                      : 'Mode anonyme possible, patient conseillé pour la traçabilité',
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: AppColors.textSecondary,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
+                if (!compact) ...[
+                  const SizedBox(height: AppSpacing.xs),
+                  Text(
+                    hasPatient
+                        ? 'Évaluation clinique en cours'
+                        : 'Mode anonyme possible, patient conseillé pour la traçabilité',
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: AppColors.textSecondary,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
-                ),
+                ],
               ],
             ),
           ),
           const SizedBox(width: AppSpacing.sm),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 7),
+            padding: EdgeInsets.symmetric(
+              horizontal: compact ? 9 : 11,
+              vertical: compact ? 6 : 7,
+            ),
             decoration: BoxDecoration(
               color: hasPatient
                   ? const Color(0xFFEFFAF4)
