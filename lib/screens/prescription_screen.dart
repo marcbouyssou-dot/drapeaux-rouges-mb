@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -6,8 +7,10 @@ import 'package:image_picker/image_picker.dart';
 import '../data/prescription_templates_data.dart';
 import '../models/patient_local.dart';
 import '../models/practitioner_profile.dart';
+import '../models/prescription_model.dart';
 import '../services/practitioner_profile_service.dart';
 import '../services/prescription_pdf_service.dart';
+import '../services/prescription_service.dart';
 import '../services/rgpd_local_service.dart';
 import '../theme/app_design_system.dart';
 import '../widgets/design_system/clinical_bottom_action_bar.dart';
@@ -238,6 +241,20 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
       prescriptionContent: content,
       justificatifImage: justificatifImage,
     );
+
+    await PrescriptionService.savePrescription(
+      PrescriptionModel.fromGenerated(
+        patient: currentPatient!,
+        practitioner: practitioner,
+        prescriptionType: selectedPrescriptionType,
+        prescriptionContent: content,
+        justificatifImageBase64: justificatifImage == null
+            ? null
+            : base64Encode(await justificatifImage!.readAsBytes()),
+      ),
+    );
+
+    showMessage('Prescription enregistrée dans l’historique.');
   }
 
   Future<void> showPractitionerDialog() async {

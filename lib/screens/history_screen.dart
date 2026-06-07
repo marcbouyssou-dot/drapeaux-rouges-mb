@@ -1,15 +1,20 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+import '../models/prescription_model.dart';
 import '../services/history_service.dart';
+import '../services/prescription_service.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_radius.dart';
 import '../theme/app_shadows.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
 import 'evaluation/evaluation_detail_screen.dart';
+import 'prescription/prescription_history_detail_screen.dart';
 
 enum HistoryFilter { all, critical, high, moderate, low, anonymous }
+
+enum HistoryView { evaluations, prescriptions }
 
 class HistoryScreen extends StatefulWidget {
   const HistoryScreen({super.key});
@@ -22,8 +27,10 @@ class _HistoryScreenState extends State<HistoryScreen> {
   final searchController = TextEditingController();
 
   List<Map<String, dynamic>> history = [];
+  List<PrescriptionModel> prescriptions = [];
   String searchQuery = '';
   HistoryFilter selectedFilter = HistoryFilter.all;
+  HistoryView selectedView = HistoryView.evaluations;
 
   @override
   void initState() {
@@ -39,11 +46,13 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
   Future<void> loadHistory() async {
     final loadedHistory = await HistoryService.loadHistory();
+    final loadedPrescriptions = await PrescriptionService.getPrescriptions();
 
     if (!mounted) return;
 
     setState(() {
       history = loadedHistory;
+      prescriptions = loadedPrescriptions;
     });
   }
 
@@ -67,6 +76,25 @@ class _HistoryScreenState extends State<HistoryScreen> {
       return dateB.compareTo(dateA);
     });
 
+    return filtered;
+  }
+
+  List<PrescriptionModel> get filteredPrescriptions {
+    final query = searchQuery.trim().toLowerCase();
+
+    final filtered = prescriptions.where((item) {
+      if (query.isEmpty) return true;
+
+      return [
+        item.displayPatient,
+        item.displayType,
+        item.prescription,
+        item.professional,
+        formatDate(item.createdAt.toIso8601String()),
+      ].join(' ').toLowerCase().contains(query);
+    }).toList();
+
+    filtered.sort((a, b) => b.createdAt.compareTo(a.createdAt));
     return filtered;
   }
 
@@ -222,6 +250,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
   int get totalEvaluations => history.length;
 
+  int get totalPrescriptions => prescriptions.length;
+
   int get totalFlags {
     return history.fold<int>(0, (sum, item) {
       final value = item['checkedCount'];
@@ -244,6 +274,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
   @override
   Widget build(BuildContext context) {
     final results = filteredHistory;
+    final prescriptionResults = filteredPrescriptions;
+    final showEvaluations = selectedView == HistoryView.evaluations;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -267,16 +299,28 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   const SizedBox(height: AppSpacing.md),
                   buildSearchBar(),
                   const SizedBox(height: AppSpacing.sm),
-                  buildFilterChips(),
-                  if (history.isNotEmpty) ...[
+                  buildHistoryViewSwitch(),
+                  if (showEvaluations) ...[
                     const SizedBox(height: AppSpacing.sm),
-                    buildDeleteHistoryButton(),
+                    buildFilterChips(),
+                    if (history.isNotEmpty) ...[
+                      const SizedBox(height: AppSpacing.sm),
+                      buildDeleteHistoryButton(),
+                    ],
                   ],
                   const SizedBox(height: AppSpacing.md),
-                  if (history.isEmpty) buildEmptyState(),
-                  if (history.isNotEmpty && results.isEmpty)
-                    buildNoResultState(),
-                  if (results.isNotEmpty) ...results.map(buildHistoryCard),
+                  if (showEvaluations) ...[
+                    if (history.isEmpty) buildEmptyState(),
+                    if (history.isNotEmpty && results.isEmpty)
+                      buildNoResultState(),
+                    if (results.isNotEmpty) ...results.map(buildHistoryCard),
+                  ] else ...[
+                    if (prescriptions.isEmpty) buildPrescriptionEmptyState(),
+                    if (prescriptions.isNotEmpty && prescriptionResults.isEmpty)
+                      buildNoResultState(),
+                    if (prescriptionResults.isNotEmpty)
+                      ...prescriptionResults.map(buildPrescriptionCard),
+                  ],
                 ],
               ),
             ),
@@ -363,6 +407,10 @@ class _HistoryScreenState extends State<HistoryScreen> {
                 label: '$totalEvaluations bilan(s)',
               ),
               buildHeaderBadge(
+                icon: Icons.description_outlined,
+                label: '$totalPrescriptions prescription(s)',
+              ),
+              buildHeaderBadge(
                 icon: Icons.warning_amber_rounded,
                 label: '$highRiskCount risque(s) élevé(s)',
               ),
@@ -425,6 +473,12 @@ class _HistoryScreenState extends State<HistoryScreen> {
             value: '$totalFlags',
             icon: Icons.flag_rounded,
             color: AppColors.danger,
+          ),
+          buildStatCard(
+            label: 'Prescriptions',
+            value: '$totalPrescriptions',
+            icon: Icons.description_outlined,
+            color: AppColors.primaryDark,
           ),
         ];
 
@@ -596,6 +650,82 @@ class _HistoryScreenState extends State<HistoryScreen> {
     );
   }
 
+  Widget buildHistoryViewSwitch() {
+    return Container(
+      padding: const EdgeInsets.all(5),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(AppRadius.pill),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Row(
+        children: [
+          buildHistoryViewButton(
+            label: 'Évaluations',
+            icon: Icons.assignment_turned_in_outlined,
+            view: HistoryView.evaluations,
+          ),
+          buildHistoryViewButton(
+            label: 'Prescriptions',
+            icon: Icons.description_outlined,
+            view: HistoryView.prescriptions,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget buildHistoryViewButton({
+    required String label,
+    required IconData icon,
+    required HistoryView view,
+  }) {
+    final selected = selectedView == view;
+
+    return Expanded(
+      child: InkWell(
+        onTap: () {
+          setState(() {
+            selectedView = view;
+          });
+        },
+        borderRadius: BorderRadius.circular(AppRadius.pill),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
+          decoration: BoxDecoration(
+            color: selected ? AppColors.surfaceAlt : Colors.transparent,
+            borderRadius: BorderRadius.circular(AppRadius.pill),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                icon,
+                size: 16,
+                color: selected ? AppColors.primary : AppColors.textSecondary,
+              ),
+              const SizedBox(width: 6),
+              Flexible(
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: selected
+                        ? AppColors.primary
+                        : AppColors.textSecondary,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget buildFilterChip(String label, HistoryFilter filter, IconData icon) {
     final selected = selectedFilter == filter;
 
@@ -668,6 +798,15 @@ class _HistoryScreenState extends State<HistoryScreen> {
       title: 'Aucun bilan enregistré',
       text:
           'Les évaluations sauvegardées apparaîtront ici avec leur patient, leur date et leur niveau de risque.',
+    );
+  }
+
+  Widget buildPrescriptionEmptyState() {
+    return buildInfoState(
+      icon: Icons.description_outlined,
+      title: 'Aucune prescription enregistrée',
+      text:
+          'Les prescriptions générées apparaîtront ici avec leur patient, leur type et leur date.',
     );
   }
 
@@ -831,6 +970,113 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   text: formatDate(item['date']),
                 ),
                 if (isAnonymous) buildAnonymousBadge(),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget buildPrescriptionCard(PrescriptionModel item) {
+    final hasJustificatif =
+        item.justificatifImageBase64?.trim().isNotEmpty ?? false;
+
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          CupertinoPageRoute(
+            builder: (_) => PrescriptionHistoryDetailScreen(prescription: item),
+          ),
+        );
+      },
+      child: Container(
+        margin: const EdgeInsets.only(bottom: AppSpacing.sm),
+        padding: const EdgeInsets.all(AppSpacing.md),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(AppRadius.xl),
+          border: Border.all(color: AppColors.border),
+          boxShadow: AppShadows.soft,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  height: 56,
+                  width: 56,
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.10),
+                    borderRadius: BorderRadius.circular(AppRadius.lg),
+                    border: Border.all(
+                      color: AppColors.primary.withValues(alpha: 0.18),
+                    ),
+                  ),
+                  child: const Icon(
+                    Icons.description_outlined,
+                    color: AppColors.primary,
+                    size: 28,
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.sm),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        item.displayPatient,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: AppColors.textPrimary,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w900,
+                          height: 1.15,
+                        ),
+                      ),
+                      const SizedBox(height: 5),
+                      Text(
+                        item.displayType,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: AppColors.textPrimary,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 13,
+                          height: 1.25,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Icon(
+                  Icons.chevron_right_rounded,
+                  color: AppColors.textMuted,
+                ),
+              ],
+            ),
+            const SizedBox(height: AppSpacing.md),
+            Wrap(
+              spacing: AppSpacing.sm,
+              runSpacing: AppSpacing.sm,
+              children: [
+                buildSmallBadge(
+                  icon: Icons.event_outlined,
+                  text: formatDate(item.createdAt.toIso8601String()),
+                ),
+                buildSmallBadge(
+                  icon: Icons.picture_as_pdf_outlined,
+                  text: 'PDF disponible',
+                ),
+                if (hasJustificatif)
+                  buildSmallBadge(
+                    icon: Icons.attach_file_rounded,
+                    text: 'Justificatif',
+                  ),
               ],
             ),
           ],

@@ -1,4 +1,7 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../models/access_direct_model.dart';
 import '../services/access_direct_local_service.dart';
@@ -23,6 +26,11 @@ class _AccessDirectSettingsScreenState
 
   int sessionsDone = 0;
   String? diagnosisDocumentPath;
+  String? diagnosisDocumentName;
+  String? diagnosisDocumentBase64;
+  String? diagnosisDocumentAddedAt;
+
+  final ImagePicker picker = ImagePicker();
 
   @override
   void initState() {
@@ -42,6 +50,9 @@ class _AccessDirectSettingsScreenState
       hasMedicalDiagnosis = model.hasMedicalDiagnosis;
       sessionsDone = model.sessionsDone;
       diagnosisDocumentPath = model.diagnosisDocumentPath;
+      diagnosisDocumentName = model.diagnosisDocumentName;
+      diagnosisDocumentBase64 = model.diagnosisDocumentBase64;
+      diagnosisDocumentAddedAt = model.diagnosisDocumentAddedAt;
       isLoading = false;
     });
   }
@@ -53,6 +64,9 @@ class _AccessDirectSettingsScreenState
       hasArsDeclaration: hasArsDeclaration,
       hasMedicalDiagnosis: hasMedicalDiagnosis,
       diagnosisDocumentPath: diagnosisDocumentPath,
+      diagnosisDocumentName: diagnosisDocumentName,
+      diagnosisDocumentBase64: diagnosisDocumentBase64,
+      diagnosisDocumentAddedAt: diagnosisDocumentAddedAt,
       sessionsDone: sessionsDone,
     );
   }
@@ -67,16 +81,81 @@ class _AccessDirectSettingsScreenState
     );
   }
 
-  void simulateDocumentAdded() {
-    setState(() {
-      diagnosisDocumentPath = 'justificatif_diagnostic_local_demo.jpg';
-    });
+  Future<void> chooseDocumentSource() async {
+    final source = await showModalBottomSheet<ImageSource>(
+      context: context,
+      showDragHandle: true,
+      builder: (sheetContext) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 18),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.photo_camera_outlined),
+                  title: const Text('Prendre une photo'),
+                  onTap: () => Navigator.pop(sheetContext, ImageSource.camera),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.upload_file_outlined),
+                  title: const Text('Importer depuis la galerie'),
+                  onTap: () => Navigator.pop(sheetContext, ImageSource.gallery),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+
+    if (source == null) return;
+
+    await pickDiagnosisDocument(source);
   }
 
-  void removeDocument() {
+  Future<void> pickDiagnosisDocument(ImageSource source) async {
+    final XFile? document = await picker.pickImage(
+      source: source,
+      imageQuality: 82,
+    );
+
+    if (document == null) return;
+
+    final bytes = await document.readAsBytes();
+    final updatedAt = DateTime.now().toIso8601String();
+
+    setState(() {
+      diagnosisDocumentPath = document.path;
+      diagnosisDocumentName = document.name;
+      diagnosisDocumentBase64 = base64Encode(bytes);
+      diagnosisDocumentAddedAt = updatedAt;
+    });
+
+    await AccessDirectLocalService.saveSettings(currentModel);
+
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Justificatif médical ajouté')),
+    );
+  }
+
+  Future<void> removeDocument() async {
     setState(() {
       diagnosisDocumentPath = null;
+      diagnosisDocumentName = null;
+      diagnosisDocumentBase64 = null;
+      diagnosisDocumentAddedAt = null;
     });
+
+    await AccessDirectLocalService.saveSettings(currentModel);
+
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Justificatif médical supprimé')),
+    );
   }
 
   @override
@@ -101,15 +180,14 @@ class _AccessDirectSettingsScreenState
                     statusIcon: statusIcon,
                   ),
                   const SizedBox(height: 12),
-                  _InfoCard(
-                    text: AccessDirectService.adviceMessage(model),
-                  ),
+                  _InfoCard(text: AccessDirectService.adviceMessage(model)),
                   const SizedBox(height: 16),
                   const _SectionTitle('Conditions d’exercice'),
                   const SizedBox(height: 8),
                   _SwitchTile(
                     title: 'Exercice coordonné',
-                    subtitle: 'MSP, CPTS, centre de santé ou structure coordonnée.',
+                    subtitle:
+                        'MSP, CPTS, centre de santé ou structure coordonnée.',
                     value: isCoordinatedExercise,
                     onChanged: (value) {
                       setState(() {
@@ -129,7 +207,8 @@ class _AccessDirectSettingsScreenState
                   ),
                   _SwitchTile(
                     title: 'Déclaration ARS effectuée',
-                    subtitle: 'Condition administrative déclarée par le praticien.',
+                    subtitle:
+                        'Condition administrative déclarée par le praticien.',
                     value: hasArsDeclaration,
                     onChanged: (value) {
                       setState(() {
@@ -148,7 +227,12 @@ class _AccessDirectSettingsScreenState
                     onChanged: (value) {
                       setState(() {
                         hasMedicalDiagnosis = value;
-                        if (!value) diagnosisDocumentPath = null;
+                        if (!value) {
+                          diagnosisDocumentPath = null;
+                          diagnosisDocumentName = null;
+                          diagnosisDocumentBase64 = null;
+                          diagnosisDocumentAddedAt = null;
+                        }
                       });
                     },
                   ),
@@ -156,7 +240,11 @@ class _AccessDirectSettingsScreenState
                     const SizedBox(height: 8),
                     _DocumentCard(
                       documentPath: diagnosisDocumentPath,
-                      onAdd: simulateDocumentAdded,
+                      documentName: diagnosisDocumentName,
+                      documentAddedAt: diagnosisDocumentAddedAt,
+                      hasStoredDocument:
+                          diagnosisDocumentBase64?.trim().isNotEmpty ?? false,
+                      onAdd: chooseDocumentSource,
                       onRemove: removeDocument,
                     ),
                   ],
@@ -189,10 +277,7 @@ class _AccessDirectSettingsScreenState
       padding: const EdgeInsets.fromLTRB(12, 12, 16, 12),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [
-            Color(0xFFFFF7ED),
-            Color(0xFFFFFFFF),
-          ],
+          colors: [Color(0xFFFFF7ED), Color(0xFFFFFFFF)],
         ),
         borderRadius: BorderRadius.circular(26),
         border: Border.all(color: const Color(0xFFFED7AA)),
@@ -221,10 +306,7 @@ class _AccessDirectSettingsScreenState
             decoration: const BoxDecoration(
               shape: BoxShape.circle,
               gradient: LinearGradient(
-                colors: [
-                  Color(0xFFF97316),
-                  Color(0xFFEA580C),
-                ],
+                colors: [Color(0xFFF97316), Color(0xFFEA580C)],
               ),
             ),
             child: const Icon(
@@ -259,10 +341,7 @@ class _AccessDirectSettingsScreenState
       padding: const EdgeInsets.all(17),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [
-            statusColor,
-            statusColor.withValues(alpha: 0.86),
-          ],
+          colors: [statusColor, statusColor.withValues(alpha: 0.86)],
         ),
         borderRadius: BorderRadius.circular(28),
         boxShadow: [
@@ -282,11 +361,7 @@ class _AccessDirectSettingsScreenState
               color: Colors.white.withValues(alpha: 0.16),
               borderRadius: BorderRadius.circular(20),
             ),
-            child: Icon(
-              statusIcon,
-              color: Colors.white,
-              size: 31,
-            ),
+            child: Icon(statusIcon, color: Colors.white, size: 31),
           ),
           const SizedBox(width: 13),
           Expanded(
@@ -397,7 +472,9 @@ class _SwitchTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final activeColor = value ? const Color(0xFF2563EB) : const Color(0xFF94A3B8);
+    final activeColor = value
+        ? const Color(0xFF2563EB)
+        : const Color(0xFF94A3B8);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 9),
@@ -450,10 +527,7 @@ class _SwitchTile extends StatelessWidget {
               ],
             ),
           ),
-          Switch(
-            value: value,
-            onChanged: onChanged,
-          ),
+          Switch(value: value, onChanged: onChanged),
         ],
       ),
     );
@@ -462,18 +536,31 @@ class _SwitchTile extends StatelessWidget {
 
 class _DocumentCard extends StatelessWidget {
   final String? documentPath;
+  final String? documentName;
+  final String? documentAddedAt;
+  final bool hasStoredDocument;
   final VoidCallback onAdd;
   final VoidCallback onRemove;
 
   const _DocumentCard({
     required this.documentPath,
+    required this.documentName,
+    required this.documentAddedAt,
+    required this.hasStoredDocument,
     required this.onAdd,
     required this.onRemove,
   });
 
   @override
   Widget build(BuildContext context) {
-    final hasDocument = documentPath != null;
+    final hasDocument =
+        hasStoredDocument || (documentPath?.trim().isNotEmpty ?? false);
+    final label = hasDocument
+        ? (documentName?.trim().isNotEmpty ?? false)
+              ? documentName!.trim()
+              : 'Justificatif médical ajouté'
+        : 'Aucun justificatif ajouté';
+    final addedAt = _formatAddedAt(documentAddedAt);
 
     return Container(
       padding: const EdgeInsets.all(15),
@@ -486,36 +573,90 @@ class _DocumentCard extends StatelessWidget {
               : const Color(0xFFE2E8F0),
         ),
       ),
-      child: Row(
+      child: Column(
         children: [
-          Icon(
-            hasDocument
-                ? Icons.check_circle_rounded
-                : Icons.add_a_photo_outlined,
-            color: hasDocument
-                ? const Color(0xFF16A34A)
-                : const Color(0xFF2563EB),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              hasDocument
-                  ? 'Justificatif ajouté'
-                  : 'Ajouter un justificatif photo ou scan',
-              style: TextStyle(
+          Row(
+            children: [
+              Icon(
+                hasDocument
+                    ? Icons.check_circle_rounded
+                    : Icons.add_a_photo_outlined,
                 color: hasDocument
-                    ? const Color(0xFF166534)
-                    : const Color(0xFF0F172A),
-                fontWeight: FontWeight.w800,
+                    ? const Color(0xFF16A34A)
+                    : const Color(0xFF2563EB),
               ),
-            ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      label,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: hasDocument
+                            ? const Color(0xFF166534)
+                            : const Color(0xFF0F172A),
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      hasDocument
+                          ? 'Stocké localement sur cet appareil${addedAt == null ? '' : ' · $addedAt'}'
+                          : 'Photo ou import depuis la galerie',
+                      style: const TextStyle(
+                        color: Color(0xFF64748B),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
-          TextButton(
-            onPressed: hasDocument ? onRemove : onAdd,
-            child: Text(hasDocument ? 'Retirer' : 'Ajouter'),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: onAdd,
+                  icon: Icon(
+                    hasDocument
+                        ? Icons.change_circle_outlined
+                        : Icons.add_a_photo_outlined,
+                  ),
+                  label: Text(hasDocument ? 'Remplacer' : 'Ajouter'),
+                ),
+              ),
+              if (hasDocument) ...[
+                const SizedBox(width: 10),
+                TextButton.icon(
+                  onPressed: onRemove,
+                  icon: const Icon(Icons.delete_outline),
+                  label: const Text('Supprimer'),
+                ),
+              ],
+            ],
           ),
         ],
       ),
     );
+  }
+
+  String? _formatAddedAt(String? value) {
+    final raw = value?.trim() ?? '';
+    if (raw.isEmpty) return null;
+
+    final date = DateTime.tryParse(raw);
+    if (date == null) return null;
+
+    final day = date.day.toString().padLeft(2, '0');
+    final month = date.month.toString().padLeft(2, '0');
+    final year = date.year.toString();
+
+    return 'ajouté le $day/$month/$year';
   }
 }

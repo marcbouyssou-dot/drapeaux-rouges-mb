@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
@@ -15,6 +16,7 @@ class PrescriptionPdfService {
     required String prescriptionType,
     required String prescriptionContent,
     File? justificatifImage,
+    Uint8List? justificatifImageBytes,
   }) async {
     final pdf = pw.Document();
     final now = DateTime.now();
@@ -24,6 +26,8 @@ class PrescriptionPdfService {
 
     final pw.MemoryImage? justificatifPdfImage = justificatifImage != null
         ? pw.MemoryImage(justificatifImage.readAsBytesSync())
+        : justificatifImageBytes != null
+        ? pw.MemoryImage(justificatifImageBytes)
         : null;
     final signaturePdfImage = _signatureImage(practitioner);
 

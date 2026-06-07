@@ -4,6 +4,9 @@ class AccessDirectModel {
   final bool hasArsDeclaration;
   final bool hasMedicalDiagnosis;
   final String? diagnosisDocumentPath;
+  final String? diagnosisDocumentName;
+  final String? diagnosisDocumentBase64;
+  final String? diagnosisDocumentAddedAt;
   final int sessionsDone;
 
   const AccessDirectModel({
@@ -12,6 +15,9 @@ class AccessDirectModel {
     required this.hasArsDeclaration,
     required this.hasMedicalDiagnosis,
     this.diagnosisDocumentPath,
+    this.diagnosisDocumentName,
+    this.diagnosisDocumentBase64,
+    this.diagnosisDocumentAddedAt,
     required this.sessionsDone,
   });
 
@@ -22,7 +28,9 @@ class AccessDirectModel {
   }
 
   bool get hasDiagnosisProof {
-    return hasMedicalDiagnosis && diagnosisDocumentPath != null;
+    return hasMedicalDiagnosis &&
+        ((diagnosisDocumentBase64?.trim().isNotEmpty ?? false) ||
+            (diagnosisDocumentPath?.trim().isNotEmpty ?? false));
   }
 
   int? get maxSessions {
@@ -75,6 +83,9 @@ class AccessDirectModel {
       'hasArsDeclaration': hasArsDeclaration,
       'hasMedicalDiagnosis': hasMedicalDiagnosis,
       'diagnosisDocumentPath': diagnosisDocumentPath,
+      'diagnosisDocumentName': diagnosisDocumentName,
+      'diagnosisDocumentBase64': diagnosisDocumentBase64,
+      'diagnosisDocumentAddedAt': diagnosisDocumentAddedAt,
       'sessionsDone': sessionsDone,
     };
   }
@@ -86,6 +97,9 @@ class AccessDirectModel {
       hasArsDeclaration: json['hasArsDeclaration'] == true,
       hasMedicalDiagnosis: json['hasMedicalDiagnosis'] == true,
       diagnosisDocumentPath: json['diagnosisDocumentPath']?.toString(),
+      diagnosisDocumentName: json['diagnosisDocumentName']?.toString(),
+      diagnosisDocumentBase64: json['diagnosisDocumentBase64']?.toString(),
+      diagnosisDocumentAddedAt: json['diagnosisDocumentAddedAt']?.toString(),
       sessionsDone: json['sessionsDone'] is int ? json['sessionsDone'] : 0,
     );
   }
@@ -96,6 +110,9 @@ class AccessDirectModel {
     hasArsDeclaration: false,
     hasMedicalDiagnosis: false,
     diagnosisDocumentPath: null,
+    diagnosisDocumentName: null,
+    diagnosisDocumentBase64: null,
+    diagnosisDocumentAddedAt: null,
     sessionsDone: 0,
   );
 }
