@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../theme/app_colors.dart';
 import '../theme/app_radius.dart';
@@ -11,21 +12,30 @@ class LoginScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.primaryDark,
-      resizeToAvoidBottomInset: false,
-      body: LayoutBuilder(
-        builder: (context, constraints) {
-          final orientation = MediaQuery.orientationOf(context);
-          final isLandscape = orientation == Orientation.landscape;
-          final isWide =
-              constraints.maxWidth >= 760 ||
-              (isLandscape && constraints.maxWidth >= 640);
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: const SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.light,
+        statusBarBrightness: Brightness.dark,
+        systemNavigationBarColor: AppColors.primaryDark,
+        systemNavigationBarIconBrightness: Brightness.light,
+      ),
+      child: Scaffold(
+        backgroundColor: AppColors.primaryDark,
+        resizeToAvoidBottomInset: false,
+        body: LayoutBuilder(
+          builder: (context, constraints) {
+            final orientation = MediaQuery.orientationOf(context);
+            final isLandscape = orientation == Orientation.landscape;
+            final isWide =
+                constraints.maxWidth >= 760 ||
+                (isLandscape && constraints.maxWidth >= 640);
 
-          if (isWide) return const _DesktopLoginLayout();
+            if (isWide) return const _DesktopLoginLayout();
 
-          return const _MobileLoginLayout();
-        },
+            return const _MobileLoginLayout();
+          },
+        ),
       ),
     );
   }
@@ -36,18 +46,22 @@ class _MobileLoginLayout extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Stack(
+    return Stack(
       children: [
-        Positioned.fill(child: CustomPaint(painter: _LoginBackgroundPainter())),
+        const Positioned.fill(
+          child: CustomPaint(painter: _LoginBackgroundPainter()),
+        ),
         SafeArea(
           bottom: false,
           child: Padding(
-            padding: EdgeInsets.fromLTRB(18, 10, 18, 12),
+            padding: const EdgeInsets.fromLTRB(18, 8, 18, 14),
             child: Column(
               children: [
-                _MobileIdentityBlock(),
-                SizedBox(height: AppSpacing.sm),
-                Expanded(child: _LoginFormCard(compact: true)),
+                const _MobileIdentityBlock(),
+                const SizedBox(height: AppSpacing.md),
+                const Expanded(child: _LoginFormCard(compact: true)),
+                const SizedBox(height: AppSpacing.sm),
+                const _LegalFooter(onDark: true, compact: true),
               ],
             ),
           ),
@@ -146,6 +160,7 @@ class _DesktopIdentityPanel extends StatelessWidget {
           const SizedBox(height: AppSpacing.xl),
           const _ProductBlock(compact: false),
           const Spacer(),
+          const _LegalFooter(onDark: true, compact: false),
         ],
       ),
     );
@@ -343,7 +358,7 @@ class _LoginFormCard extends StatelessWidget {
           ),
           child: FittedBox(
             fit: BoxFit.scaleDown,
-            alignment: Alignment.topCenter,
+            alignment: Alignment.center,
             child: SizedBox(width: constraints.maxWidth - 32, child: content),
           ),
         );
@@ -459,6 +474,47 @@ class _LoginButton extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _LegalFooter extends StatelessWidget {
+  const _LegalFooter({required this.onDark, required this.compact});
+
+  final bool onDark;
+  final bool compact;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = onDark ? AppColors.textOnDark : AppColors.textSecondary;
+    final opacity = onDark ? 0.44 : 0.62;
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          'Données sécurisées • Respect RGPD • HDS',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: color.withValues(alpha: opacity),
+            fontSize: compact ? 10.5 : 11.5,
+            height: 1.2,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 0.1,
+          ),
+        ),
+        const SizedBox(height: 3),
+        Text(
+          '© MB — Drapeaux Rouges',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: color.withValues(alpha: opacity * 0.82),
+            fontSize: compact ? 10 : 11,
+            height: 1.2,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ],
     );
   }
 }
