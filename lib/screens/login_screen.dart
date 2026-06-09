@@ -61,7 +61,7 @@ class _MobileLoginLayout extends StatelessWidget {
             child: Column(
               children: [
                 _MobileIdentityBlock(dense: isShort),
-                SizedBox(height: isShort ? AppSpacing.sm : AppSpacing.md),
+                SizedBox(height: isShort ? 6 : 10),
                 const Expanded(child: _LoginFormCard(compact: true)),
                 SizedBox(height: isShort ? AppSpacing.xs : AppSpacing.sm),
                 const _LegalFooter(onDark: true, compact: true),
@@ -128,12 +128,12 @@ class _MobileIdentityBlock extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        _UrpsMark(height: dense ? 138 : 178),
+        _UrpsMark(height: dense ? 140 : 196),
         SizedBox(height: dense ? 0 : 4),
         _InstitutionBlock(compact: true, dense: dense),
-        SizedBox(height: dense ? AppSpacing.xs : AppSpacing.sm),
+        SizedBox(height: dense ? AppSpacing.xs : 10),
         const _IdentityDivider(compact: true),
-        SizedBox(height: dense ? AppSpacing.xs : AppSpacing.sm),
+        SizedBox(height: dense ? AppSpacing.xs : 10),
         _ProductBlock(compact: true, dense: dense),
       ],
     );
@@ -188,10 +188,17 @@ class _InstitutionBlock extends StatelessWidget {
           textAlign: TextAlign.center,
           style: TextStyle(
             color: AppColors.textOnDark,
-            fontSize: compact ? (dense ? 42 : 56) : 49,
+            fontSize: compact ? (dense ? 42 : 62) : 50,
             height: 1,
             fontWeight: FontWeight.w900,
             letterSpacing: compact ? 1.2 : 2.2,
+            shadows: [
+              Shadow(
+                color: AppColors.darkBackground.withValues(alpha: 0.32),
+                blurRadius: 10,
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
         ),
         SizedBox(height: compact ? (dense ? 2 : AppSpacing.xs) : AppSpacing.md),
@@ -199,10 +206,10 @@ class _InstitutionBlock extends StatelessWidget {
           'Masseurs-Kinésithérapeutes',
           textAlign: TextAlign.center,
           style: TextStyle(
-            color: AppColors.textOnDark.withValues(alpha: 0.92),
-            fontSize: compact ? (dense ? 18 : 24) : 26.25,
+            color: AppColors.textOnDark.withValues(alpha: 0.93),
+            fontSize: compact ? (dense ? 18 : 24.5) : 26,
             height: 1.08,
-            fontWeight: FontWeight.w900,
+            fontWeight: FontWeight.w800,
           ),
         ),
         SizedBox(height: compact ? (dense ? 3 : AppSpacing.xs) : AppSpacing.sm),
@@ -210,9 +217,9 @@ class _InstitutionBlock extends StatelessWidget {
           'Nouvelle-Aquitaine',
           textAlign: TextAlign.center,
           style: TextStyle(
-            color: AppColors.primaryLight,
-            fontSize: compact ? (dense ? 16 : 20) : 19,
-            fontWeight: FontWeight.w900,
+            color: AppColors.primaryLight.withValues(alpha: 0.96),
+            fontSize: compact ? (dense ? 16 : 20.5) : 19,
+            fontWeight: FontWeight.w800,
             shadows: [
               Shadow(
                 color: AppColors.darkBackground.withValues(alpha: 0.28),
@@ -235,7 +242,7 @@ class _IdentityDivider extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: compact ? 150 : 180,
+      width: compact ? 160 : 190,
       height: compact ? 2 : 2.5,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(AppRadius.pill),
@@ -267,9 +274,16 @@ class _ProductBlock extends StatelessWidget {
           textAlign: TextAlign.center,
           style: TextStyle(
             color: AppColors.textOnDark,
-            fontSize: compact ? (dense ? 16 : 19) : 25,
+            fontSize: compact ? (dense ? 16 : 21) : 25.5,
             height: 1.12,
             fontWeight: FontWeight.w900,
+            shadows: [
+              Shadow(
+                color: AppColors.darkBackground.withValues(alpha: 0.22),
+                blurRadius: 8,
+                offset: const Offset(0, 1),
+              ),
+            ],
           ),
         ),
         SizedBox(height: compact ? 5 : AppSpacing.sm),
@@ -277,8 +291,8 @@ class _ProductBlock extends StatelessWidget {
           'Dépistage • Orientation',
           textAlign: TextAlign.center,
           style: TextStyle(
-            color: const Color(0xFFDDE7F3),
-            fontSize: compact ? (dense ? 14 : 16) : 15,
+            color: const Color(0xFFDDE7F3).withValues(alpha: 0.92),
+            fontSize: compact ? (dense ? 14 : 16.5) : 15,
             height: compact ? 1.18 : 1.32,
             fontWeight: FontWeight.w700,
           ),
@@ -327,39 +341,42 @@ class _LoginFormCard extends StatelessWidget {
         final isShort = MediaQuery.sizeOf(context).height < 760;
         final horizontalMargin = isShort ? 8.0 : 22.0;
         final horizontalPadding = isShort ? 18.0 : 24.0;
-        final verticalPadding = isShort ? 18.0 : 26.0;
+        final verticalPadding = isShort ? 10.0 : 14.0;
         final contentWidth =
             constraints.maxWidth - (horizontalMargin + horizontalPadding) * 2;
 
-        return Container(
-          width: double.infinity,
-          margin: EdgeInsets.symmetric(horizontal: horizontalMargin),
-          padding: EdgeInsets.fromLTRB(
-            horizontalPadding,
-            verticalPadding,
-            horizontalPadding,
-            isShort ? 16 : 22,
-          ),
-          decoration: BoxDecoration(
-            color: AppColors.surface,
-            borderRadius: BorderRadius.circular(32),
-            border: Border.all(
-              color: AppColors.surface.withValues(alpha: 0.80),
+        return Align(
+          alignment: Alignment.center,
+          child: Container(
+            width: double.infinity,
+            margin: EdgeInsets.symmetric(horizontal: horizontalMargin),
+            padding: EdgeInsets.fromLTRB(
+              horizontalPadding,
+              verticalPadding,
+              horizontalPadding,
+              isShort ? 10 : 14,
             ),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.darkBackground.withValues(alpha: 0.22),
-                blurRadius: 28,
-                offset: const Offset(0, 16),
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(32),
+              border: Border.all(
+                color: AppColors.surface.withValues(alpha: 0.80),
               ),
-            ],
-          ),
-          child: FittedBox(
-            fit: BoxFit.scaleDown,
-            alignment: Alignment.center,
-            child: SizedBox(
-              width: contentWidth.clamp(240.0, 560.0),
-              child: content,
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.darkBackground.withValues(alpha: 0.22),
+                  blurRadius: 28,
+                  offset: const Offset(0, 16),
+                ),
+              ],
+            ),
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.center,
+              child: SizedBox(
+                width: contentWidth.clamp(240.0, 560.0),
+                child: content,
+              ),
             ),
           ),
         );
@@ -375,6 +392,10 @@ class _LoginForm extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final emailPasswordGap = compact ? 12.0 : 20.0;
+    final passwordForgotGap = compact ? 4.0 : 12.0;
+    final forgotButtonGap = compact ? 10.0 : 16.0;
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -387,7 +408,7 @@ class _LoginForm extends StatelessWidget {
           keyboardType: TextInputType.emailAddress,
           compact: compact,
         ),
-        SizedBox(height: compact ? AppSpacing.sm : AppSpacing.lg),
+        SizedBox(height: emailPasswordGap),
         const _FieldLabel('MOT DE PASSE'),
         const SizedBox(height: AppSpacing.xs),
         _PremiumTextField(
@@ -397,7 +418,7 @@ class _LoginForm extends StatelessWidget {
           suffixIcon: Icons.visibility_outlined,
           compact: compact,
         ),
-        const SizedBox(height: 2),
+        SizedBox(height: passwordForgotGap),
         Align(
           alignment: Alignment.centerRight,
           child: TextButton(
@@ -413,7 +434,7 @@ class _LoginForm extends StatelessWidget {
             style: TextButton.styleFrom(
               foregroundColor: AppColors.primary,
               padding: EdgeInsets.zero,
-              minimumSize: Size(0, compact ? 28 : 32),
+              minimumSize: Size(0, compact ? 26 : 32),
               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
             ),
             child: const Text(
@@ -422,7 +443,7 @@ class _LoginForm extends StatelessWidget {
             ),
           ),
         ),
-        SizedBox(height: compact ? AppSpacing.sm : AppSpacing.lg),
+        SizedBox(height: forgotButtonGap),
         _LoginButton(compact: compact),
       ],
     );
@@ -441,9 +462,14 @@ class _LoginButton extends StatelessWidget {
       child: DecoratedBox(
         decoration: BoxDecoration(
           gradient: const LinearGradient(
-            colors: [AppColors.raspberry, AppColors.raspberryDark],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
+            colors: [
+              Color(0xFFEF0A5D),
+              AppColors.raspberry,
+              AppColors.raspberryDark,
+            ],
+            stops: [0, 0.48, 1],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
           ),
           borderRadius: BorderRadius.circular(AppRadius.lg),
           boxShadow: [
