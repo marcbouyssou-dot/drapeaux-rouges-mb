@@ -36,6 +36,7 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
   final materielController = TextEditingController();
   final examensController = TextEditingController();
   final conseilsController = TextEditingController();
+  final attestationsController = TextEditingController();
   final autresController = TextEditingController();
 
   final reeducationObjectifsController = TextEditingController();
@@ -64,6 +65,7 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
     materielController.dispose();
     examensController.dispose();
     conseilsController.dispose();
+    attestationsController.dispose();
     autresController.dispose();
 
     reeducationObjectifsController.dispose();
@@ -108,6 +110,7 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
     materielController.clear();
     examensController.clear();
     conseilsController.clear();
+    attestationsController.clear();
     autresController.clear();
 
     reeducationObjectifsController.clear();
@@ -133,6 +136,8 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
         return examensController;
       case 'Conseils':
         return conseilsController;
+      case 'Attestations':
+        return attestationsController;
       case 'Autres':
         return autresController;
       case 'Rééducation':
@@ -149,6 +154,8 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
         return 'Examen ou avis demandé';
       case 'Conseils':
         return 'Conseils au patient';
+      case 'Attestations':
+        return 'Attestation';
       case 'Autres':
         return 'Document libre';
       case 'Rééducation':
@@ -165,6 +172,8 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
         return 'Exemple : avis médical, imagerie à envisager, doppler si suspicion TVP...';
       case 'Conseils':
         return 'Exemple : glaçage, compression, auto-exercices, surveillance...';
+      case 'Attestations':
+        return 'Exemple : attestation de présence, suivi kinésithérapique, situation clinique...';
       case 'Autres':
         return 'Exemple : autre recommandation ou document personnalisé...';
       case 'Rééducation':
@@ -208,6 +217,9 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
           if (conseilsSurveillanceController.text.trim().isNotEmpty)
             'Points de surveillance : ${conseilsSurveillanceController.text.trim()}',
         ].join('\n\n');
+
+      case 'Attestations':
+        return attestationsController.text.trim();
 
       case 'Autres':
       default:
@@ -1081,6 +1093,17 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
                 'Exemple : aggravation douleur, fièvre, déficit neurologique...',
             maxLines: 3,
             controller: conseilsSurveillanceController,
+          ),
+        ];
+
+      case 'Attestations':
+        return [
+          ClinicalTextField(
+            label: 'Contenu de l’attestation',
+            hint:
+                'Exemple : attestation de présence, suivi kinésithérapique, situation clinique...',
+            maxLines: 4,
+            controller: attestationsController,
           ),
         ];
 

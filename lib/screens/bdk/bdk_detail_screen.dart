@@ -14,9 +14,10 @@ import '../../widgets/design_system/clinical_text_field.dart';
 import '../../widgets/design_system/expandable_clinical_section.dart';
 
 class BDKDetailScreen extends StatefulWidget {
-  const BDKDetailScreen({super.key, required this.title});
+  const BDKDetailScreen({super.key, required this.title, this.customContext});
 
   final String title;
+  final String? customContext;
 
   @override
   State<BDKDetailScreen> createState() => _BDKDetailScreenState();
@@ -46,7 +47,9 @@ class _BDKDetailScreenState extends State<BDKDetailScreen> {
 
     motifController = TextEditingController(text: BDKSessionService.motif);
     contexteController = TextEditingController(
-      text: BDKSessionService.contexte,
+      text: BDKSessionService.contexte.isEmpty
+          ? widget.customContext ?? ''
+          : BDKSessionService.contexte,
     );
     antecedentsController = TextEditingController(
       text: BDKSessionService.antecedents,

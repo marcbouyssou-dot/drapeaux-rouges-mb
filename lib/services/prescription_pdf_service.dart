@@ -123,6 +123,8 @@ class PrescriptionPdfService {
         return 'Orientation / examen à envisager';
       case 'Conseils':
         return 'Conseils associés';
+      case 'Attestations':
+        return 'Attestation';
       case 'Autres':
         return 'Prescription / recommandation';
       case 'Rééducation':
@@ -139,6 +141,8 @@ class PrescriptionPdfService {
         return 'Examen ou orientation à envisager';
       case 'Conseils':
         return 'Conseils';
+      case 'Attestations':
+        return 'Contenu de l’attestation';
       case 'Autres':
         return 'Contenu';
       case 'Rééducation':

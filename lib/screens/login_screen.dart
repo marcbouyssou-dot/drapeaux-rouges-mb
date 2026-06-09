@@ -46,6 +46,9 @@ class _MobileLoginLayout extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final height = MediaQuery.sizeOf(context).height;
+    final isShort = height < 760;
+
     return Stack(
       children: [
         const Positioned.fill(
@@ -54,13 +57,13 @@ class _MobileLoginLayout extends StatelessWidget {
         SafeArea(
           bottom: false,
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(18, 8, 18, 14),
+            padding: EdgeInsets.fromLTRB(18, isShort ? 4 : 8, 18, 14),
             child: Column(
               children: [
-                const _MobileIdentityBlock(),
-                const SizedBox(height: AppSpacing.md),
+                _MobileIdentityBlock(dense: isShort),
+                SizedBox(height: isShort ? AppSpacing.sm : AppSpacing.md),
                 const Expanded(child: _LoginFormCard(compact: true)),
-                const SizedBox(height: AppSpacing.sm),
+                SizedBox(height: isShort ? AppSpacing.xs : AppSpacing.sm),
                 const _LegalFooter(onDark: true, compact: true),
               ],
             ),
@@ -116,20 +119,22 @@ class _DesktopLoginLayout extends StatelessWidget {
 }
 
 class _MobileIdentityBlock extends StatelessWidget {
-  const _MobileIdentityBlock();
+  const _MobileIdentityBlock({required this.dense});
+
+  final bool dense;
 
   @override
   Widget build(BuildContext context) {
-    return const Column(
+    return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        _UrpsMark(height: 137),
-        SizedBox(height: 2),
-        _InstitutionBlock(compact: true),
-        SizedBox(height: AppSpacing.sm),
-        _IdentityDivider(compact: true),
-        SizedBox(height: AppSpacing.sm),
-        _ProductBlock(compact: true),
+        _UrpsMark(height: dense ? 138 : 178),
+        SizedBox(height: dense ? 0 : 4),
+        _InstitutionBlock(compact: true, dense: dense),
+        SizedBox(height: dense ? AppSpacing.xs : AppSpacing.sm),
+        const _IdentityDivider(compact: true),
+        SizedBox(height: dense ? AppSpacing.xs : AppSpacing.sm),
+        _ProductBlock(compact: true, dense: dense),
       ],
     );
   }
@@ -168,9 +173,10 @@ class _DesktopIdentityPanel extends StatelessWidget {
 }
 
 class _InstitutionBlock extends StatelessWidget {
-  const _InstitutionBlock({required this.compact});
+  const _InstitutionBlock({required this.compact, this.dense = false});
 
   final bool compact;
+  final bool dense;
 
   @override
   Widget build(BuildContext context) {
@@ -182,30 +188,30 @@ class _InstitutionBlock extends StatelessWidget {
           textAlign: TextAlign.center,
           style: TextStyle(
             color: AppColors.textOnDark,
-            fontSize: compact ? 26 : 49,
+            fontSize: compact ? (dense ? 42 : 56) : 49,
             height: 1,
             fontWeight: FontWeight.w900,
-            letterSpacing: compact ? 1.4 : 2.2,
+            letterSpacing: compact ? 1.2 : 2.2,
           ),
         ),
-        SizedBox(height: compact ? AppSpacing.xs : AppSpacing.md),
+        SizedBox(height: compact ? (dense ? 2 : AppSpacing.xs) : AppSpacing.md),
         Text(
           'Masseurs-Kinésithérapeutes',
           textAlign: TextAlign.center,
           style: TextStyle(
             color: AppColors.textOnDark.withValues(alpha: 0.92),
-            fontSize: compact ? 15.75 : 26.25,
+            fontSize: compact ? (dense ? 18 : 24) : 26.25,
             height: 1.08,
             fontWeight: FontWeight.w900,
           ),
         ),
-        SizedBox(height: compact ? AppSpacing.xs : AppSpacing.sm),
+        SizedBox(height: compact ? (dense ? 3 : AppSpacing.xs) : AppSpacing.sm),
         Text(
           'Nouvelle-Aquitaine',
           textAlign: TextAlign.center,
           style: TextStyle(
             color: AppColors.primaryLight,
-            fontSize: compact ? 13.5 : 19,
+            fontSize: compact ? (dense ? 16 : 20) : 19,
             fontWeight: FontWeight.w900,
             shadows: [
               Shadow(
@@ -229,14 +235,15 @@ class _IdentityDivider extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: compact ? 86 : 140,
-      height: 1,
+      width: compact ? 150 : 180,
+      height: compact ? 2 : 2.5,
       decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(AppRadius.pill),
         gradient: LinearGradient(
           colors: [
-            AppColors.textOnDark.withValues(alpha: 0),
-            AppColors.textOnDark.withValues(alpha: 0.45),
-            AppColors.textOnDark.withValues(alpha: 0),
+            AppColors.primary.withValues(alpha: 0.95),
+            AppColors.textOnDark.withValues(alpha: 0.88),
+            AppColors.raspberry.withValues(alpha: 0.98),
           ],
         ),
       ),
@@ -245,9 +252,10 @@ class _IdentityDivider extends StatelessWidget {
 }
 
 class _ProductBlock extends StatelessWidget {
-  const _ProductBlock({required this.compact});
+  const _ProductBlock({required this.compact, this.dense = false});
 
   final bool compact;
+  final bool dense;
 
   @override
   Widget build(BuildContext context) {
@@ -259,18 +267,18 @@ class _ProductBlock extends StatelessWidget {
           textAlign: TextAlign.center,
           style: TextStyle(
             color: AppColors.textOnDark,
-            fontSize: compact ? 16 : 25,
+            fontSize: compact ? (dense ? 16 : 19) : 25,
             height: 1.12,
             fontWeight: FontWeight.w900,
           ),
         ),
-        SizedBox(height: compact ? 3 : AppSpacing.sm),
+        SizedBox(height: compact ? 5 : AppSpacing.sm),
         Text(
           'Dépistage • Orientation',
           textAlign: TextAlign.center,
           style: TextStyle(
             color: const Color(0xFFDDE7F3),
-            fontSize: compact ? 11 : 15,
+            fontSize: compact ? (dense ? 14 : 16) : 15,
             height: compact ? 1.18 : 1.32,
             fontWeight: FontWeight.w700,
           ),
@@ -292,43 +300,12 @@ class _UrpsMark extends StatelessWidget {
     return SizedBox(
       width: width,
       height: height,
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          Image.asset(
-            'assets/icons/urps_pictogram_official_transparent.png',
-            height: height,
-            fit: BoxFit.contain,
-            filterQuality: FilterQuality.high,
-            isAntiAlias: true,
-          ),
-          Opacity(
-            opacity: 0.22,
-            child: ShaderMask(
-              blendMode: BlendMode.srcIn,
-              shaderCallback: (bounds) {
-                return const LinearGradient(
-                  colors: [
-                    Color(0xFFFFFFFF),
-                    Color(0xFFEAF6FF),
-                    Color(0x00FFFFFF),
-                    Color(0xFFFFEDF4),
-                  ],
-                  stops: [0.02, 0.22, 0.58, 1],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ).createShader(bounds);
-              },
-              child: Image.asset(
-                'assets/icons/urps_pictogram_official_transparent.png',
-                height: height,
-                fit: BoxFit.contain,
-                filterQuality: FilterQuality.high,
-                isAntiAlias: true,
-              ),
-            ),
-          ),
-        ],
+      child: Image.asset(
+        'assets/icons/urps_pictogram_official_transparent.png',
+        height: height,
+        fit: BoxFit.contain,
+        filterQuality: FilterQuality.high,
+        isAntiAlias: true,
       ),
     );
   }
@@ -347,19 +324,43 @@ class _LoginFormCard extends StatelessWidget {
 
     return LayoutBuilder(
       builder: (context, constraints) {
+        final isShort = MediaQuery.sizeOf(context).height < 760;
+        final horizontalMargin = isShort ? 8.0 : 22.0;
+        final horizontalPadding = isShort ? 18.0 : 24.0;
+        final verticalPadding = isShort ? 18.0 : 26.0;
+        final contentWidth =
+            constraints.maxWidth - (horizontalMargin + horizontalPadding) * 2;
+
         return Container(
           width: double.infinity,
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+          margin: EdgeInsets.symmetric(horizontal: horizontalMargin),
+          padding: EdgeInsets.fromLTRB(
+            horizontalPadding,
+            verticalPadding,
+            horizontalPadding,
+            isShort ? 16 : 22,
+          ),
           decoration: BoxDecoration(
             color: AppColors.surface,
-            borderRadius: BorderRadius.circular(AppRadius.xxl),
-            border: Border.all(color: AppColors.border),
-            boxShadow: AppShadows.elevated,
+            borderRadius: BorderRadius.circular(32),
+            border: Border.all(
+              color: AppColors.surface.withValues(alpha: 0.80),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.darkBackground.withValues(alpha: 0.22),
+                blurRadius: 28,
+                offset: const Offset(0, 16),
+              ),
+            ],
           ),
           child: FittedBox(
             fit: BoxFit.scaleDown,
             alignment: Alignment.center,
-            child: SizedBox(width: constraints.maxWidth - 32, child: content),
+            child: SizedBox(
+              width: contentWidth.clamp(240.0, 560.0),
+              child: content,
+            ),
           ),
         );
       },
@@ -487,17 +488,17 @@ class _LegalFooter extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = onDark ? AppColors.textOnDark : AppColors.textSecondary;
-    final opacity = onDark ? 0.44 : 0.62;
+    final opacity = onDark ? 0.76 : 0.62;
 
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(
-          'Données sécurisées • Respect RGPD • HDS',
+          'Données sécurisées • RGPD • HDS',
           textAlign: TextAlign.center,
           style: TextStyle(
             color: color.withValues(alpha: opacity),
-            fontSize: compact ? 10.5 : 11.5,
+            fontSize: compact ? 12 : 11.5,
             height: 1.2,
             fontWeight: FontWeight.w700,
             letterSpacing: 0.1,
@@ -508,8 +509,8 @@ class _LegalFooter extends StatelessWidget {
           '© MB — Drapeaux Rouges',
           textAlign: TextAlign.center,
           style: TextStyle(
-            color: color.withValues(alpha: opacity * 0.82),
-            fontSize: compact ? 10 : 11,
+            color: color.withValues(alpha: opacity * 0.72),
+            fontSize: compact ? 11.5 : 11,
             height: 1.2,
             fontWeight: FontWeight.w600,
           ),
@@ -558,7 +559,7 @@ class _PremiumTextField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: compact ? 50 : 58,
+      height: compact ? 56 : 58,
       child: TextField(
         obscureText: obscureText,
         keyboardType: keyboardType,
@@ -587,18 +588,18 @@ class _PremiumTextField extends StatelessWidget {
             fontWeight: FontWeight.w700,
           ),
           filled: true,
-          fillColor: AppColors.surface,
+          fillColor: const Color(0xFFFBFCFE),
           contentPadding: EdgeInsets.symmetric(
             horizontal: AppSpacing.md,
             vertical: compact ? AppSpacing.sm : AppSpacing.md,
           ),
           border: OutlineInputBorder(
             borderRadius: const BorderRadius.all(Radius.circular(AppRadius.xl)),
-            borderSide: BorderSide(color: AppColors.border),
+            borderSide: const BorderSide(color: Color(0xFFD9E2EF)),
           ),
           enabledBorder: OutlineInputBorder(
             borderRadius: const BorderRadius.all(Radius.circular(AppRadius.xl)),
-            borderSide: BorderSide(color: AppColors.border),
+            borderSide: const BorderSide(color: Color(0xFFD9E2EF)),
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: const BorderRadius.all(Radius.circular(AppRadius.xl)),
@@ -619,99 +620,62 @@ class _LoginBackgroundPainter extends CustomPainter {
     final background = Paint()
       ..shader = const LinearGradient(
         colors: [
-          Color(0xFF020817),
-          AppColors.darkBackground,
-          AppColors.primaryDark,
-          Color(0xFF073C8C),
+          Color(0xFF0B4FA7),
+          Color(0xFF062B6D),
+          Color(0xFF041C49),
+          Color(0xFF073D8C),
         ],
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
       ).createShader(rect);
 
     canvas.drawRect(rect, background);
 
-    final softBlue = Paint()
-      ..color = AppColors.primaryLight.withValues(alpha: 0.20);
-    final softWhite = Paint()
-      ..color = AppColors.surface.withValues(alpha: 0.07);
-    final softRed = Paint()
-      ..color = AppColors.raspberry.withValues(alpha: 0.10);
+    final circleFill = Paint()
+      ..color = AppColors.primaryLight.withValues(alpha: 0.12);
+    final circleStroke = Paint()
+      ..color = AppColors.primary.withValues(alpha: 0.22)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.1;
 
     canvas.drawCircle(
-      Offset(size.width * 0.12, size.height * 0.18),
-      size.shortestSide * 0.30,
-      softWhite,
+      Offset(size.width * 0.07, size.height * 0.19),
+      size.shortestSide * 0.23,
+      circleFill,
     );
     canvas.drawCircle(
-      Offset(size.width * 0.90, size.height * 0.12),
-      size.shortestSide * 0.22,
-      softBlue,
+      Offset(size.width * 0.07, size.height * 0.19),
+      size.shortestSide * 0.23,
+      circleStroke,
     );
     canvas.drawCircle(
-      Offset(size.width * 0.82, size.height * 0.82),
-      size.shortestSide * 0.34,
-      softRed,
+      Offset(size.width * 1.04, size.height * 0.22),
+      size.shortestSide * 0.24,
+      circleFill,
     );
-
-    final dotPaint = Paint()
-      ..color = AppColors.surface.withValues(alpha: 0.055);
-    final dotMaxX = size.width * 0.36;
-    for (double x = 16; x < dotMaxX; x += 22) {
-      for (double y = 70; y < size.height * 0.94; y += 22) {
-        if (((x + y) ~/ 22).isEven) {
-          canvas.drawCircle(Offset(x, y), 1.05, dotPaint);
-        }
-      }
-    }
+    canvas.drawCircle(
+      Offset(size.width * 1.04, size.height * 0.22),
+      size.shortestSide * 0.24,
+      circleStroke,
+    );
 
     final linePaint = Paint()
-      ..color = AppColors.primaryLight.withValues(alpha: 0.16)
+      ..color = AppColors.primaryLight.withValues(alpha: 0.22)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 0.9;
-
-    final redLinePaint = Paint()
-      ..color = AppColors.raspberry.withValues(alpha: 0.13)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 0.8;
+      ..strokeWidth = 0.95;
 
     final path = Path()
-      ..moveTo(size.width * 0.04, size.height * 0.58)
+      ..moveTo(size.width * 0.04, size.height * 0.49)
       ..cubicTo(
-        size.width * 0.30,
-        size.height * 0.45,
-        size.width * 0.54,
-        size.height * 0.64,
-        size.width * 0.96,
-        size.height * 0.42,
+        size.width * 0.28,
+        size.height * 0.36,
+        size.width * 0.58,
+        size.height * 0.50,
+        size.width * 0.98,
+        size.height * 0.34,
       );
 
     canvas.drawPath(path, linePaint);
-
-    final secondPath = Path()
-      ..moveTo(size.width * 0.10, size.height * 0.30)
-      ..cubicTo(
-        size.width * 0.34,
-        size.height * 0.22,
-        size.width * 0.60,
-        size.height * 0.34,
-        size.width * 0.92,
-        size.height * 0.20,
-      );
-
-    canvas.drawPath(secondPath, linePaint);
-
-    final redPath = Path()
-      ..moveTo(size.width * 0.52, size.height * 0.54)
-      ..cubicTo(
-        size.width * 0.68,
-        size.height * 0.46,
-        size.width * 0.78,
-        size.height * 0.62,
-        size.width * 0.98,
-        size.height * 0.48,
-      );
-
-    canvas.drawPath(redPath, redLinePaint);
   }
 
   @override

@@ -28,6 +28,12 @@ const Map<String, List<String>> prescriptionTemplates = {
     'Surveillance de l’évolution des symptômes',
     'Consulter en urgence si aggravation ou signe d’alerte',
   ],
+  'Attestations': [
+    'Attestation de présence en séance',
+    'Attestation de suivi kinésithérapique',
+    'Attestation de prise en charge en cours',
+    'Attestation de situation fonctionnelle observée',
+  ],
   'Autres': [
     'Gel froid local selon tolérance',
     'Crème de massage non médicamenteuse',

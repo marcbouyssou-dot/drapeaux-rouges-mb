@@ -5,7 +5,6 @@ import '../../theme/app_colors.dart';
 import '../../theme/app_radius.dart';
 import '../../theme/app_shadows.dart';
 import '../../theme/app_spacing.dart';
-import '../../theme/app_typography.dart';
 import '../prescription_screen.dart';
 
 class PrescriptionTypeScreen extends StatelessWidget {
@@ -22,40 +21,6 @@ class PrescriptionTypeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final items = [
-      _PrescriptionItem(
-        title: 'Rééducation',
-        subtitle:
-            'Pathologie, objectifs, fréquence et durée de prise en charge.',
-        icon: Icons.accessibility_new_rounded,
-        color: Color(0xFF2563EB),
-      ),
-      _PrescriptionItem(
-        title: 'Matériel',
-        subtitle: 'Aide technique, orthèse, contention ou matériel clinique.',
-        icon: Icons.medical_services_outlined,
-        color: Color(0xFF7C3AED),
-      ),
-      _PrescriptionItem(
-        title: 'Examens',
-        subtitle: 'Avis, examen complémentaire ou orientation à discuter.',
-        icon: Icons.biotech_outlined,
-        color: Color(0xFFF97316),
-      ),
-      _PrescriptionItem(
-        title: 'Conseils',
-        subtitle: 'Recommandations, surveillance et consignes patient.',
-        icon: Icons.chat_bubble_outline_rounded,
-        color: Color(0xFF0F766E),
-      ),
-      _PrescriptionItem(
-        title: 'Autres',
-        subtitle: 'Document libre ou prescription personnalisée.',
-        icon: Icons.more_horiz_rounded,
-        color: Color(0xFF64748B),
-      ),
-    ];
-
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
@@ -67,24 +32,34 @@ class PrescriptionTypeScreen extends StatelessWidget {
                 AppSpacing.md,
                 AppSpacing.md,
                 AppSpacing.md,
-                120,
+                AppSpacing.lg,
               ),
               children: [
-                const _PrescriptionTypeHeader(),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: IconButton.filledTonal(
+                    tooltip: 'Retour',
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(Icons.arrow_back_rounded),
+                    style: IconButton.styleFrom(
+                      backgroundColor: AppColors.surface,
+                      foregroundColor: AppColors.primary,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(AppRadius.lg),
+                      ),
+                    ),
+                  ),
+                ),
                 const SizedBox(height: AppSpacing.sm),
-                ...items.map(
+                ...prescriptionTypeOptions.map(
                   (item) => Padding(
                     padding: const EdgeInsets.only(bottom: AppSpacing.sm),
                     child: _PrescriptionTypeCard(
                       item: item,
-                      onTap: () {
-                        openPrescriptionScreen(context, item.title);
-                      },
+                      onTap: () => openPrescriptionScreen(context, item.title),
                     ),
                   ),
                 ),
-                const SizedBox(height: AppSpacing.sm),
-                const _PrescriptionInfoBanner(),
               ],
             ),
           ),
@@ -94,139 +69,63 @@ class PrescriptionTypeScreen extends StatelessWidget {
   }
 }
 
-class _PrescriptionTypeHeader extends StatelessWidget {
-  const _PrescriptionTypeHeader();
-
-  @override
-  Widget build(BuildContext context) {
-    final compact = MediaQuery.sizeOf(context).width < 430;
-
-    return Container(
-      padding: EdgeInsets.all(compact ? AppSpacing.md : AppSpacing.lg),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [
-            AppColors.raspberry,
-            AppColors.raspberryDark,
-            AppColors.primaryDark,
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(AppRadius.xl),
-        boxShadow: AppShadows.elevated,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                height: 44,
-                width: 44,
-                decoration: BoxDecoration(
-                  color: AppColors.textOnDark.withValues(alpha: 0.14),
-                  borderRadius: BorderRadius.circular(AppRadius.lg),
-                  border: Border.all(
-                    color: AppColors.textOnDark.withValues(alpha: 0.20),
-                  ),
-                ),
-                child: IconButton(
-                  tooltip: 'Retour',
-                  icon: const Icon(Icons.arrow_back_rounded),
-                  color: AppColors.textOnDark,
-                  onPressed: () => Navigator.pop(context),
-                ),
-              ),
-              if (!compact) ...[
-                const SizedBox(width: AppSpacing.sm),
-                Container(
-                  height: 44,
-                  width: 44,
-                  decoration: BoxDecoration(
-                    color: AppColors.textOnDark.withValues(alpha: 0.14),
-                    borderRadius: BorderRadius.circular(AppRadius.lg),
-                    border: Border.all(
-                      color: AppColors.textOnDark.withValues(alpha: 0.20),
-                    ),
-                  ),
-                  child: const Icon(
-                    Icons.library_books_outlined,
-                    color: AppColors.textOnDark,
-                    size: 24,
-                  ),
-                ),
-              ],
-              const SizedBox(width: AppSpacing.sm),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Type de prescription',
-                      style: AppTypography.title.copyWith(
-                        color: AppColors.textOnDark,
-                        fontSize: compact ? 21 : 24,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                    if (!compact) ...[
-                      const SizedBox(height: AppSpacing.xs),
-                      Text(
-                        'Choisissez le document clinique à préparer.',
-                        style: TextStyle(
-                          color: AppColors.textOnDark.withValues(alpha: 0.82),
-                          fontSize: 13,
-                          height: 1.35,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-            ],
-          ),
-          if (!compact) ...[
-            const SizedBox(height: AppSpacing.md),
-            Wrap(
-              spacing: AppSpacing.sm,
-              runSpacing: AppSpacing.sm,
-              children: const [
-                _HeaderChip(
-                  icon: Icons.library_books_outlined,
-                  label: 'Modèles',
-                ),
-                _HeaderChip(icon: Icons.picture_as_pdf_outlined, label: 'PDF'),
-                _HeaderChip(icon: Icons.badge_outlined, label: 'Patient lié'),
-              ],
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-}
-
-class _PrescriptionItem {
-  const _PrescriptionItem({
+class PrescriptionTypeOption {
+  const PrescriptionTypeOption({
+    required this.id,
     required this.title,
-    required this.subtitle,
     required this.icon,
     required this.color,
   });
 
+  final String id;
   final String title;
-  final String subtitle;
   final IconData icon;
   final Color color;
 }
 
+const prescriptionTypeOptions = [
+  PrescriptionTypeOption(
+    id: 'reeducation',
+    title: 'Rééducation',
+    icon: Icons.accessibility_new_rounded,
+    color: Color(0xFF2563EB),
+  ),
+  PrescriptionTypeOption(
+    id: 'materiel',
+    title: 'Matériel',
+    icon: Icons.medical_services_outlined,
+    color: Color(0xFF7C3AED),
+  ),
+  PrescriptionTypeOption(
+    id: 'examens',
+    title: 'Examens',
+    icon: Icons.biotech_outlined,
+    color: Color(0xFFF97316),
+  ),
+  PrescriptionTypeOption(
+    id: 'conseils',
+    title: 'Conseils',
+    icon: Icons.chat_bubble_outline_rounded,
+    color: Color(0xFF0F766E),
+  ),
+  PrescriptionTypeOption(
+    id: 'attestations',
+    title: 'Attestations',
+    icon: Icons.assignment_turned_in_outlined,
+    color: Color(0xFFE11D48),
+  ),
+  PrescriptionTypeOption(
+    id: 'autres',
+    title: 'Autres',
+    icon: Icons.more_horiz_rounded,
+    color: Color(0xFF64748B),
+  ),
+];
+
 class _PrescriptionTypeCard extends StatelessWidget {
   const _PrescriptionTypeCard({required this.item, required this.onTap});
 
-  final _PrescriptionItem item;
+  final PrescriptionTypeOption item;
   final VoidCallback onTap;
 
   @override
@@ -248,7 +147,7 @@ class _PrescriptionTypeCard extends StatelessWidget {
             boxShadow: AppShadows.soft,
           ),
           child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Container(
                 height: compact ? 46 : 56,
@@ -266,34 +165,15 @@ class _PrescriptionTypeCard extends StatelessWidget {
               ),
               const SizedBox(width: AppSpacing.sm),
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      item.title,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: item.color,
-                        fontSize: compact ? 16 : 18,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                    if (!compact) ...[
-                      const SizedBox(height: 4),
-                      Text(
-                        item.subtitle,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: AppColors.textSecondary,
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          height: 1.3,
-                        ),
-                      ),
-                    ],
-                  ],
+                child: Text(
+                  item.title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: item.color,
+                    fontSize: compact ? 16 : 18,
+                    fontWeight: FontWeight.w900,
+                  ),
                 ),
               ),
               const SizedBox(width: AppSpacing.sm),
@@ -305,74 +185,6 @@ class _PrescriptionTypeCard extends StatelessWidget {
             ],
           ),
         ),
-      ),
-    );
-  }
-}
-
-class _PrescriptionInfoBanner extends StatelessWidget {
-  const _PrescriptionInfoBanner();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.md),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: AppColors.border),
-        boxShadow: AppShadows.soft,
-      ),
-      child: const Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(Icons.picture_as_pdf_outlined, color: AppColors.raspberryDark),
-          SizedBox(width: AppSpacing.sm),
-          Expanded(
-            child: Text(
-              'Le type choisi configure les champs et les modèles rapides du formulaire.',
-              style: TextStyle(
-                color: AppColors.textSecondary,
-                fontWeight: FontWeight.w700,
-                height: 1.35,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _HeaderChip extends StatelessWidget {
-  const _HeaderChip({required this.icon, required this.label});
-
-  final IconData icon;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
-      decoration: BoxDecoration(
-        color: AppColors.textOnDark.withValues(alpha: 0.14),
-        borderRadius: BorderRadius.circular(AppRadius.pill),
-        border: Border.all(color: AppColors.textOnDark.withValues(alpha: 0.20)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, color: AppColors.textOnDark, size: 14),
-          const SizedBox(width: AppSpacing.xs),
-          Text(
-            label,
-            style: const TextStyle(
-              color: AppColors.textOnDark,
-              fontSize: 11,
-              fontWeight: FontWeight.w900,
-            ),
-          ),
-        ],
       ),
     );
   }

@@ -463,9 +463,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 130,
               ),
               children: [
-                buildCompactHeader(),
-                const SizedBox(height: 10),
-
                 buildSectionLabel('PROFIL MK'),
                 const SizedBox(height: 6),
                 settingCard(
@@ -573,61 +570,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
           ),
         ),
-      ),
-    );
-  }
-
-  Widget buildCompactHeader() {
-    final compact = MediaQuery.sizeOf(context).width < 430;
-
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.fromLTRB(
-        16,
-        compact ? 12 : 16,
-        16,
-        compact ? 12 : 16,
-      ),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFFF8FAFC), Color(0xFFFFFFFF)],
-        ),
-        borderRadius: BorderRadius.circular(AppRadius.xl),
-        border: Border.all(color: ds.AppColors.border),
-        boxShadow: AppShadows.soft,
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: compact ? 42 : 52,
-            height: compact ? 42 : 52,
-            decoration: const BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: LinearGradient(
-                colors: [Color(0xFF64748B), Color(0xFF334155)],
-              ),
-            ),
-            child: Icon(
-              Icons.tune_rounded,
-              color: Colors.white,
-              size: compact ? 23 : 28,
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              'Réglages et données locales',
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                color: Color(0xFF0F172A),
-                fontSize: compact ? 15.5 : 17,
-                fontWeight: FontWeight.w900,
-                letterSpacing: -0.2,
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }

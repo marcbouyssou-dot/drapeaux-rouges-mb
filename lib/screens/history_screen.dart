@@ -8,7 +8,6 @@ import '../theme/app_colors.dart';
 import '../theme/app_radius.dart';
 import '../theme/app_shadows.dart';
 import '../theme/app_spacing.dart';
-import '../theme/app_typography.dart';
 import 'evaluation/evaluation_detail_screen.dart';
 import 'prescription/prescription_history_detail_screen.dart';
 
@@ -293,8 +292,6 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   130,
                 ),
                 children: [
-                  buildCompactHeader(),
-                  const SizedBox(height: AppSpacing.sm),
                   buildStatsRow(),
                   const SizedBox(height: AppSpacing.sm),
                   buildSearchBar(),
@@ -326,133 +323,6 @@ class _HistoryScreenState extends State<HistoryScreen> {
             ),
           ),
         ),
-      ),
-    );
-  }
-
-  Widget buildCompactHeader() {
-    final compact = MediaQuery.sizeOf(context).width < 430;
-
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.all(compact ? AppSpacing.md : AppSpacing.lg),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [
-            AppColors.medicalBlue,
-            AppColors.primaryDark,
-            AppColors.primary,
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(AppRadius.xl),
-        boxShadow: AppShadows.elevated,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                width: 52,
-                height: 52,
-                decoration: BoxDecoration(
-                  color: AppColors.textOnDark.withValues(alpha: 0.14),
-                  borderRadius: BorderRadius.circular(AppRadius.lg),
-                  border: Border.all(
-                    color: AppColors.textOnDark.withValues(alpha: 0.20),
-                  ),
-                ),
-                child: const Icon(
-                  Icons.history_rounded,
-                  color: AppColors.textOnDark,
-                  size: 29,
-                ),
-              ),
-              const SizedBox(width: AppSpacing.md),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Historique',
-                      style: AppTypography.title.copyWith(
-                        color: AppColors.textOnDark,
-                        fontSize: compact ? 22 : 27,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                    if (!compact) ...[
-                      const SizedBox(height: AppSpacing.xs),
-                      Text(
-                        'Évaluations sauvegardées, patients liés et décisions cliniques.',
-                        style: TextStyle(
-                          color: AppColors.textOnDark.withValues(alpha: 0.82),
-                          fontSize: 13,
-                          height: 1.35,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-            ],
-          ),
-          if (!compact) ...[
-            const SizedBox(height: AppSpacing.md),
-            Wrap(
-              spacing: AppSpacing.sm,
-              runSpacing: AppSpacing.sm,
-              children: [
-                buildHeaderBadge(
-                  icon: Icons.assignment_turned_in_outlined,
-                  label: '$totalEvaluations bilan(s)',
-                ),
-                buildHeaderBadge(
-                  icon: Icons.description_outlined,
-                  label: '$totalPrescriptions prescription(s)',
-                ),
-                buildHeaderBadge(
-                  icon: Icons.warning_amber_rounded,
-                  label: '$highRiskCount risque(s) élevé(s)',
-                ),
-                buildHeaderBadge(
-                  icon: Icons.flag_rounded,
-                  label: '$totalFlags drapeau(x)',
-                ),
-              ],
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-
-  Widget buildHeaderBadge({required IconData icon, required String label}) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
-      decoration: BoxDecoration(
-        color: AppColors.textOnDark.withValues(alpha: 0.14),
-        borderRadius: BorderRadius.circular(AppRadius.pill),
-        border: Border.all(color: AppColors.textOnDark.withValues(alpha: 0.20)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, color: AppColors.textOnDark, size: 14),
-          const SizedBox(width: AppSpacing.xs),
-          Text(
-            label,
-            style: const TextStyle(
-              color: AppColors.textOnDark,
-              fontSize: 11,
-              fontWeight: FontWeight.w900,
-            ),
-          ),
-        ],
       ),
     );
   }
