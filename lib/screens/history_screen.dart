@@ -289,7 +289,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   AppSpacing.md,
                   AppSpacing.sm,
                   AppSpacing.md,
-                  130,
+                  112,
                 ),
                 children: [
                   buildStatsRow(),
@@ -305,7 +305,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                       buildDeleteHistoryButton(),
                     ],
                   ],
-                  const SizedBox(height: AppSpacing.md),
+                  const SizedBox(height: AppSpacing.sm),
                   if (showEvaluations) ...[
                     if (history.isEmpty) buildEmptyState(),
                     if (history.isNotEmpty && results.isEmpty)
@@ -400,7 +400,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
     required Color color,
   }) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(10, 11, 10, 11),
+      padding: const EdgeInsets.fromLTRB(8, 9, 8, 9),
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(AppRadius.lg),
@@ -470,8 +470,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
           filled: true,
           fillColor: AppColors.background,
           contentPadding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.md,
-            vertical: 14,
+            horizontal: 14,
+            vertical: 12,
           ),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(AppRadius.lg),
@@ -567,7 +567,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
         },
         borderRadius: BorderRadius.circular(AppRadius.pill),
         child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
+          padding: const EdgeInsets.symmetric(vertical: 9, horizontal: 8),
           decoration: BoxDecoration(
             color: selected ? AppColors.surfaceAlt : Colors.transparent,
             borderRadius: BorderRadius.circular(AppRadius.pill),
@@ -701,7 +701,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
   }) {
     return Container(
       margin: const EdgeInsets.only(top: AppSpacing.xs),
-      padding: const EdgeInsets.all(AppSpacing.lg),
+      padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(AppRadius.xl),
@@ -711,15 +711,15 @@ class _HistoryScreenState extends State<HistoryScreen> {
       child: Column(
         children: [
           Container(
-            width: 58,
-            height: 58,
+            width: 50,
+            height: 50,
             decoration: BoxDecoration(
               color: AppColors.surfaceAlt,
               borderRadius: BorderRadius.circular(AppRadius.lg),
             ),
             child: Icon(icon, size: 31, color: AppColors.primary),
           ),
-          const SizedBox(height: AppSpacing.md),
+          const SizedBox(height: AppSpacing.sm),
           Text(
             title,
             style: const TextStyle(
@@ -767,7 +767,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
       },
       child: Container(
         margin: const EdgeInsets.only(bottom: AppSpacing.sm),
-        padding: const EdgeInsets.all(AppSpacing.md),
+        padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: AppColors.surface,
           borderRadius: BorderRadius.circular(AppRadius.xl),
@@ -781,8 +781,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
-                  height: 56,
-                  width: 56,
+                  height: 50,
+                  width: 50,
                   decoration: BoxDecoration(
                     color: riskColor(risk).withValues(alpha: 0.10),
                     borderRadius: BorderRadius.circular(AppRadius.lg),
@@ -793,7 +793,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   child: Icon(
                     motifIcon(motif),
                     color: riskColor(risk),
-                    size: 28,
+                    size: 25,
                   ),
                 ),
                 const SizedBox(width: AppSpacing.sm),
@@ -831,7 +831,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                 buildScorePill(scoreValue),
               ],
             ),
-            const SizedBox(height: AppSpacing.md),
+            const SizedBox(height: 10),
             Wrap(
               spacing: AppSpacing.sm,
               runSpacing: AppSpacing.sm,
@@ -869,7 +869,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
       },
       child: Container(
         margin: const EdgeInsets.only(bottom: AppSpacing.sm),
-        padding: const EdgeInsets.all(AppSpacing.md),
+        padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: AppColors.surface,
           borderRadius: BorderRadius.circular(AppRadius.xl),
@@ -883,8 +883,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
-                  height: 56,
-                  width: 56,
+                  height: 50,
+                  width: 50,
                   decoration: BoxDecoration(
                     color: AppColors.primary.withValues(alpha: 0.10),
                     borderRadius: BorderRadius.circular(AppRadius.lg),
@@ -895,7 +895,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   child: const Icon(
                     Icons.description_outlined,
                     color: AppColors.primary,
-                    size: 28,
+                    size: 25,
                   ),
                 ),
                 const SizedBox(width: AppSpacing.sm),
@@ -935,7 +935,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                 ),
               ],
             ),
-            const SizedBox(height: AppSpacing.md),
+            const SizedBox(height: 10),
             Wrap(
               spacing: AppSpacing.sm,
               runSpacing: AppSpacing.sm,
@@ -964,7 +964,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
   Widget buildScorePill(String scoreValue) {
     return Container(
       width: 58,
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 9),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 7),
       decoration: BoxDecoration(
         color: AppColors.background,
         borderRadius: BorderRadius.circular(AppRadius.lg),

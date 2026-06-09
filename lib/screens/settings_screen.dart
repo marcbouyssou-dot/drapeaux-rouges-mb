@@ -460,7 +460,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 spacing.AppSpacing.md,
                 spacing.AppSpacing.sm,
                 spacing.AppSpacing.md,
-                130,
+                112,
               ),
               children: [
                 buildSectionLabel('PROFIL MK'),
@@ -486,7 +486,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   onTap: showPractitionerSignatureDialog,
                 ),
 
-                const SizedBox(height: 10),
+                const SizedBox(height: 8),
                 buildSectionLabel('CONFIDENTIALITÉ'),
                 const SizedBox(height: 6),
                 settingCard(
@@ -515,7 +515,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   onTap: () => showAnonymousRecordsExport(context),
                 ),
 
-                const SizedBox(height: 10),
+                const SizedBox(height: 8),
                 buildSectionLabel('EXPORTS'),
                 const SizedBox(height: 6),
                 settingCard(
@@ -533,7 +533,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   onTap: GlobalStatisticsCsvService.exportGlobalStatisticsCsv,
                 ),
 
-                const SizedBox(height: 10),
+                const SizedBox(height: 8),
                 buildSectionLabel('APPLICATION'),
                 const SizedBox(height: 6),
                 settingCard(
@@ -564,7 +564,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   onTap: confirmResetLocalData,
                 ),
 
-                const SizedBox(height: 10),
+                const SizedBox(height: 8),
                 buildVersionCard(),
               ],
             ),
@@ -597,7 +597,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     required VoidCallback onTap,
   }) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 7),
+      margin: const EdgeInsets.only(bottom: 6),
       decoration: BoxDecoration(
         color: ds.AppColors.surface,
         borderRadius: BorderRadius.circular(AppRadius.lg),
@@ -606,10 +606,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
       child: ListTile(
         onTap: onTap,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 1),
         leading: Container(
-          height: 38,
-          width: 38,
+          height: 36,
+          width: 36,
           decoration: BoxDecoration(
             color: iconColor.withValues(alpha: 0.10),
             borderRadius: BorderRadius.circular(16),
@@ -658,7 +658,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Widget buildVersionCard() {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: ds.AppColors.surfaceAlt,
         borderRadius: BorderRadius.circular(AppRadius.lg),

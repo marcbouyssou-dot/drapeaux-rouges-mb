@@ -21,9 +21,9 @@ class BDKTypeScreen extends StatelessWidget {
             child: ListView(
               padding: const EdgeInsets.fromLTRB(
                 AppSpacing.md,
+                AppSpacing.sm,
                 AppSpacing.md,
                 AppSpacing.md,
-                AppSpacing.lg,
               ),
               children: [
                 Align(
@@ -166,7 +166,7 @@ class _BDKTypeCard extends StatelessWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(AppRadius.xl),
         child: Container(
-          padding: const EdgeInsets.all(AppSpacing.md),
+          padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
             color: AppColors.surface,
             borderRadius: BorderRadius.circular(AppRadius.xl),
@@ -177,14 +177,14 @@ class _BDKTypeCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Container(
-                height: 52,
-                width: 52,
+                height: 48,
+                width: 48,
                 decoration: BoxDecoration(
                   color: item.color.withValues(alpha: 0.10),
                   borderRadius: BorderRadius.circular(AppRadius.lg),
                   border: Border.all(color: item.color.withValues(alpha: 0.18)),
                 ),
-                child: Icon(item.icon, color: item.color, size: 28),
+                child: Icon(item.icon, color: item.color, size: 26),
               ),
               const SizedBox(width: AppSpacing.sm),
               Expanded(

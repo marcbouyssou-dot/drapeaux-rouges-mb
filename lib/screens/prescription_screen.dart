@@ -455,21 +455,16 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 960),
                 child: ListView(
-                  padding: EdgeInsets.fromLTRB(
-                    AppSpacing.screenPadding,
-                    0,
-                    AppSpacing.screenPadding,
-                    120,
-                  ),
+                  padding: EdgeInsets.fromLTRB(14, 0, 14, 100),
                   children: [
                     buildReadinessSummary(),
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 8),
                     buildPatientCard(),
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 8),
                     buildPractitionerCard(),
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 8),
                     buildAccessDirectPrescriptionCard(),
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 8),
                     buildPrescriptionCard(),
                     const SizedBox(height: 8),
                     ExpansionTile(
@@ -509,8 +504,8 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
     final compact = MediaQuery.sizeOf(context).width < 430;
 
     return Container(
-      margin: EdgeInsets.all(compact ? 10 : AppSpacing.screenPadding),
-      padding: EdgeInsets.all(compact ? 12 : 18),
+      margin: EdgeInsets.all(compact ? 8 : 14),
+      padding: EdgeInsets.all(compact ? 10 : 14),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           colors: [
@@ -598,7 +593,7 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
             ],
           ),
           if (!compact) ...[
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
             Wrap(
               spacing: 8,
               runSpacing: 8,
@@ -704,7 +699,7 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
           children: items
               .map(
                 (item) => Padding(
-                  padding: EdgeInsets.only(bottom: item == items.last ? 0 : 10),
+                  padding: EdgeInsets.only(bottom: item == items.last ? 0 : 8),
                   child: item,
                 ),
               )
@@ -718,7 +713,7 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
     final hasPatient = currentPatient != null;
 
     return Container(
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: hasPatient ? AppColors.card : AppColors.softOrange,
         borderRadius: BorderRadius.circular(26),
@@ -731,8 +726,8 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            height: 52,
-            width: 52,
+            height: 46,
+            width: 46,
             decoration: BoxDecoration(
               color: hasPatient ? AppColors.softBlue : AppColors.softOrange,
               borderRadius: BorderRadius.circular(18),
@@ -742,10 +737,10 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
               color: hasPatient
                   ? AppColors.primaryBlue
                   : AppColors.warningOrange,
-              size: 30,
+              size: 27,
             ),
           ),
-          const SizedBox(width: 14),
+          const SizedBox(width: 12),
           Expanded(
             child: hasPatient
                 ? Column(
@@ -792,7 +787,7 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
     final complete = practitioner.isComplete;
 
     return Container(
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: complete ? AppColors.card : AppColors.softOrange,
         borderRadius: BorderRadius.circular(26),
@@ -805,8 +800,8 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            height: 52,
-            width: 52,
+            height: 46,
+            width: 46,
             decoration: BoxDecoration(
               color: complete ? AppColors.softBlue : AppColors.softOrange,
               borderRadius: BorderRadius.circular(18),
@@ -814,10 +809,10 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
             child: Icon(
               complete ? Icons.badge_rounded : Icons.edit_note_rounded,
               color: complete ? AppColors.primaryBlue : AppColors.warningOrange,
-              size: 30,
+              size: 27,
             ),
           ),
-          const SizedBox(width: 14),
+          const SizedBox(width: 12),
           Expanded(
             child: complete
                 ? Column(
@@ -878,11 +873,11 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
       child: Theme(
         data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
         child: ExpansionTile(
-          tilePadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
-          childrenPadding: const EdgeInsets.fromLTRB(18, 0, 18, 18),
+          tilePadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+          childrenPadding: const EdgeInsets.fromLTRB(14, 0, 14, 14),
           leading: Container(
-            height: 48,
-            width: 48,
+            height: 44,
+            width: 44,
             decoration: BoxDecoration(
               color: AppColors.softBlue,
               borderRadius: BorderRadius.circular(17),
@@ -907,13 +902,13 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
               subtitle:
                   'MSP, CPTS ou structure coordonnée selon le cadre applicable.',
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 8),
             const _MiniRegulatoryLine(
               icon: Icons.medical_information_outlined,
               title: 'Diagnostic médical préalable',
               subtitle: 'Si diagnostic déjà posé : justificatif recommandé.',
             ),
-            const SizedBox(height: 18),
+            const SizedBox(height: 12),
             SizedBox(
               width: double.infinity,
               child: OutlinedButton.icon(
@@ -933,7 +928,7 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
                   backgroundColor: hasImage
                       ? AppColors.softGreen
                       : AppColors.softBlue,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(18),
                   ),
@@ -941,12 +936,12 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
               ),
             ),
             if (hasImage) ...[
-              const SizedBox(height: 16),
+              const SizedBox(height: 12),
               ClipRRect(
                 borderRadius: BorderRadius.circular(20),
                 child: Image.file(
                   justificatifImage!,
-                  height: 180,
+                  height: 160,
                   width: double.infinity,
                   fit: BoxFit.cover,
                 ),
@@ -960,7 +955,7 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
 
   Widget buildPrescriptionCard() {
     return Container(
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: AppColors.card,
         borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
@@ -974,8 +969,8 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
-                width: 48,
-                height: 48,
+                width: 44,
+                height: 44,
                 decoration: BoxDecoration(
                   color: AppColors.softBlue,
                   borderRadius: BorderRadius.circular(18),
@@ -1006,7 +1001,7 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           ...buildPrescriptionFields(),
           buildTemplatesSection(),
         ],
@@ -1025,7 +1020,7 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
             maxLines: 3,
             controller: pathologieController,
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           ClinicalTextField(
             label: 'Objectifs de rééducation',
             hint:
@@ -1033,7 +1028,7 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
             maxLines: 3,
             controller: reeducationObjectifsController,
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           ClinicalTextField(
             label: 'Fréquence / durée',
             hint: 'Exemple : 2 séances par semaine pendant 6 semaines...',
@@ -1051,7 +1046,7 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
             maxLines: 3,
             controller: materielController,
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           ClinicalTextField(
             label: 'Justification clinique',
             hint: 'Exemple : instabilité, douleur, limitation d’appui...',
@@ -1069,7 +1064,7 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
             maxLines: 3,
             controller: examensController,
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           ClinicalTextField(
             label: 'Motif clinique',
             hint: 'Exemple : douleur persistante, suspicion de complication...',
@@ -1086,7 +1081,7 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
             maxLines: 3,
             controller: conseilsController,
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           ClinicalTextField(
             label: 'Points de surveillance',
             hint:
@@ -1125,8 +1120,8 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
 
     if (templates.isEmpty) {
       return Container(
-        margin: const EdgeInsets.only(top: 18),
-        padding: const EdgeInsets.all(14),
+        margin: const EdgeInsets.only(top: 14),
+        padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: AppColors.background,
           borderRadius: BorderRadius.circular(18),
@@ -1155,9 +1150,9 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const SizedBox(height: 18),
+        const SizedBox(height: 14),
         Container(
-          padding: const EdgeInsets.all(14),
+          padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
             color: AppColors.background,
             borderRadius: BorderRadius.circular(18),
@@ -1202,7 +1197,7 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
             ],
           ),
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 8),
         Wrap(
           spacing: 10,
           runSpacing: 10,

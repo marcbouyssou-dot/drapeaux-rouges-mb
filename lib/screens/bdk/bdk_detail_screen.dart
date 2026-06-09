@@ -157,8 +157,8 @@ class _BDKDetailScreenState extends State<BDKDetailScreen> {
     }
 
     return Container(
-      padding: const EdgeInsets.all(16),
-      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(14),
+      margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
         color: AppColors.softGreen,
         borderRadius: BorderRadius.circular(24),
@@ -171,8 +171,8 @@ class _BDKDetailScreenState extends State<BDKDetailScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            width: 44,
-            height: 44,
+            width: 42,
+            height: 42,
             decoration: BoxDecoration(
               color: AppColors.successGreen.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(16),
@@ -219,8 +219,8 @@ class _BDKDetailScreenState extends State<BDKDetailScreen> {
 
   Widget buildNoImportedEvaluationBanner() {
     return Container(
-      padding: const EdgeInsets.all(16),
-      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(14),
+      margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
         color: AppColors.card,
         borderRadius: BorderRadius.circular(24),
@@ -231,8 +231,8 @@ class _BDKDetailScreenState extends State<BDKDetailScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            width: 44,
-            height: 44,
+            width: 42,
+            height: 42,
             decoration: BoxDecoration(
               color: AppColors.softBlue,
               borderRadius: BorderRadius.circular(16),
@@ -264,8 +264,8 @@ class _BDKDetailScreenState extends State<BDKDetailScreen> {
     final compact = MediaQuery.sizeOf(context).width < 430;
 
     return Container(
-      margin: EdgeInsets.all(compact ? 10 : AppSpacing.screenPadding),
-      padding: EdgeInsets.all(compact ? 12 : 18),
+      margin: EdgeInsets.all(compact ? 8 : 14),
+      padding: EdgeInsets.all(compact ? 10 : 14),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [AppColors.primaryBlue, AppColors.successGreen],
@@ -352,7 +352,7 @@ class _BDKDetailScreenState extends State<BDKDetailScreen> {
             ],
           ),
           if (!compact) ...[
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
             Wrap(
               spacing: 8,
               runSpacing: 8,
@@ -410,8 +410,8 @@ class _BDKDetailScreenState extends State<BDKDetailScreen> {
     final patient = currentPatient;
 
     return Container(
-      padding: const EdgeInsets.all(16),
-      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(14),
+      margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
         color: AppColors.card,
         borderRadius: BorderRadius.circular(24),
@@ -422,8 +422,8 @@ class _BDKDetailScreenState extends State<BDKDetailScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            width: 48,
-            height: 48,
+            width: 44,
+            height: 44,
             decoration: BoxDecoration(
               color: patient == null
                   ? AppColors.softOrange
@@ -578,12 +578,7 @@ Une prise en charge kinésithérapique adaptée semble indiquée avec surveillan
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 960),
                 child: ListView(
-                  padding: EdgeInsets.fromLTRB(
-                    AppSpacing.screenPadding,
-                    0,
-                    AppSpacing.screenPadding,
-                    96,
-                  ),
+                  padding: EdgeInsets.fromLTRB(14, 0, 14, 88),
                   children: [
                     buildPatientSummaryCard(),
                     buildImportedEvaluationBanner(),
@@ -601,7 +596,7 @@ Une prise en charge kinésithérapique adaptée semble indiquée avec surveillan
                           maxLines: 3,
                           controller: motifController,
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 12),
                         ClinicalTextField(
                           label: 'Contexte',
                           hint:
@@ -609,7 +604,7 @@ Une prise en charge kinésithérapique adaptée semble indiquée avec surveillan
                           maxLines: 3,
                           controller: contexteController,
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 12),
                         ClinicalTextField(
                           label: 'Antécédents utiles',
                           hint:
@@ -631,7 +626,7 @@ Une prise en charge kinésithérapique adaptée semble indiquée avec surveillan
                           maxLines: 4,
                           controller: evaluationController,
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 12),
                         ClinicalTextField(
                           label: 'Tests cliniques',
                           hint:
@@ -639,7 +634,7 @@ Une prise en charge kinésithérapique adaptée semble indiquée avec surveillan
                           maxLines: 4,
                           controller: testsController,
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 12),
                         ClinicalTextField(
                           label: 'Limitations fonctionnelles',
                           hint:
@@ -661,13 +656,13 @@ Une prise en charge kinésithérapique adaptée semble indiquée avec surveillan
                           emptyText:
                               'La synthèse automatique apparaîtra ici après génération.',
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 12),
                         ClinicalPrimaryButton(
                           label: 'Générer la synthèse clinique',
                           icon: Icons.auto_awesome,
                           onPressed: _generateClinicalSummary,
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 12),
                         ClinicalTextField(
                           label: 'Diagnostic kinésithérapique',
                           hint:
@@ -675,7 +670,7 @@ Une prise en charge kinésithérapique adaptée semble indiquée avec surveillan
                           maxLines: 5,
                           controller: diagnosticController,
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 12),
                         ClinicalTextField(
                           label: 'Points de vigilance',
                           hint:
@@ -697,7 +692,7 @@ Une prise en charge kinésithérapique adaptée semble indiquée avec surveillan
                           maxLines: 4,
                           controller: objectifsController,
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 12),
                         ClinicalTextField(
                           label: 'Plan de traitement',
                           hint:
@@ -705,7 +700,7 @@ Une prise en charge kinésithérapique adaptée semble indiquée avec surveillan
                           maxLines: 4,
                           controller: planTraitementController,
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 12),
                         ClinicalTextField(
                           label: 'Critères de réévaluation',
                           hint:

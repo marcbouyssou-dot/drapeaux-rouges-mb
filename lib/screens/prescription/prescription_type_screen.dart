@@ -30,9 +30,9 @@ class PrescriptionTypeScreen extends StatelessWidget {
             child: ListView(
               padding: const EdgeInsets.fromLTRB(
                 AppSpacing.md,
+                AppSpacing.sm,
                 AppSpacing.md,
                 AppSpacing.md,
-                AppSpacing.lg,
               ),
               children: [
                 Align(
@@ -139,7 +139,7 @@ class _PrescriptionTypeCard extends StatelessWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(AppRadius.xl),
         child: Container(
-          padding: EdgeInsets.all(compact ? 12 : AppSpacing.md),
+          padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
             color: AppColors.surface,
             borderRadius: BorderRadius.circular(AppRadius.xl),
@@ -150,8 +150,8 @@ class _PrescriptionTypeCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Container(
-                height: compact ? 46 : 56,
-                width: compact ? 46 : 56,
+                height: compact ? 44 : 50,
+                width: compact ? 44 : 50,
                 decoration: BoxDecoration(
                   color: item.color.withValues(alpha: 0.10),
                   borderRadius: BorderRadius.circular(AppRadius.lg),
@@ -160,7 +160,7 @@ class _PrescriptionTypeCard extends StatelessWidget {
                 child: Icon(
                   item.icon,
                   color: item.color,
-                  size: compact ? 24 : 28,
+                  size: compact ? 23 : 26,
                 ),
               ),
               const SizedBox(width: AppSpacing.sm),

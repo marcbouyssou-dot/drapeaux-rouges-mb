@@ -304,7 +304,7 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
     EdgeInsetsGeometry? padding,
   }) {
     return Container(
-      padding: padding ?? const EdgeInsets.all(AppSpacing.md),
+      padding: padding ?? const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(AppRadius.xl),
@@ -366,7 +366,7 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
     required List<Widget> children,
   }) {
     return Container(
-      padding: const EdgeInsets.all(AppSpacing.md),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: AppColors.background,
         borderRadius: BorderRadius.circular(AppRadius.lg),
@@ -391,7 +391,7 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
               fontWeight: FontWeight.w600,
             ),
           ),
-          const SizedBox(height: AppSpacing.md),
+          const SizedBox(height: 12),
           ...children,
         ],
       ),
@@ -450,7 +450,7 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
                   AppSpacing.md,
                   AppSpacing.sm,
                   AppSpacing.md,
-                  120,
+                  104,
                 ),
                 children: [
                   buildSearchBar(),
@@ -532,16 +532,16 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
                 ? 'Activez le dossier existant sans recréer de données.'
                 : 'Renseignez l’identité et le consentement local.',
           ),
-          const SizedBox(height: AppSpacing.md),
+          const SizedBox(height: 12),
           buildPatientIdentityFields(),
           if (patientExists) ...[
-            const SizedBox(height: AppSpacing.md),
+            const SizedBox(height: 12),
             buildExistingPatientNotice(foundPatient),
           ],
           if (!patientExists) ...[
-            const SizedBox(height: AppSpacing.md),
+            const SizedBox(height: 12),
             buildConsentCard(),
-            const SizedBox(height: AppSpacing.md),
+            const SizedBox(height: 12),
             buildSignatureHeader(),
             const SizedBox(height: AppSpacing.sm),
             buildSignatureBox(),
@@ -577,7 +577,7 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
 
   Widget buildExistingPatientNotice(PatientLocal patient) {
     return Container(
-      padding: const EdgeInsets.all(AppSpacing.md),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: AppColors.surfaceSuccess,
         borderRadius: BorderRadius.circular(AppRadius.lg),
@@ -628,7 +628,7 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
         fillColor: AppColors.background,
         contentPadding: const EdgeInsets.symmetric(
           horizontal: AppSpacing.md,
-          vertical: 14,
+          vertical: 12,
         ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadius.lg),
@@ -694,7 +694,7 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
         });
       },
       child: Container(
-        height: 108,
+        height: 100,
         decoration: BoxDecoration(
           color: AppColors.surface,
           borderRadius: BorderRadius.circular(AppRadius.lg),
@@ -772,10 +772,10 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
       ),
       child: ListTile(
         onTap: () => selectPatient(patient),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
         leading: Container(
-          width: 42,
-          height: 42,
+          width: 40,
+          height: 40,
           decoration: BoxDecoration(
             color: active ? AppColors.success : AppColors.surfaceAlt,
             borderRadius: BorderRadius.circular(AppRadius.lg),
@@ -848,7 +848,7 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
     required String text,
   }) {
     return Container(
-      padding: const EdgeInsets.all(AppSpacing.md),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(AppRadius.lg),
@@ -893,7 +893,7 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
 
     return SafeArea(
       child: Container(
-        padding: const EdgeInsets.fromLTRB(18, 10, 18, 22),
+        padding: const EdgeInsets.fromLTRB(18, 8, 18, 16),
         decoration: BoxDecoration(
           color: AppColors.surface.withValues(alpha: 0.96),
           border: const Border(top: BorderSide(color: AppColors.border)),
