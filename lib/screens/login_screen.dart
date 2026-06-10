@@ -203,7 +203,7 @@ class _InstitutionBlock extends StatelessWidget {
         ),
         SizedBox(height: compact ? (dense ? 2 : AppSpacing.xs) : AppSpacing.md),
         Text(
-          'Masseurs-Kinésithérapeutes',
+          'Masseurs Kinésithérapeutes',
           textAlign: TextAlign.center,
           style: TextStyle(
             color: AppColors.textOnDark.withValues(alpha: 0.93),
@@ -214,10 +214,10 @@ class _InstitutionBlock extends StatelessWidget {
         ),
         SizedBox(height: compact ? (dense ? 3 : AppSpacing.xs) : AppSpacing.sm),
         Text(
-          'Nouvelle-Aquitaine',
+          'Nouvelle Aquitaine',
           textAlign: TextAlign.center,
           style: TextStyle(
-            color: AppColors.primaryLight.withValues(alpha: 0.96),
+            color: const Color(0xFF5CA8FF),
             fontSize: compact ? (dense ? 16 : 20.5) : 19,
             fontWeight: FontWeight.w800,
             shadows: [
@@ -246,13 +246,7 @@ class _IdentityDivider extends StatelessWidget {
       height: compact ? 2 : 2.5,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(AppRadius.pill),
-        gradient: LinearGradient(
-          colors: [
-            AppColors.primary.withValues(alpha: 0.95),
-            AppColors.textOnDark.withValues(alpha: 0.88),
-            AppColors.raspberry.withValues(alpha: 0.98),
-          ],
-        ),
+        color: const Color(0xFF2F80FF),
       ),
     );
   }
@@ -269,21 +263,25 @@ class _ProductBlock extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Text(
-          'Outil d’aide au raisonnement',
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            color: AppColors.textOnDark,
-            fontSize: compact ? (dense ? 16 : 21) : 25.5,
-            height: 1.12,
-            fontWeight: FontWeight.w900,
-            shadows: [
-              Shadow(
-                color: AppColors.darkBackground.withValues(alpha: 0.22),
-                blurRadius: 8,
-                offset: const Offset(0, 1),
-              ),
-            ],
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            'Outil d’aide au raisonnement clinique',
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            style: TextStyle(
+              color: AppColors.textOnDark,
+              fontSize: compact ? (dense ? 16 : 21) : 25.5,
+              height: 1.12,
+              fontWeight: FontWeight.w900,
+              shadows: [
+                Shadow(
+                  color: AppColors.darkBackground.withValues(alpha: 0.22),
+                  blurRadius: 8,
+                  offset: const Offset(0, 1),
+                ),
+              ],
+            ),
           ),
         ),
         SizedBox(height: compact ? 5 : AppSpacing.sm),
@@ -400,7 +398,7 @@ class _LoginForm extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const _FieldLabel('ADRESSE E-MAIL'),
+        const _FieldLabel('Adresse e-mail'),
         const SizedBox(height: AppSpacing.xs),
         _PremiumTextField(
           hint: 'prenom.nom@mk.fr',
@@ -409,7 +407,7 @@ class _LoginForm extends StatelessWidget {
           compact: compact,
         ),
         SizedBox(height: emailPasswordGap),
-        const _FieldLabel('MOT DE PASSE'),
+        const _FieldLabel('Mot de passe'),
         const SizedBox(height: AppSpacing.xs),
         _PremiumTextField(
           hint: '••••••••',
@@ -432,7 +430,7 @@ class _LoginForm extends StatelessWidget {
               );
             },
             style: TextButton.styleFrom(
-              foregroundColor: AppColors.primary,
+              foregroundColor: const Color(0xFF0B74FF),
               padding: EdgeInsets.zero,
               minimumSize: Size(0, compact ? 26 : 32),
               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -462,12 +460,7 @@ class _LoginButton extends StatelessWidget {
       child: DecoratedBox(
         decoration: BoxDecoration(
           gradient: const LinearGradient(
-            colors: [
-              Color(0xFFEF0A5D),
-              AppColors.raspberry,
-              AppColors.raspberryDark,
-            ],
-            stops: [0, 0.48, 1],
+            colors: [Color(0xFFF00652), Color(0xFFD4075A)],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -513,8 +506,8 @@ class _LegalFooter extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = onDark ? AppColors.textOnDark : AppColors.textSecondary;
-    final opacity = onDark ? 0.76 : 0.62;
+    final color = onDark ? const Color(0xFFA9C4E8) : AppColors.textSecondary;
+    final opacity = onDark ? 0.88 : 0.62;
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -556,10 +549,10 @@ class _FieldLabel extends StatelessWidget {
     return Text(
       text,
       style: const TextStyle(
-        color: AppColors.primary,
+        color: Color(0xFF0B74FF),
         fontSize: 11,
         fontWeight: FontWeight.w900,
-        letterSpacing: 1.2,
+        letterSpacing: 0.6,
       ),
     );
   }
@@ -597,7 +590,7 @@ class _PremiumTextField extends StatelessWidget {
         decoration: InputDecoration(
           prefixIcon: Icon(
             prefixIcon,
-            color: AppColors.primary,
+            color: const Color(0xFF0B74FF),
             size: compact ? 22 : 24,
           ),
           suffixIcon: suffixIcon == null
@@ -614,22 +607,22 @@ class _PremiumTextField extends StatelessWidget {
             fontWeight: FontWeight.w700,
           ),
           filled: true,
-          fillColor: const Color(0xFFFBFCFE),
+          fillColor: const Color(0xFFFBFCFF),
           contentPadding: EdgeInsets.symmetric(
             horizontal: AppSpacing.md,
             vertical: compact ? AppSpacing.sm : AppSpacing.md,
           ),
           border: OutlineInputBorder(
             borderRadius: const BorderRadius.all(Radius.circular(AppRadius.xl)),
-            borderSide: const BorderSide(color: Color(0xFFD9E2EF)),
+            borderSide: const BorderSide(color: Color(0xFFDDE6F3)),
           ),
           enabledBorder: OutlineInputBorder(
             borderRadius: const BorderRadius.all(Radius.circular(AppRadius.xl)),
-            borderSide: const BorderSide(color: Color(0xFFD9E2EF)),
+            borderSide: const BorderSide(color: Color(0xFFDDE6F3)),
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: const BorderRadius.all(Radius.circular(AppRadius.xl)),
-            borderSide: const BorderSide(color: AppColors.primary, width: 1.4),
+            borderSide: const BorderSide(color: Color(0xFF0B74FF), width: 1.4),
           ),
         ),
       ),
@@ -645,63 +638,57 @@ class _LoginBackgroundPainter extends CustomPainter {
     final rect = Offset.zero & size;
     final background = Paint()
       ..shader = const LinearGradient(
-        colors: [
-          Color(0xFF0B4FA7),
-          Color(0xFF062B6D),
-          Color(0xFF041C49),
-          Color(0xFF073D8C),
-        ],
+        colors: [Color(0xFF073A83), Color(0xFF04295F), Color(0xFF021D45)],
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
       ).createShader(rect);
 
     canvas.drawRect(rect, background);
 
-    final circleFill = Paint()
-      ..color = AppColors.primaryLight.withValues(alpha: 0.12);
-    final circleStroke = Paint()
-      ..color = AppColors.primary.withValues(alpha: 0.22)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.1;
-
-    canvas.drawCircle(
-      Offset(size.width * 0.07, size.height * 0.19),
-      size.shortestSide * 0.23,
-      circleFill,
-    );
-    canvas.drawCircle(
-      Offset(size.width * 0.07, size.height * 0.19),
-      size.shortestSide * 0.23,
-      circleStroke,
-    );
-    canvas.drawCircle(
-      Offset(size.width * 1.04, size.height * 0.22),
-      size.shortestSide * 0.24,
-      circleFill,
-    );
-    canvas.drawCircle(
-      Offset(size.width * 1.04, size.height * 0.22),
-      size.shortestSide * 0.24,
-      circleStroke,
-    );
-
     final linePaint = Paint()
-      ..color = AppColors.primaryLight.withValues(alpha: 0.22)
+      ..color = const Color(0xFF2F80FF).withValues(alpha: 0.15)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 0.95;
+      ..strokeWidth = 0.9;
 
-    final path = Path()
-      ..moveTo(size.width * 0.04, size.height * 0.49)
+    final leftPath = Path()
+      ..moveTo(-size.width * 0.18, size.height * 0.18)
       ..cubicTo(
-        size.width * 0.28,
-        size.height * 0.36,
-        size.width * 0.58,
-        size.height * 0.50,
-        size.width * 0.98,
-        size.height * 0.34,
+        size.width * 0.10,
+        size.height * 0.12,
+        size.width * 0.20,
+        size.height * 0.33,
+        -size.width * 0.05,
+        size.height * 0.42,
       );
 
-    canvas.drawPath(path, linePaint);
+    final rightPath = Path()
+      ..moveTo(size.width * 1.18, size.height * 0.20)
+      ..cubicTo(
+        size.width * 0.90,
+        size.height * 0.16,
+        size.width * 0.80,
+        size.height * 0.36,
+        size.width * 1.04,
+        size.height * 0.46,
+      );
+
+    final lowerPath = Path()
+      ..moveTo(size.width * 0.04, size.height * 0.48)
+      ..cubicTo(
+        size.width * 0.26,
+        size.height * 0.38,
+        size.width * 0.62,
+        size.height * 0.50,
+        size.width * 0.98,
+        size.height * 0.35,
+      );
+
+    canvas.drawPath(leftPath, linePaint);
+    canvas.drawPath(rightPath, linePaint);
+    canvas.drawPath(
+      lowerPath,
+      linePaint..color = linePaint.color.withValues(alpha: 0.12),
+    );
   }
 
   @override
