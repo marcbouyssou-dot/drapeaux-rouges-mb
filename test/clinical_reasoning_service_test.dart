@@ -81,7 +81,7 @@ void main() {
       expect(reasoning.id, startsWith('clinical_reasoning_'));
       expect(reasoning.findings, isEmpty);
       expect(reasoning.alerts, isEmpty);
-      expect(reasoning.recommendations, isEmpty);
+      expect(reasoning.recommendations, hasLength(1));
       expect(reasoning.summary, isNotEmpty);
     });
 
@@ -122,7 +122,9 @@ void main() {
           ClinicalFindingCategory.respiratory,
         );
         expect(reasoning.findings.single.severity, ClinicalSeverity.high);
-        expect(reasoning.summary, 'Synthese test');
+        expect(reasoning.alerts, hasLength(1));
+        expect(reasoning.recommendations, hasLength(1));
+        expect(reasoning.summary, contains('elevee'));
       },
     );
   });

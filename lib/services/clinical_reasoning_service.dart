@@ -1,8 +1,13 @@
 import '../models/clinical/clinical_models.dart';
 import '../models/evaluation_model.dart';
+import 'clinical_reasoning_mapper.dart';
 
 class ClinicalReasoningService {
-  const ClinicalReasoningService();
+  const ClinicalReasoningService({
+    ClinicalReasoningMapper mapper = const ClinicalReasoningMapper(),
+  }) : _mapper = mapper;
+
+  final ClinicalReasoningMapper _mapper;
 
   ClinicalReasoning buildFromEvaluation({EvaluationModel? evaluation}) {
     final now = DateTime.now();
@@ -10,7 +15,7 @@ class ClinicalReasoningService {
         ? <ClinicalFinding>[]
         : _buildFindings(evaluation.checkedFlags, now);
 
-    return ClinicalReasoning(
+    final minimalReasoning = ClinicalReasoning(
       id: _buildReasoningId(evaluation, now),
       evaluationId: evaluation?.evaluationId,
       patientId: evaluation?.patientLocalId ?? evaluation?.patientAnonymousId,
@@ -20,6 +25,8 @@ class ClinicalReasoningService {
       summary: _buildSummary(evaluation),
       createdAt: now,
     );
+
+    return _mapper.enrich(minimalReasoning);
   }
 
   List<ClinicalFinding> _buildFindings(
