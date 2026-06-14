@@ -4,6 +4,7 @@ import 'package:printing/printing.dart';
 
 import '../models/clinical/clinical_models.dart';
 import '../models/practitioner_profile.dart';
+import 'pdf_font_helper.dart';
 
 class PdfService {
   static Future<void> exportPdf({
@@ -23,8 +24,7 @@ class PdfService {
     final pdf = pw.Document();
     final now = DateTime.now();
 
-    final regularFont = await PdfGoogleFonts.robotoRegular();
-    final boldFont = await PdfGoogleFonts.robotoBold();
+    final theme = await PdfFontHelper.unicodeTheme();
 
     final checkedRows = categories.entries.expand((entry) {
       return entry.value.where((item) => item['checked'] == true).map((item) {
@@ -55,7 +55,7 @@ class PdfService {
         pageTheme: pw.PageTheme(
           pageFormat: PdfPageFormat.a4,
           margin: const pw.EdgeInsets.fromLTRB(36, 32, 36, 32),
-          theme: pw.ThemeData.withFont(base: regularFont, bold: boldFont),
+          theme: theme,
         ),
         footer: (context) {
           return pw.Row(

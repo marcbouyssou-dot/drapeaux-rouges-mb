@@ -4,6 +4,7 @@ import 'package:printing/printing.dart';
 
 import '../models/patient_local.dart';
 import '../models/practitioner_profile.dart';
+import 'pdf_font_helper.dart';
 import 'rgpd_local_service.dart';
 
 class BdkPdfService {
@@ -25,15 +26,14 @@ class BdkPdfService {
     PractitionerProfile? practitioner,
   }) async {
     final pdf = pw.Document();
-    final regularFont = await PdfGoogleFonts.robotoRegular();
-    final boldFont = await PdfGoogleFonts.robotoBold();
+    final theme = await PdfFontHelper.unicodeTheme();
 
     pdf.addPage(
       pw.MultiPage(
         pageTheme: pw.PageTheme(
           pageFormat: PdfPageFormat.a4,
           margin: const pw.EdgeInsets.all(36),
-          theme: pw.ThemeData.withFont(base: regularFont, bold: boldFont),
+          theme: theme,
         ),
         build: (context) {
           return [

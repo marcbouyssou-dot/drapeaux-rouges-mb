@@ -7,6 +7,8 @@ import 'package:drapeaux_rouges_mb/services/patient_attestation_pdf_service.dart
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   test('generates PDF with complete patient', () async {
     final bytes = await PatientAttestationPdfService.buildPdfBytes(
       _attestation(patient: _patient(signatureBase64: _transparentPngBase64)),
@@ -42,6 +44,40 @@ void main() {
       attestation.practitionerFullName,
       'Masseur-kinésithérapeute non renseigné',
     );
+    expect(bytes, isNotEmpty);
+    expect(String.fromCharCodes(bytes.take(4)), '%PDF');
+  });
+
+  test('generates PDF with French accents and typographic apostrophe', () async {
+    final bytes = await PatientAttestationPdfService.buildPdfBytes(
+      PatientAttestation(
+        template: attestationTemplates.singleWhere(
+          (item) => item.type == AttestationType.reinforcedConsent,
+        ),
+        patient: PatientLocal(
+          localId: 'patient-unicode',
+          anonymousId: 'DR-unicode',
+          nom: 'Lecœur',
+          prenom: 'Élodie',
+          dateNaissance: '14/06/1980',
+          consentementValide: true,
+          dateConsentement: DateTime(2026, 6, 14),
+        ),
+        practitioner: const PractitionerProfile(
+          nom: 'François',
+          prenom: 'Chloé',
+          adresse: '7 rue de l’Église, 33000 Mérignac',
+          adeli: '123456789',
+          rpps: '10101010101',
+        ),
+        date: DateTime(2026, 6, 14),
+        lieu: 'Mérignac',
+        bodyParagraphsOverride: const [
+          'L’objectif est d’éviter toute ambiguïté : accents, cédille, œ et apostrophe typographique ’ doivent rester compatibles.',
+        ],
+      ),
+    );
+
     expect(bytes, isNotEmpty);
     expect(String.fromCharCodes(bytes.take(4)), '%PDF');
   });

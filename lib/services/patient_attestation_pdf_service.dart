@@ -6,6 +6,7 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 
 import '../models/attestation/patient_attestation.dart';
+import 'pdf_font_helper.dart';
 
 class PatientAttestationPdfService {
   static Future<void> exportPdf(PatientAttestation attestation) async {
@@ -16,29 +17,29 @@ class PatientAttestationPdfService {
 
   static Future<Uint8List> buildPdfBytes(PatientAttestation attestation) async {
     final signatureImage = _signatureImage(attestation.signatureBase64);
+    final theme = await PdfFontHelper.unicodeTheme();
 
     try {
-      return await _buildDocument(attestation, signatureImage).save();
+      return await _buildDocument(attestation, signatureImage, theme).save();
     } catch (_) {
       if (signatureImage == null) rethrow;
 
-      return _buildDocument(attestation, null).save();
+      return _buildDocument(attestation, null, theme).save();
     }
   }
 
   static pw.Document _buildDocument(
     PatientAttestation attestation,
     pw.MemoryImage? signatureImage,
+    pw.ThemeData theme,
   ) {
     final pdf = pw.Document();
-    final baseFont = pw.Font.helvetica();
-    final boldFont = pw.Font.helveticaBold();
 
     pdf.addPage(
       pw.MultiPage(
         pageFormat: PdfPageFormat.a4,
         margin: const pw.EdgeInsets.fromLTRB(42, 38, 42, 38),
-        theme: pw.ThemeData.withFont(base: baseFont, bold: boldFont),
+        theme: theme,
         build: (context) {
           return [
             _practitionerHeader(attestation),

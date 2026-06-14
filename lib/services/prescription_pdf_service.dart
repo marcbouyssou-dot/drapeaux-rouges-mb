@@ -8,6 +8,7 @@ import 'package:printing/printing.dart';
 
 import '../models/patient_local.dart';
 import '../models/practitioner_profile.dart';
+import 'pdf_font_helper.dart';
 
 class PrescriptionPdfService {
   static Future<void> exportPrescriptionPdf({
@@ -20,9 +21,7 @@ class PrescriptionPdfService {
   }) async {
     final pdf = pw.Document();
     final now = DateTime.now();
-
-    final baseFont = pw.Font.helvetica();
-    final boldFont = pw.Font.helveticaBold();
+    final theme = await PdfFontHelper.unicodeTheme();
 
     final pw.MemoryImage? justificatifPdfImage = justificatifImage != null
         ? pw.MemoryImage(justificatifImage.readAsBytesSync())
@@ -35,7 +34,7 @@ class PrescriptionPdfService {
       pw.MultiPage(
         pageFormat: PdfPageFormat.a4,
         margin: const pw.EdgeInsets.fromLTRB(42, 36, 42, 36),
-        theme: pw.ThemeData.withFont(base: baseFont, bold: boldFont),
+        theme: theme,
         build: (context) {
           return [
             _practitionerBlock(practitioner),
