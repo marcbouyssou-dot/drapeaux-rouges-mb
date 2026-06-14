@@ -635,20 +635,15 @@ class _LoginBackgroundPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final rect = Offset.zero & size;
-    final background = Paint()
-      ..shader = const LinearGradient(
-        colors: [Color(0xFF073A83), Color(0xFF04295F), Color(0xFF021D45)],
-        begin: Alignment.topCenter,
-        end: Alignment.bottomCenter,
-      ).createShader(rect);
+  final rect = Offset.zero & size;
 
-    canvas.drawRect(rect, background);
+  final background = Paint()..color = const Color(0xFF032052);
+  canvas.drawRect(rect, background);
 
-    final linePaint = Paint()
-      ..color = const Color(0xFF2F80FF).withValues(alpha: 0.15)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 0.9;
+  final linePaint = Paint()
+    ..color = const Color(0xFF2F80FF).withValues(alpha: 0.15)
+    ..style = PaintingStyle.stroke
+    ..strokeWidth = 0.9;
 
     final leftPath = Path()
       ..moveTo(-size.width * 0.18, size.height * 0.18)
