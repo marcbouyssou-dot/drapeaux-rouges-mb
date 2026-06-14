@@ -1,3 +1,5 @@
+import 'clinical/clinical_models.dart';
+
 class EvaluationModel {
   final String evaluationId;
 
@@ -25,6 +27,8 @@ class EvaluationModel {
   // NOUVEAU
   final String aiSummary;
 
+  final ClinicalReasoning? clinicalReasoning;
+
   const EvaluationModel({
     required this.evaluationId,
     required this.patientLocalId,
@@ -41,6 +45,7 @@ class EvaluationModel {
 
     // NOUVEAU
     required this.aiSummary,
+    this.clinicalReasoning,
   });
 
   Map<String, dynamic> toJson() {
@@ -60,6 +65,7 @@ class EvaluationModel {
 
       // NOUVEAU
       'aiSummary': aiSummary,
+      'clinicalReasoning': clinicalReasoning?.toJson(),
     };
   }
 
@@ -71,8 +77,7 @@ class EvaluationModel {
 
       patientAnonymousId: json['patientAnonymousId'],
 
-      patientDisplayName:
-          json['patientDisplayName'] ?? 'Patient non renseigné',
+      patientDisplayName: json['patientDisplayName'] ?? 'Patient non renseigné',
 
       date: DateTime.tryParse(json['date'] ?? '') ?? DateTime.now(),
 
@@ -84,18 +89,19 @@ class EvaluationModel {
 
       checkedCount: json['checkedCount'] ?? 0,
 
-      checkedFlags:
-          List<Map<String, dynamic>>.from(json['checkedFlags'] ?? []),
+      checkedFlags: List<Map<String, dynamic>>.from(json['checkedFlags'] ?? []),
 
-      decisionTitle:
-          json['decisionTitle'] ?? 'Décision non renseignée',
+      decisionTitle: json['decisionTitle'] ?? 'Décision non renseignée',
 
-      decisionMessage:
-          json['decisionMessage'] ?? 'Aucun message.',
+      decisionMessage: json['decisionMessage'] ?? 'Aucun message.',
 
       // NOUVEAU
-      aiSummary:
-          json['aiSummary'] ?? 'Synthèse IA non disponible.',
+      aiSummary: json['aiSummary'] ?? 'Synthèse IA non disponible.',
+      clinicalReasoning: json['clinicalReasoning'] is Map
+          ? ClinicalReasoning.fromJson(
+              Map<String, dynamic>.from(json['clinicalReasoning'] as Map),
+            )
+          : null,
     );
   }
 }

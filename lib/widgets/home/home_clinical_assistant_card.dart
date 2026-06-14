@@ -1,5 +1,7 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+import '../../screens/voice/voice_clinical_placeholder_screen.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_radius.dart';
 import '../../theme/app_shadows.dart';
@@ -84,13 +86,23 @@ class HomeClinicalAssistantCard extends StatelessWidget {
             ],
           ),
           const Spacer(),
-          const Wrap(
+          Wrap(
             spacing: AppSpacing.sm,
             runSpacing: AppSpacing.sm,
             children: [
-              _AssistantBadge(label: 'IA Vocale', color: AppColors.primary),
-              _AssistantBadge(label: 'Cloud HDS', color: AppColors.teal),
               _AssistantBadge(
+                label: 'IA Vocale',
+                color: AppColors.primary,
+                onTap: () {
+                  Navigator.of(context).push(
+                    CupertinoPageRoute(
+                      builder: (_) => const VoiceClinicalPlaceholderScreen(),
+                    ),
+                  );
+                },
+              ),
+              const _AssistantBadge(label: 'Cloud HDS', color: AppColors.teal),
+              const _AssistantBadge(
                 label: 'Assistant Clinique',
                 color: AppColors.raspberry,
               ),
@@ -122,14 +134,15 @@ class HomeClinicalAssistantCard extends StatelessWidget {
 }
 
 class _AssistantBadge extends StatelessWidget {
-  const _AssistantBadge({required this.label, required this.color});
+  const _AssistantBadge({required this.label, required this.color, this.onTap});
 
   final String label;
   final Color color;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    final badge = Container(
       padding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.md,
         vertical: AppSpacing.sm,
@@ -146,6 +159,17 @@ class _AssistantBadge extends StatelessWidget {
           fontSize: 11,
           fontWeight: FontWeight.w900,
         ),
+      ),
+    );
+
+    if (onTap == null) return badge;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(AppRadius.pill),
+        child: badge,
       ),
     );
   }

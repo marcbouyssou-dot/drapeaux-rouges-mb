@@ -2,6 +2,7 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 
+import '../models/clinical/clinical_models.dart';
 import '../models/practitioner_profile.dart';
 
 class PdfService {
@@ -15,6 +16,7 @@ class PdfService {
     required String decisionTitle,
     required String decisionMessage,
     required String aiSummary,
+    ClinicalReasoning? clinicalReasoning,
     bool printable = false,
     PractitionerProfile? practitioner,
   }) async {
@@ -131,6 +133,16 @@ class PdfService {
             sectionTitle('Synthèse assistée'),
             pw.SizedBox(height: 8),
             neutralBox(aiSummary, printable: printable),
+            if (clinicalReasoning != null) ...[
+              pw.SizedBox(height: 24),
+              sectionTitle('Raisonnement clinique sauvegardé'),
+              pw.SizedBox(height: 8),
+              clinicalReasoningBox(
+                clinicalReasoning,
+                printable: printable,
+                primaryColor: primaryColor,
+              ),
+            ],
             pw.SizedBox(height: 24),
             sectionTitle('Drapeaux rouges cochés'),
             pw.SizedBox(height: 10),
@@ -385,6 +397,172 @@ class PdfService {
         style: const pw.TextStyle(fontSize: 10, lineSpacing: 4),
       ),
     );
+  }
+
+  static pw.Widget clinicalReasoningBox(
+    ClinicalReasoning reasoning, {
+    required bool printable,
+    required PdfColor primaryColor,
+  }) {
+    final lines = clinicalReasoningLines(reasoning);
+
+    return pw.Container(
+      width: double.infinity,
+      padding: const pw.EdgeInsets.all(16),
+      decoration: pw.BoxDecoration(
+        color: printable ? PdfColors.white : PdfColor.fromHex('#F8FAFC'),
+        borderRadius: pw.BorderRadius.circular(14),
+        border: pw.Border.all(
+          color: printable ? PdfColors.grey700 : primaryColor,
+          width: printable ? 0.8 : 1,
+        ),
+      ),
+      child: pw.Column(
+        crossAxisAlignment: pw.CrossAxisAlignment.start,
+        children: lines
+            .map(
+              (line) => pw.Padding(
+                padding: const pw.EdgeInsets.only(bottom: 5),
+                child: pw.Text(
+                  line,
+                  style: const pw.TextStyle(fontSize: 9.5, lineSpacing: 3),
+                ),
+              ),
+            )
+            .toList(growable: false),
+      ),
+    );
+  }
+
+  static List<String> clinicalReasoningLines(ClinicalReasoning reasoning) {
+    final savedSeverity = reasoning.severity ?? maxSeverity(reasoning.findings);
+    final lines = <String>[
+      'Synthèse clinique : ${reasoning.summary}',
+      'Sévérité maximale : ${severityLabel(savedSeverity)}',
+    ];
+
+    if (reasoning.alerts.isNotEmpty) {
+      lines.add('Alertes cliniques :');
+      lines.addAll(
+        reasoning.alerts.map(
+          (alert) =>
+              '- ${alert.title} (${alertLevelLabel(alert.level)}) : ${alert.message}',
+        ),
+      );
+    }
+
+    if (reasoning.recommendations.isNotEmpty) {
+      lines.add('Recommandations :');
+      lines.addAll(
+        reasoning.recommendations.map(
+          (recommendation) =>
+              '- ${recommendation.title} (${recommendationPriorityLabel(recommendation.priority)}) : ${recommendation.description}',
+        ),
+      );
+    }
+
+    if (reasoning.findings.isNotEmpty) {
+      lines.add('Éléments retenus :');
+      lines.addAll(
+        reasoning.findings.map(
+          (finding) =>
+              '- ${finding.label} (${findingCategoryLabel(finding.category)} · ${severityLabel(finding.severity)})',
+        ),
+      );
+    }
+
+    lines.add(
+      'Mention de prudence : aide au raisonnement clinique, à valider par le praticien. Ne constitue pas un diagnostic automatisé.',
+    );
+
+    return lines;
+  }
+
+  static ClinicalSeverity maxSeverity(List<ClinicalFinding> findings) {
+    if (findings.isEmpty) return ClinicalSeverity.unknown;
+
+    return findings.map((finding) => finding.severity).reduce((current, next) {
+      return severityRank(next) > severityRank(current) ? next : current;
+    });
+  }
+
+  static int severityRank(ClinicalSeverity severity) {
+    switch (severity) {
+      case ClinicalSeverity.critical:
+        return 4;
+      case ClinicalSeverity.high:
+        return 3;
+      case ClinicalSeverity.moderate:
+        return 2;
+      case ClinicalSeverity.low:
+        return 1;
+      case ClinicalSeverity.unknown:
+        return 0;
+    }
+  }
+
+  static String severityLabel(ClinicalSeverity severity) {
+    switch (severity) {
+      case ClinicalSeverity.low:
+        return 'Faible';
+      case ClinicalSeverity.moderate:
+        return 'Modérée';
+      case ClinicalSeverity.high:
+        return 'Élevée';
+      case ClinicalSeverity.critical:
+        return 'Critique';
+      case ClinicalSeverity.unknown:
+        return 'Non précisée';
+    }
+  }
+
+  static String alertLevelLabel(ClinicalAlertLevel level) {
+    switch (level) {
+      case ClinicalAlertLevel.info:
+        return 'Info';
+      case ClinicalAlertLevel.warning:
+        return 'Vigilance';
+      case ClinicalAlertLevel.urgent:
+        return 'Urgent';
+      case ClinicalAlertLevel.critical:
+        return 'Critique';
+    }
+  }
+
+  static String recommendationPriorityLabel(
+    ClinicalRecommendationPriority priority,
+  ) {
+    switch (priority) {
+      case ClinicalRecommendationPriority.low:
+        return 'Faible';
+      case ClinicalRecommendationPriority.medium:
+        return 'Moyenne';
+      case ClinicalRecommendationPriority.high:
+        return 'Haute';
+      case ClinicalRecommendationPriority.urgent:
+        return 'Urgente';
+    }
+  }
+
+  static String findingCategoryLabel(ClinicalFindingCategory category) {
+    switch (category) {
+      case ClinicalFindingCategory.general:
+        return 'Général';
+      case ClinicalFindingCategory.cardiovascular:
+        return 'Cardiovasculaire';
+      case ClinicalFindingCategory.respiratory:
+        return 'Respiratoire';
+      case ClinicalFindingCategory.neurological:
+        return 'Neurologique';
+      case ClinicalFindingCategory.infectious:
+        return 'Infectieux';
+      case ClinicalFindingCategory.mentalHealth:
+        return 'Santé mentale';
+      case ClinicalFindingCategory.musculoskeletal:
+        return 'Musculosquelettique';
+      case ClinicalFindingCategory.other:
+        return 'Autre';
+    }
   }
 
   static String formatDate(DateTime date) {

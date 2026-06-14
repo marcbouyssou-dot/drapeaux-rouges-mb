@@ -1,3 +1,5 @@
+import '../models/evaluation_model.dart';
+import 'clinical_reasoning_service.dart';
 import 'local_database_service.dart';
 
 class HistoryService {
@@ -9,7 +11,14 @@ class HistoryService {
     required List<Map<String, dynamic>> history,
     required Map<String, dynamic> evaluation,
   }) async {
-    await LocalDatabaseService.saveEvaluation(evaluation);
+    final enrichedEvaluation = Map<String, dynamic>.from(evaluation);
+    enrichedEvaluation['clinicalReasoning'] ??= ClinicalReasoningService()
+        .buildFromEvaluation(
+          evaluation: EvaluationModel.fromJson(enrichedEvaluation),
+        )
+        .toJson();
+
+    await LocalDatabaseService.saveEvaluation(enrichedEvaluation);
   }
 
   static Future<void> deleteEvaluation(String evaluationId) async {

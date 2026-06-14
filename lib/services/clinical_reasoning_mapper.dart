@@ -48,9 +48,10 @@ class ClinicalReasoningMapper {
         id: '${reasoning.id}_alert_${maxSeverity.name}',
         title: maxSeverity == ClinicalSeverity.critical
             ? 'Vigilance clinique prioritaire'
-            : 'Vigilance clinique renforcee',
-        message:
-            'Un ou plusieurs elements cliniques structurés demandent une validation par le praticien.',
+            : 'Vigilance clinique renforcée',
+        message: maxSeverity == ClinicalSeverity.critical
+            ? 'La présence d’un élément de gravité critique impose une lecture prioritaire et une orientation médicale urgente selon le contexte.'
+            : 'Un ou plusieurs éléments de gravité élevée justifient une validation clinique attentive par le praticien.',
         level: maxSeverity == ClinicalSeverity.critical
             ? ClinicalAlertLevel.critical
             : ClinicalAlertLevel.warning,
@@ -68,9 +69,9 @@ class ClinicalReasoningMapper {
       return [
         ClinicalRecommendation(
           id: '${reasoning.id}_recommendation_complete_evaluation',
-          title: 'Completer l evaluation clinique',
+          title: 'Compléter l’évaluation clinique',
           description:
-              'Aucun element clinique structure n est disponible. Completer l evaluation avant toute interpretation.',
+              'Aucun élément clinique structuré n’est disponible pour étayer le raisonnement. Compléter l’évaluation avant toute interprétation.',
           priority: ClinicalRecommendationPriority.medium,
           actionType: ClinicalActionType.document,
           createdAt: reasoning.createdAt,
@@ -85,7 +86,7 @@ class ClinicalReasoningMapper {
             id: '${reasoning.id}_recommendation_critical_review',
             title: 'Validation clinique prioritaire',
             description:
-                'Verifier rapidement les elements critiques et orienter selon le contexte clinique, sans poser de diagnostic automatique.',
+                'Vérifier sans délai les éléments critiques retenus et organiser l’orientation médicale adaptée, sans poser de diagnostic automatisé.',
             priority: ClinicalRecommendationPriority.urgent,
             actionType: ClinicalActionType.emergencyReferral,
             createdAt: reasoning.createdAt,
@@ -95,9 +96,9 @@ class ClinicalReasoningMapper {
         return [
           ClinicalRecommendation(
             id: '${reasoning.id}_recommendation_high_review',
-            title: 'Validation clinique renforcee',
+            title: 'Validation clinique renforcée',
             description:
-                'Revoir les elements de severite elevee et confirmer la conduite a tenir par le praticien.',
+                'Reprendre les éléments de gravité élevée, les contextualiser avec l’examen clinique et confirmer la conduite à tenir par le praticien.',
             priority: ClinicalRecommendationPriority.high,
             actionType: ClinicalActionType.refer,
             createdAt: reasoning.createdAt,
@@ -109,7 +110,7 @@ class ClinicalReasoningMapper {
             id: '${reasoning.id}_recommendation_monitor',
             title: 'Surveillance clinique',
             description:
-                'Contextualiser les elements releves et maintenir une surveillance clinique adaptee.',
+                'Mettre en perspective les éléments relevés avec l’évolution clinique et maintenir une surveillance adaptée.',
             priority: ClinicalRecommendationPriority.medium,
             actionType: ClinicalActionType.monitor,
             createdAt: reasoning.createdAt,
@@ -122,7 +123,7 @@ class ClinicalReasoningMapper {
             id: '${reasoning.id}_recommendation_practitioner_validation',
             title: 'Validation par le praticien',
             description:
-                'Utiliser ces elements comme aide au raisonnement clinique et confirmer leur pertinence.',
+                'Utiliser ces éléments comme support au raisonnement clinique et confirmer leur pertinence au regard du contexte du patient.',
             priority: ClinicalRecommendationPriority.low,
             actionType: ClinicalActionType.monitor,
             createdAt: reasoning.createdAt,
@@ -136,13 +137,13 @@ class ClinicalReasoningMapper {
     ClinicalSeverity maxSeverity,
   ) {
     if (findings.isEmpty) {
-      return 'Aucun element clinique structure disponible. Completer l evaluation clinique avant interpretation.';
+      return 'Aucun élément clinique structuré n’est disponible pour construire une synthèse fiable. L’évaluation doit être complétée avant toute interprétation.';
     }
 
     final count = findings.length;
     final severityLabel = _severityLabel(maxSeverity);
 
-    return '$count element(s) clinique(s) structure(s) disponible(s). Severite maximale: $severityLabel. Synthese fournie comme aide au raisonnement clinique, a valider par le praticien.';
+    return '$count élément(s) clinique(s) ont été retenu(s). Le niveau de gravité maximal retenu est $severityLabel au regard des éléments sélectionnés. Cette synthèse constitue une aide au raisonnement clinique et doit être validée par le praticien.';
   }
 
   int _severityRank(ClinicalSeverity severity) {
@@ -165,13 +166,13 @@ class ClinicalReasoningMapper {
       case ClinicalSeverity.critical:
         return 'critique';
       case ClinicalSeverity.high:
-        return 'elevee';
+        return 'élevé';
       case ClinicalSeverity.moderate:
-        return 'moderee';
+        return 'modéré';
       case ClinicalSeverity.low:
         return 'faible';
       case ClinicalSeverity.unknown:
-        return 'non determinee';
+        return 'non déterminé';
     }
   }
 }

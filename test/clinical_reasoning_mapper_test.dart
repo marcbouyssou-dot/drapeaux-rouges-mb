@@ -58,7 +58,7 @@ void main() {
         enriched.recommendations.single.priority,
         ClinicalRecommendationPriority.high,
       );
-      expect(enriched.summary, contains('elevee'));
+      expect(enriched.summary, contains('gravité maximal retenu est élevé'));
     });
 
     test('maps critical severity finding with critical alert', () {

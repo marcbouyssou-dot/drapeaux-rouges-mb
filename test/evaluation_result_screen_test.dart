@@ -50,7 +50,7 @@ void main() {
 
     expect(find.text('Synthèse clinique'), findsOneWidget);
     expect(
-      find.textContaining('Aucun element clinique structure disponible'),
+      find.textContaining('Aucun élément clinique structuré n’est disponible'),
       findsOneWidget,
     );
   });
@@ -60,7 +60,7 @@ void main() {
 
     await scrollToText(tester, 'Recommandations');
     expect(find.text('Recommandations'), findsOneWidget);
-    expect(find.text('Completer l evaluation clinique'), findsOneWidget);
+    expect(find.text('Compléter l’évaluation clinique'), findsOneWidget);
   });
 
   testWidgets('shows alerts and findings when high severity finding exists', (
@@ -82,11 +82,11 @@ void main() {
 
     await scrollToText(tester, 'Alertes cliniques');
     expect(find.text('Alertes cliniques'), findsOneWidget);
-    expect(find.text('Vigilance clinique renforcee'), findsOneWidget);
+    expect(find.text('Vigilance clinique renforcée'), findsOneWidget);
 
     await scrollToText(tester, 'Recommandations');
     expect(find.text('Recommandations'), findsOneWidget);
-    expect(find.text('Validation clinique renforcee'), findsOneWidget);
+    expect(find.text('Validation clinique renforcée'), findsOneWidget);
 
     await scrollToText(tester, 'Éléments retenus');
     expect(find.text('Éléments retenus'), findsOneWidget);

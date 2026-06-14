@@ -142,4 +142,25 @@ void main() {
 
     expect(find.text('Rééducation'), findsOneWidget);
   });
+
+  testWidgets('opens voice AI placeholder from IA Vocale badge', (
+    tester,
+  ) async {
+    await pumpHomeScreen(tester);
+
+    await tester.ensureVisible(find.text('IA Vocale'));
+    await tester.tap(find.text('IA Vocale'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('IA vocale clinique'), findsWidgets);
+    expect(find.text('Fonctionnalité en préparation'), findsOneWidget);
+    expect(
+      find.textContaining('aucune donnée patient transmise'),
+      findsOneWidget,
+    );
+    expect(find.text('Dictée clinique'), findsOneWidget);
+    expect(find.text('Extraction des éléments utiles'), findsOneWidget);
+    expect(find.text('Proposition de drapeaux rouges'), findsOneWidget);
+    expect(find.text('Validation par le praticien'), findsOneWidget);
+  });
 }

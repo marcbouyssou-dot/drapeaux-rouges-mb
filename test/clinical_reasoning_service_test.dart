@@ -124,7 +124,7 @@ void main() {
         expect(reasoning.findings.single.severity, ClinicalSeverity.high);
         expect(reasoning.alerts, hasLength(1));
         expect(reasoning.recommendations, hasLength(1));
-        expect(reasoning.summary, contains('elevee'));
+        expect(reasoning.summary, contains('gravité maximal retenu est élevé'));
       },
     );
   });
