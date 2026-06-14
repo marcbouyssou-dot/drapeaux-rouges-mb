@@ -6,6 +6,7 @@ import '../../theme/app_colors.dart';
 import '../../theme/app_radius.dart';
 import '../../theme/app_shadows.dart';
 import '../../theme/app_spacing.dart';
+import 'attestation_history_screen.dart';
 import 'patient_attestation_screen.dart';
 
 class AttestationTypeScreen extends StatelessWidget {
@@ -17,6 +18,13 @@ class AttestationTypeScreen extends StatelessWidget {
       CupertinoPageRoute(
         builder: (_) => PatientAttestationScreen(template: template),
       ),
+    );
+  }
+
+  void openHistory(BuildContext context) {
+    Navigator.push(
+      context,
+      CupertinoPageRoute(builder: (_) => const AttestationHistoryScreen()),
     );
   }
 
@@ -36,20 +44,34 @@ class AttestationTypeScreen extends StatelessWidget {
                 AppSpacing.lg,
               ),
               children: [
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: IconButton.filledTonal(
-                    tooltip: 'Retour',
-                    onPressed: () => Navigator.pop(context),
-                    icon: const Icon(Icons.arrow_back_rounded),
-                    style: IconButton.styleFrom(
-                      backgroundColor: AppColors.surface,
-                      foregroundColor: AppColors.primary,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(AppRadius.lg),
+                Row(
+                  children: [
+                    IconButton.filledTonal(
+                      tooltip: 'Retour',
+                      onPressed: () => Navigator.pop(context),
+                      icon: const Icon(Icons.arrow_back_rounded),
+                      style: IconButton.styleFrom(
+                        backgroundColor: AppColors.surface,
+                        foregroundColor: AppColors.primary,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(AppRadius.lg),
+                        ),
                       ),
                     ),
-                  ),
+                    const Spacer(),
+                    OutlinedButton.icon(
+                      onPressed: () => openHistory(context),
+                      icon: const Icon(Icons.history_edu_outlined, size: 18),
+                      label: const Text('Historique'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppColors.primary,
+                        side: const BorderSide(color: AppColors.borderStrong),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(AppRadius.lg),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: AppSpacing.sm),
                 ...attestationTemplates.map(

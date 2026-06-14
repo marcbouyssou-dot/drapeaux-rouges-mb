@@ -10,6 +10,7 @@ class PatientAttestation {
     required this.practitioner,
     required this.date,
     required this.lieu,
+    this.bodyParagraphsOverride = const [],
   });
 
   final AttestationTemplate template;
@@ -17,6 +18,7 @@ class PatientAttestation {
   final PractitionerProfile practitioner;
   final DateTime date;
   final String lieu;
+  final List<String> bodyParagraphsOverride;
 
   String get patientFullName {
     if (patient == null) return 'Patient non identifié';
@@ -71,6 +73,8 @@ class PatientAttestation {
   }
 
   List<String> get bodyParagraphs {
+    if (bodyParagraphsOverride.isNotEmpty) return bodyParagraphsOverride;
+
     switch (template.type) {
       case AttestationType.nearestAvailableMk:
         return [

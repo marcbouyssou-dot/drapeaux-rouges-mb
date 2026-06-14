@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 
 import '../../models/attestation/attestation_template.dart';
+import '../../models/attestation/attestation_history_item.dart';
 import '../../models/attestation/patient_attestation.dart';
 import '../../models/patient_local.dart';
 import '../../models/practitioner_profile.dart';
+import '../../services/attestation_history_service.dart';
 import '../../services/patient_attestation_pdf_service.dart';
 import '../../services/practitioner_profile_service.dart';
 import '../../services/rgpd_local_service.dart';
@@ -73,8 +75,12 @@ class _PatientAttestationScreenState extends State<PatientAttestationScreen> {
     });
 
     try {
-      await PatientAttestationPdfService.exportPdf(buildAttestation());
-      showMessage('Attestation PDF générée.');
+      final attestation = buildAttestation();
+      await PatientAttestationPdfService.exportPdf(attestation);
+      await AttestationHistoryService.saveAttestation(
+        AttestationHistoryItem.fromAttestation(attestation),
+      );
+      showMessage('Attestation PDF générée et enregistrée.');
     } finally {
       if (mounted) {
         setState(() {

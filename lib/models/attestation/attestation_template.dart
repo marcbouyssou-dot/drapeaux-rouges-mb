@@ -68,3 +68,10 @@ const attestationTemplates = [
     color: AppColors.raspberry,
   ),
 ];
+
+AttestationTemplate attestationTemplateByTypeId(String typeId) {
+  return attestationTemplates.firstWhere(
+    (template) => template.type.id == typeId,
+    orElse: () => attestationTemplates.first,
+  );
+}
