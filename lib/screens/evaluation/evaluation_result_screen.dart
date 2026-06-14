@@ -1,7 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-import '../../models/clinical/clinical_models.dart';
 import '../../models/evaluation_model.dart';
 import '../../services/bdk_session_service.dart';
 import '../../services/clinical_reasoning_service.dart';
@@ -11,6 +10,10 @@ import '../../theme/app_radius.dart';
 import '../../theme/app_shadows.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_typography.dart';
+import '../../widgets/clinical_reasoning/clinical_alerts_card.dart';
+import '../../widgets/clinical_reasoning/clinical_findings_card.dart';
+import '../../widgets/clinical_reasoning/clinical_recommendations_card.dart';
+import '../../widgets/clinical_reasoning/clinical_summary_card.dart';
 import '../bdk/bdk_type_screen.dart';
 
 class EvaluationResultScreen extends StatelessWidget {
@@ -216,46 +219,26 @@ class EvaluationResultScreen extends StatelessWidget {
 
           const SizedBox(height: AppSpacing.md),
 
-          _ClinicalSummaryCard(summary: reasoning.summary),
+          ClinicalSummaryCard(summary: reasoning.summary),
 
           if (reasoning.alerts.isNotEmpty) ...[
             const SizedBox(height: AppSpacing.md),
-            _ClinicalSectionCard(
-              title: 'Alertes cliniques',
-              icon: Icons.notification_important_outlined,
+            ClinicalAlertsCard(
+              alerts: reasoning.alerts,
               color: medicalRiskColor,
-              children: reasoning.alerts
-                  .map((alert) => _ClinicalAlertItem(alert: alert))
-                  .toList(growable: false),
             ),
           ],
 
           if (reasoning.recommendations.isNotEmpty) ...[
             const SizedBox(height: AppSpacing.md),
-            _ClinicalSectionCard(
-              title: 'Recommandations',
-              icon: Icons.fact_check_outlined,
-              color: AppColors.primary,
-              children: reasoning.recommendations
-                  .map(
-                    (recommendation) => _ClinicalRecommendationItem(
-                      recommendation: recommendation,
-                    ),
-                  )
-                  .toList(growable: false),
+            ClinicalRecommendationsCard(
+              recommendations: reasoning.recommendations,
             ),
           ],
 
           if (reasoning.findings.isNotEmpty) ...[
             const SizedBox(height: AppSpacing.md),
-            _ClinicalSectionCard(
-              title: 'Éléments retenus',
-              icon: Icons.checklist_rounded,
-              color: AppColors.textSecondary,
-              children: reasoning.findings
-                  .map((finding) => _ClinicalFindingItem(finding: finding))
-                  .toList(growable: false),
-            ),
+            ClinicalFindingsCard(findings: reasoning.findings),
           ],
 
           const SizedBox(height: AppSpacing.md),
@@ -341,232 +324,6 @@ class EvaluationResultScreen extends StatelessWidget {
               ),
             ],
           ),
-        ),
-      ),
-    );
-  }
-}
-
-class _ClinicalSummaryCard extends StatelessWidget {
-  const _ClinicalSummaryCard({required this.summary});
-
-  final String summary;
-
-  @override
-  Widget build(BuildContext context) {
-    return _ClinicalSectionCard(
-      title: 'Synthèse clinique',
-      icon: Icons.insights_rounded,
-      color: AppColors.primary,
-      children: [
-        Text(
-          summary,
-          style: AppTypography.body.copyWith(
-            color: AppColors.textPrimary,
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-            height: 1.35,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _ClinicalSectionCard extends StatelessWidget {
-  const _ClinicalSectionCard({
-    required this.title,
-    required this.icon,
-    required this.color,
-    required this.children,
-  });
-
-  final String title;
-  final IconData icon;
-  final Color color;
-  final List<Widget> children;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.md),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppRadius.xl),
-        border: Border.all(color: AppColors.border),
-        boxShadow: AppShadows.soft,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                width: 34,
-                height: 34,
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.10),
-                  borderRadius: BorderRadius.circular(AppRadius.md),
-                ),
-                child: Icon(icon, color: color, size: 20),
-              ),
-              const SizedBox(width: AppSpacing.sm),
-              Expanded(
-                child: Text(
-                  title,
-                  style: AppTypography.title.copyWith(
-                    color: AppColors.textPrimary,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          ..._withDividers(children),
-        ],
-      ),
-    );
-  }
-
-  List<Widget> _withDividers(List<Widget> items) {
-    final widgets = <Widget>[];
-    for (var index = 0; index < items.length; index++) {
-      if (index > 0) {
-        widgets.add(
-          const Divider(height: AppSpacing.md, color: AppColors.border),
-        );
-      }
-      widgets.add(items[index]);
-    }
-    return widgets;
-  }
-}
-
-class _ClinicalAlertItem extends StatelessWidget {
-  const _ClinicalAlertItem({required this.alert});
-
-  final ClinicalAlert alert;
-
-  @override
-  Widget build(BuildContext context) {
-    final color = _alertLevelColor(alert.level);
-
-    return _ClinicalTextItem(
-      title: alert.title,
-      body: alert.message,
-      trailingLabel: _alertLevelLabel(alert.level),
-      trailingColor: color,
-    );
-  }
-}
-
-class _ClinicalRecommendationItem extends StatelessWidget {
-  const _ClinicalRecommendationItem({required this.recommendation});
-
-  final ClinicalRecommendation recommendation;
-
-  @override
-  Widget build(BuildContext context) {
-    return _ClinicalTextItem(
-      title: recommendation.title,
-      body: recommendation.description,
-      trailingLabel: _recommendationPriorityLabel(recommendation.priority),
-      trailingColor: _recommendationPriorityColor(recommendation.priority),
-    );
-  }
-}
-
-class _ClinicalFindingItem extends StatelessWidget {
-  const _ClinicalFindingItem({required this.finding});
-
-  final ClinicalFinding finding;
-
-  @override
-  Widget build(BuildContext context) {
-    return _ClinicalTextItem(
-      title: finding.label,
-      body:
-          '${_findingCategoryLabel(finding.category)} · ${_severityLabel(finding.severity)}',
-      trailingLabel: _severityLabel(finding.severity),
-      trailingColor: _severityColor(finding.severity),
-    );
-  }
-}
-
-class _ClinicalTextItem extends StatelessWidget {
-  const _ClinicalTextItem({
-    required this.title,
-    required this.body,
-    required this.trailingLabel,
-    required this.trailingColor,
-  });
-
-  final String title;
-  final String body;
-  final String trailingLabel;
-  final Color trailingColor;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: Text(
-                title,
-                style: AppTypography.body.copyWith(
-                  color: AppColors.textPrimary,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w900,
-                  height: 1.25,
-                ),
-              ),
-            ),
-            const SizedBox(width: AppSpacing.sm),
-            _ClinicalBadge(label: trailingLabel, color: trailingColor),
-          ],
-        ),
-        const SizedBox(height: 4),
-        Text(
-          body,
-          style: AppTypography.caption.copyWith(
-            color: AppColors.textSecondary,
-            fontSize: 12,
-            fontWeight: FontWeight.w600,
-            height: 1.35,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _ClinicalBadge extends StatelessWidget {
-  const _ClinicalBadge({required this.label, required this.color});
-
-  final String label;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.10),
-        borderRadius: BorderRadius.circular(AppRadius.pill),
-        border: Border.all(color: color.withValues(alpha: 0.18)),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          color: color,
-          fontSize: 11,
-          fontWeight: FontWeight.w900,
         ),
       ),
     );
@@ -667,107 +424,6 @@ class _SafetyNote extends StatelessWidget {
         ),
       ),
     );
-  }
-}
-
-Color _alertLevelColor(ClinicalAlertLevel level) {
-  switch (level) {
-    case ClinicalAlertLevel.info:
-      return AppColors.primary;
-    case ClinicalAlertLevel.warning:
-      return AppColors.warning;
-    case ClinicalAlertLevel.urgent:
-    case ClinicalAlertLevel.critical:
-      return AppColors.danger;
-  }
-}
-
-String _alertLevelLabel(ClinicalAlertLevel level) {
-  switch (level) {
-    case ClinicalAlertLevel.info:
-      return 'Info';
-    case ClinicalAlertLevel.warning:
-      return 'Vigilance';
-    case ClinicalAlertLevel.urgent:
-      return 'Urgent';
-    case ClinicalAlertLevel.critical:
-      return 'Critique';
-  }
-}
-
-Color _recommendationPriorityColor(ClinicalRecommendationPriority priority) {
-  switch (priority) {
-    case ClinicalRecommendationPriority.low:
-      return AppColors.textSecondary;
-    case ClinicalRecommendationPriority.medium:
-      return AppColors.primary;
-    case ClinicalRecommendationPriority.high:
-      return AppColors.warning;
-    case ClinicalRecommendationPriority.urgent:
-      return AppColors.danger;
-  }
-}
-
-String _recommendationPriorityLabel(ClinicalRecommendationPriority priority) {
-  switch (priority) {
-    case ClinicalRecommendationPriority.low:
-      return 'Faible';
-    case ClinicalRecommendationPriority.medium:
-      return 'Moyenne';
-    case ClinicalRecommendationPriority.high:
-      return 'Haute';
-    case ClinicalRecommendationPriority.urgent:
-      return 'Urgente';
-  }
-}
-
-Color _severityColor(ClinicalSeverity severity) {
-  switch (severity) {
-    case ClinicalSeverity.low:
-      return AppColors.success;
-    case ClinicalSeverity.moderate:
-      return AppColors.warning;
-    case ClinicalSeverity.high:
-    case ClinicalSeverity.critical:
-      return AppColors.danger;
-    case ClinicalSeverity.unknown:
-      return AppColors.textSecondary;
-  }
-}
-
-String _severityLabel(ClinicalSeverity severity) {
-  switch (severity) {
-    case ClinicalSeverity.low:
-      return 'Faible';
-    case ClinicalSeverity.moderate:
-      return 'Modérée';
-    case ClinicalSeverity.high:
-      return 'Élevée';
-    case ClinicalSeverity.critical:
-      return 'Critique';
-    case ClinicalSeverity.unknown:
-      return 'Non précisée';
-  }
-}
-
-String _findingCategoryLabel(ClinicalFindingCategory category) {
-  switch (category) {
-    case ClinicalFindingCategory.general:
-      return 'Général';
-    case ClinicalFindingCategory.cardiovascular:
-      return 'Cardiovasculaire';
-    case ClinicalFindingCategory.respiratory:
-      return 'Respiratoire';
-    case ClinicalFindingCategory.neurological:
-      return 'Neurologique';
-    case ClinicalFindingCategory.infectious:
-      return 'Infectieux';
-    case ClinicalFindingCategory.mentalHealth:
-      return 'Santé mentale';
-    case ClinicalFindingCategory.musculoskeletal:
-      return 'Musculosquelettique';
-    case ClinicalFindingCategory.other:
-      return 'Autre';
   }
 }
 
