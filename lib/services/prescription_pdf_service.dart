@@ -19,6 +19,26 @@ class PrescriptionPdfService {
     File? justificatifImage,
     Uint8List? justificatifImageBytes,
   }) async {
+    final bytes = await buildPrescriptionPdfBytes(
+      patient: patient,
+      practitioner: practitioner,
+      prescriptionType: prescriptionType,
+      prescriptionContent: prescriptionContent,
+      justificatifImage: justificatifImage,
+      justificatifImageBytes: justificatifImageBytes,
+    );
+
+    await Printing.layoutPdf(onLayout: (_) async => bytes);
+  }
+
+  static Future<Uint8List> buildPrescriptionPdfBytes({
+    required PatientLocal patient,
+    required PractitionerProfile practitioner,
+    required String prescriptionType,
+    required String prescriptionContent,
+    File? justificatifImage,
+    Uint8List? justificatifImageBytes,
+  }) async {
     final pdf = pw.Document();
     final now = DateTime.now();
     final theme = await PdfFontHelper.unicodeTheme();
@@ -111,7 +131,7 @@ class PrescriptionPdfService {
       ),
     );
 
-    await Printing.layoutPdf(onLayout: (_) async => pdf.save());
+    return pdf.save();
   }
 
   static String _documentTitle(String type) {

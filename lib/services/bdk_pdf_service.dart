@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
@@ -9,6 +11,44 @@ import 'rgpd_local_service.dart';
 
 class BdkPdfService {
   static Future<void> exportBdkPdf({
+    required String title,
+    required PatientLocal? patient,
+    required String motif,
+    required String contexte,
+    required String antecedents,
+    required String evaluation,
+    required String tests,
+    required String limitations,
+    required String diagnostic,
+    required String vigilance,
+    required String objectifs,
+    required String planTraitement,
+    required String criteresReevaluation,
+    required String syntheseClinique,
+    PractitionerProfile? practitioner,
+  }) async {
+    final bytes = await buildBdkPdfBytes(
+      title: title,
+      patient: patient,
+      motif: motif,
+      contexte: contexte,
+      antecedents: antecedents,
+      evaluation: evaluation,
+      tests: tests,
+      limitations: limitations,
+      diagnostic: diagnostic,
+      vigilance: vigilance,
+      objectifs: objectifs,
+      planTraitement: planTraitement,
+      criteresReevaluation: criteresReevaluation,
+      syntheseClinique: syntheseClinique,
+      practitioner: practitioner,
+    );
+
+    await Printing.layoutPdf(onLayout: (_) async => bytes);
+  }
+
+  static Future<Uint8List> buildBdkPdfBytes({
     required String title,
     required PatientLocal? patient,
     required String motif,
@@ -69,7 +109,7 @@ class BdkPdfService {
       ),
     );
 
-    await Printing.layoutPdf(onLayout: (_) async => pdf.save());
+    return pdf.save();
   }
 
   static pw.Widget _section(String title, String content) {

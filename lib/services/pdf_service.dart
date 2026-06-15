@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
@@ -8,6 +10,38 @@ import 'pdf_font_helper.dart';
 
 class PdfService {
   static Future<void> exportPdf({
+    required Map<String, List<Map<String, dynamic>>> categories,
+    required int score,
+    required int checkedCount,
+    required String riskLevel,
+    required String patientCode,
+    required String motif,
+    required String decisionTitle,
+    required String decisionMessage,
+    required String aiSummary,
+    ClinicalReasoning? clinicalReasoning,
+    bool printable = false,
+    PractitionerProfile? practitioner,
+  }) async {
+    final bytes = await buildPdfBytes(
+      categories: categories,
+      score: score,
+      checkedCount: checkedCount,
+      riskLevel: riskLevel,
+      patientCode: patientCode,
+      motif: motif,
+      decisionTitle: decisionTitle,
+      decisionMessage: decisionMessage,
+      aiSummary: aiSummary,
+      clinicalReasoning: clinicalReasoning,
+      printable: printable,
+      practitioner: practitioner,
+    );
+
+    await Printing.layoutPdf(onLayout: (_) async => bytes);
+  }
+
+  static Future<Uint8List> buildPdfBytes({
     required Map<String, List<Map<String, dynamic>>> categories,
     required int score,
     required int checkedCount,
@@ -171,7 +205,7 @@ class PdfService {
       ),
     );
 
-    await Printing.layoutPdf(onLayout: (_) async => pdf.save());
+    return pdf.save();
   }
 
   static pw.Widget buildHeader({
