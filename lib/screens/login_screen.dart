@@ -7,6 +7,8 @@ import '../theme/app_shadows.dart';
 import '../theme/app_spacing.dart';
 import 'main_navigation_screen.dart';
 
+const Color _loginBackgroundBase = Color(0xFF032052);
+
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
 
@@ -17,11 +19,11 @@ class LoginScreen extends StatelessWidget {
         statusBarColor: Colors.transparent,
         statusBarIconBrightness: Brightness.light,
         statusBarBrightness: Brightness.dark,
-        systemNavigationBarColor: AppColors.primaryDark,
+        systemNavigationBarColor: _loginBackgroundBase,
         systemNavigationBarIconBrightness: Brightness.light,
       ),
       child: Scaffold(
-        backgroundColor: AppColors.primaryDark,
+        backgroundColor: _loginBackgroundBase,
         resizeToAvoidBottomInset: false,
         body: LayoutBuilder(
           builder: (context, constraints) {
@@ -635,15 +637,15 @@ class _LoginBackgroundPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-  final rect = Offset.zero & size;
+    final rect = Offset.zero & size;
 
-  final background = Paint()..color = const Color(0xFF032052);
-  canvas.drawRect(rect, background);
+    final background = Paint()..color = _loginBackgroundBase;
+    canvas.drawRect(rect, background);
 
-  final linePaint = Paint()
-    ..color = const Color(0xFF2F80FF).withValues(alpha: 0.15)
-    ..style = PaintingStyle.stroke
-    ..strokeWidth = 0.9;
+    final linePaint = Paint()
+      ..color = const Color(0xFF2F80FF).withValues(alpha: 0.15)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 0.9;
 
     final leftPath = Path()
       ..moveTo(-size.width * 0.18, size.height * 0.18)
