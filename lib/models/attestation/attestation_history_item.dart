@@ -20,6 +20,7 @@ class AttestationHistoryItem {
     required this.lieu,
     required this.hasSignature,
     required this.signatureBase64,
+    required this.consentConfirmed,
     required this.bodyParagraphs,
   });
 
@@ -37,6 +38,7 @@ class AttestationHistoryItem {
   final String lieu;
   final bool hasSignature;
   final String signatureBase64;
+  final bool consentConfirmed;
   final List<String> bodyParagraphs;
 
   factory AttestationHistoryItem.fromAttestation(
@@ -60,6 +62,7 @@ class AttestationHistoryItem {
       lieu: attestation.lieu,
       hasSignature: attestation.hasPatientSignature,
       signatureBase64: attestation.signatureBase64,
+      consentConfirmed: attestation.consentConfirmed,
       bodyParagraphs: attestation.bodyParagraphs,
     );
   }
@@ -84,6 +87,7 @@ class AttestationHistoryItem {
       lieu: map['lieu']?.toString() ?? '',
       hasSignature: map['hasSignature'] == true,
       signatureBase64: map['signatureBase64']?.toString() ?? '',
+      consentConfirmed: map['consentConfirmed'] == true,
       bodyParagraphs: map['bodyParagraphs'] is List
           ? (map['bodyParagraphs'] as List)
                 .map((item) => item.toString())
@@ -108,6 +112,7 @@ class AttestationHistoryItem {
       'lieu': lieu,
       'hasSignature': hasSignature,
       'signatureBase64': signatureBase64,
+      'consentConfirmed': consentConfirmed,
       'bodyParagraphs': bodyParagraphs,
     };
   }
@@ -120,6 +125,10 @@ class AttestationHistoryItem {
       date: generatedAt,
       lieu: lieu,
       bodyParagraphsOverride: bodyParagraphs,
+      consentConfirmed: consentConfirmed,
+      patientSignatureBase64: signatureBase64.trim().isEmpty
+          ? null
+          : signatureBase64,
     );
   }
 

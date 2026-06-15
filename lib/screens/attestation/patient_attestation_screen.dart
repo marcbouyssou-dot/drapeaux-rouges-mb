@@ -1,4 +1,8 @@
+import 'dart:convert';
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
+import 'package:signature/signature.dart';
 
 import '../../models/attestation/attestation_template.dart';
 import '../../models/attestation/attestation_history_item.dart';
@@ -27,12 +31,20 @@ class PatientAttestationScreen extends StatefulWidget {
 
 class _PatientAttestationScreenState extends State<PatientAttestationScreen> {
   final lieuController = TextEditingController();
+  final SignatureController signatureController = SignatureController(
+    penStrokeWidth: 3,
+    penColor: Colors.black,
+    exportBackgroundColor: Colors.white,
+  );
 
   PatientLocal? patient;
   PractitionerProfile practitioner = PractitionerProfile.empty();
   DateTime date = DateTime.now();
   bool loading = true;
   bool exporting = false;
+  bool consentConfirmed = false;
+  bool isSigning = false;
+  String? patientSignatureBase64;
 
   @override
   void initState() {
@@ -43,6 +55,7 @@ class _PatientAttestationScreenState extends State<PatientAttestationScreen> {
   @override
   void dispose() {
     lieuController.dispose();
+    signatureController.dispose();
     super.dispose();
   }
 
@@ -66,15 +79,36 @@ class _PatientAttestationScreenState extends State<PatientAttestationScreen> {
       practitioner: practitioner,
       date: date,
       lieu: lieuController.text.trim(),
+      consentConfirmed: consentConfirmed,
+      patientSignatureBase64: patientSignatureBase64,
     );
   }
 
   Future<void> exportPdf() async {
+    if (!consentConfirmed) {
+      showMessage(
+        'Merci de confirmer l’information et l’accord du patient avant génération.',
+      );
+      return;
+    }
+
+    if (signatureController.isEmpty) {
+      showMessage('Merci de faire signer le patient avant génération.');
+      return;
+    }
+
     setState(() {
       exporting = true;
     });
 
     try {
+      final Uint8List? signatureBytes = await signatureController.toPngBytes();
+      if (signatureBytes == null) {
+        showMessage('Erreur lors de la préparation de la signature patient.');
+        return;
+      }
+
+      patientSignatureBase64 = base64Encode(signatureBytes);
       final attestation = buildAttestation();
       await PatientAttestationPdfService.exportPdf(attestation);
       await AttestationHistoryService.saveAttestation(
@@ -106,7 +140,7 @@ class _PatientAttestationScreenState extends State<PatientAttestationScreen> {
       backgroundColor: AppColors.background,
       bottomNavigationBar: ClinicalBottomActionBar(
         secondaryLabel: 'Retour',
-        secondaryIcon: Icons.arrow_back_rounded,
+        secondaryIcon: Icons.arrow_back_ios_new_rounded,
         onSecondaryPressed: () => Navigator.pop(context),
         primaryLabel: exporting ? 'Génération...' : 'Générer le PDF',
         primaryIcon: Icons.picture_as_pdf_outlined,
@@ -123,6 +157,9 @@ class _PatientAttestationScreenState extends State<PatientAttestationScreen> {
             child: loading
                 ? const Center(child: CircularProgressIndicator())
                 : ListView(
+                    physics: isSigning
+                        ? const NeverScrollableScrollPhysics()
+                        : const AlwaysScrollableScrollPhysics(),
                     padding: EdgeInsets.fromLTRB(
                       compact ? 12 : AppSpacing.md,
                       AppSpacing.sm,
@@ -164,6 +201,27 @@ class _PatientAttestationScreenState extends State<PatientAttestationScreen> {
                         controller: lieuController,
                       ),
                       const SizedBox(height: AppSpacing.sm),
+                      _ConsentSignatureCard(
+                        consentConfirmed: consentConfirmed,
+                        signatureController: signatureController,
+                        onConsentChanged: (value) {
+                          setState(() {
+                            consentConfirmed = value;
+                          });
+                        },
+                        onClearSignature: () {
+                          signatureController.clear();
+                          setState(() {
+                            patientSignatureBase64 = null;
+                          });
+                        },
+                        onSigningChanged: (value) {
+                          setState(() {
+                            isSigning = value;
+                          });
+                        },
+                      ),
+                      const SizedBox(height: AppSpacing.sm),
                       _PreviewCard(attestation: buildAttestation()),
                     ],
                   ),
@@ -184,7 +242,10 @@ class _PatientAttestationScreenState extends State<PatientAttestationScreen> {
   String get _patientBirthDate => patient?.dateNaissance.trim() ?? '';
 
   String get _signatureStatus {
-    final hasSignature = patient?.signatureBase64?.trim().isNotEmpty == true;
+    final hasSignature =
+        patientSignatureBase64?.trim().isNotEmpty == true ||
+        signatureController.isNotEmpty ||
+        patient?.signatureBase64?.trim().isNotEmpty == true;
     return hasSignature ? 'Signature patient disponible' : 'Signature absente';
   }
 
@@ -230,7 +291,7 @@ class _HeaderCard extends StatelessWidget {
           IconButton.filledTonal(
             tooltip: 'Retour',
             onPressed: () => Navigator.pop(context),
-            icon: const Icon(Icons.arrow_back_rounded),
+            icon: const Icon(Icons.arrow_back_ios_new_rounded),
             style: IconButton.styleFrom(
               backgroundColor: AppColors.surfaceBlue,
               foregroundColor: AppColors.primary,
@@ -387,6 +448,130 @@ class _DatePlaceCard extends StatelessWidget {
               color: AppColors.textSecondary,
               fontSize: 12.5,
               fontWeight: FontWeight.w800,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ConsentSignatureCard extends StatelessWidget {
+  const _ConsentSignatureCard({
+    required this.consentConfirmed,
+    required this.signatureController,
+    required this.onConsentChanged,
+    required this.onClearSignature,
+    required this.onSigningChanged,
+  });
+
+  final bool consentConfirmed;
+  final SignatureController signatureController;
+  final ValueChanged<bool> onConsentChanged;
+  final VoidCallback onClearSignature;
+  final ValueChanged<bool> onSigningChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return _CardShell(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Consentement et signature',
+            style: TextStyle(
+              color: AppColors.textPrimary,
+              fontSize: 15,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          Container(
+            decoration: BoxDecoration(
+              color: consentConfirmed
+                  ? AppColors.surfaceSuccess
+                  : AppColors.surface,
+              borderRadius: BorderRadius.circular(AppRadius.lg),
+              border: Border.all(
+                color: consentConfirmed ? AppColors.success : AppColors.border,
+              ),
+            ),
+            child: Material(
+              color: Colors.transparent,
+              child: CheckboxListTile(
+                value: consentConfirmed,
+                onChanged: (value) => onConsentChanged(value ?? false),
+                activeColor: AppColors.success,
+                controlAffinity: ListTileControlAffinity.leading,
+                contentPadding: const EdgeInsets.symmetric(horizontal: 10),
+                title: const Text(
+                  'Le patient confirme avoir reçu l’information, l’avoir comprise et accepte de signer cette attestation.',
+                  style: TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 13,
+                    height: 1.3,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          Listener(
+            onPointerDown: (_) => onSigningChanged(true),
+            onPointerUp: (_) => onSigningChanged(false),
+            onPointerCancel: (_) => onSigningChanged(false),
+            child: Container(
+              height: 132,
+              decoration: BoxDecoration(
+                color: AppColors.surface,
+                borderRadius: BorderRadius.circular(AppRadius.lg),
+                border: Border.all(color: AppColors.border),
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(AppRadius.lg),
+                child: Stack(
+                  children: [
+                    Signature(
+                      controller: signatureController,
+                      backgroundColor: Colors.white,
+                    ),
+                    const Center(
+                      child: IgnorePointer(
+                        child: Text(
+                          'Signature patient',
+                          style: TextStyle(
+                            color: AppColors.textMuted,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          Align(
+            alignment: Alignment.center,
+            child: OutlinedButton(
+              onPressed: onClearSignature,
+              style: OutlinedButton.styleFrom(
+                foregroundColor: AppColors.primary,
+                side: BorderSide(
+                  color: AppColors.primary.withValues(alpha: 0.28),
+                ),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 22,
+                  vertical: 11,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(AppRadius.lg),
+                ),
+                textStyle: const TextStyle(fontWeight: FontWeight.w900),
+              ),
+              child: const Text('Effacer', textAlign: TextAlign.center),
             ),
           ),
         ],

@@ -18,6 +18,25 @@ void main() {
     expect(String.fromCharCodes(bytes.take(4)), '%PDF');
   });
 
+  test(
+    'generates PDF with attestation consent and workflow signature',
+    () async {
+      final attestation = _attestation(
+        patient: _patient(),
+        consentConfirmed: true,
+        patientSignatureBase64: _transparentPngBase64,
+      );
+      final bytes = await PatientAttestationPdfService.buildPdfBytes(
+        attestation,
+      );
+
+      expect(attestation.consentConfirmed, isTrue);
+      expect(attestation.hasPatientSignature, isTrue);
+      expect(bytes, isNotEmpty);
+      expect(String.fromCharCodes(bytes.take(4)), '%PDF');
+    },
+  );
+
   test('generates PDF without patient signature', () async {
     final bytes = await PatientAttestationPdfService.buildPdfBytes(
       _attestation(patient: _patient()),
@@ -86,6 +105,8 @@ void main() {
 PatientAttestation _attestation({
   PatientLocal? patient,
   PractitionerProfile? practitioner,
+  bool consentConfirmed = false,
+  String? patientSignatureBase64,
 }) {
   return PatientAttestation(
     template: attestationTemplates.singleWhere(
@@ -106,6 +127,8 @@ PatientAttestation _attestation({
         ),
     date: DateTime(2026, 6, 14),
     lieu: 'Bordeaux',
+    consentConfirmed: consentConfirmed,
+    patientSignatureBase64: patientSignatureBase64,
   );
 }
 

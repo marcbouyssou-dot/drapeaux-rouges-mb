@@ -65,6 +65,30 @@ void main() {
     expect(item.signatureStatus, 'Signature absente');
   });
 
+  test('stores consent confirmation and workflow signature', () {
+    final item = AttestationHistoryItem.fromAttestation(
+      _attestation(patientSignatureBase64: _transparentPngBase64),
+    );
+
+    expect(item.consentConfirmed, isTrue);
+    expect(item.hasSignature, isTrue);
+    expect(item.signatureBase64, _transparentPngBase64);
+    expect(item.toAttestation().consentConfirmed, isTrue);
+  });
+
+  test('keeps old history entries compatible without consent field', () {
+    final item = AttestationHistoryItem.fromAttestation(
+      _attestation(patientSignatureBase64: _transparentPngBase64),
+    );
+    final legacyMap = item.toMap()..remove('consentConfirmed');
+
+    final restored = AttestationHistoryItem.fromMap(legacyMap);
+
+    expect(restored.consentConfirmed, isFalse);
+    expect(restored.hasSignature, isTrue);
+    expect(restored.toAttestation().hasPatientSignature, isTrue);
+  });
+
   test('regenerates PDF from history data', () async {
     final item = AttestationHistoryItem.fromAttestation(_attestation());
     final bytes = await PatientAttestationPdfService.buildPdfBytes(
@@ -86,7 +110,10 @@ void main() {
   });
 }
 
-PatientAttestation _attestationWithPatient(PatientLocal? patient) {
+PatientAttestation _attestationWithPatient(
+  PatientLocal? patient, {
+  String? patientSignatureBase64,
+}) {
   return PatientAttestation(
     template: attestationTemplates.singleWhere(
       (item) => item.type == AttestationType.nearestAvailableMk,
@@ -101,11 +128,19 @@ PatientAttestation _attestationWithPatient(PatientLocal? patient) {
     ),
     date: DateTime(2026, 6, 14),
     lieu: 'Bordeaux',
+    consentConfirmed: patientSignatureBase64 != null,
+    patientSignatureBase64: patientSignatureBase64,
   );
 }
 
-PatientAttestation _attestation({bool withPatient = true}) {
-  return _attestationWithPatient(withPatient ? _patient() : null);
+PatientAttestation _attestation({
+  bool withPatient = true,
+  String? patientSignatureBase64,
+}) {
+  return _attestationWithPatient(
+    withPatient ? _patient() : null,
+    patientSignatureBase64: patientSignatureBase64,
+  );
 }
 
 PatientLocal _patient() {
@@ -119,3 +154,6 @@ PatientLocal _patient() {
     dateConsentement: DateTime(2026, 1, 1),
   );
 }
+
+const _transparentPngBase64 =
+    'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/p9sAAAAASUVORK5CYII=';

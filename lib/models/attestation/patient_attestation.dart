@@ -11,6 +11,8 @@ class PatientAttestation {
     required this.date,
     required this.lieu,
     this.bodyParagraphsOverride = const [],
+    this.consentConfirmed = false,
+    this.patientSignatureBase64,
   });
 
   final AttestationTemplate template;
@@ -19,6 +21,8 @@ class PatientAttestation {
   final DateTime date;
   final String lieu;
   final List<String> bodyParagraphsOverride;
+  final bool consentConfirmed;
+  final String? patientSignatureBase64;
 
   String get patientFullName {
     if (patient == null) return 'Patient non identifié';
@@ -55,7 +59,12 @@ class PatientAttestation {
     return '';
   }
 
-  String get signatureBase64 => patient?.signatureBase64?.trim() ?? '';
+  String get signatureBase64 {
+    final workflowSignature = patientSignatureBase64?.trim() ?? '';
+    if (workflowSignature.isNotEmpty) return workflowSignature;
+
+    return patient?.signatureBase64?.trim() ?? '';
+  }
 
   bool get hasPatientSignature => signatureBase64.isNotEmpty;
 

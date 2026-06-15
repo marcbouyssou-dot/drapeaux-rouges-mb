@@ -287,12 +287,7 @@ class PrescriptionPdfService {
   }
 
   static String _structureLine(PractitionerProfile practitioner) {
-    final name = practitioner.nomStructure.trim();
-    if (name.isEmpty) return 'Structure d’exercice coordonné';
-
-    return practitioner.exerciceCoordonne
-        ? 'Structure coordonnée : $name'
-        : 'Structure : $name';
+    return practitioner.practiceStructureLine;
   }
 
   static pw.Widget _sectionTitle(String title) {

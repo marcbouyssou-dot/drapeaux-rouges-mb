@@ -37,7 +37,7 @@ class ClinicalPageHeader extends StatelessWidget {
                     boxShadow: AppShadows.softShadow,
                   ),
                   child: Icon(
-                    Icons.arrow_back_rounded,
+                    Icons.arrow_back_ios_new_rounded,
                     color: AppColors.textPrimary,
                   ),
                 ),

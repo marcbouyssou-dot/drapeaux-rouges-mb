@@ -81,7 +81,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final structureController = TextEditingController(
       text: practitioner.nomStructure,
     );
+    final structureAddressController = TextEditingController(
+      text: practitioner.adresseStructure,
+    );
+    final departementController = TextEditingController(
+      text: practitioner.departement,
+    );
     var exerciceCoordonne = practitioner.exerciceCoordonne;
+    var exerciceAccesDirect = practitioner.exerciceAccesDirect;
 
     final saved = await showDialog<bool>(
       context: context,
@@ -140,9 +147,34 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       },
                     ),
                     const SizedBox(height: 10),
+                    SwitchListTile(
+                      value: exerciceAccesDirect,
+                      contentPadding: EdgeInsets.zero,
+                      title: const Text('Exercice en accès direct'),
+                      subtitle: const Text(
+                        'Un seul item coché suffit à valider le statut accès direct.',
+                      ),
+                      onChanged: (value) {
+                        setDialogState(() {
+                          exerciceAccesDirect = value;
+                        });
+                      },
+                    ),
+                    const SizedBox(height: 10),
                     buildDialogField(
                       controller: structureController,
                       label: 'Nom de structure',
+                    ),
+                    const SizedBox(height: 10),
+                    buildDialogField(
+                      controller: structureAddressController,
+                      label: 'Adresse de la structure',
+                      maxLines: 2,
+                    ),
+                    const SizedBox(height: 10),
+                    buildDialogField(
+                      controller: departementController,
+                      label: 'Département',
                     ),
                   ],
                 ),
@@ -166,7 +198,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   email: emailController.text.trim(),
                   telephone: telephoneController.text.trim(),
                   exerciceCoordonne: exerciceCoordonne,
+                  exerciceAccesDirect: exerciceAccesDirect,
                   nomStructure: structureController.text.trim(),
+                  adresseStructure: structureAddressController.text.trim(),
+                  departement: departementController.text.trim(),
                   signatureBase64: practitioner.signatureBase64,
                 );
 
@@ -192,6 +227,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
     emailController.dispose();
     telephoneController.dispose();
     structureController.dispose();
+    structureAddressController.dispose();
+    departementController.dispose();
 
     if (saved == true) {
       await loadPractitioner();
@@ -448,6 +485,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     final practitionerComplete = practitioner.isComplete;
+    final practitionerSubtitle = practitionerComplete
+        ? [
+            practitioner.fullName,
+            if (practitioner.exerciceAccesDirect) 'Accès direct',
+          ].join(' · ')
+        : 'Nom, RPPS, ADELI, cabinet.';
 
     return Scaffold(
       backgroundColor: ds.AppColors.background,
@@ -471,9 +514,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       : Icons.badge_outlined,
                   iconColor: ds.AppColors.primary,
                   title: 'Informations MK',
-                  subtitle: practitionerComplete
-                      ? practitioner.fullName
-                      : 'Nom, RPPS, ADELI, cabinet.',
+                  subtitle: practitionerSubtitle,
                   onTap: showPractitionerDialog,
                 ),
                 settingCard(

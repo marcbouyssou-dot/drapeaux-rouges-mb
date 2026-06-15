@@ -49,7 +49,7 @@ class AttestationTypeScreen extends StatelessWidget {
                     IconButton.filledTonal(
                       tooltip: 'Retour',
                       onPressed: () => Navigator.pop(context),
-                      icon: const Icon(Icons.arrow_back_rounded),
+                      icon: const Icon(Icons.arrow_back_ios_new_rounded),
                       style: IconButton.styleFrom(
                         backgroundColor: AppColors.surface,
                         foregroundColor: AppColors.primary,

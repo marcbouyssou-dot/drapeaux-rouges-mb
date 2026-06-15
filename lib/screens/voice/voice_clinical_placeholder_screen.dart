@@ -14,6 +14,11 @@ class VoiceClinicalPlaceholderScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
+        leading: IconButton(
+          tooltip: 'Retour',
+          onPressed: () => Navigator.pop(context),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded),
+        ),
         title: const Text('IA vocale clinique'),
         backgroundColor: AppColors.background,
         foregroundColor: AppColors.textPrimary,

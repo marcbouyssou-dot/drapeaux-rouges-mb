@@ -8,13 +8,15 @@ import '../../theme/app_shadows.dart';
 import '../../theme/app_spacing.dart';
 
 class HomeClinicalAssistantCard extends StatelessWidget {
-  const HomeClinicalAssistantCard({super.key});
+  const HomeClinicalAssistantCard({super.key, this.compact = false});
+
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(AppSpacing.lg),
+      padding: EdgeInsets.all(compact ? AppSpacing.md : AppSpacing.lg),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           colors: [AppColors.surface, AppColors.surfaceAlt],
@@ -32,9 +34,9 @@ class HomeClinicalAssistantCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
-                width: 72,
-                height: 72,
-                padding: const EdgeInsets.all(AppSpacing.sm),
+                width: compact ? 50 : 72,
+                height: compact ? 50 : 72,
+                padding: EdgeInsets.all(compact ? 7 : AppSpacing.sm),
                 decoration: BoxDecoration(
                   color: AppColors.surface,
                   borderRadius: BorderRadius.circular(AppRadius.xl),
@@ -47,11 +49,11 @@ class HomeClinicalAssistantCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: AppSpacing.md),
-              const Expanded(
+              Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
+                    const Text(
                       'ASSISTANT CLINIQUE URPS',
                       style: TextStyle(
                         color: AppColors.textMuted,
@@ -60,32 +62,34 @@ class HomeClinicalAssistantCard extends StatelessWidget {
                         letterSpacing: 1.2,
                       ),
                     ),
-                    SizedBox(height: AppSpacing.sm),
+                    SizedBox(height: compact ? 5 : AppSpacing.sm),
                     Text(
                       'Assistant Clinique URPS',
                       style: TextStyle(
                         color: AppColors.textPrimary,
-                        fontSize: 21,
+                        fontSize: compact ? 16 : 21,
                         height: 1.05,
                         fontWeight: FontWeight.w900,
                       ),
                     ),
-                    SizedBox(height: AppSpacing.sm),
-                    Text(
-                      'Socle prévu pour les prochaines évolutions cliniques, vocales et sécurisées.',
-                      style: TextStyle(
-                        color: AppColors.textSecondary,
-                        fontSize: 13,
-                        height: 1.35,
-                        fontWeight: FontWeight.w700,
+                    if (!compact) ...[
+                      const SizedBox(height: AppSpacing.sm),
+                      const Text(
+                        'Socle prévu pour les prochaines évolutions cliniques, vocales et sécurisées.',
+                        style: TextStyle(
+                          color: AppColors.textSecondary,
+                          fontSize: 13,
+                          height: 1.35,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
-                    ),
+                    ],
                   ],
                 ),
               ),
             ],
           ),
-          const Spacer(),
+          SizedBox(height: compact ? AppSpacing.sm : AppSpacing.lg),
           Wrap(
             spacing: AppSpacing.sm,
             runSpacing: AppSpacing.sm,
@@ -101,17 +105,16 @@ class HomeClinicalAssistantCard extends StatelessWidget {
                   );
                 },
               ),
-              const _AssistantBadge(label: 'Cloud HDS', color: AppColors.teal),
               const _AssistantBadge(
                 label: 'Assistant Clinique',
                 color: AppColors.raspberry,
               ),
             ],
           ),
-          const SizedBox(height: AppSpacing.lg),
+          SizedBox(height: compact ? AppSpacing.sm : AppSpacing.lg),
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.all(AppSpacing.md),
+            padding: EdgeInsets.all(compact ? AppSpacing.sm : AppSpacing.md),
             decoration: BoxDecoration(
               color: AppColors.surface.withValues(alpha: 0.72),
               borderRadius: BorderRadius.circular(AppRadius.lg),
@@ -170,37 +173,6 @@ class _AssistantBadge extends StatelessWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(AppRadius.pill),
         child: badge,
-      ),
-    );
-  }
-}
-
-class HomeLegalBottomBand extends StatelessWidget {
-  const HomeLegalBottomBand({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.lg,
-        vertical: AppSpacing.sm,
-      ),
-      decoration: const BoxDecoration(
-        color: AppColors.surface,
-        border: Border(top: BorderSide(color: AppColors.border)),
-      ),
-      child: const Text(
-        'Outil d’aide au raisonnement clinique · Les données de santé doivent rester protégées · Ne remplace pas une évaluation médicale professionnelle.',
-        textAlign: TextAlign.center,
-        maxLines: 2,
-        overflow: TextOverflow.ellipsis,
-        style: TextStyle(
-          color: AppColors.textSecondary,
-          fontSize: 11,
-          height: 1.25,
-          fontWeight: FontWeight.w700,
-        ),
       ),
     );
   }

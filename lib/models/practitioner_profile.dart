@@ -8,7 +8,10 @@ class PractitionerProfile {
   final String email;
   final String telephone;
   final bool exerciceCoordonne;
+  final bool exerciceAccesDirect;
   final String nomStructure;
+  final String adresseStructure;
+  final String departement;
   final String signatureBase64;
 
   const PractitionerProfile({
@@ -21,7 +24,10 @@ class PractitionerProfile {
     this.email = '',
     this.telephone = '',
     this.exerciceCoordonne = false,
+    this.exerciceAccesDirect = false,
     this.nomStructure = '',
+    this.adresseStructure = '',
+    this.departement = '',
     this.signatureBase64 = '',
   });
 
@@ -41,7 +47,40 @@ class PractitionerProfile {
   }
 
   bool get hasStructure {
-    return exerciceCoordonne || nomStructure.trim().isNotEmpty;
+    return exerciceCoordonne ||
+        exerciceAccesDirect ||
+        nomStructure.trim().isNotEmpty ||
+        adresseStructure.trim().isNotEmpty ||
+        departement.trim().isNotEmpty;
+  }
+
+  bool get hasDirectAccess {
+    return exerciceAccesDirect ||
+        nomStructure.trim().isNotEmpty ||
+        adresseStructure.trim().isNotEmpty ||
+        departement.trim().isNotEmpty;
+  }
+
+  String get practiceStructureLine {
+    final parts = <String>[];
+
+    if (exerciceAccesDirect) {
+      parts.add('Exercice en accès direct');
+    }
+    if (exerciceCoordonne) {
+      parts.add('Exercice coordonné');
+    }
+    if (nomStructure.trim().isNotEmpty) {
+      parts.add('Structure : ${nomStructure.trim()}');
+    }
+    if (adresseStructure.trim().isNotEmpty) {
+      parts.add(adresseStructure.trim());
+    }
+    if (departement.trim().isNotEmpty) {
+      parts.add('Département : ${departement.trim()}');
+    }
+
+    return parts.join(' · ');
   }
 
   bool get hasSignature {
@@ -58,7 +97,10 @@ class PractitionerProfile {
     String? email,
     String? telephone,
     bool? exerciceCoordonne,
+    bool? exerciceAccesDirect,
     String? nomStructure,
+    String? adresseStructure,
+    String? departement,
     String? signatureBase64,
   }) {
     return PractitionerProfile(
@@ -71,7 +113,10 @@ class PractitionerProfile {
       email: email ?? this.email,
       telephone: telephone ?? this.telephone,
       exerciceCoordonne: exerciceCoordonne ?? this.exerciceCoordonne,
+      exerciceAccesDirect: exerciceAccesDirect ?? this.exerciceAccesDirect,
       nomStructure: nomStructure ?? this.nomStructure,
+      adresseStructure: adresseStructure ?? this.adresseStructure,
+      departement: departement ?? this.departement,
       signatureBase64: signatureBase64 ?? this.signatureBase64,
     );
   }
@@ -87,7 +132,10 @@ class PractitionerProfile {
       'email': email,
       'telephone': telephone,
       'exerciceCoordonne': exerciceCoordonne,
+      'exerciceAccesDirect': exerciceAccesDirect,
       'nomStructure': nomStructure,
+      'adresseStructure': adresseStructure,
+      'departement': departement,
       'signatureBase64': signatureBase64,
     };
   }
@@ -103,7 +151,10 @@ class PractitionerProfile {
       email: json['email']?.toString() ?? '',
       telephone: json['telephone']?.toString() ?? '',
       exerciceCoordonne: json['exerciceCoordonne'] == true,
+      exerciceAccesDirect: json['exerciceAccesDirect'] == true,
       nomStructure: json['nomStructure']?.toString() ?? '',
+      adresseStructure: json['adresseStructure']?.toString() ?? '',
+      departement: json['departement']?.toString() ?? '',
       signatureBase64: json['signatureBase64']?.toString() ?? '',
     );
   }
@@ -119,7 +170,10 @@ class PractitionerProfile {
       email: '',
       telephone: '',
       exerciceCoordonne: false,
+      exerciceAccesDirect: false,
       nomStructure: '',
+      adresseStructure: '',
+      departement: '',
       signatureBase64: '',
     );
   }

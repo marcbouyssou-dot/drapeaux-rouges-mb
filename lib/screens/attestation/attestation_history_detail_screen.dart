@@ -77,6 +77,12 @@ class AttestationHistoryDetailScreen extends StatelessWidget {
                   title: 'Signature',
                   text: attestation.signatureStatus,
                 ),
+                if (attestation.consentConfirmed)
+                  buildInfoCard(
+                    icon: Icons.verified_user_outlined,
+                    title: 'Consentement',
+                    text: 'Information comprise et signature acceptée',
+                  ),
                 buildContentCard(),
               ],
             ),

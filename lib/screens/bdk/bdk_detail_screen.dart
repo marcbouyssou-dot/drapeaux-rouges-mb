@@ -295,7 +295,7 @@ class _BDKDetailScreenState extends State<BDKDetailScreen> {
                     ),
                   ),
                   child: const Icon(
-                    Icons.arrow_back_rounded,
+                    Icons.arrow_back_ios_new_rounded,
                     color: Colors.white,
                   ),
                 ),

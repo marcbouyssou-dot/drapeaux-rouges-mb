@@ -1,7 +1,10 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+import '../models/attestation/attestation_history_item.dart';
+import '../models/attestation/attestation_template.dart';
 import '../models/prescription_model.dart';
+import '../services/attestation_history_service.dart';
 import '../services/history_service.dart';
 import '../services/prescription_service.dart';
 import '../theme/app_colors.dart';
@@ -9,11 +12,12 @@ import '../theme/app_radius.dart';
 import '../theme/app_shadows.dart';
 import '../theme/app_spacing.dart';
 import 'evaluation/evaluation_detail_screen.dart';
+import 'attestation/attestation_history_detail_screen.dart';
 import 'prescription/prescription_history_detail_screen.dart';
 
 enum HistoryFilter { all, critical, high, moderate, low, anonymous }
 
-enum HistoryView { evaluations, prescriptions }
+enum HistoryView { evaluations, prescriptions, attestations }
 
 class HistoryScreen extends StatefulWidget {
   const HistoryScreen({super.key});
@@ -27,6 +31,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
   List<Map<String, dynamic>> history = [];
   List<PrescriptionModel> prescriptions = [];
+  List<AttestationHistoryItem> attestations = [];
   String searchQuery = '';
   HistoryFilter selectedFilter = HistoryFilter.all;
   HistoryView selectedView = HistoryView.evaluations;
@@ -46,12 +51,15 @@ class _HistoryScreenState extends State<HistoryScreen> {
   Future<void> loadHistory() async {
     final loadedHistory = await HistoryService.loadHistory();
     final loadedPrescriptions = await PrescriptionService.getPrescriptions();
+    final loadedAttestations =
+        await AttestationHistoryService.getAttestations();
 
     if (!mounted) return;
 
     setState(() {
       history = loadedHistory;
       prescriptions = loadedPrescriptions;
+      attestations = loadedAttestations;
     });
   }
 
@@ -94,6 +102,26 @@ class _HistoryScreenState extends State<HistoryScreen> {
     }).toList();
 
     filtered.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    return filtered;
+  }
+
+  List<AttestationHistoryItem> get filteredAttestations {
+    final query = searchQuery.trim().toLowerCase();
+
+    final filtered = attestations.where((item) {
+      if (query.isEmpty) return true;
+
+      return [
+        item.title,
+        item.pdfTitle,
+        item.displayPatient,
+        item.lieu,
+        item.signatureStatus,
+        formatDate(item.generatedAt.toIso8601String()),
+      ].join(' ').toLowerCase().contains(query);
+    }).toList();
+
+    filtered.sort((a, b) => b.generatedAt.compareTo(a.generatedAt));
     return filtered;
   }
 
@@ -251,6 +279,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
   int get totalPrescriptions => prescriptions.length;
 
+  int get totalAttestations => attestations.length;
+
   int get totalFlags {
     return history.fold<int>(0, (sum, item) {
       final value = item['checkedCount'];
@@ -274,7 +304,10 @@ class _HistoryScreenState extends State<HistoryScreen> {
   Widget build(BuildContext context) {
     final results = filteredHistory;
     final prescriptionResults = filteredPrescriptions;
+    final attestationResults = filteredAttestations;
     final showEvaluations = selectedView == HistoryView.evaluations;
+    final showPrescriptions = selectedView == HistoryView.prescriptions;
+    final showAttestations = selectedView == HistoryView.attestations;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -311,12 +344,18 @@ class _HistoryScreenState extends State<HistoryScreen> {
                     if (history.isNotEmpty && results.isEmpty)
                       buildNoResultState(),
                     if (results.isNotEmpty) ...results.map(buildHistoryCard),
-                  ] else ...[
+                  ] else if (showPrescriptions) ...[
                     if (prescriptions.isEmpty) buildPrescriptionEmptyState(),
                     if (prescriptions.isNotEmpty && prescriptionResults.isEmpty)
                       buildNoResultState(),
                     if (prescriptionResults.isNotEmpty)
                       ...prescriptionResults.map(buildPrescriptionCard),
+                  ] else if (showAttestations) ...[
+                    if (attestations.isEmpty) buildAttestationEmptyState(),
+                    if (attestations.isNotEmpty && attestationResults.isEmpty)
+                      buildNoResultState(),
+                    if (attestationResults.isNotEmpty)
+                      ...attestationResults.map(buildAttestationCard),
                   ],
                 ],
               ),
@@ -355,6 +394,12 @@ class _HistoryScreenState extends State<HistoryScreen> {
             value: '$totalPrescriptions',
             icon: Icons.description_outlined,
             color: AppColors.primaryDark,
+          ),
+          buildStatCard(
+            label: 'Attestations',
+            value: '$totalAttestations',
+            icon: Icons.history_edu_outlined,
+            color: AppColors.teal,
           ),
         ];
 
@@ -546,6 +591,11 @@ class _HistoryScreenState extends State<HistoryScreen> {
             icon: Icons.description_outlined,
             view: HistoryView.prescriptions,
           ),
+          buildHistoryViewButton(
+            label: 'Attestations',
+            icon: Icons.history_edu_outlined,
+            view: HistoryView.attestations,
+          ),
         ],
       ),
     );
@@ -683,6 +733,15 @@ class _HistoryScreenState extends State<HistoryScreen> {
       title: 'Aucune prescription enregistrée',
       text:
           'Les prescriptions générées apparaîtront ici avec leur patient, leur type et leur date.',
+    );
+  }
+
+  Widget buildAttestationEmptyState() {
+    return buildInfoState(
+      icon: Icons.history_edu_outlined,
+      title: 'Aucune attestation générée',
+      text:
+          'Les attestations patient générées apparaîtront ici avec leur patient, leur date et leur signature.',
     );
   }
 
@@ -953,6 +1012,111 @@ class _HistoryScreenState extends State<HistoryScreen> {
                     icon: Icons.attach_file_rounded,
                     text: 'Justificatif',
                   ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget buildAttestationCard(AttestationHistoryItem item) {
+    final template = attestationTemplateByTypeId(item.typeId);
+
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          CupertinoPageRoute(
+            builder: (_) => AttestationHistoryDetailScreen(attestation: item),
+          ),
+        );
+      },
+      child: Container(
+        margin: const EdgeInsets.only(bottom: AppSpacing.sm),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(AppRadius.xl),
+          border: Border.all(color: AppColors.border),
+          boxShadow: AppShadows.soft,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  height: 50,
+                  width: 50,
+                  decoration: BoxDecoration(
+                    color: template.color.withValues(alpha: 0.10),
+                    borderRadius: BorderRadius.circular(AppRadius.lg),
+                    border: Border.all(
+                      color: template.color.withValues(alpha: 0.18),
+                    ),
+                  ),
+                  child: Icon(template.icon, color: template.color, size: 25),
+                ),
+                const SizedBox(width: AppSpacing.sm),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        item.title,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: AppColors.textPrimary,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w900,
+                          height: 1.15,
+                        ),
+                      ),
+                      const SizedBox(height: 5),
+                      Text(
+                        item.displayPatient,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: AppColors.textPrimary,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 13,
+                          height: 1.25,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Icon(
+                  Icons.chevron_right_rounded,
+                  color: AppColors.textMuted,
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Wrap(
+              spacing: AppSpacing.sm,
+              runSpacing: AppSpacing.sm,
+              children: [
+                buildSmallBadge(
+                  icon: Icons.event_outlined,
+                  text: formatDate(item.generatedAt.toIso8601String()),
+                ),
+                buildSmallBadge(
+                  icon: item.hasSignature
+                      ? Icons.draw_outlined
+                      : Icons.edit_off_outlined,
+                  text: item.signatureStatus,
+                ),
+                buildSmallBadge(
+                  icon: template.isActive
+                      ? Icons.check_circle_outline_rounded
+                      : Icons.pending_actions_outlined,
+                  text: template.statusLabel,
+                ),
               ],
             ),
           ],

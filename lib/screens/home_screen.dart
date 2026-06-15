@@ -585,7 +585,6 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                 ),
-                const HomeLegalBottomBand(),
               ],
             );
           }
@@ -622,6 +621,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         onBdkTap: openBdkTypeScreen,
                         onPrescriptionTap: openPrescriptionTypeScreen,
                       ),
+                      const SizedBox(height: AppSpacing.sm),
+                      const HomeClinicalAssistantCard(compact: true),
                       const SizedBox(height: AppSpacing.sm),
                       HomeRiskLegendCard(riskLevel: riskLevel),
                       const SizedBox(height: AppSpacing.sm),

@@ -87,25 +87,55 @@ class _RedFlagsCategoryScreenState extends State<RedFlagsCategoryScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 920),
-            child: Column(
-              children: [
-                buildHeader(selectedCount),
-                buildLiveScoreCard(),
-                Expanded(
-                  child: ListView.builder(
-                    padding: const EdgeInsets.fromLTRB(12, 8, 12, 100),
-                    itemCount: widget.items.length,
-                    itemBuilder: (context, index) {
-                      return buildItemCard(widget.items[index], index);
-                    },
-                  ),
-                ),
-              ],
-            ),
-          ),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final isLandscapePhone =
+                constraints.maxWidth > constraints.maxHeight &&
+                constraints.maxHeight < 520;
+
+            return Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 920),
+                child: isLandscapePhone
+                    ? ListView.builder(
+                        padding: const EdgeInsets.fromLTRB(12, 0, 12, 88),
+                        itemCount: widget.items.length + 2,
+                        itemBuilder: (context, index) {
+                          if (index == 0) return buildHeader(selectedCount);
+                          if (index == 1) return buildLiveScoreCard();
+
+                          return buildItemCard(
+                            widget.items[index - 2],
+                            index - 2,
+                          );
+                        },
+                      )
+                    : Column(
+                        children: [
+                          buildHeader(selectedCount),
+                          buildLiveScoreCard(),
+                          Expanded(
+                            child: ListView.builder(
+                              padding: const EdgeInsets.fromLTRB(
+                                12,
+                                8,
+                                12,
+                                100,
+                              ),
+                              itemCount: widget.items.length,
+                              itemBuilder: (context, index) {
+                                return buildItemCard(
+                                  widget.items[index],
+                                  index,
+                                );
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+              ),
+            );
+          },
         ),
       ),
       bottomNavigationBar: buildBottomBar(),

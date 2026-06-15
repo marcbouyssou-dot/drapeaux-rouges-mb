@@ -2,9 +2,12 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:signature/signature.dart';
 
+import '../models/access_direct_model.dart';
 import '../models/patient_local.dart';
+import '../services/access_direct_local_service.dart';
 import '../services/rgpd_local_service.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_radius.dart';
@@ -34,10 +37,17 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
   List<PatientLocal> patients = [];
   PatientLocal? currentPatient;
 
+  final ImagePicker documentPicker = ImagePicker();
+
   String searchQuery = '';
   bool consentementCoche = false;
   bool isSaving = false;
   bool isSigning = false;
+  bool hasMedicalDiagnosis = false;
+  String? diagnosisDocumentPath;
+  String? diagnosisDocumentName;
+  String? diagnosisDocumentBase64;
+  String? diagnosisDocumentAddedAt;
 
   @override
   void initState() {
@@ -59,13 +69,142 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
     final loadedPatients =
         await RgpdLocalService.getPatientsSortedAlphabetically();
     final activePatient = await RgpdLocalService.getCurrentPatient();
+    final accessDirect = await AccessDirectLocalService.loadSettings();
 
     if (!mounted) return;
 
     setState(() {
       patients = loadedPatients;
       currentPatient = activePatient;
+      hasMedicalDiagnosis = accessDirect.hasMedicalDiagnosis;
+      diagnosisDocumentPath = accessDirect.diagnosisDocumentPath;
+      diagnosisDocumentName = accessDirect.diagnosisDocumentName;
+      diagnosisDocumentBase64 = accessDirect.diagnosisDocumentBase64;
+      diagnosisDocumentAddedAt = accessDirect.diagnosisDocumentAddedAt;
     });
+  }
+
+  Future<void> updateMedicalDiagnosis(bool value) async {
+    final existing = await AccessDirectLocalService.loadSettings();
+
+    setState(() {
+      hasMedicalDiagnosis = value;
+    });
+
+    await AccessDirectLocalService.saveSettings(
+      AccessDirectModel(
+        isCoordinatedExercise: existing.isCoordinatedExercise,
+        isExperimentalDepartment: existing.isExperimentalDepartment,
+        hasArsDeclaration: existing.hasArsDeclaration,
+        hasMedicalDiagnosis: value,
+        diagnosisDocumentPath: diagnosisDocumentPath,
+        diagnosisDocumentName: diagnosisDocumentName,
+        diagnosisDocumentBase64: diagnosisDocumentBase64,
+        diagnosisDocumentAddedAt: diagnosisDocumentAddedAt,
+        sessionsDone: existing.sessionsDone,
+      ),
+    );
+  }
+
+  Future<void> chooseDiagnosisDocumentSource() async {
+    final source = await showModalBottomSheet<ImageSource>(
+      context: context,
+      showDragHandle: true,
+      builder: (sheetContext) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 18),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.photo_camera_outlined),
+                  title: const Text('Photo'),
+                  onTap: () => Navigator.pop(sheetContext, ImageSource.camera),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.photo_library_outlined),
+                  title: const Text('Galerie'),
+                  onTap: () => Navigator.pop(sheetContext, ImageSource.gallery),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+
+    if (source == null) return;
+
+    await pickDiagnosisDocument(source);
+  }
+
+  Future<void> pickDiagnosisDocument(ImageSource source) async {
+    final document = await documentPicker.pickImage(
+      source: source,
+      imageQuality: 82,
+    );
+
+    if (document == null) return;
+
+    final bytes = await document.readAsBytes();
+    final addedAt = DateTime.now().toIso8601String();
+    final existing = await AccessDirectLocalService.loadSettings();
+
+    setState(() {
+      hasMedicalDiagnosis = true;
+      diagnosisDocumentPath = document.path;
+      diagnosisDocumentName = document.name;
+      diagnosisDocumentBase64 = base64Encode(bytes);
+      diagnosisDocumentAddedAt = addedAt;
+    });
+
+    await AccessDirectLocalService.saveSettings(
+      AccessDirectModel(
+        isCoordinatedExercise: existing.isCoordinatedExercise,
+        isExperimentalDepartment: existing.isExperimentalDepartment,
+        hasArsDeclaration: existing.hasArsDeclaration,
+        hasMedicalDiagnosis: true,
+        diagnosisDocumentPath: diagnosisDocumentPath,
+        diagnosisDocumentName: diagnosisDocumentName,
+        diagnosisDocumentBase64: diagnosisDocumentBase64,
+        diagnosisDocumentAddedAt: diagnosisDocumentAddedAt,
+        sessionsDone: existing.sessionsDone,
+      ),
+    );
+
+    if (!mounted) return;
+
+    showMessage('Justificatif médical ajouté.');
+  }
+
+  Future<void> removeDiagnosisDocument() async {
+    final existing = await AccessDirectLocalService.loadSettings();
+
+    setState(() {
+      diagnosisDocumentPath = null;
+      diagnosisDocumentName = null;
+      diagnosisDocumentBase64 = null;
+      diagnosisDocumentAddedAt = null;
+    });
+
+    await AccessDirectLocalService.saveSettings(
+      AccessDirectModel(
+        isCoordinatedExercise: existing.isCoordinatedExercise,
+        isExperimentalDepartment: existing.isExperimentalDepartment,
+        hasArsDeclaration: existing.hasArsDeclaration,
+        hasMedicalDiagnosis: hasMedicalDiagnosis,
+        diagnosisDocumentPath: null,
+        diagnosisDocumentName: null,
+        diagnosisDocumentBase64: null,
+        diagnosisDocumentAddedAt: null,
+        sessionsDone: existing.sessionsDone,
+      ),
+    );
+
+    if (!mounted) return;
+
+    showMessage('Justificatif médical supprimé.');
   }
 
   List<PatientLocal> get filteredPatients {
@@ -304,7 +443,7 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
     EdgeInsetsGeometry? padding,
   }) {
     return Container(
-      padding: padding ?? const EdgeInsets.all(14),
+      padding: padding ?? const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(AppRadius.xl),
@@ -333,27 +472,12 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
         ),
         const SizedBox(width: AppSpacing.sm),
         Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Signature patient',
-                style: AppTypography.body.copyWith(
-                  fontWeight: FontWeight.w900,
-                  color: AppColors.textPrimary,
-                ),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                'Trace locale du consentement, sans envoi externe.',
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: AppTypography.caption.copyWith(
-                  color: AppColors.textSecondary,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
+          child: Text(
+            'Signature patient',
+            style: AppTypography.body.copyWith(
+              fontWeight: FontWeight.w900,
+              color: AppColors.textPrimary,
+            ),
           ),
         ),
       ],
@@ -362,11 +486,10 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
 
   Widget buildFormFieldGroup({
     required String title,
-    required String subtitle,
     required List<Widget> children,
   }) {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
         color: AppColors.background,
         borderRadius: BorderRadius.circular(AppRadius.lg),
@@ -382,29 +505,18 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
               fontWeight: FontWeight.w900,
             ),
           ),
-          const SizedBox(height: 3),
-          Text(
-            subtitle,
-            style: AppTypography.caption.copyWith(
-              color: AppColors.textSecondary,
-              height: 1.3,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 10),
           ...children,
         ],
       ),
     );
   }
 
-  Widget buildFieldGap() => const SizedBox(height: AppSpacing.sm);
+  Widget buildFieldGap() => const SizedBox(height: 8);
 
   Widget buildPatientIdentityFields() {
     return buildFormFieldGroup(
-      title: 'Identité patient',
-      subtitle:
-          'Ces informations servent uniquement à retrouver le dossier local.',
+      title: 'Patient identifié',
       children: [
         buildTextField(
           controller: nomController,
@@ -527,26 +639,74 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
         children: [
           _SectionTitle(
             icon: Icons.person_outline_rounded,
-            title: patientExists ? 'Patient déjà connu' : 'Créer un patient',
-            subtitle: patientExists
-                ? 'Activez le dossier existant sans recréer de données.'
-                : 'Renseignez l’identité et le consentement local.',
+            title: patientExists ? 'Patient déjà connu' : 'Patient identifié',
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 10),
           buildPatientIdentityFields(),
           if (patientExists) ...[
-            const SizedBox(height: 12),
+            const SizedBox(height: 10),
             buildExistingPatientNotice(foundPatient),
           ],
           if (!patientExists) ...[
-            const SizedBox(height: 12),
+            const SizedBox(height: 10),
+            buildMedicalDiagnosisCard(),
+            const SizedBox(height: 10),
             buildConsentCard(),
-            const SizedBox(height: 12),
+            const SizedBox(height: 10),
             buildSignatureHeader(),
-            const SizedBox(height: AppSpacing.sm),
+            const SizedBox(height: 8),
             buildSignatureBox(),
-            const SizedBox(height: AppSpacing.sm),
+            const SizedBox(height: 8),
             buildClearSignatureButton(),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget buildMedicalDiagnosisCard() {
+    return Container(
+      decoration: BoxDecoration(
+        color: hasMedicalDiagnosis ? AppColors.surfaceAlt : AppColors.surface,
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        border: Border.all(
+          color: hasMedicalDiagnosis
+              ? AppColors.primary.withValues(alpha: 0.32)
+              : AppColors.border,
+        ),
+      ),
+      child: Column(
+        children: [
+          Material(
+            color: Colors.transparent,
+            child: CheckboxListTile(
+              value: hasMedicalDiagnosis,
+              onChanged: (value) => updateMedicalDiagnosis(value ?? false),
+              activeColor: AppColors.primary,
+              controlAffinity: ListTileControlAffinity.leading,
+              title: Text(
+                'Diagnostic médical préalable',
+                style: AppTypography.body.copyWith(
+                  fontWeight: FontWeight.w900,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+            ),
+          ),
+          if (hasMedicalDiagnosis) ...[
+            const Divider(height: 1, color: AppColors.border),
+            Padding(
+              padding: const EdgeInsets.all(10),
+              child: _DiagnosisDocumentCard(
+                documentPath: diagnosisDocumentPath,
+                documentName: diagnosisDocumentName,
+                documentAddedAt: diagnosisDocumentAddedAt,
+                hasStoredDocument:
+                    diagnosisDocumentBase64?.trim().isNotEmpty ?? false,
+                onAdd: chooseDiagnosisDocumentSource,
+                onRemove: removeDiagnosisDocument,
+              ),
+            ),
           ],
         ],
       ),
@@ -697,7 +857,7 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
         });
       },
       child: Container(
-        height: 100,
+        height: 132,
         decoration: BoxDecoration(
           color: AppColors.surface,
           borderRadius: BorderRadius.circular(AppRadius.lg),
@@ -736,7 +896,6 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
         _SectionTitle(
           icon: Icons.folder_shared_outlined,
           title: 'Patients enregistrés',
-          subtitle: '${visiblePatients.length}/${patients.length} affiché(s)',
         ),
         const SizedBox(height: AppSpacing.sm),
         if (patients.isEmpty)
@@ -899,9 +1058,15 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
   }
 
   Widget buildBottomSaveBar(PatientLocal? foundPatient) {
-    final buttonText = foundPatient == null
+    final hasAnyField =
+        nomController.text.trim().isNotEmpty ||
+        prenomController.text.trim().isNotEmpty ||
+        dateNaissanceController.text.trim().isNotEmpty;
+    final buttonText = foundPatient != null
+        ? 'Activer ce patient'
+        : hasAnyField
         ? 'Enregistrer / Activer'
-        : 'Activer ce patient';
+        : 'Patient anonyme';
 
     return SafeArea(
       child: Container(
@@ -933,16 +1098,147 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
   }
 }
 
-class _SectionTitle extends StatelessWidget {
-  const _SectionTitle({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
+class _DiagnosisDocumentCard extends StatelessWidget {
+  const _DiagnosisDocumentCard({
+    required this.documentPath,
+    required this.documentName,
+    required this.documentAddedAt,
+    required this.hasStoredDocument,
+    required this.onAdd,
+    required this.onRemove,
   });
+
+  final String? documentPath;
+  final String? documentName;
+  final String? documentAddedAt;
+  final bool hasStoredDocument;
+  final VoidCallback onAdd;
+  final VoidCallback onRemove;
+
+  @override
+  Widget build(BuildContext context) {
+    final hasDocument =
+        hasStoredDocument || (documentPath?.trim().isNotEmpty ?? false);
+    final label = hasDocument
+        ? (documentName?.trim().isNotEmpty ?? false)
+              ? documentName!.trim()
+              : 'Justificatif ajouté'
+        : 'Aucun justificatif ajouté';
+    final addedAt = _formatAddedAt(documentAddedAt);
+
+    return Container(
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: hasDocument ? AppColors.surfaceSuccess : AppColors.surface,
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        border: Border.all(
+          color: hasDocument
+              ? AppColors.success.withValues(alpha: 0.30)
+              : AppColors.border,
+        ),
+      ),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Icon(
+                hasDocument
+                    ? Icons.check_circle_rounded
+                    : Icons.add_a_photo_outlined,
+                color: hasDocument ? AppColors.successDark : AppColors.primary,
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      label,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppTypography.caption.copyWith(
+                        color: hasDocument
+                            ? AppColors.successDark
+                            : AppColors.textPrimary,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      hasDocument
+                          ? 'Stocké localement${addedAt == null ? '' : ' · $addedAt'}'
+                          : 'Photo ou galerie',
+                      style: AppTypography.caption.copyWith(
+                        color: AppColors.textSecondary,
+                        fontWeight: FontWeight.w600,
+                        height: 1.2,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: onAdd,
+                  icon: Icon(
+                    hasDocument
+                        ? Icons.change_circle_outlined
+                        : Icons.add_a_photo_outlined,
+                    size: 18,
+                  ),
+                  label: Text(hasDocument ? 'Remplacer' : 'Ajouter'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppColors.primary,
+                    side: BorderSide(
+                      color: AppColors.primary.withValues(alpha: 0.24),
+                    ),
+                    textStyle: const TextStyle(fontWeight: FontWeight.w900),
+                  ),
+                ),
+              ),
+              if (hasDocument) ...[
+                const SizedBox(width: 8),
+                TextButton(
+                  onPressed: onRemove,
+                  style: TextButton.styleFrom(
+                    foregroundColor: AppColors.danger,
+                    textStyle: const TextStyle(fontWeight: FontWeight.w900),
+                  ),
+                  child: const Text('Supprimer'),
+                ),
+              ],
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  String? _formatAddedAt(String? value) {
+    final raw = value?.trim() ?? '';
+    if (raw.isEmpty) return null;
+
+    final date = DateTime.tryParse(raw);
+    if (date == null) return null;
+
+    final day = date.day.toString().padLeft(2, '0');
+    final month = date.month.toString().padLeft(2, '0');
+    final year = date.year.toString();
+
+    return '$day/$month/$year';
+  }
+}
+
+class _SectionTitle extends StatelessWidget {
+  const _SectionTitle({required this.icon, required this.title});
 
   final IconData icon;
   final String title;
-  final String subtitle;
 
   @override
   Widget build(BuildContext context) {
@@ -967,16 +1263,6 @@ class _SectionTitle extends StatelessWidget {
                 style: AppTypography.subtitle.copyWith(
                   color: AppColors.textPrimary,
                   fontWeight: FontWeight.w900,
-                ),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                subtitle,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: AppTypography.caption.copyWith(
-                  color: AppColors.textSecondary,
-                  fontWeight: FontWeight.w600,
                 ),
               ),
             ],

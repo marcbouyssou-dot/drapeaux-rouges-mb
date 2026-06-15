@@ -24,9 +24,7 @@ class FollowUpScreen extends StatelessWidget {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(
-                    builder: (_) => const HistoryScreen(),
-                  ),
+                  MaterialPageRoute(builder: (_) => const HistoryScreen()),
                 );
               },
             ),
@@ -49,54 +47,11 @@ class FollowUpScreen extends StatelessWidget {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(
-                    builder: (_) => const SettingsScreen(),
-                  ),
-                );
-              },
-            ),
-            ClinicalListItem(
-              title: 'RGPD et données',
-              subtitle: 'Consentement, confidentialité et suppression.',
-              icon: Icons.privacy_tip_outlined,
-              color: AppColors.successGreen,
-              onTap: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Module RGPD à organiser.')),
-                );
-              },
-            ),
-            ClinicalListItem(
-              title: 'Cloud HDS',
-              subtitle: 'Synchronisation sécurisée à venir.',
-              icon: Icons.cloud_sync_outlined,
-              color: AppColors.warningOrange,
-              trailing: _comingSoonBadge(),
-              onTap: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Cloud HDS prévu plus tard.')),
+                  MaterialPageRoute(builder: (_) => const SettingsScreen()),
                 );
               },
             ),
           ],
-        ),
-      ),
-    );
-  }
-
-  static Widget _comingSoonBadge() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-      decoration: BoxDecoration(
-        color: AppColors.softBlue,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Text(
-        'À venir',
-        style: TextStyle(
-          color: AppColors.primaryBlue,
-          fontWeight: FontWeight.w800,
-          fontSize: 12,
         ),
       ),
     );

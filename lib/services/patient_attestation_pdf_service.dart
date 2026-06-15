@@ -60,6 +60,10 @@ class PatientAttestationPdfService {
             ...attestation.bodyParagraphs.map(_paragraph),
             pw.SizedBox(height: 28),
             _placeAndDate(attestation),
+            if (attestation.consentConfirmed) ...[
+              pw.SizedBox(height: 16),
+              _consentMention(attestation),
+            ],
             pw.SizedBox(height: 34),
             _patientSignature(signatureImage),
           ];
@@ -112,6 +116,11 @@ class PatientAttestationPdfService {
               attestation.practitionerIdentifier,
               style: const pw.TextStyle(fontSize: 10.5),
             ),
+          if (practitioner.practiceStructureLine.isNotEmpty)
+            pw.Text(
+              practitioner.practiceStructureLine,
+              style: const pw.TextStyle(fontSize: 10.5),
+            ),
         ],
       ),
     );
@@ -149,6 +158,21 @@ class PatientAttestationPdfService {
             ? 'Fait le ${attestation.formattedDate}'
             : 'Fait à $city, le ${attestation.formattedDate}',
         style: const pw.TextStyle(fontSize: 12),
+      ),
+    );
+  }
+
+  static pw.Widget _consentMention(PatientAttestation attestation) {
+    return pw.Container(
+      width: double.infinity,
+      padding: const pw.EdgeInsets.all(10),
+      decoration: pw.BoxDecoration(
+        color: PdfColors.grey100,
+        border: pw.Border.all(color: PdfColors.grey300, width: 0.7),
+      ),
+      child: pw.Text(
+        'Consentement patient confirmé le ${attestation.formattedDate} : le patient confirme avoir reçu l’information, l’avoir comprise et accepte de signer cette attestation.',
+        style: const pw.TextStyle(fontSize: 10.5, lineSpacing: 2),
       ),
     );
   }

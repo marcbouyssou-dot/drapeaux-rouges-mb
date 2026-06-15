@@ -83,6 +83,11 @@ class EvaluationResultScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
+        leading: IconButton(
+          tooltip: 'Retour',
+          onPressed: () => Navigator.pop(context),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded),
+        ),
         title: const Text('Résultat'),
         backgroundColor: AppColors.background,
         elevation: 0,
@@ -247,23 +252,29 @@ class EvaluationResultScreen extends StatelessWidget {
         ],
       ),
 
-      bottomNavigationBar: SafeArea(
-        child: Container(
-          padding: const EdgeInsets.fromLTRB(
-            AppSpacing.md,
-            AppSpacing.sm,
-            AppSpacing.md,
-            AppSpacing.lg,
-          ),
-          decoration: BoxDecoration(
-            color: AppColors.surface.withValues(alpha: 0.96),
-            border: const Border(top: BorderSide(color: AppColors.border)),
-            boxShadow: AppShadows.card,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Row(
+      bottomNavigationBar: buildBottomActionBar(context),
+    );
+  }
+
+  Widget buildBottomActionBar(BuildContext context) {
+    final size = MediaQuery.sizeOf(context);
+    final isLandscapePhone = size.width > size.height && size.height < 520;
+
+    return SafeArea(
+      child: Container(
+        padding: EdgeInsets.fromLTRB(
+          AppSpacing.md,
+          AppSpacing.sm,
+          AppSpacing.md,
+          isLandscapePhone ? AppSpacing.sm : AppSpacing.lg,
+        ),
+        decoration: BoxDecoration(
+          color: AppColors.surface.withValues(alpha: 0.96),
+          border: const Border(top: BorderSide(color: AppColors.border)),
+          boxShadow: AppShadows.card,
+        ),
+        child: isLandscapePhone
+            ? Row(
                 children: [
                   Expanded(
                     child: OutlinedButton.icon(
@@ -275,9 +286,7 @@ class EvaluationResultScreen extends StatelessWidget {
                       label: const Text('Réinitialiser'),
                     ),
                   ),
-
-                  const SizedBox(width: 10),
-
+                  const SizedBox(width: 8),
                   Expanded(
                     child: FilledButton.icon(
                       onPressed: onSave,
@@ -285,9 +294,7 @@ class EvaluationResultScreen extends StatelessWidget {
                       label: const Text('Sauver'),
                     ),
                   ),
-
-                  const SizedBox(width: 10),
-
+                  const SizedBox(width: 8),
                   Expanded(
                     child: FilledButton.icon(
                       onPressed: onExportPdf,
@@ -295,36 +302,98 @@ class EvaluationResultScreen extends StatelessWidget {
                       label: const Text('PDF'),
                     ),
                   ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: FilledButton.icon(
+                      onPressed: () {
+                        BDKSessionService.loadFromEvaluation(
+                          selectedCategory: selectedCategory,
+                          score: score,
+                          risk: riskLevel,
+                          checkedFlagsData: checkedFlags,
+                          aiSummary: aiSummary,
+                          decisionMessage: decisionMessage,
+                        );
+
+                        Navigator.push(
+                          context,
+                          CupertinoPageRoute(
+                            builder: (_) => const BDKTypeScreen(),
+                          ),
+                        );
+                      },
+                      icon: const Icon(Icons.assignment_outlined),
+                      label: const Text('BDK'),
+                    ),
+                  ),
+                ],
+              )
+            : Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: () {
+                            onReset();
+                            Navigator.pop(context);
+                          },
+                          icon: const Icon(Icons.refresh_rounded),
+                          label: const Text('Réinitialiser'),
+                        ),
+                      ),
+
+                      const SizedBox(width: 10),
+
+                      Expanded(
+                        child: FilledButton.icon(
+                          onPressed: onSave,
+                          icon: const Icon(Icons.save_outlined),
+                          label: const Text('Sauver'),
+                        ),
+                      ),
+
+                      const SizedBox(width: 10),
+
+                      Expanded(
+                        child: FilledButton.icon(
+                          onPressed: onExportPdf,
+                          icon: const Icon(Icons.picture_as_pdf_outlined),
+                          label: const Text('PDF'),
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 10),
+
+                  SizedBox(
+                    width: double.infinity,
+                    child: FilledButton.icon(
+                      onPressed: () {
+                        BDKSessionService.loadFromEvaluation(
+                          selectedCategory: selectedCategory,
+                          score: score,
+                          risk: riskLevel,
+                          checkedFlagsData: checkedFlags,
+                          aiSummary: aiSummary,
+                          decisionMessage: decisionMessage,
+                        );
+
+                        Navigator.push(
+                          context,
+                          CupertinoPageRoute(
+                            builder: (_) => const BDKTypeScreen(),
+                          ),
+                        );
+                      },
+                      icon: const Icon(Icons.assignment_outlined),
+                      label: const Text('Préparer un BDK'),
+                    ),
+                  ),
                 ],
               ),
-
-              const SizedBox(height: 10),
-
-              SizedBox(
-                width: double.infinity,
-                child: FilledButton.icon(
-                  onPressed: () {
-                    BDKSessionService.loadFromEvaluation(
-                      selectedCategory: selectedCategory,
-                      score: score,
-                      risk: riskLevel,
-                      checkedFlagsData: checkedFlags,
-                      aiSummary: aiSummary,
-                      decisionMessage: decisionMessage,
-                    );
-
-                    Navigator.push(
-                      context,
-                      CupertinoPageRoute(builder: (_) => const BDKTypeScreen()),
-                    );
-                  },
-                  icon: const Icon(Icons.assignment_outlined),
-                  label: const Text('Préparer un BDK'),
-                ),
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }
