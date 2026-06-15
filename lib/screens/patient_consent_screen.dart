@@ -655,21 +655,24 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
           color: consentementCoche ? AppColors.success : AppColors.border,
         ),
       ),
-      child: CheckboxListTile(
-        value: consentementCoche,
-        onChanged: (value) {
-          setState(() {
-            consentementCoche = value ?? false;
-          });
-        },
-        activeColor: AppColors.success,
-        controlAffinity: ListTileControlAffinity.leading,
-        title: Text(
-          'Le patient consent à l’utilisation locale de ses données dans l’application.',
-          style: AppTypography.body.copyWith(
-            fontWeight: FontWeight.w800,
-            color: AppColors.textPrimary,
-            height: 1.3,
+      child: Material(
+        color: Colors.transparent,
+        child: CheckboxListTile(
+          value: consentementCoche,
+          onChanged: (value) {
+            setState(() {
+              consentementCoche = value ?? false;
+            });
+          },
+          activeColor: AppColors.success,
+          controlAffinity: ListTileControlAffinity.leading,
+          title: Text(
+            'Le patient consent à l’utilisation locale de ses données dans l’application.',
+            style: AppTypography.body.copyWith(
+              fontWeight: FontWeight.w800,
+              color: AppColors.textPrimary,
+              height: 1.3,
+            ),
           ),
         ),
       ),
@@ -770,50 +773,59 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
           width: active ? 1.4 : 1,
         ),
       ),
-      child: ListTile(
-        onTap: () => selectPatient(patient),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
-        leading: Container(
-          width: 40,
-          height: 40,
-          decoration: BoxDecoration(
-            color: active ? AppColors.success : AppColors.surfaceAlt,
-            borderRadius: BorderRadius.circular(AppRadius.lg),
+      child: Material(
+        color: Colors.transparent,
+        child: ListTile(
+          onTap: () => selectPatient(patient),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 12,
+            vertical: 2,
           ),
-          child: Icon(
-            active ? Icons.check_rounded : Icons.person_rounded,
-            color: active ? AppColors.textOnDark : AppColors.primary,
+          leading: Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: active ? AppColors.success : AppColors.surfaceAlt,
+              borderRadius: BorderRadius.circular(AppRadius.lg),
+            ),
+            child: Icon(
+              active ? Icons.check_rounded : Icons.person_rounded,
+              color: active ? AppColors.textOnDark : AppColors.primary,
+            ),
           ),
-        ),
-        title: Text(
-          patientName(patient),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: const TextStyle(
-            fontWeight: FontWeight.w900,
-            color: AppColors.textPrimary,
+          title: Text(
+            patientName(patient),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              fontWeight: FontWeight.w900,
+              color: AppColors.textPrimary,
+            ),
           ),
-        ),
-        subtitle: Text(
-          active
-              ? 'Patient actif · Né(e) le ${patient.dateNaissance}'
-              : 'Né(e) le ${patient.dateNaissance}',
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: TextStyle(
-            color: active ? AppColors.successDark : AppColors.textSecondary,
-            fontWeight: FontWeight.w600,
+          subtitle: Text(
+            active
+                ? 'Patient actif · Né(e) le ${patient.dateNaissance}'
+                : 'Né(e) le ${patient.dateNaissance}',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: active ? AppColors.successDark : AppColors.textSecondary,
+              fontWeight: FontWeight.w600,
+            ),
           ),
-        ),
-        trailing: PopupMenuButton<String>(
-          onSelected: (value) {
-            if (value == 'select') selectPatient(patient);
-            if (value == 'delete') deletePatient(patient);
-          },
-          itemBuilder: (_) => const [
-            PopupMenuItem(value: 'select', child: Text('Activer')),
-            PopupMenuItem(value: 'delete', child: Text('Supprimer localement')),
-          ],
+          trailing: PopupMenuButton<String>(
+            onSelected: (value) {
+              if (value == 'select') selectPatient(patient);
+              if (value == 'delete') deletePatient(patient);
+            },
+            itemBuilder: (_) => const [
+              PopupMenuItem(value: 'select', child: Text('Activer')),
+              PopupMenuItem(
+                value: 'delete',
+                child: Text('Supprimer localement'),
+              ),
+            ],
+          ),
         ),
       ),
     );
