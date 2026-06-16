@@ -34,18 +34,14 @@ class HomeClinicalAssistantCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
-                width: compact ? 50 : 72,
-                height: compact ? 50 : 72,
-                padding: EdgeInsets.all(compact ? 7 : AppSpacing.sm),
-                decoration: BoxDecoration(
-                  color: AppColors.surface,
-                  borderRadius: BorderRadius.circular(AppRadius.xl),
-                  border: Border.all(color: AppColors.border),
-                  boxShadow: AppShadows.soft,
-                ),
+                width: compact ? 54 : 74,
+                height: compact ? 50 : 70,
+                padding: EdgeInsets.all(compact ? 2 : 4),
                 child: Image.asset(
-                  'assets/images/logo_urps_modern.png',
+                  'assets/icons/urps_pictogram_official_transparent.png',
                   fit: BoxFit.contain,
+                  filterQuality: FilterQuality.high,
+                  isAntiAlias: true,
                 ),
               ),
               const SizedBox(width: AppSpacing.md),
@@ -53,23 +49,23 @@ class HomeClinicalAssistantCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'ASSISTANT CLINIQUE URPS',
-                      style: TextStyle(
-                        color: AppColors.textMuted,
-                        fontSize: 9,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: 1.2,
-                      ),
-                    ),
-                    SizedBox(height: compact ? 5 : AppSpacing.sm),
                     Text(
-                      'Assistant Clinique URPS',
+                      'Assistant clinique URPS',
                       style: TextStyle(
                         color: AppColors.textPrimary,
                         fontSize: compact ? 16 : 21,
                         height: 1.05,
                         fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    SizedBox(height: compact ? 5 : AppSpacing.sm),
+                    const Text(
+                      'Aide au raisonnement clinique',
+                      style: TextStyle(
+                        color: AppColors.textSecondary,
+                        fontSize: 13,
+                        height: 1.25,
+                        fontWeight: FontWeight.w800,
                       ),
                     ),
                     if (!compact) ...[
