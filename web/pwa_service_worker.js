@@ -18,6 +18,7 @@ const APP_SHELL = [
   './assets/FontManifest.json',
   './assets/NOTICES',
   './assets/fonts/MaterialIcons-Regular.otf',
+  './assets/packages/cupertino_icons/assets/CupertinoIcons.ttf',
   './assets/assets/fonts/Roboto-Bold.ttf',
   './assets/assets/fonts/Roboto-Regular.ttf',
   './assets/assets/icons/app_icon.png',
@@ -43,6 +44,7 @@ const APP_SHELL = [
   './canvaskit/skwasm_heavy.wasm',
   './canvaskit/wimp.js',
   './canvaskit/wimp.wasm',
+  './version.json',
 ];
 
 self.addEventListener('install', (event) => {
