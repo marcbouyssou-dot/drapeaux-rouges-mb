@@ -27,6 +27,20 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
   final nomController = TextEditingController();
   final prenomController = TextEditingController();
   final dateNaissanceController = TextEditingController();
+  final adresseController = TextEditingController();
+  final codePostalController = TextEditingController();
+  final villeController = TextEditingController();
+  final telephoneController = TextEditingController();
+  final emailController = TextEditingController();
+  final professionController = TextEditingController();
+  final personnePrevenirController = TextEditingController();
+  final telephoneContactController = TextEditingController();
+  final medecinNomController = TextEditingController();
+  final medecinRppsController = TextEditingController();
+  final medecinAdeliController = TextEditingController();
+  final medecinAdresseController = TextEditingController();
+  final medecinTelephoneController = TextEditingController();
+  final medecinEmailController = TextEditingController();
 
   final SignatureController signatureController = SignatureController(
     penStrokeWidth: 3,
@@ -48,6 +62,10 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
   String? diagnosisDocumentName;
   String? diagnosisDocumentBase64;
   String? diagnosisDocumentAddedAt;
+  bool carteVitalePresentee = false;
+  bool identiteVerifiee = false;
+  List<PatientMedicalDocument> medicalDocuments = [];
+  String? editingPatientLocalId;
 
   @override
   void initState() {
@@ -61,6 +79,20 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
     nomController.dispose();
     prenomController.dispose();
     dateNaissanceController.dispose();
+    adresseController.dispose();
+    codePostalController.dispose();
+    villeController.dispose();
+    telephoneController.dispose();
+    emailController.dispose();
+    professionController.dispose();
+    personnePrevenirController.dispose();
+    telephoneContactController.dispose();
+    medecinNomController.dispose();
+    medecinRppsController.dispose();
+    medecinAdeliController.dispose();
+    medecinAdresseController.dispose();
+    medecinTelephoneController.dispose();
+    medecinEmailController.dispose();
     signatureController.dispose();
     super.dispose();
   }
@@ -74,6 +106,9 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
     if (!mounted) return;
 
     setState(() {
+      if (activePatient != null) {
+        populateFormFromPatient(activePatient);
+      }
       patients = loadedPatients;
       currentPatient = activePatient;
       hasMedicalDiagnosis = accessDirect.hasMedicalDiagnosis;
@@ -207,6 +242,86 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
     showMessage('Justificatif médical supprimé.');
   }
 
+  static const List<String> medicalDocumentTypes = [
+    'Prescription médicale',
+    'Courrier médical',
+    'Compte-rendu spécialiste',
+    'Autre justificatif',
+  ];
+
+  Future<void> choosePatientMedicalDocumentSource(String type) async {
+    final source = await showModalBottomSheet<ImageSource>(
+      context: context,
+      showDragHandle: true,
+      builder: (sheetContext) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 18),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.photo_camera_outlined),
+                  title: const Text('Photo'),
+                  onTap: () => Navigator.pop(sheetContext, ImageSource.camera),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.photo_library_outlined),
+                  title: const Text('Galerie'),
+                  onTap: () => Navigator.pop(sheetContext, ImageSource.gallery),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+
+    if (source == null) return;
+
+    await pickPatientMedicalDocument(type: type, source: source);
+  }
+
+  Future<void> pickPatientMedicalDocument({
+    required String type,
+    required ImageSource source,
+  }) async {
+    final document = await documentPicker.pickImage(
+      source: source,
+      imageQuality: 82,
+    );
+
+    if (document == null) return;
+
+    final bytes = await document.readAsBytes();
+    final nextDocuments = List<PatientMedicalDocument>.from(medicalDocuments)
+      ..removeWhere((item) => item.type == type)
+      ..add(
+        PatientMedicalDocument(
+          type: type,
+          documentPath: document.path,
+          documentName: document.name,
+          documentBase64: base64Encode(bytes),
+          documentAddedAt: DateTime.now().toIso8601String(),
+        ),
+      );
+
+    setState(() {
+      medicalDocuments = nextDocuments;
+    });
+
+    showMessage('$type ajouté.');
+  }
+
+  void removePatientMedicalDocument(String type) {
+    setState(() {
+      medicalDocuments = List<PatientMedicalDocument>.from(medicalDocuments)
+        ..removeWhere((item) => item.type == type);
+    });
+
+    showMessage('$type supprimé.');
+  }
+
   List<PatientLocal> get filteredPatients {
     final query = searchQuery.trim().toLowerCase();
 
@@ -236,6 +351,12 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
     }
 
     return null;
+  }
+
+  bool get hasPatientIdentityDraft {
+    return nomController.text.trim().isNotEmpty ||
+        prenomController.text.trim().isNotEmpty ||
+        dateNaissanceController.text.trim().isNotEmpty;
   }
 
   Future<void> activateAnonymousMode() async {
@@ -272,10 +393,11 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
     }
 
     final foundPatient = existingPatient;
+    final editedPatient = editingPatient;
+    final patientToUpdate = editedPatient ?? foundPatient;
 
-    if (foundPatient != null) {
-      await selectPatient(foundPatient);
-      clearForm();
+    if (patientToUpdate != null) {
+      await saveExistingPatient(patientToUpdate);
       return;
     }
 
@@ -315,6 +437,23 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
       consentementValide: true,
       dateConsentement: DateTime.now(),
       signatureBase64: base64Encode(signatureBytes),
+      adresse: adresseController.text.trim(),
+      codePostal: codePostalController.text.trim(),
+      ville: villeController.text.trim(),
+      telephone: telephoneController.text.trim(),
+      email: emailController.text.trim(),
+      profession: professionController.text.trim(),
+      personnePrevenir: personnePrevenirController.text.trim(),
+      telephoneContact: telephoneContactController.text.trim(),
+      medecinNom: medecinNomController.text.trim(),
+      medecinRpps: medecinRppsController.text.trim(),
+      medecinAdeli: medecinAdeliController.text.trim(),
+      medecinAdresse: medecinAdresseController.text.trim(),
+      medecinTelephone: medecinTelephoneController.text.trim(),
+      medecinEmail: medecinEmailController.text.trim(),
+      carteVitalePresentee: carteVitalePresentee,
+      identiteVerifiee: identiteVerifiee,
+      medicalDocuments: medicalDocuments,
     );
 
     await RgpdLocalService.saveOrUpdatePatient(patient);
@@ -331,11 +470,100 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
     showMessage('Patient enregistré et activé.');
   }
 
+  PatientLocal? get editingPatient {
+    final localId = editingPatientLocalId;
+    if (localId == null || localId.isEmpty) return null;
+
+    for (final patient in patients) {
+      if (patient.localId == localId) return patient;
+    }
+
+    return currentPatient?.localId == localId ? currentPatient : null;
+  }
+
+  Future<void> saveExistingPatient(PatientLocal patient) async {
+    if (!patient.consentementValide && !consentementCoche) {
+      showMessage('Merci de cocher le consentement patient.');
+      return;
+    }
+
+    setState(() {
+      isSaving = true;
+    });
+
+    final Uint8List? signatureBytes = signatureController.isEmpty
+        ? null
+        : await signatureController.toPngBytes();
+
+    final updatedPatient = PatientLocal(
+      localId: patient.localId,
+      anonymousId: patient.anonymousId,
+      nom: nomController.text.trim(),
+      prenom: prenomController.text.trim(),
+      dateNaissance: dateNaissanceController.text.trim(),
+      consentementValide: patient.consentementValide || consentementCoche,
+      dateConsentement: patient.consentementValide
+          ? patient.dateConsentement
+          : DateTime.now(),
+      signatureBase64: signatureBytes == null
+          ? patient.signatureBase64
+          : base64Encode(signatureBytes),
+      adresse: adresseController.text.trim(),
+      codePostal: codePostalController.text.trim(),
+      ville: villeController.text.trim(),
+      telephone: telephoneController.text.trim(),
+      email: emailController.text.trim(),
+      profession: professionController.text.trim(),
+      personnePrevenir: personnePrevenirController.text.trim(),
+      telephoneContact: telephoneContactController.text.trim(),
+      medecinNom: medecinNomController.text.trim(),
+      medecinRpps: medecinRppsController.text.trim(),
+      medecinAdeli: medecinAdeliController.text.trim(),
+      medecinAdresse: medecinAdresseController.text.trim(),
+      medecinTelephone: medecinTelephoneController.text.trim(),
+      medecinEmail: medecinEmailController.text.trim(),
+      carteVitalePresentee: carteVitalePresentee,
+      identiteVerifiee: identiteVerifiee,
+      medicalDocuments: medicalDocuments,
+    );
+
+    await RgpdLocalService.saveOrUpdatePatient(updatedPatient);
+
+    if (!mounted) return;
+
+    setState(() {
+      isSaving = false;
+      editingPatientLocalId = updatedPatient.localId;
+    });
+
+    await loadPatients();
+
+    showMessage('Patient mis à jour et activé.');
+  }
+
   void clearForm() {
     nomController.clear();
     prenomController.clear();
     dateNaissanceController.clear();
+    adresseController.clear();
+    codePostalController.clear();
+    villeController.clear();
+    telephoneController.clear();
+    emailController.clear();
+    professionController.clear();
+    personnePrevenirController.clear();
+    telephoneContactController.clear();
+    medecinNomController.clear();
+    medecinRppsController.clear();
+    medecinAdeliController.clear();
+    medecinAdresseController.clear();
+    medecinTelephoneController.clear();
+    medecinEmailController.clear();
     consentementCoche = false;
+    carteVitalePresentee = false;
+    identiteVerifiee = false;
+    medicalDocuments = [];
+    editingPatientLocalId = null;
     signatureController.clear();
 
     if (mounted) setState(() {});
@@ -343,11 +571,40 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
 
   Future<void> selectPatient(PatientLocal patient) async {
     await RgpdLocalService.setCurrentPatientId(patient.localId);
+    populateFormFromPatient(patient);
     await loadPatients();
 
     if (!mounted) return;
 
     showMessage('${patient.nom.toUpperCase()} ${patient.prenom} activé.');
+  }
+
+  void populateFormFromPatient(PatientLocal patient) {
+    nomController.text = patient.nom;
+    prenomController.text = patient.prenom;
+    dateNaissanceController.text = patient.dateNaissance;
+    adresseController.text = patient.adresse;
+    codePostalController.text = patient.codePostal;
+    villeController.text = patient.ville;
+    telephoneController.text = patient.telephone;
+    emailController.text = patient.email;
+    professionController.text = patient.profession;
+    personnePrevenirController.text = patient.personnePrevenir;
+    telephoneContactController.text = patient.telephoneContact;
+    medecinNomController.text = patient.medecinNom;
+    medecinRppsController.text = patient.medecinRpps;
+    medecinAdeliController.text = patient.medecinAdeli;
+    medecinAdresseController.text = patient.medecinAdresse;
+    medecinTelephoneController.text = patient.medecinTelephone;
+    medecinEmailController.text = patient.medecinEmail;
+    consentementCoche = patient.consentementValide;
+    carteVitalePresentee = patient.carteVitalePresentee;
+    identiteVerifiee = patient.identiteVerifiee;
+    medicalDocuments = List<PatientMedicalDocument>.from(
+      patient.medicalDocuments,
+    );
+    editingPatientLocalId = patient.localId;
+    signatureController.clear();
   }
 
   Future<void> deletePatient(PatientLocal patient) async {
@@ -541,6 +798,288 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
     );
   }
 
+  Widget buildAdvancedIdentificationBlock() {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: ExpansionTile(
+          initiallyExpanded: false,
+          maintainState: false,
+          tilePadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+          childrenPadding: const EdgeInsets.fromLTRB(10, 0, 10, 10),
+          leading: const Icon(
+            Icons.manage_accounts_outlined,
+            color: AppColors.primary,
+          ),
+          title: Text(
+            'Identification avancée',
+            style: AppTypography.body.copyWith(
+              color: AppColors.textPrimary,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+          subtitle: Text(
+            'Coordonnées, médecin traitant et documents médicaux',
+            style: AppTypography.caption.copyWith(
+              color: AppColors.textSecondary,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          children: [
+            buildAdvancedPatientSection(),
+            const SizedBox(height: 10),
+            buildTreatingDoctorSection(),
+            const SizedBox(height: 10),
+            buildMedicalDocumentsSection(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget buildAdvancedPatientSection() {
+    return buildFormFieldGroup(
+      title: 'Coordonnées patient',
+      children: [
+        buildTextField(
+          controller: adresseController,
+          label: 'Adresse',
+          maxLines: 2,
+          textCapitalization: TextCapitalization.sentences,
+        ),
+        buildFieldGap(),
+        Row(
+          children: [
+            Expanded(
+              flex: 2,
+              child: buildTextField(
+                controller: codePostalController,
+                label: 'Code postal',
+                keyboardType: TextInputType.number,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              flex: 3,
+              child: buildTextField(
+                controller: villeController,
+                label: 'Ville',
+                textCapitalization: TextCapitalization.words,
+              ),
+            ),
+          ],
+        ),
+        buildFieldGap(),
+        buildTextField(
+          controller: telephoneController,
+          label: 'Téléphone',
+          keyboardType: TextInputType.phone,
+        ),
+        buildFieldGap(),
+        buildTextField(
+          controller: emailController,
+          label: 'E-mail',
+          keyboardType: TextInputType.emailAddress,
+        ),
+        buildFieldGap(),
+        buildTextField(
+          controller: professionController,
+          label: 'Profession',
+          textCapitalization: TextCapitalization.words,
+        ),
+        buildFieldGap(),
+        buildTextField(
+          controller: personnePrevenirController,
+          label: 'Personne à prévenir',
+          textCapitalization: TextCapitalization.words,
+        ),
+        buildFieldGap(),
+        buildTextField(
+          controller: telephoneContactController,
+          label: 'Téléphone du contact',
+          keyboardType: TextInputType.phone,
+        ),
+        const SizedBox(height: 8),
+        buildAdvancedCheckbox(
+          value: carteVitalePresentee,
+          label: 'Carte Vitale présentée',
+          onChanged: (value) {
+            setState(() {
+              carteVitalePresentee = value ?? false;
+            });
+          },
+        ),
+        buildAdvancedCheckbox(
+          value: identiteVerifiee,
+          label: 'Identité vérifiée',
+          onChanged: (value) {
+            setState(() {
+              identiteVerifiee = value ?? false;
+            });
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget buildTreatingDoctorSection() {
+    return buildFormFieldGroup(
+      title: 'Médecin traitant',
+      children: [
+        buildTextField(
+          controller: medecinNomController,
+          label: 'Nom',
+          textCapitalization: TextCapitalization.words,
+        ),
+        buildFieldGap(),
+        Row(
+          children: [
+            Expanded(
+              child: buildTextField(
+                controller: medecinRppsController,
+                label: 'RPPS',
+                keyboardType: TextInputType.number,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: buildTextField(
+                controller: medecinAdeliController,
+                label: 'ADELI',
+                keyboardType: TextInputType.number,
+              ),
+            ),
+          ],
+        ),
+        buildFieldGap(),
+        buildTextField(
+          controller: medecinAdresseController,
+          label: 'Adresse',
+          maxLines: 2,
+          textCapitalization: TextCapitalization.sentences,
+        ),
+        buildFieldGap(),
+        buildTextField(
+          controller: medecinTelephoneController,
+          label: 'Téléphone',
+          keyboardType: TextInputType.phone,
+        ),
+        buildFieldGap(),
+        buildTextField(
+          controller: medecinEmailController,
+          label: 'E-mail',
+          keyboardType: TextInputType.emailAddress,
+        ),
+      ],
+    );
+  }
+
+  Widget buildMedicalDocumentsSection() {
+    return buildFormFieldGroup(
+      title: 'Documents médicaux',
+      children: medicalDocumentTypes.map(buildMedicalDocumentRow).toList(),
+    );
+  }
+
+  Widget buildMedicalDocumentRow(String type) {
+    final document = medicalDocuments
+        .cast<PatientMedicalDocument?>()
+        .firstWhere((item) => item?.type == type, orElse: () => null);
+    final hasDocument = document?.hasStoredDocument ?? false;
+    final subtitle = hasDocument
+        ? (document?.documentName?.trim().isNotEmpty ?? false)
+              ? document!.documentName!.trim()
+              : 'Document ajouté'
+        : 'Aucun document';
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: hasDocument ? AppColors.surfaceSuccess : AppColors.surface,
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        border: Border.all(
+          color: hasDocument
+              ? AppColors.success.withValues(alpha: 0.30)
+              : AppColors.border,
+        ),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            hasDocument
+                ? Icons.check_circle_rounded
+                : Icons.description_outlined,
+            color: hasDocument ? AppColors.successDark : AppColors.primary,
+          ),
+          const SizedBox(width: AppSpacing.sm),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  type,
+                  style: AppTypography.caption.copyWith(
+                    color: AppColors.textPrimary,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  subtitle,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTypography.caption.copyWith(
+                    color: AppColors.textSecondary,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          TextButton(
+            onPressed: () => choosePatientMedicalDocumentSource(type),
+            child: Text(hasDocument ? 'Remplacer' : 'Ajouter'),
+          ),
+          if (hasDocument)
+            IconButton(
+              tooltip: 'Supprimer',
+              onPressed: () => removePatientMedicalDocument(type),
+              icon: const Icon(Icons.delete_outline_rounded),
+              color: AppColors.danger,
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget buildAdvancedCheckbox({
+    required bool value,
+    required String label,
+    required ValueChanged<bool?> onChanged,
+  }) {
+    return CheckboxListTile(
+      value: value,
+      onChanged: onChanged,
+      dense: true,
+      contentPadding: EdgeInsets.zero,
+      controlAffinity: ListTileControlAffinity.leading,
+      activeColor: AppColors.primary,
+      title: Text(
+        label,
+        style: AppTypography.caption.copyWith(
+          color: AppColors.textPrimary,
+          fontWeight: FontWeight.w800,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final visiblePatients = filteredPatients;
@@ -643,6 +1182,10 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
           ),
           const SizedBox(height: 10),
           buildPatientIdentityFields(),
+          if (hasPatientIdentityDraft) ...[
+            const SizedBox(height: 10),
+            buildAdvancedIdentificationBlock(),
+          ],
           if (patientExists) ...[
             const SizedBox(height: 10),
             buildExistingPatientNotice(foundPatient),
@@ -749,7 +1292,7 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
           const SizedBox(width: AppSpacing.sm),
           Expanded(
             child: Text(
-              'Patient déjà enregistré : ${patientName(patient)}. Le bouton va l’activer.',
+              'Patient déjà enregistré : ${patientName(patient)}. Le bouton va le mettre à jour et l’activer.',
               style: AppTypography.caption.copyWith(
                 color: AppColors.successDark,
                 fontWeight: FontWeight.w800,
@@ -769,11 +1312,13 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
     IconData? suffixIcon,
     TextInputType? keyboardType,
     TextCapitalization textCapitalization = TextCapitalization.none,
+    int maxLines = 1,
   }) {
     return TextField(
       controller: controller,
       keyboardType: keyboardType,
       textCapitalization: textCapitalization,
+      maxLines: maxLines,
       onChanged: (_) => setState(() {}),
       style: AppTypography.body.copyWith(
         fontSize: 15,
@@ -1062,8 +1607,8 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
         nomController.text.trim().isNotEmpty ||
         prenomController.text.trim().isNotEmpty ||
         dateNaissanceController.text.trim().isNotEmpty;
-    final buttonText = foundPatient != null
-        ? 'Activer ce patient'
+    final buttonText = foundPatient != null || editingPatient != null
+        ? 'Mettre à jour / Activer'
         : hasAnyField
         ? 'Enregistrer / Activer'
         : 'Patient anonyme';

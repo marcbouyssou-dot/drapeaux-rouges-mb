@@ -12,4 +12,4 @@ export PATH="$PATH:$FLUTTER_DIR/bin"
 
 flutter config --enable-web
 flutter pub get
-flutter build web
+flutter build web --pwa-strategy=offline-first

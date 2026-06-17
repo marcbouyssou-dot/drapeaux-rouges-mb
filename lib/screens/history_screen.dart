@@ -3,9 +3,12 @@ import 'package:flutter/material.dart';
 
 import '../models/attestation/attestation_history_item.dart';
 import '../models/attestation/attestation_template.dart';
+import '../models/medical_letter/medical_letter_history_item.dart';
+import '../models/medical_letter/medical_letter_template.dart';
 import '../models/prescription_model.dart';
 import '../services/attestation_history_service.dart';
 import '../services/history_service.dart';
+import '../services/medical_letter_history_service.dart';
 import '../services/prescription_service.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_radius.dart';
@@ -13,11 +16,12 @@ import '../theme/app_shadows.dart';
 import '../theme/app_spacing.dart';
 import 'evaluation/evaluation_detail_screen.dart';
 import 'attestation/attestation_history_detail_screen.dart';
+import 'medical_letter/medical_letter_history_detail_screen.dart';
 import 'prescription/prescription_history_detail_screen.dart';
 
 enum HistoryFilter { all, critical, high, moderate, low, anonymous }
 
-enum HistoryView { evaluations, prescriptions, attestations }
+enum HistoryView { evaluations, prescriptions, attestations, medicalLetters }
 
 class HistoryScreen extends StatefulWidget {
   const HistoryScreen({super.key});
@@ -32,6 +36,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
   List<Map<String, dynamic>> history = [];
   List<PrescriptionModel> prescriptions = [];
   List<AttestationHistoryItem> attestations = [];
+  List<MedicalLetterHistoryItem> medicalLetters = [];
   String searchQuery = '';
   HistoryFilter selectedFilter = HistoryFilter.all;
   HistoryView selectedView = HistoryView.evaluations;
@@ -53,6 +58,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
     final loadedPrescriptions = await PrescriptionService.getPrescriptions();
     final loadedAttestations =
         await AttestationHistoryService.getAttestations();
+    final loadedMedicalLetters = await MedicalLetterHistoryService.getLetters();
 
     if (!mounted) return;
 
@@ -60,6 +66,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
       history = loadedHistory;
       prescriptions = loadedPrescriptions;
       attestations = loadedAttestations;
+      medicalLetters = loadedMedicalLetters;
     });
   }
 
@@ -117,6 +124,28 @@ class _HistoryScreenState extends State<HistoryScreen> {
         item.displayPatient,
         item.lieu,
         item.signatureStatus,
+        formatDate(item.generatedAt.toIso8601String()),
+      ].join(' ').toLowerCase().contains(query);
+    }).toList();
+
+    filtered.sort((a, b) => b.generatedAt.compareTo(a.generatedAt));
+    return filtered;
+  }
+
+  List<MedicalLetterHistoryItem> get filteredMedicalLetters {
+    final query = searchQuery.trim().toLowerCase();
+
+    final filtered = medicalLetters.where((item) {
+      if (query.isEmpty) return true;
+
+      return [
+        item.title,
+        item.pdfTitle,
+        item.displayPatient,
+        item.patientMedecinNom,
+        item.subject,
+        item.lieu,
+        item.practitionerSignatureStatus,
         formatDate(item.generatedAt.toIso8601String()),
       ].join(' ').toLowerCase().contains(query);
     }).toList();
@@ -281,6 +310,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
   int get totalAttestations => attestations.length;
 
+  int get totalMedicalLetters => medicalLetters.length;
+
   int get totalFlags {
     return history.fold<int>(0, (sum, item) {
       final value = item['checkedCount'];
@@ -305,9 +336,11 @@ class _HistoryScreenState extends State<HistoryScreen> {
     final results = filteredHistory;
     final prescriptionResults = filteredPrescriptions;
     final attestationResults = filteredAttestations;
+    final medicalLetterResults = filteredMedicalLetters;
     final showEvaluations = selectedView == HistoryView.evaluations;
     final showPrescriptions = selectedView == HistoryView.prescriptions;
     final showAttestations = selectedView == HistoryView.attestations;
+    final showMedicalLetters = selectedView == HistoryView.medicalLetters;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -356,6 +389,13 @@ class _HistoryScreenState extends State<HistoryScreen> {
                       buildNoResultState(),
                     if (attestationResults.isNotEmpty)
                       ...attestationResults.map(buildAttestationCard),
+                  ] else if (showMedicalLetters) ...[
+                    if (medicalLetters.isEmpty) buildMedicalLetterEmptyState(),
+                    if (medicalLetters.isNotEmpty &&
+                        medicalLetterResults.isEmpty)
+                      buildNoResultState(),
+                    if (medicalLetterResults.isNotEmpty)
+                      ...medicalLetterResults.map(buildMedicalLetterCard),
                   ],
                 ],
               ),
@@ -400,6 +440,12 @@ class _HistoryScreenState extends State<HistoryScreen> {
             value: '$totalAttestations',
             icon: Icons.history_edu_outlined,
             color: AppColors.teal,
+          ),
+          buildStatCard(
+            label: 'Courriers',
+            value: '$totalMedicalLetters',
+            icon: Icons.mark_email_read_outlined,
+            color: AppColors.successDark,
           ),
         ];
 
@@ -596,6 +642,11 @@ class _HistoryScreenState extends State<HistoryScreen> {
             icon: Icons.history_edu_outlined,
             view: HistoryView.attestations,
           ),
+          buildHistoryViewButton(
+            label: 'Courriers',
+            icon: Icons.mark_email_read_outlined,
+            view: HistoryView.medicalLetters,
+          ),
         ],
       ),
     );
@@ -742,6 +793,15 @@ class _HistoryScreenState extends State<HistoryScreen> {
       title: 'Aucune attestation générée',
       text:
           'Les attestations patient générées apparaîtront ici avec leur patient, leur date et leur signature.',
+    );
+  }
+
+  Widget buildMedicalLetterEmptyState() {
+    return buildInfoState(
+      icon: Icons.mark_email_read_outlined,
+      title: 'Aucun courrier médical généré',
+      text:
+          'Les courriers médicaux générés apparaîtront ici avec leur patient, leur type et leur date.',
     );
   }
 
@@ -1116,6 +1176,111 @@ class _HistoryScreenState extends State<HistoryScreen> {
                       ? Icons.check_circle_outline_rounded
                       : Icons.pending_actions_outlined,
                   text: template.statusLabel,
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget buildMedicalLetterCard(MedicalLetterHistoryItem item) {
+    final template = medicalLetterTemplateByTypeId(item.typeId);
+
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          CupertinoPageRoute(
+            builder: (_) => MedicalLetterHistoryDetailScreen(letter: item),
+          ),
+        );
+      },
+      child: Container(
+        margin: const EdgeInsets.only(bottom: AppSpacing.sm),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(AppRadius.xl),
+          border: Border.all(color: AppColors.border),
+          boxShadow: AppShadows.soft,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  height: 50,
+                  width: 50,
+                  decoration: BoxDecoration(
+                    color: template.color.withValues(alpha: 0.10),
+                    borderRadius: BorderRadius.circular(AppRadius.lg),
+                    border: Border.all(
+                      color: template.color.withValues(alpha: 0.18),
+                    ),
+                  ),
+                  child: Icon(template.icon, color: template.color, size: 25),
+                ),
+                const SizedBox(width: AppSpacing.sm),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        item.title,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: AppColors.textPrimary,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w900,
+                          height: 1.15,
+                        ),
+                      ),
+                      const SizedBox(height: 5),
+                      Text(
+                        item.displayPatient,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: AppColors.textPrimary,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 13,
+                          height: 1.25,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Icon(
+                  Icons.chevron_right_rounded,
+                  color: AppColors.textMuted,
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Wrap(
+              spacing: AppSpacing.sm,
+              runSpacing: AppSpacing.sm,
+              children: [
+                buildSmallBadge(
+                  icon: Icons.event_outlined,
+                  text: formatDate(item.generatedAt.toIso8601String()),
+                ),
+                buildSmallBadge(
+                  icon: Icons.local_hospital_outlined,
+                  text: item.patientMedecinNom.trim().isEmpty
+                      ? 'Médecin non renseigné'
+                      : item.patientMedecinNom.trim(),
+                ),
+                buildSmallBadge(
+                  icon: item.hasPractitionerSignature
+                      ? Icons.draw_outlined
+                      : Icons.edit_off_outlined,
+                  text: item.practitionerSignatureStatus,
                 ),
               ],
             ),

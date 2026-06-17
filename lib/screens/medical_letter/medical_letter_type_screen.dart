@@ -1,38 +1,21 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+import '../../models/medical_letter/medical_letter_template.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_radius.dart';
 import '../../theme/app_shadows.dart';
 import '../../theme/app_spacing.dart';
-import '../attestation/attestation_type_screen.dart';
-import '../medical_letter/medical_letter_type_screen.dart';
-import '../prescription_screen.dart';
+import 'medical_letter_screen.dart';
 
-class PrescriptionTypeScreen extends StatelessWidget {
-  const PrescriptionTypeScreen({super.key});
+class MedicalLetterTypeScreen extends StatelessWidget {
+  const MedicalLetterTypeScreen({super.key});
 
-  void openPrescriptionScreen(BuildContext context, String type) {
-    if (type == 'Attestations') {
-      Navigator.push(
-        context,
-        CupertinoPageRoute(builder: (_) => const AttestationTypeScreen()),
-      );
-      return;
-    }
-
-    if (type == 'Courriers médicaux') {
-      Navigator.push(
-        context,
-        CupertinoPageRoute(builder: (_) => const MedicalLetterTypeScreen()),
-      );
-      return;
-    }
-
+  void openLetter(BuildContext context, MedicalLetterTemplate template) {
     Navigator.push(
       context,
       CupertinoPageRoute(
-        builder: (_) => PrescriptionScreen(initialPrescriptionType: type),
+        builder: (_) => MedicalLetterScreen(template: template),
       ),
     );
   }
@@ -50,7 +33,7 @@ class PrescriptionTypeScreen extends StatelessWidget {
                 AppSpacing.md,
                 AppSpacing.sm,
                 AppSpacing.md,
-                AppSpacing.md,
+                AppSpacing.lg,
               ),
               children: [
                 Align(
@@ -69,12 +52,12 @@ class PrescriptionTypeScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: AppSpacing.sm),
-                ...prescriptionTypeOptions.map(
-                  (item) => Padding(
+                ...medicalLetterTemplates.map(
+                  (template) => Padding(
                     padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-                    child: _PrescriptionTypeCard(
-                      item: item,
-                      onTap: () => openPrescriptionScreen(context, item.title),
+                    child: _MedicalLetterTypeCard(
+                      template: template,
+                      onTap: () => openLetter(context, template),
                     ),
                   ),
                 ),
@@ -87,69 +70,10 @@ class PrescriptionTypeScreen extends StatelessWidget {
   }
 }
 
-class PrescriptionTypeOption {
-  const PrescriptionTypeOption({
-    required this.id,
-    required this.title,
-    required this.icon,
-    required this.color,
-  });
+class _MedicalLetterTypeCard extends StatelessWidget {
+  const _MedicalLetterTypeCard({required this.template, required this.onTap});
 
-  final String id;
-  final String title;
-  final IconData icon;
-  final Color color;
-}
-
-const prescriptionTypeOptions = [
-  PrescriptionTypeOption(
-    id: 'reeducation',
-    title: 'Rééducation',
-    icon: Icons.accessibility_new_rounded,
-    color: Color(0xFF2563EB),
-  ),
-  PrescriptionTypeOption(
-    id: 'materiel',
-    title: 'Matériel',
-    icon: Icons.medical_services_outlined,
-    color: Color(0xFF7C3AED),
-  ),
-  PrescriptionTypeOption(
-    id: 'examens',
-    title: 'Examens',
-    icon: Icons.biotech_outlined,
-    color: Color(0xFFF97316),
-  ),
-  PrescriptionTypeOption(
-    id: 'conseils',
-    title: 'Conseils',
-    icon: Icons.chat_bubble_outline_rounded,
-    color: Color(0xFF0F766E),
-  ),
-  PrescriptionTypeOption(
-    id: 'attestations',
-    title: 'Attestations',
-    icon: Icons.assignment_turned_in_outlined,
-    color: Color(0xFFE11D48),
-  ),
-  PrescriptionTypeOption(
-    id: 'courriers_medicaux',
-    title: 'Courriers médicaux',
-    icon: Icons.mark_email_read_outlined,
-    color: Color(0xFF0F766E),
-  ),
-  PrescriptionTypeOption(
-    id: 'autres',
-    title: 'Autres',
-    icon: Icons.more_horiz_rounded,
-    color: Color(0xFF64748B),
-  ),
-];
-
-class _PrescriptionTypeCard extends StatelessWidget {
-  const _PrescriptionTypeCard({required this.item, required this.onTap});
-
-  final PrescriptionTypeOption item;
+  final MedicalLetterTemplate template;
   final VoidCallback onTap;
 
   @override
@@ -171,31 +95,32 @@ class _PrescriptionTypeCard extends StatelessWidget {
             boxShadow: AppShadows.soft,
           ),
           child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Container(
                 height: compact ? 44 : 50,
                 width: compact ? 44 : 50,
                 decoration: BoxDecoration(
-                  color: item.color.withValues(alpha: 0.10),
+                  color: template.color.withValues(alpha: 0.10),
                   borderRadius: BorderRadius.circular(AppRadius.lg),
-                  border: Border.all(color: item.color.withValues(alpha: 0.18)),
+                  border: Border.all(
+                    color: template.color.withValues(alpha: 0.18),
+                  ),
                 ),
                 child: Icon(
-                  item.icon,
-                  color: item.color,
+                  template.icon,
+                  color: template.color,
                   size: compact ? 23 : 26,
                 ),
               ),
               const SizedBox(width: AppSpacing.sm),
               Expanded(
                 child: Text(
-                  item.title,
-                  maxLines: 1,
+                  template.title,
+                  maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    color: item.color,
-                    fontSize: compact ? 16 : 18,
+                    color: template.color,
+                    fontSize: compact ? 15.5 : 18,
                     fontWeight: FontWeight.w900,
                   ),
                 ),
