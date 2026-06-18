@@ -478,7 +478,7 @@ class _LoginButton extends StatelessWidget {
         ),
         child: ElevatedButton(
           onPressed: () async {
-            await OfflineSessionService().markSuccessfulLogin();
+            await OfflineSessionService().recordSuccessfulLogin();
             if (!context.mounted) return;
             Navigator.of(context).pushReplacement(
               MaterialPageRoute(builder: (_) => const MainNavigationScreen()),

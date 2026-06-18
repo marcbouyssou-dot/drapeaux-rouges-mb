@@ -83,6 +83,17 @@ void main() {
     expect(find.byType(LoginScreen), findsOneWidget);
   });
 
+  testWidgets('online with valid local session still shows login screen', (
+    tester,
+  ) async {
+    ConnectivityService.instance.emitStatusForTests(true);
+
+    await pumpAuthGate(tester, session: validSession());
+
+    expect(find.byType(LoginScreen), findsOneWidget);
+    expect(find.byType(MainNavigationScreen), findsNothing);
+  });
+
   testWidgets('online with expired session shows login screen', (tester) async {
     ConnectivityService.instance.emitStatusForTests(true);
 

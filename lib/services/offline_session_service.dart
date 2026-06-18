@@ -66,6 +66,10 @@ class OfflineSessionService {
     debugPrint('[BOOT][OfflineSession] markSuccessfulLogin() OK');
   }
 
+  Future<void> recordSuccessfulLogin({DateTime? now}) {
+    return markSuccessfulLogin(now: now);
+  }
+
   Future<void> clearSession() async {
     debugPrint('[BOOT][OfflineSession] clearSession() START');
     await _box.delete(_authenticatedOnceKey);

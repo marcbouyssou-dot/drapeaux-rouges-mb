@@ -64,11 +64,10 @@ class _AuthGateState extends State<AuthGate> {
 
       _setStep('DECIDING ROUTE');
       if (online) {
-        if (session.isValid) {
-          debugPrint('[BOOT][AuthGate] route=app online');
-          return _AuthGateDecision.app(isOffline: false);
-        }
-        debugPrint('[BOOT][AuthGate] route=login online');
+        debugPrint(
+          '[BOOT][AuthGate] route=login online '
+          '(offline session is not an online auth token)',
+        );
         return _AuthGateDecision.login();
       }
 
