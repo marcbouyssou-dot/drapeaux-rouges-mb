@@ -9,10 +9,7 @@ class HeaderCard extends StatelessWidget {
       padding: const EdgeInsets.all(22),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [
-            Colors.white,
-            Color(0xFFEAF3FF),
-          ],
+          colors: [Colors.white, Color(0xFFEAF3FF)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),

@@ -43,11 +43,7 @@ class ClinicalSectionCard extends StatelessWidget {
                     color: sectionColor.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(14),
                   ),
-                  child: Icon(
-                    icon,
-                    color: sectionColor,
-                    size: 24,
-                  ),
+                  child: Icon(icon, color: sectionColor, size: 24),
                 ),
 
               if (icon != null) const SizedBox(width: 12),
@@ -60,10 +56,7 @@ class ClinicalSectionCard extends StatelessWidget {
 
                     if (subtitle != null) ...[
                       const SizedBox(height: 4),
-                      Text(
-                        subtitle!,
-                        style: AppTextStyles.cardSubtitle,
-                      ),
+                      Text(subtitle!, style: AppTextStyles.cardSubtitle),
                     ],
                   ],
                 ),

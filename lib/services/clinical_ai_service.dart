@@ -7,9 +7,7 @@ class ClinicalAiService {
     final List<String> detectedCategories = [];
 
     categories.forEach((category, items) {
-      final hasChecked = items.any(
-        (item) => item['checked'] == true,
-      );
+      final hasChecked = items.any((item) => item['checked'] == true);
 
       if (hasChecked) {
         detectedCategories.add(category);
@@ -20,9 +18,7 @@ class ClinicalAiService {
 
     if (detectedCategories.contains('Cardiovasculaire') &&
         detectedCategories.contains('Respiratoire')) {
-      messages.add(
-        'Association de drapeaux rouges cardio-respiratoires.',
-      );
+      messages.add('Association de drapeaux rouges cardio-respiratoires.');
     }
 
     if (detectedCategories.contains('Neurologique')) {
@@ -44,9 +40,7 @@ class ClinicalAiService {
     }
 
     if (score >= 9) {
-      messages.add(
-        'Accumulation importante de drapeaux rouges critiques.',
-      );
+      messages.add('Accumulation importante de drapeaux rouges critiques.');
     }
 
     if (checkedCount == 0) {

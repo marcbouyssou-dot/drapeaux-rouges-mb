@@ -34,9 +34,9 @@ class PatientRecordService {
     }
 
     records.sort((a, b) {
-      return a.patientDisplayName
-          .toLowerCase()
-          .compareTo(b.patientDisplayName.toLowerCase());
+      return a.patientDisplayName.toLowerCase().compareTo(
+        b.patientDisplayName.toLowerCase(),
+      );
     });
 
     return records;

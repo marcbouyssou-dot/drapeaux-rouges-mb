@@ -309,8 +309,7 @@ final Map<String, List<Map<String, dynamic>>> clinicalCategories = {
       'checked': false,
     },
     {
-      'title':
-          'Wells TVP : veines superficielles collatérales non variqueuses',
+      'title': 'Wells TVP : veines superficielles collatérales non variqueuses',
       'severity': 'Modéré',
       'tags': ['wells_tvp', 'tvp'],
       'checked': false,

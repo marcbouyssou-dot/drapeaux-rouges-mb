@@ -9,6 +9,7 @@ import '../services/global_statistics_csv_service.dart';
 import '../services/patient_record_service.dart';
 import '../services/practitioner_profile_service.dart';
 import '../services/rgpd_local_service.dart';
+import '../services/offline_sync_service.dart';
 import '../theme/app_colors.dart' as ds;
 import '../theme/app_radius.dart';
 import '../theme/app_shadows.dart';
@@ -62,6 +63,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ],
         );
       },
+    );
+  }
+
+  Future<void> synchronizeNow() async {
+    final syncedCount = await OfflineSyncService().syncPendingEvaluations();
+
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          syncedCount == 0
+              ? 'Aucune donnée synchronisée pour le moment.'
+              : '$syncedCount évaluation(s) synchronisée(s).',
+        ),
+      ),
     );
   }
 
@@ -572,6 +589,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   title: 'CSV statistiques',
                   subtitle: 'Exporter les évaluations pseudonymisées.',
                   onTap: GlobalStatisticsCsvService.exportGlobalStatisticsCsv,
+                ),
+                settingCard(
+                  icon: Icons.sync_rounded,
+                  iconColor: ds.AppColors.teal,
+                  title: 'Synchroniser maintenant',
+                  subtitle: 'Relancer la file locale en attente.',
+                  onTap: () {
+                    synchronizeNow();
+                  },
                 ),
 
                 const SizedBox(height: 8),

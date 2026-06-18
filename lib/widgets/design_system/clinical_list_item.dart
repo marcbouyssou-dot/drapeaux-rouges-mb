@@ -44,11 +44,7 @@ class ClinicalListItem extends StatelessWidget {
                   color: color.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(18),
                 ),
-                child: Icon(
-                  icon,
-                  color: color,
-                  size: 30,
-                ),
+                child: Icon(icon, color: color, size: 30),
               ),
               const SizedBox(width: 16),
               Expanded(

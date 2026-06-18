@@ -71,7 +71,8 @@ class BDKSessionService {
 
     vigilance = decisionMessage;
 
-    diagnostic = '''
+    diagnostic =
+        '''
 Évaluation réalisée dans le cadre de l’accès direct.
 
 Le niveau de risque identifié est : $risk.
@@ -98,7 +99,8 @@ Prise en charge kinésithérapique adaptée au tableau clinique, avec surveillan
 - Tolérance à la prise en charge
 ''';
 
-    syntheseClinique = '''
+    syntheseClinique =
+        '''
 Motif principal : $selectedCategory
 
 Niveau de risque : $risk

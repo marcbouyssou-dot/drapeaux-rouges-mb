@@ -138,7 +138,43 @@ self.addEventListener('fetch', (event) => {
           return (
             (await caches.match('index.html')) ||
             (await caches.match('/')) ||
-            Response.error()
+            new Response(
+              `<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Drapeaux Rouges - Offline</title>
+  <style>
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      background: #032052;
+      color: #ffffff;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      text-align: center;
+    }
+    main {
+      width: min(88vw, 420px);
+      line-height: 1.5;
+    }
+    a {
+      color: #7db7ff;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Mode hors connexion</h1>
+    <p>Le service worker projet est actif, mais l'app shell Flutter n'a pas pu être relu depuis le cache.</p>
+    <p><a href="/offline-debug.html">Ouvrir le diagnostic offline</a></p>
+  </main>
+</body>
+</html>`,
+              { headers: { 'Content-Type': 'text/html; charset=utf-8' } }
+            )
           );
         })
     );

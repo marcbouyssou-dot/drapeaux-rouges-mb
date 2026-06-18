@@ -25,10 +25,7 @@ class AnonymizationService {
     List<Map<String, dynamic>> flags,
   ) {
     return flags.map((flag) {
-      return {
-        'severity': flag['severity'],
-        'tags': flag['tags'] ?? [],
-      };
+      return {'severity': flag['severity'], 'tags': flag['tags'] ?? []};
     }).toList();
   }
 

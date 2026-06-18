@@ -32,10 +32,7 @@ class ClinicalAutoSummaryCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(
-                Icons.auto_awesome,
-                color: AppColors.primaryBlue,
-              ),
+              Icon(Icons.auto_awesome, color: AppColors.primaryBlue),
               const SizedBox(width: 10),
               Text(
                 title,

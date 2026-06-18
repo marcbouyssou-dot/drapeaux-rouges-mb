@@ -62,11 +62,7 @@ class HistorySettingsScreen extends StatelessWidget {
       child: InkWell(
         borderRadius: BorderRadius.circular(32),
         onTap: () {
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (_) => page,
-            ),
-          );
+          Navigator.of(context).push(MaterialPageRoute(builder: (_) => page));
         },
         child: Container(
           width: double.infinity,
@@ -93,10 +89,7 @@ class HistorySettingsScreen extends StatelessWidget {
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   gradient: LinearGradient(
-                    colors: [
-                      mainColor.withValues(alpha: 0.78),
-                      mainColor,
-                    ],
+                    colors: [mainColor.withValues(alpha: 0.78), mainColor],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
@@ -108,11 +101,7 @@ class HistorySettingsScreen extends StatelessWidget {
                     ),
                   ],
                 ),
-                child: Icon(
-                  icon,
-                  color: Colors.white,
-                  size: 58,
-                ),
+                child: Icon(icon, color: Colors.white, size: 58),
               ),
               Text(
                 title,
@@ -135,8 +124,10 @@ class HistorySettingsScreen extends StatelessWidget {
                 ),
               ),
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 22, vertical: 13),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 22,
+                  vertical: 13,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.78),
                   borderRadius: BorderRadius.circular(18),

@@ -46,11 +46,7 @@ class ClinicalBigActionButton extends StatelessWidget {
                 ),
               ],
             ),
-            child: Icon(
-              icon,
-              color: Colors.white,
-              size: iconSize,
-            ),
+            child: Icon(icon, color: Colors.white, size: iconSize),
           ),
         ),
         const SizedBox(height: 26),

@@ -21,11 +21,7 @@ void main() {
           'severity': 'Modéré',
           'checked': true,
         },
-        {
-          'title': 'Checked high flag',
-          'severity': 'Élevé',
-          'checked': true,
-        },
+        {'title': 'Checked high flag', 'severity': 'Élevé', 'checked': true},
         {
           'title': 'Unchecked critical flag',
           'severity': 'Critique',
@@ -40,18 +36,10 @@ void main() {
     test('computes global score and checked count across categories', () {
       final categories = {
         'Lombalgie': [
-          {
-            'title': 'Moderate flag',
-            'severity': 'Modéré',
-            'checked': true,
-          },
+          {'title': 'Moderate flag', 'severity': 'Modéré', 'checked': true},
         ],
         'Cervicalgie': [
-          {
-            'title': 'Critical flag',
-            'severity': 'Critique',
-            'checked': true,
-          },
+          {'title': 'Critical flag', 'severity': 'Critique', 'checked': true},
           {
             'title': 'Unchecked high flag',
             'severity': 'Élevé',
@@ -70,22 +58,10 @@ void main() {
       expect(RiskScoreService.riskLevelFromScore(4), 'Risque élevé');
       expect(RiskScoreService.riskLevelFromScore(6), 'Risque critique');
 
-      expect(
-        RiskScoreService.riskColorFromScore(0),
-        const Color(0xFF22C55E),
-      );
-      expect(
-        RiskScoreService.riskColorFromScore(2),
-        const Color(0xFFF59E0B),
-      );
-      expect(
-        RiskScoreService.riskColorFromScore(4),
-        const Color(0xFFDC2626),
-      );
-      expect(
-        RiskScoreService.riskColorFromScore(6),
-        const Color(0xFF7F1D1D),
-      );
+      expect(RiskScoreService.riskColorFromScore(0), const Color(0xFF22C55E));
+      expect(RiskScoreService.riskColorFromScore(2), const Color(0xFFF59E0B));
+      expect(RiskScoreService.riskColorFromScore(4), const Color(0xFFDC2626));
+      expect(RiskScoreService.riskColorFromScore(6), const Color(0xFF7F1D1D));
     });
 
     test('extracts checked flags from categories', () {
@@ -97,25 +73,18 @@ void main() {
             'checked': true,
             'tags': ['test'],
           },
-          {
-            'title': 'Unchecked flag',
-            'severity': 'Critique',
-            'checked': false,
-          },
+          {'title': 'Unchecked flag', 'severity': 'Critique', 'checked': false},
         ],
       };
 
-      expect(
-        RiskScoreService.checkedFlagsFromCategories(categories),
-        [
-          {
-            'category': 'Lombalgie',
-            'title': 'Moderate flag',
-            'severity': 'Modéré',
-            'tags': ['test'],
-          },
-        ],
-      );
+      expect(RiskScoreService.checkedFlagsFromCategories(categories), [
+        {
+          'category': 'Lombalgie',
+          'title': 'Moderate flag',
+          'severity': 'Modéré',
+          'tags': ['test'],
+        },
+      ]);
     });
   });
 }

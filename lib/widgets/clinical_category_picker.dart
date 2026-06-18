@@ -57,9 +57,7 @@ class ClinicalCategoryPicker extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(18, 8, 18, 14),
       decoration: const BoxDecoration(
         color: Color(0xFFF8FAFC),
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(34),
-        ),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(34)),
       ),
       child: SafeArea(
         top: false,
@@ -168,11 +166,7 @@ class ClinicalCategoryPicker extends StatelessWidget {
                   color: color.withValues(alpha: 0.13),
                   borderRadius: BorderRadius.circular(16),
                 ),
-                child: Icon(
-                  categoryIcon(category),
-                  color: color,
-                  size: 26,
-                ),
+                child: Icon(categoryIcon(category), color: color, size: 26),
               ),
               const SizedBox(width: 12),
               Container(

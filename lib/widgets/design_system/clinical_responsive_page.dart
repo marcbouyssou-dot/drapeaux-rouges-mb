@@ -25,9 +25,7 @@ class ClinicalResponsivePage extends StatelessWidget {
         return Center(
           child: ConstrainedBox(
             constraints: BoxConstraints(
-              maxWidth: isWide
-                  ? desktopMaxWidth
-                  : mobileMaxWidth,
+              maxWidth: isWide ? desktopMaxWidth : mobileMaxWidth,
             ),
             child: child,
           ),
@@ -39,9 +37,6 @@ class ClinicalResponsivePage extends StatelessWidget {
       content = SafeArea(child: content);
     }
 
-    return Scaffold(
-      backgroundColor: backgroundColor,
-      body: content,
-    );
+    return Scaffold(backgroundColor: backgroundColor, body: content);
   }
 }

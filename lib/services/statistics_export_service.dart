@@ -5,7 +5,8 @@ import 'local_database_service.dart';
 import 'rgpd_local_service.dart';
 
 class StatisticsExportService {
-  static Future<List<Map<String, dynamic>>> buildAnonymousStatisticsExport() async {
+  static Future<List<Map<String, dynamic>>>
+  buildAnonymousStatisticsExport() async {
     final rawEvaluations = await LocalDatabaseService.getEvaluations();
 
     final evaluations = rawEvaluations

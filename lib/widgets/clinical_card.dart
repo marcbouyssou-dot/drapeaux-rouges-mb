@@ -26,14 +26,11 @@ class ClinicalCard extends StatelessWidget {
         color: backgroundColor ?? theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
-          color: borderColor ??
-              theme.colorScheme.outline.withValues(alpha: 0.08),
+          color:
+              borderColor ?? theme.colorScheme.outline.withValues(alpha: 0.08),
         ),
       ),
-      child: Padding(
-        padding: padding,
-        child: child,
-      ),
+      child: Padding(padding: padding, child: child),
     );
   }
 }

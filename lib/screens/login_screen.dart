@@ -6,6 +6,7 @@ import '../theme/app_radius.dart';
 import '../theme/app_shadows.dart';
 import '../theme/app_spacing.dart';
 import 'main_navigation_screen.dart';
+import '../services/offline_session_service.dart';
 
 const Color _loginBackgroundBase = Color(0xFF032052);
 
@@ -476,7 +477,9 @@ class _LoginButton extends StatelessWidget {
           ],
         ),
         child: ElevatedButton(
-          onPressed: () {
+          onPressed: () async {
+            await OfflineSessionService().markSuccessfulLogin();
+            if (!context.mounted) return;
             Navigator.of(context).pushReplacement(
               MaterialPageRoute(builder: (_) => const MainNavigationScreen()),
             );

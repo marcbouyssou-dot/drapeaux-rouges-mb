@@ -23,7 +23,8 @@ class BDKAutoFillService {
           'Présence de signes de vigilance nécessitant une surveillance clinique.';
     }
 
-    BDKSessionService.syntheseClinique = '''
+    BDKSessionService.syntheseClinique =
+        '''
 Patient présentant $motif.
 
 Les principaux éléments cliniques retrouvés sont :

@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#032052">
+  <title>Diagnostic PWA offline</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #032052;
+      --panel: rgba(255, 255, 255, 0.08);
+      --line: rgba(255, 255, 255, 0.16);
+      --text: #ffffff;
+      --muted: #b8cae8;
+      --ok: #54d18f;
+      --warn: #ffd166;
+      --ko: #ff6b6b;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at 85% 18%, rgba(47, 128, 255, 0.20), transparent 30%),
+        linear-gradient(180deg, #073a83 0%, #032052 45%, #021d45 100%);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    main {
+      width: min(92vw, 780px);
+      margin: 0 auto;
+      padding: 28px 0 40px;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 26px;
+    }
+
+    p {
+      margin: 0 0 20px;
+      color: var(--muted);
+    }
+
+    section {
+      margin-top: 14px;
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: var(--panel);
+    }
+
+    h2 {
+      margin: 0 0 12px;
+      font-size: 17px;
+    }
+
+    dl {
+      display: grid;
+      grid-template-columns: minmax(150px, 220px) 1fr;
+      gap: 10px 14px;
+      margin: 0;
+    }
+
+    dt {
+      color: var(--muted);
+    }
+
+    dd {
+      margin: 0;
+      overflow-wrap: anywhere;
+    }
+
+    ul {
+      margin: 0;
+      padding-left: 18px;
+    }
+
+    li {
+      margin: 8px 0;
+      overflow-wrap: anywhere;
+    }
+
+    code {
+      color: #dce9ff;
+    }
+
+    .ok {
+      color: var(--ok);
+      font-weight: 700;
+    }
+
+    .warn {
+      color: var(--warn);
+      font-weight: 700;
+    }
+
+    .ko {
+      color: var(--ko);
+      font-weight: 700;
+    }
+
+    @media (max-width: 560px) {
+      dl {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Diagnostic PWA offline</h1>
+    <p id="timestamp">Diagnostic en cours...</p>
+
+    <section>
+      <h2>Service worker</h2>
+      <dl id="sw-report"></dl>
+    </section>
+
+    <section>
+      <h2>Caches</h2>
+      <ul id="cache-report"></ul>
+    </section>
+
+    <section>
+      <h2>Fichiers critiques</h2>
+      <ul id="resource-report"></ul>
+    </section>
+
+    <section>
+      <h2>Fetch same-origin</h2>
+      <dl id="fetch-report"></dl>
+    </section>
+  </main>
+
+  <script>
+    const criticalResources = [
+      '/',
+      'index.html',
+      'flutter_bootstrap.js',
+      'flutter.js',
+      'main.dart.js',
+      'manifest.json',
+      'version.json',
+      'assets/AssetManifest.bin',
+      'assets/AssetManifest.bin.json',
+      'assets/FontManifest.json',
+      'assets/packages/cupertino_icons/assets/CupertinoIcons.ttf',
+    ];
+
+    const timestamp = document.getElementById('timestamp');
+    const swReport = document.getElementById('sw-report');
+    const cacheReport = document.getElementById('cache-report');
+    const resourceReport = document.getElementById('resource-report');
+    const fetchReport = document.getElementById('fetch-report');
+
+    function status(value) {
+      return value ? '<span class="ok">oui</span>' : '<span class="ko">non</span>';
+    }
+
+    function row(label, value) {
+      const dt = document.createElement('dt');
+      const dd = document.createElement('dd');
+      dt.textContent = label;
+      dd.innerHTML = value;
+      return [dt, dd];
+    }
+
+    function appendRows(target, rows) {
+      for (const [label, value] of rows) {
+        target.append(...row(label, value));
+      }
+    }
+
+    function li(html) {
+      const item = document.createElement('li');
+      item.innerHTML = html;
+      return item;
+    }
+
+    async function getRegistration() {
+      if (!('serviceWorker' in navigator)) return null;
+      return await navigator.serviceWorker.getRegistration();
+    }
+
+    async function runDiagnostic() {
+      timestamp.textContent = `Diagnostic généré le ${new Date().toLocaleString()}`;
+
+      const swSupported = 'serviceWorker' in navigator;
+      const controller = swSupported ? navigator.serviceWorker.controller : null;
+      const registration = await getRegistration();
+      const active = registration && registration.active;
+      const waiting = registration && registration.waiting;
+      const installing = registration && registration.installing;
+
+      appendRows(swReport, [
+        ['serviceWorker supporté', status(swSupported)],
+        ['controller actif', status(Boolean(controller))],
+        ['controller scriptURL', controller ? `<code>${controller.scriptURL}</code>` : '<span class="warn">absent</span>'],
+        ['registration scope', registration ? `<code>${registration.scope}</code>` : '<span class="warn">absente</span>'],
+        ['active scriptURL', active ? `<code>${active.scriptURL}</code>` : '<span class="warn">absent</span>'],
+        ['active state', active ? `<code>${active.state}</code>` : '<span class="warn">absent</span>'],
+        ['waiting state', waiting ? `<code>${waiting.state}</code>` : 'absent'],
+        ['installing state', installing ? `<code>${installing.state}</code>` : 'absent'],
+      ]);
+
+      if (!('caches' in window)) {
+        cacheReport.append(li('<span class="ko">Cache API non supportée</span>'));
+        resourceReport.append(li('<span class="ko">Impossible de vérifier les caches</span>'));
+      } else {
+        const cacheNames = await caches.keys();
+        if (cacheNames.length === 0) {
+          cacheReport.append(li('<span class="ko">Aucun cache présent</span>'));
+        } else {
+          for (const name of cacheNames) {
+            cacheReport.append(li(`<code>${name}</code>`));
+          }
+        }
+
+        for (const resource of criticalResources) {
+          const match = await caches.match(resource);
+          resourceReport.append(
+            li(`${match ? '<span class="ok">présent</span>' : '<span class="ko">manquant</span>'} <code>${resource}</code>`)
+          );
+        }
+      }
+
+      try {
+        const response = await fetch('main.dart.js', { cache: 'no-store' });
+        appendRows(fetchReport, [
+          ['main.dart.js fetch', response.ok ? '<span class="ok">OK</span>' : '<span class="ko">échec</span>'],
+          ['status', `<code>${response.status} ${response.statusText}</code>`],
+          ['url', `<code>${response.url}</code>`],
+        ]);
+      } catch (error) {
+        appendRows(fetchReport, [
+          ['main.dart.js fetch', '<span class="ko">exception</span>'],
+          ['erreur', `<code>${String(error)}</code>`],
+        ]);
+      }
+    }
+
+    runDiagnostic();
+  </script>
+</body>
+</html>

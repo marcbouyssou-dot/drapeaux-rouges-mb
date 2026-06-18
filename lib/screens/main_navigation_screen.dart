@@ -1,11 +1,17 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
+import '../services/connectivity_service.dart';
+import '../services/offline_sync_service.dart';
 import 'home_screen.dart';
 import 'history_screen.dart';
 import 'settings_screen.dart';
 
 class MainNavigationScreen extends StatefulWidget {
-  const MainNavigationScreen({super.key});
+  const MainNavigationScreen({super.key, this.initialOffline = false});
+
+  final bool initialOffline;
 
   @override
   State<MainNavigationScreen> createState() => _MainNavigationScreenState();
@@ -13,6 +19,8 @@ class MainNavigationScreen extends StatefulWidget {
 
 class _MainNavigationScreenState extends State<MainNavigationScreen> {
   int currentIndex = 0;
+  late bool isOffline;
+  StreamSubscription<bool>? connectivitySubscription;
 
   final PageController _pageController = PageController(initialPage: 0);
 
@@ -21,6 +29,29 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     HistoryScreen(),
     SettingsScreen(),
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    ConnectivityService.instance.startListening();
+    isOffline = widget.initialOffline || !ConnectivityService.instance.isOnline;
+    connectivitySubscription = ConnectivityService.instance.onStatusChanged
+        .listen((online) {
+          if (!mounted) return;
+
+          setState(() {
+            isOffline = !online;
+          });
+
+          if (online) {
+            OfflineSyncService().syncPendingEvaluations();
+          }
+        });
+
+    if (!isOffline) {
+      OfflineSyncService().syncPendingEvaluations();
+    }
+  }
 
   void goToPage(int index) {
     setState(() {
@@ -36,6 +67,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 
   @override
   void dispose() {
+    connectivitySubscription?.cancel();
     _pageController.dispose();
     super.dispose();
   }
@@ -65,15 +97,25 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     return Scaffold(
       extendBody: true,
       backgroundColor: const Color(0xFFF8FAFF),
-      body: PageView(
-        controller: _pageController,
-        physics: const BouncingScrollPhysics(),
-        onPageChanged: (index) {
-          setState(() {
-            currentIndex = index;
-          });
-        },
-        children: _pages,
+      body: Stack(
+        children: [
+          PageView(
+            controller: _pageController,
+            physics: const BouncingScrollPhysics(),
+            onPageChanged: (index) {
+              setState(() {
+                currentIndex = index;
+              });
+            },
+            children: _pages,
+          ),
+          if (isOffline)
+            Positioned(
+              top: MediaQuery.paddingOf(context).top + 8,
+              right: 16,
+              child: const _OfflineBadge(),
+            ),
+        ],
       ),
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.fromLTRB(14, 0, 14, 16),
@@ -94,29 +136,25 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
               data: NavigationBarThemeData(
                 backgroundColor: Colors.white.withValues(alpha: 0.97),
                 indicatorColor: Colors.transparent,
-                labelTextStyle: WidgetStateProperty.resolveWith(
-                  (states) {
-                    final selected = states.contains(WidgetState.selected);
-                    return TextStyle(
-                      fontSize: 10.5,
-                      fontWeight: selected ? FontWeight.w900 : FontWeight.w600,
-                      letterSpacing: -0.25,
-                      color: selected
-                          ? const Color(0xFF2563EB)
-                          : const Color(0xFF64748B),
-                    );
-                  },
-                ),
-                iconTheme: WidgetStateProperty.resolveWith(
-                  (states) {
-                    final selected = states.contains(WidgetState.selected);
-                    return IconThemeData(
-                      color: selected
-                          ? const Color(0xFF2563EB)
-                          : const Color(0xFF64748B),
-                    );
-                  },
-                ),
+                labelTextStyle: WidgetStateProperty.resolveWith((states) {
+                  final selected = states.contains(WidgetState.selected);
+                  return TextStyle(
+                    fontSize: 10.5,
+                    fontWeight: selected ? FontWeight.w900 : FontWeight.w600,
+                    letterSpacing: -0.25,
+                    color: selected
+                        ? const Color(0xFF2563EB)
+                        : const Color(0xFF64748B),
+                  );
+                }),
+                iconTheme: WidgetStateProperty.resolveWith((states) {
+                  final selected = states.contains(WidgetState.selected);
+                  return IconThemeData(
+                    color: selected
+                        ? const Color(0xFF2563EB)
+                        : const Color(0xFF64748B),
+                  );
+                }),
               ),
               child: NavigationBar(
                 selectedIndex: currentIndex,
@@ -145,6 +183,49 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                 ],
               ),
             ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _OfflineBadge extends StatelessWidget {
+  const _OfflineBadge();
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      label: 'Mode hors ligne',
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: const Color(0xFF0F172A).withValues(alpha: 0.86),
+          borderRadius: BorderRadius.circular(999),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.24)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.16),
+              blurRadius: 16,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.cloud_off_rounded, color: Colors.white, size: 14),
+              SizedBox(width: 6),
+              Text(
+                'Hors ligne',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 11.5,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+            ],
           ),
         ),
       ),

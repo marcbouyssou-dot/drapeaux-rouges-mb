@@ -23,8 +23,8 @@ class ClinicalActionButton extends StatelessWidget {
     final backgroundColor = isDanger
         ? theme.colorScheme.error
         : isPrimary
-            ? theme.colorScheme.primary
-            : theme.colorScheme.surface;
+        ? theme.colorScheme.primary
+        : theme.colorScheme.surface;
 
     final foregroundColor = isPrimary || isDanger
         ? Colors.white
@@ -40,10 +40,7 @@ class ClinicalActionButton extends StatelessWidget {
         style: FilledButton.styleFrom(
           backgroundColor: backgroundColor,
           foregroundColor: foregroundColor,
-          textStyle: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w800,
-          ),
+          textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(18),
           ),

@@ -3,10 +3,7 @@ import 'package:flutter/material.dart';
 class AppHeader extends StatelessWidget {
   final bool compact;
 
-  const AppHeader({
-    super.key,
-    this.compact = false,
-  });
+  const AppHeader({super.key, this.compact = false});
 
   @override
   Widget build(BuildContext context) {

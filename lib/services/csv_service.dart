@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-
 import 'package:share_plus/share_plus.dart';
 
 class CsvService {
@@ -36,18 +35,12 @@ class CsvService {
 
     final csvContent = buffer.toString();
 
-    final bytes = Uint8List.fromList(
-      utf8.encode(csvContent),
-    );
+    final bytes = Uint8List.fromList(utf8.encode(csvContent));
 
     final fileName =
         'export_statistique_pseudonymise_${DateTime.now().millisecondsSinceEpoch}.csv';
 
-    final file = XFile.fromData(
-      bytes,
-      name: fileName,
-      mimeType: 'text/csv',
-    );
+    final file = XFile.fromData(bytes, name: fileName, mimeType: 'text/csv');
 
     await Share.shareXFiles(
       [file],

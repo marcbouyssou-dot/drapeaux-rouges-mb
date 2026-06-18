@@ -10,8 +10,7 @@ class CloudHdsContractModel {
       // Identifiants pseudonymisés uniquement
       'patientPseudonymizedId':
           evaluation['patientAnonymousId']?.toString() ?? 'non_renseigne',
-      'evaluationPseudonymizedId':
-          evaluation['evaluationId']?.toString() ?? '',
+      'evaluationPseudonymizedId': evaluation['evaluationId']?.toString() ?? '',
 
       // Date réduite au mois pour limiter le risque de réidentification
       'evaluationMonth': _monthOnly(evaluation['date']?.toString()),

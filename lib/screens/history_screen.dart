@@ -9,6 +9,7 @@ import '../models/prescription_model.dart';
 import '../services/attestation_history_service.dart';
 import '../services/history_service.dart';
 import '../services/medical_letter_history_service.dart';
+import '../services/offline_sync_service.dart';
 import '../services/prescription_service.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_radius.dart';
@@ -965,6 +966,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   text: formatDate(item['date']),
                 ),
                 if (isAnonymous) buildAnonymousBadge(),
+                buildSyncBadge(item),
               ],
             ),
           ],
@@ -1339,6 +1341,58 @@ class _HistoryScreenState extends State<HistoryScreen> {
           fontWeight: FontWeight.w900,
           fontSize: 11,
         ),
+      ),
+    );
+  }
+
+  Widget buildSyncBadge(Map<String, dynamic> item) {
+    final status = SyncStatus.fromValue(item['syncStatus']);
+
+    final Color color;
+    final IconData icon;
+    final String text;
+
+    switch (status) {
+      case SyncStatus.synced:
+        color = AppColors.successDark;
+        icon = Icons.cloud_done_outlined;
+        text = 'Synchronisé';
+      case SyncStatus.pendingSync:
+      case SyncStatus.syncing:
+        color = AppColors.warningDark;
+        icon = Icons.cloud_upload_outlined;
+        text = 'En attente';
+      case SyncStatus.syncFailed:
+        color = AppColors.dangerDark;
+        icon = Icons.cloud_off_outlined;
+        text = 'Échec sync';
+      case SyncStatus.localOnly:
+        color = AppColors.textSecondary;
+        icon = Icons.phone_iphone_rounded;
+        text = 'Local';
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(AppRadius.pill),
+        border: Border.all(color: color.withValues(alpha: 0.22)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14, color: color),
+          const SizedBox(width: 5),
+          Text(
+            text,
+            style: TextStyle(
+              color: color,
+              fontSize: 11.5,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+        ],
       ),
     );
   }

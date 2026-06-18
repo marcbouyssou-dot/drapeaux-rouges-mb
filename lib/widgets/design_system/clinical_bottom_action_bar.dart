@@ -32,9 +32,7 @@ class ClinicalBottomActionBar extends StatelessWidget {
       ),
       decoration: BoxDecoration(
         color: AppColors.background,
-        border: Border(
-          top: BorderSide(color: AppColors.border),
-        ),
+        border: Border(top: BorderSide(color: AppColors.border)),
       ),
       child: Row(
         children: [
@@ -51,8 +49,9 @@ class ClinicalBottomActionBar extends StatelessWidget {
                   side: BorderSide(color: AppColors.border),
                   minimumSize: const Size.fromHeight(54),
                   shape: RoundedRectangleBorder(
-                    borderRadius:
-                        BorderRadius.circular(AppSpacing.buttonRadius),
+                    borderRadius: BorderRadius.circular(
+                      AppSpacing.buttonRadius,
+                    ),
                   ),
                 ),
               ),
@@ -70,8 +69,7 @@ class ClinicalBottomActionBar extends StatelessWidget {
                 elevation: 0,
                 minimumSize: const Size.fromHeight(54),
                 shape: RoundedRectangleBorder(
-                  borderRadius:
-                      BorderRadius.circular(AppSpacing.buttonRadius),
+                  borderRadius: BorderRadius.circular(AppSpacing.buttonRadius),
                 ),
               ),
             ),

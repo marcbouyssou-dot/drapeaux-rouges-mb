@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-
 import 'package:share_plus/share_plus.dart';
 
 import 'local_database_service.dart';
@@ -70,18 +69,12 @@ class GlobalStatisticsCsvService {
       );
     }
 
-    final bytes = Uint8List.fromList(
-      utf8.encode(buffer.toString()),
-    );
+    final bytes = Uint8List.fromList(utf8.encode(buffer.toString()));
 
     final fileName =
         'statistiques_globales_pseudonymisees_${DateTime.now().millisecondsSinceEpoch}.csv';
 
-    final file = XFile.fromData(
-      bytes,
-      name: fileName,
-      mimeType: 'text/csv',
-    );
+    final file = XFile.fromData(bytes, name: fileName, mimeType: 'text/csv');
 
     await Share.shareXFiles(
       [file],
