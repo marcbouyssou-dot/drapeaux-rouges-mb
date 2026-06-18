@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:hive/hive.dart';
 
 import 'secure_hive_service.dart';
@@ -31,6 +32,7 @@ class OfflineSessionService {
   static Box get _box => Hive.box(_boxName);
 
   Future<OfflineSession> getSession() async {
+    debugPrint('[BOOT][OfflineSession] getSession() START');
     final lastLogin = DateTime.tryParse(
       _box.get(_lastLoginAtKey, defaultValue: '')?.toString() ?? '',
     );
@@ -38,15 +40,22 @@ class OfflineSessionService {
       _box.get(_validUntilKey, defaultValue: '')?.toString() ?? '',
     );
 
-    return OfflineSession(
+    final session = OfflineSession(
       authenticatedOnce:
           _box.get(_authenticatedOnceKey, defaultValue: false) == true,
       lastSuccessfulLoginAt: lastLogin,
       validUntil: validUntil,
     );
+    debugPrint(
+      '[BOOT][OfflineSession] getSession() OK '
+      'authenticatedOnce=${session.authenticatedOnce} '
+      'isValid=${session.isValid} isExpired=${session.isExpired}',
+    );
+    return session;
   }
 
   Future<void> markSuccessfulLogin({DateTime? now}) async {
+    debugPrint('[BOOT][OfflineSession] markSuccessfulLogin() START');
     final current = now ?? DateTime.now();
     await _box.put(_authenticatedOnceKey, true);
     await _box.put(_lastLoginAtKey, current.toIso8601String());
@@ -54,11 +63,14 @@ class OfflineSessionService {
       _validUntilKey,
       current.add(const Duration(days: validityDays)).toIso8601String(),
     );
+    debugPrint('[BOOT][OfflineSession] markSuccessfulLogin() OK');
   }
 
   Future<void> clearSession() async {
+    debugPrint('[BOOT][OfflineSession] clearSession() START');
     await _box.delete(_authenticatedOnceKey);
     await _box.delete(_lastLoginAtKey);
     await _box.delete(_validUntilKey);
+    debugPrint('[BOOT][OfflineSession] clearSession() OK');
   }
 }

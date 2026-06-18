@@ -7,12 +7,25 @@ import 'theme/app_theme.dart';
 import 'screens/auth/auth_gate.dart';
 
 Future<void> main() async {
+  debugPrint('[BOOT] main() START');
   WidgetsFlutterBinding.ensureInitialized();
 
-  await _configureSmartphoneOrientation();
-  await SecureHiveService.initFlutter();
+  await initializeApp();
 
+  debugPrint('[BOOT] runApp()');
   runApp(const RedFlagsApp());
+}
+
+Future<void> initializeApp() async {
+  debugPrint('[BOOT] initializeApp() START');
+  debugPrint('[BOOT] CONFIGURING ORIENTATION');
+  await _configureSmartphoneOrientation();
+  debugPrint('[BOOT] ORIENTATION OK');
+
+  debugPrint('[BOOT] INITIALIZING STORAGE');
+  await SecureHiveService.initFlutter();
+  debugPrint('[BOOT] STORAGE OK');
+  debugPrint('[BOOT] initializeApp() OK');
 }
 
 Future<void> _configureSmartphoneOrientation() async {

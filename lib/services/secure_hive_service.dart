@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
@@ -15,17 +16,22 @@ class SecureHiveService {
   static HiveAesCipher? _cipher;
 
   static Future<void> initFlutter() async {
+    debugPrint('[BOOT][Hive] initFlutter() START');
     await Hive.initFlutter();
+    debugPrint('[BOOT][Hive] Hive.initFlutter() OK');
     await openProtectedBoxes();
+    debugPrint('[BOOT][Hive] initFlutter() OK');
   }
 
   static Future<void> openProtectedBoxes() async {
+    debugPrint('[BOOT][Hive] openProtectedBoxes() START');
     final cipher = await encryptionCipher();
 
     await _openProtectedBox(patientsBoxName, cipher);
     await _openProtectedBox(evaluationsBoxName, cipher);
     await _openProtectedBox(settingsBoxName, cipher);
     await _openProtectedBox(accessDirectBoxName, cipher);
+    debugPrint('[BOOT][Hive] openProtectedBoxes() OK');
   }
 
   static Future<Box> openProtectedBox(String boxName) async {
@@ -38,16 +44,22 @@ class SecureHiveService {
 
   static Future<HiveAesCipher> encryptionCipher() async {
     final existingCipher = _cipher;
-    if (existingCipher != null) return existingCipher;
+    if (existingCipher != null) {
+      debugPrint('[BOOT][Hive] encryptionCipher(): cached cipher');
+      return existingCipher;
+    }
 
+    debugPrint('[BOOT][Hive] encryptionCipher(): reading secure key');
     final encodedKey = await _secureStorage.read(key: _encryptionKeyName);
 
     if (encodedKey != null && encodedKey.isNotEmpty) {
+      debugPrint('[BOOT][Hive] encryptionCipher(): existing key found');
       final key = base64Url.decode(encodedKey);
       _cipher = HiveAesCipher(key);
       return _cipher!;
     }
 
+    debugPrint('[BOOT][Hive] encryptionCipher(): creating new key');
     final key = Hive.generateSecureKey();
     await _secureStorage.write(
       key: _encryptionKeyName,
@@ -63,8 +75,12 @@ class SecureHiveService {
     HiveAesCipher cipher,
   ) async {
     try {
-      return await Hive.openBox(boxName, encryptionCipher: cipher);
+      debugPrint('[BOOT][Hive] opening box "$boxName"');
+      final box = await Hive.openBox(boxName, encryptionCipher: cipher);
+      debugPrint('[BOOT][Hive] box "$boxName" OK');
+      return box;
     } on HiveError {
+      debugPrint('[BOOT][Hive] box "$boxName" legacy migration required');
       return _migrateLegacyBox(boxName, cipher);
     }
   }
