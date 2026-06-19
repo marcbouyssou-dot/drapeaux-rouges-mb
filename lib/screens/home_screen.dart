@@ -31,6 +31,7 @@ import 'evaluation/evaluation_result_screen.dart';
 import 'patient_consent_screen.dart';
 import 'bdk/bdk_type_screen.dart';
 import 'prescription/prescription_type_screen.dart';
+import '../widgets/design_system/clinical_responsive_info.dart';
 import '../widgets/design_system/clinical_responsive_page.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -528,7 +529,18 @@ class _HomeScreenState extends State<HomeScreen> {
       desktopMaxWidth: 1040,
       child: LayoutBuilder(
         builder: (context, constraints) {
-          final isWide = constraints.maxWidth >= 700;
+          final mediaSize = MediaQuery.sizeOf(context);
+          final responsive = ClinicalResponsiveInfo.fromConstraints(
+            constraints,
+          );
+          final mediaIsPhoneLandscape =
+              mediaSize.width > mediaSize.height &&
+              (mediaSize.shortestSide < 600 || mediaSize.height < 600);
+          final isPhoneLandscape = responsive.isPhoneLandscape;
+          final usePhoneLandscapeLayout =
+              isPhoneLandscape || mediaIsPhoneLandscape;
+          final isWide =
+              constraints.maxWidth >= 700 && !usePhoneLandscapeLayout;
 
           if (isWide) {
             return Column(
@@ -593,11 +605,11 @@ class _HomeScreenState extends State<HomeScreen> {
             children: [
               Expanded(
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.fromLTRB(
-                    AppSpacing.md,
-                    AppSpacing.sm,
-                    AppSpacing.md,
-                    150,
+                  padding: EdgeInsets.fromLTRB(
+                    isPhoneLandscape ? AppSpacing.sm : AppSpacing.md,
+                    isPhoneLandscape ? AppSpacing.xs : AppSpacing.sm,
+                    isPhoneLandscape ? AppSpacing.sm : AppSpacing.md,
+                    isPhoneLandscape ? 96 : 150,
                   ),
                   child: Column(
                     children: [
@@ -605,7 +617,11 @@ class _HomeScreenState extends State<HomeScreen> {
                         hasPatient: currentPatient != null,
                         patientDisplayName: patientDisplayName,
                       ),
-                      const SizedBox(height: AppSpacing.sm),
+                      SizedBox(
+                        height: isPhoneLandscape
+                            ? AppSpacing.xs
+                            : AppSpacing.sm,
+                      ),
                       HomeScoreCard(
                         score: score,
                         checkedCount: checkedCount,
@@ -615,17 +631,33 @@ class _HomeScreenState extends State<HomeScreen> {
                         patientDisplayName: patientDisplayName,
                         onTap: openCategoryPicker,
                       ),
-                      const SizedBox(height: AppSpacing.sm),
+                      SizedBox(
+                        height: isPhoneLandscape
+                            ? AppSpacing.xs
+                            : AppSpacing.sm,
+                      ),
                       HomeEvaluationShortcutRow(
                         onPatientTap: openPatientScreen,
                         onBdkTap: openBdkTypeScreen,
                         onPrescriptionTap: openPrescriptionTypeScreen,
                       ),
-                      const SizedBox(height: AppSpacing.sm),
+                      SizedBox(
+                        height: isPhoneLandscape
+                            ? AppSpacing.xs
+                            : AppSpacing.sm,
+                      ),
                       const HomeClinicalAssistantCard(compact: true),
-                      const SizedBox(height: AppSpacing.sm),
+                      SizedBox(
+                        height: isPhoneLandscape
+                            ? AppSpacing.xs
+                            : AppSpacing.sm,
+                      ),
                       HomeRiskLegendCard(riskLevel: riskLevel),
-                      const SizedBox(height: AppSpacing.sm),
+                      SizedBox(
+                        height: isPhoneLandscape
+                            ? AppSpacing.xs
+                            : AppSpacing.sm,
+                      ),
                       const HomeFooterNote(),
                     ],
                   ),

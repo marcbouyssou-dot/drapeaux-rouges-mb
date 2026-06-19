@@ -5,6 +5,7 @@ import '../theme/app_colors.dart';
 import '../theme/app_radius.dart';
 import '../theme/app_shadows.dart';
 import '../theme/app_spacing.dart';
+import '../widgets/design_system/clinical_responsive_info.dart';
 import 'main_navigation_screen.dart';
 import '../services/offline_session_service.dart';
 
@@ -28,18 +29,90 @@ class LoginScreen extends StatelessWidget {
         resizeToAvoidBottomInset: false,
         body: LayoutBuilder(
           builder: (context, constraints) {
-            final orientation = MediaQuery.orientationOf(context);
-            final isLandscape = orientation == Orientation.landscape;
+            final responsive = ClinicalResponsiveInfo.fromConstraints(
+              constraints,
+            );
             final isWide =
-                constraints.maxWidth >= 760 ||
-                (isLandscape && constraints.maxWidth >= 640);
+                !responsive.isPhoneLandscape &&
+                (constraints.maxWidth >= 760 || responsive.isTabletOrDesktop);
 
             if (isWide) return const _DesktopLoginLayout();
+            if (responsive.isPhoneLandscape) {
+              return const _PhoneLandscapeLoginLayout();
+            }
 
             return const _MobileLoginLayout();
           },
         ),
       ),
+    );
+  }
+}
+
+class _PhoneLandscapeLoginLayout extends StatelessWidget {
+  const _PhoneLandscapeLoginLayout();
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        const Positioned.fill(
+          child: CustomPaint(painter: _LoginBackgroundPainter()),
+        ),
+        SafeArea(
+          bottom: false,
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(18, 10, 18, 18),
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 760),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        const Expanded(
+                          flex: 9,
+                          child: _LandscapeIdentityBlock(),
+                        ),
+                        const SizedBox(width: AppSpacing.md),
+                        Expanded(
+                          flex: 10,
+                          child: Container(
+                            padding: const EdgeInsets.fromLTRB(18, 14, 18, 14),
+                            decoration: BoxDecoration(
+                              color: AppColors.surface,
+                              borderRadius: BorderRadius.circular(28),
+                              border: Border.all(
+                                color: AppColors.surface.withValues(
+                                  alpha: 0.80,
+                                ),
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: AppColors.darkBackground.withValues(
+                                    alpha: 0.20,
+                                  ),
+                                  blurRadius: 18,
+                                  offset: const Offset(0, 8),
+                                ),
+                              ],
+                            ),
+                            child: const _LoginForm(compact: true),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: AppSpacing.sm),
+                    const _LegalFooter(onDark: true, compact: true),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -116,6 +189,26 @@ class _DesktopLoginLayout extends StatelessWidget {
             ),
           ),
         ),
+      ],
+    );
+  }
+}
+
+class _LandscapeIdentityBlock extends StatelessWidget {
+  const _LandscapeIdentityBlock();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        _UrpsMark(height: 116),
+        SizedBox(height: 2),
+        _InstitutionBlock(compact: true, dense: true),
+        SizedBox(height: AppSpacing.xs),
+        _IdentityDivider(compact: true),
+        SizedBox(height: AppSpacing.xs),
+        _ProductBlock(compact: true, dense: true),
       ],
     );
   }

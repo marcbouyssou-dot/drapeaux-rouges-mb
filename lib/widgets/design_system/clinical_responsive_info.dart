@@ -26,7 +26,7 @@ class ClinicalResponsiveInfo {
   bool get isPhoneLandscape => isCompactPhone && width > height;
   bool get isTablet => width >= 600 && width < 900;
   bool get isDesktop => width >= 900;
-  bool get isTabletOrDesktop => width >= 600;
+  bool get isTabletOrDesktop => width >= 900 || shortestSide >= 600;
 
   double get patientContentMaxWidth {
     if (isPhoneLandscape) return 620;

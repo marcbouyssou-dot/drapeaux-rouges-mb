@@ -31,6 +31,25 @@
       inset: 0;
       background-color: #032052;
     }
+
+    #startup-debug-overlay {
+      position: fixed;
+      z-index: 2147483647;
+      top: max(12px, env(safe-area-inset-top));
+      left: 12px;
+      right: 12px;
+      padding: 10px 12px;
+      border-radius: 14px;
+      background: rgba(225, 29, 72, 0.94);
+      color: #ffffff;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 13px;
+      font-weight: 800;
+      line-height: 1.25;
+      text-align: center;
+      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.24);
+      pointer-events: none;
+    }
   </style>
 
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
@@ -44,6 +63,7 @@
 </head>
 
 <body>
+  <div id="startup-debug-overlay">INDEX.HTML LOADED</div>
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', function () {

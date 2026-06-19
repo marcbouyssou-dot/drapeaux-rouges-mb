@@ -49,8 +49,12 @@ void main() {
     );
   }
 
-  Future<void> pumpHomeScreen(WidgetTester tester, {bool settle = true}) async {
-    await tester.binding.setSurfaceSize(const Size(1200, 1000));
+  Future<void> pumpHomeScreen(
+    WidgetTester tester, {
+    bool settle = true,
+    Size size = const Size(1200, 1000),
+  }) async {
+    await tester.binding.setSurfaceSize(size);
     addTearDown(() => tester.binding.setSurfaceSize(null));
 
     await tester.pumpWidget(const MaterialApp(home: HomeScreen()));
@@ -162,5 +166,18 @@ void main() {
     expect(find.text('Extraction des éléments utiles'), findsOneWidget);
     expect(find.text('Proposition de drapeaux rouges'), findsOneWidget);
     expect(find.text('Validation par le praticien'), findsOneWidget);
+  });
+
+  testWidgets('phone landscape keeps clinical assistant visible', (
+    tester,
+  ) async {
+    await pumpHomeScreen(tester, size: const Size(844, 390));
+
+    expect(find.text('Assistant clinique URPS'), findsOneWidget);
+    expect(find.text('IA Vocale'), findsOneWidget);
+    expect(find.text('Patient'), findsOneWidget);
+    expect(find.text('BDK'), findsOneWidget);
+    expect(find.text('Prescription'), findsOneWidget);
+    expect(find.text('Commencer le dépistage clinique'), findsOneWidget);
   });
 }

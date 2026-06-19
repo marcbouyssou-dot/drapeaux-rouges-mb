@@ -3,15 +3,18 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
 import 'services/secure_hive_service.dart';
+import 'services/startup_debug_overlay.dart';
 import 'theme/app_theme.dart';
 import 'screens/auth/auth_gate.dart';
 
 Future<void> main() async {
+  setStartupDebugStep('MAIN START');
   debugPrint('[BOOT] main() START');
   WidgetsFlutterBinding.ensureInitialized();
 
   await initializeApp();
 
+  setStartupDebugStep('RUNAPP');
   debugPrint('[BOOT] runApp()');
   runApp(const RedFlagsApp());
 }
@@ -56,6 +59,8 @@ class RedFlagsApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    setStartupDebugStep('FIRST FRAME');
+
     return MaterialApp(
       title: 'Accès Direct MK',
       debugShowCheckedModeBanner: false,

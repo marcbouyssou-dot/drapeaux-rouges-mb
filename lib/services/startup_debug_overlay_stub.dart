@@ -1,0 +1,1 @@
+void platformSetStartupDebugStep(String step) {}
