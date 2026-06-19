@@ -124,6 +124,11 @@
     </section>
 
     <section>
+      <h2>Version active</h2>
+      <dl id="version-report"></dl>
+    </section>
+
+    <section>
       <h2>Caches</h2>
       <ul id="cache-report"></ul>
     </section>
@@ -137,9 +142,15 @@
       <h2>Fetch same-origin</h2>
       <dl id="fetch-report"></dl>
     </section>
+
+    <section>
+      <h2>Build marker</h2>
+      <dl id="marker-report"></dl>
+    </section>
   </main>
 
   <script>
+    const appBuildMarker = 'authgate-fix-2026-06-18-1707';
     const criticalResources = [
       '/',
       'index.html',
@@ -156,9 +167,11 @@
 
     const timestamp = document.getElementById('timestamp');
     const swReport = document.getElementById('sw-report');
+    const versionReport = document.getElementById('version-report');
     const cacheReport = document.getElementById('cache-report');
     const resourceReport = document.getElementById('resource-report');
     const fetchReport = document.getElementById('fetch-report');
+    const markerReport = document.getElementById('marker-report');
 
     function status(value) {
       return value ? '<span class="ok">oui</span>' : '<span class="ko">non</span>';
@@ -189,6 +202,30 @@
       return await navigator.serviceWorker.getRegistration();
     }
 
+    function requestServiceWorkerVersion() {
+      return new Promise((resolve) => {
+        if (!navigator.serviceWorker || !navigator.serviceWorker.controller) {
+          resolve(null);
+          return;
+        }
+
+        const timeout = setTimeout(() => resolve(null), 1200);
+
+        function listener(event) {
+          if (!event.data || event.data.type !== 'PWA_DEBUG_VERSION_RESPONSE') {
+            return;
+          }
+
+          clearTimeout(timeout);
+          navigator.serviceWorker.removeEventListener('message', listener);
+          resolve(event.data);
+        }
+
+        navigator.serviceWorker.addEventListener('message', listener);
+        navigator.serviceWorker.controller.postMessage({ type: 'PWA_DEBUG_VERSION' });
+      });
+    }
+
     async function runDiagnostic() {
       timestamp.textContent = `Diagnostic généré le ${new Date().toLocaleString()}`;
 
@@ -208,6 +245,13 @@
         ['active state', active ? `<code>${active.state}</code>` : '<span class="warn">absent</span>'],
         ['waiting state', waiting ? `<code>${waiting.state}</code>` : 'absent'],
         ['installing state', installing ? `<code>${installing.state}</code>` : 'absent'],
+      ]);
+
+      const workerVersion = await requestServiceWorkerVersion();
+      appendRows(versionReport, [
+        ['service worker version', workerVersion ? `<code>${workerVersion.version}</code>` : '<span class="warn">non reçue</span>'],
+        ['service worker buildId', workerVersion ? `<code>${workerVersion.buildId}</code>` : '<span class="warn">non reçu</span>'],
+        ['cache actif annoncé', workerVersion ? `<code>${workerVersion.cacheName}</code>` : '<span class="warn">non reçu</span>'],
       ]);
 
       if (!('caches' in window)) {
@@ -233,15 +277,24 @@
 
       try {
         const response = await fetch('main.dart.js', { cache: 'no-store' });
+        const mainJs = await response.clone().text();
         appendRows(fetchReport, [
           ['main.dart.js fetch', response.ok ? '<span class="ok">OK</span>' : '<span class="ko">échec</span>'],
           ['status', `<code>${response.status} ${response.statusText}</code>`],
           ['url', `<code>${response.url}</code>`],
         ]);
+        appendRows(markerReport, [
+          ['marker attendu', `<code>${appBuildMarker}</code>`],
+          ['marker dans main.dart.js', mainJs.includes(appBuildMarker) ? '<span class="ok">présent</span>' : '<span class="ko">absent</span>'],
+        ]);
       } catch (error) {
         appendRows(fetchReport, [
           ['main.dart.js fetch', '<span class="ko">exception</span>'],
           ['erreur', `<code>${String(error)}</code>`],
+        ]);
+        appendRows(markerReport, [
+          ['marker attendu', `<code>${appBuildMarker}</code>`],
+          ['marker dans main.dart.js', '<span class="ko">non vérifiable</span>'],
         ]);
       }
     }

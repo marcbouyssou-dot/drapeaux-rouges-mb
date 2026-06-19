@@ -14,6 +14,7 @@ import '../theme/app_radius.dart';
 import '../theme/app_shadows.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
+import '../widgets/design_system/clinical_responsive_info.dart';
 
 class PatientConsentScreen extends StatefulWidget {
   const PatientConsentScreen({super.key});
@@ -359,6 +360,35 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
         dateNaissanceController.text.trim().isNotEmpty;
   }
 
+  bool get hasAdvancedPatientDraft {
+    return adresseController.text.trim().isNotEmpty ||
+        codePostalController.text.trim().isNotEmpty ||
+        villeController.text.trim().isNotEmpty ||
+        telephoneController.text.trim().isNotEmpty ||
+        emailController.text.trim().isNotEmpty ||
+        professionController.text.trim().isNotEmpty ||
+        personnePrevenirController.text.trim().isNotEmpty ||
+        telephoneContactController.text.trim().isNotEmpty ||
+        medecinNomController.text.trim().isNotEmpty ||
+        medecinRppsController.text.trim().isNotEmpty ||
+        medecinAdeliController.text.trim().isNotEmpty ||
+        medecinAdresseController.text.trim().isNotEmpty ||
+        medecinTelephoneController.text.trim().isNotEmpty ||
+        medecinEmailController.text.trim().isNotEmpty ||
+        carteVitalePresentee ||
+        identiteVerifiee ||
+        medicalDocuments.isNotEmpty;
+  }
+
+  bool get hasAnyPatientDraft =>
+      hasPatientIdentityDraft || hasAdvancedPatientDraft;
+
+  bool get shouldShowAdvancedIdentification {
+    return hasAnyPatientDraft ||
+        currentPatient == null ||
+        editingPatient != null;
+  }
+
   Future<void> activateAnonymousMode() async {
     await RgpdLocalService.clearCurrentPatient();
     await loadPatients();
@@ -373,7 +403,10 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
     final prenom = prenomController.text.trim();
     final dateNaissance = dateNaissanceController.text.trim();
     final hasAnyField =
-        nom.isNotEmpty || prenom.isNotEmpty || dateNaissance.isNotEmpty;
+        nom.isNotEmpty ||
+        prenom.isNotEmpty ||
+        dateNaissance.isNotEmpty ||
+        hasAdvancedPatientDraft;
 
     if (!hasAnyField) {
       if (currentPatient == null) {
@@ -811,6 +844,7 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
           initiallyExpanded: false,
           maintainState: false,
           tilePadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+          visualDensity: VisualDensity.compact,
           childrenPadding: const EdgeInsets.fromLTRB(10, 0, 10, 10),
           leading: const Icon(
             Icons.manage_accounts_outlined,
@@ -1088,40 +1122,45 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
-        child: RefreshIndicator(
-          onRefresh: loadPatients,
-          child: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 960),
-              child: ListView(
-                physics: isSigning
-                    ? const NeverScrollableScrollPhysics()
-                    : const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.fromLTRB(
-                  AppSpacing.md,
-                  AppSpacing.sm,
-                  AppSpacing.md,
-                  104,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final responsive = ClinicalResponsiveInfo.fromConstraints(
+              constraints,
+            );
+
+            return RefreshIndicator(
+              onRefresh: loadPatients,
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxWidth: responsive.patientContentMaxWidth,
+                  ),
+                  child: ListView(
+                    physics: isSigning
+                        ? const NeverScrollableScrollPhysics()
+                        : const AlwaysScrollableScrollPhysics(),
+                    padding: responsive.patientPagePadding,
+                    children: [
+                      buildSearchBar(responsive),
+                      const SizedBox(height: AppSpacing.sm),
+                      buildPatientForm(foundPatient, responsive),
+                      const SizedBox(height: AppSpacing.sm),
+                      buildPatientsList(visiblePatients),
+                      const SizedBox(height: AppSpacing.sm),
+                      buildDeleteAllButton(),
+                    ],
+                  ),
                 ),
-                children: [
-                  buildSearchBar(),
-                  const SizedBox(height: AppSpacing.sm),
-                  buildPatientForm(foundPatient),
-                  const SizedBox(height: AppSpacing.sm),
-                  buildPatientsList(visiblePatients),
-                  const SizedBox(height: AppSpacing.sm),
-                  buildDeleteAllButton(),
-                ],
               ),
-            ),
-          ),
+            );
+          },
         ),
       ),
       bottomNavigationBar: buildBottomSaveBar(foundPatient),
     );
   }
 
-  Widget buildSearchBar() {
+  Widget buildSearchBar(ClinicalResponsiveInfo responsive) {
     return buildPageSection(
       padding: const EdgeInsets.all(AppSpacing.sm),
       child: TextField(
@@ -1169,10 +1208,14 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
     );
   }
 
-  Widget buildPatientForm(PatientLocal? foundPatient) {
+  Widget buildPatientForm(
+    PatientLocal? foundPatient,
+    ClinicalResponsiveInfo responsive,
+  ) {
     final patientExists = foundPatient != null;
 
     return buildPageSection(
+      padding: responsive.patientCardPadding,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1182,7 +1225,7 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
           ),
           const SizedBox(height: 10),
           buildPatientIdentityFields(),
-          if (hasPatientIdentityDraft) ...[
+          if (shouldShowAdvancedIdentification) ...[
             const SizedBox(height: 10),
             buildAdvancedIdentificationBlock(),
           ],

@@ -8,6 +8,8 @@ import '../login_screen.dart';
 import '../main_navigation_screen.dart';
 import 'first_login_required_screen.dart';
 
+const String appBuildMarker = 'authgate-fix-2026-06-18-1707';
+
 class AuthGate extends StatefulWidget {
   AuthGate({
     super.key,
@@ -68,21 +70,38 @@ class _AuthGateState extends State<AuthGate> {
           '[BOOT][AuthGate] route=login online '
           '(offline session is not an online auth token)',
         );
-        return _AuthGateDecision.login();
+        return _AuthGateDecision.login(
+          isOnline: online,
+          hasValidOfflineSession: session.isValid,
+          sessionExpired: session.isExpired,
+        );
       }
 
       if (session.isValid) {
         debugPrint('[BOOT][AuthGate] route=app offline');
-        return _AuthGateDecision.app(isOffline: true);
+        return _AuthGateDecision.app(
+          isOffline: true,
+          isOnline: online,
+          hasValidOfflineSession: session.isValid,
+          sessionExpired: session.isExpired,
+        );
       }
 
       if (session.isExpired) {
         debugPrint('[BOOT][AuthGate] route=renewRequired offline');
-        return _AuthGateDecision.renewRequired();
+        return _AuthGateDecision.renewRequired(
+          isOnline: online,
+          hasValidOfflineSession: session.isValid,
+          sessionExpired: session.isExpired,
+        );
       }
 
       debugPrint('[BOOT][AuthGate] route=firstLoginRequired offline');
-      return _AuthGateDecision.firstLoginRequired();
+      return _AuthGateDecision.firstLoginRequired(
+        isOnline: online,
+        hasValidOfflineSession: session.isValid,
+        sessionExpired: session.isExpired,
+      );
     } catch (error, stackTrace) {
       debugPrint('[BOOT][AuthGate] ERROR at $currentStep: $error');
       debugPrint(stackTrace.toString());
@@ -113,28 +132,54 @@ class _AuthGateState extends State<AuthGate> {
         final decision = snapshot.data!;
         switch (decision.type) {
           case _AuthGateDecisionType.login:
-            return const LoginScreen();
+            return _buildWithDebugBanner(decision, const LoginScreen());
           case _AuthGateDecisionType.app:
-            return MainNavigationScreen(initialOffline: decision.isOffline);
+            return _buildWithDebugBanner(
+              decision,
+              MainNavigationScreen(initialOffline: decision.isOffline),
+            );
           case _AuthGateDecisionType.firstLoginRequired:
-            return const FirstLoginRequiredScreen(
-              title: 'Première connexion requise',
-              message:
-                  'Vous devez vous identifier une première fois avec une connexion internet.',
+            return _buildWithDebugBanner(
+              decision,
+              const FirstLoginRequiredScreen(
+                title: 'Première connexion requise',
+                message:
+                    'Vous devez vous identifier une première fois avec une connexion internet.',
+              ),
             );
           case _AuthGateDecisionType.renewRequired:
-            return const FirstLoginRequiredScreen(
-              title: 'Connexion requise pour renouveler la session',
-              message:
-                  'Votre accès hors ligne a expiré. Reconnectez-vous avec une connexion internet.',
+            return _buildWithDebugBanner(
+              decision,
+              const FirstLoginRequiredScreen(
+                title: 'Connexion requise pour renouveler la session',
+                message:
+                    'Votre accès hors ligne a expiré. Reconnectez-vous avec une connexion internet.',
+              ),
             );
           case _AuthGateDecisionType.diagnostic:
-            return AuthGateDiagnosticScreen(
-              step: decision.step ?? currentStep,
-              message: decision.message ?? 'Erreur inconnue.',
+            return _buildWithDebugBanner(
+              decision,
+              AuthGateDiagnosticScreen(
+                step: decision.step ?? currentStep,
+                message: decision.message ?? 'Erreur inconnue.',
+              ),
             );
         }
       },
+    );
+  }
+
+  Widget _buildWithDebugBanner(_AuthGateDecision decision, Widget child) {
+    return Stack(
+      children: [
+        child,
+        Positioned(
+          top: 0,
+          left: 0,
+          right: 0,
+          child: _AuthGateDebugBanner(decision: decision),
+        ),
+      ],
     );
   }
 }
@@ -151,35 +196,131 @@ class _AuthGateDecision {
   const _AuthGateDecision._(
     this.type, {
     this.isOffline = false,
+    this.isOnline,
+    this.hasValidOfflineSession,
+    this.sessionExpired,
     this.step,
     this.message,
   });
 
-  factory _AuthGateDecision.login() =>
-      const _AuthGateDecision._(_AuthGateDecisionType.login);
+  factory _AuthGateDecision.login({
+    required bool isOnline,
+    required bool hasValidOfflineSession,
+    required bool sessionExpired,
+  }) => _AuthGateDecision._(
+    _AuthGateDecisionType.login,
+    isOnline: isOnline,
+    hasValidOfflineSession: hasValidOfflineSession,
+    sessionExpired: sessionExpired,
+  );
 
-  factory _AuthGateDecision.app({required bool isOffline}) =>
-      _AuthGateDecision._(_AuthGateDecisionType.app, isOffline: isOffline);
+  factory _AuthGateDecision.app({
+    required bool isOffline,
+    required bool isOnline,
+    required bool hasValidOfflineSession,
+    required bool sessionExpired,
+  }) => _AuthGateDecision._(
+    _AuthGateDecisionType.app,
+    isOffline: isOffline,
+    isOnline: isOnline,
+    hasValidOfflineSession: hasValidOfflineSession,
+    sessionExpired: sessionExpired,
+  );
 
-  factory _AuthGateDecision.firstLoginRequired() =>
-      const _AuthGateDecision._(_AuthGateDecisionType.firstLoginRequired);
+  factory _AuthGateDecision.firstLoginRequired({
+    required bool isOnline,
+    required bool hasValidOfflineSession,
+    required bool sessionExpired,
+  }) => _AuthGateDecision._(
+    _AuthGateDecisionType.firstLoginRequired,
+    isOnline: isOnline,
+    hasValidOfflineSession: hasValidOfflineSession,
+    sessionExpired: sessionExpired,
+  );
 
-  factory _AuthGateDecision.renewRequired() =>
-      const _AuthGateDecision._(_AuthGateDecisionType.renewRequired);
+  factory _AuthGateDecision.renewRequired({
+    required bool isOnline,
+    required bool hasValidOfflineSession,
+    required bool sessionExpired,
+  }) => _AuthGateDecision._(
+    _AuthGateDecisionType.renewRequired,
+    isOnline: isOnline,
+    hasValidOfflineSession: hasValidOfflineSession,
+    sessionExpired: sessionExpired,
+  );
 
   factory _AuthGateDecision.diagnostic({
     required String step,
     required String message,
   }) => _AuthGateDecision._(
     _AuthGateDecisionType.diagnostic,
+    isOnline: null,
+    hasValidOfflineSession: null,
+    sessionExpired: null,
     step: step,
     message: message,
   );
 
   final _AuthGateDecisionType type;
   final bool isOffline;
+  final bool? isOnline;
+  final bool? hasValidOfflineSession;
+  final bool? sessionExpired;
   final String? step;
   final String? message;
+
+  String get routeLabel {
+    switch (type) {
+      case _AuthGateDecisionType.login:
+        return 'login';
+      case _AuthGateDecisionType.app:
+        return isOffline ? 'app-offline' : 'app-online';
+      case _AuthGateDecisionType.firstLoginRequired:
+        return 'first-login-required';
+      case _AuthGateDecisionType.renewRequired:
+        return 'renew-required';
+      case _AuthGateDecisionType.diagnostic:
+        return 'diagnostic';
+    }
+  }
+}
+
+class _AuthGateDebugBanner extends StatelessWidget {
+  const _AuthGateDebugBanner({required this.decision});
+
+  final _AuthGateDecision decision;
+
+  @override
+  Widget build(BuildContext context) {
+    final topPadding = MediaQuery.paddingOf(context).top;
+    final text = [
+      appBuildMarker,
+      'online=${decision.isOnline?.toString() ?? 'unknown'}',
+      'route=${decision.routeLabel}',
+      'validOffline=${decision.hasValidOfflineSession?.toString() ?? 'unknown'}',
+      'expired=${decision.sessionExpired?.toString() ?? 'unknown'}',
+    ].join(' · ');
+
+    return Material(
+      color: const Color(0xFFE11D48).withValues(alpha: 0.92),
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(8, topPadding + 4, 8, 4),
+        child: Text(
+          text,
+          textAlign: TextAlign.center,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 10.5,
+            height: 1.2,
+            fontWeight: FontWeight.w900,
+            decoration: TextDecoration.none,
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 class AuthGateDiagnosticScreen extends StatelessWidget {

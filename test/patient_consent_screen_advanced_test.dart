@@ -1,7 +1,9 @@
 import 'dart:io';
 
 import 'package:drapeaux_rouges_mb/models/patient_local.dart';
+import 'package:drapeaux_rouges_mb/screens/patient_consent_screen.dart';
 import 'package:drapeaux_rouges_mb/services/rgpd_local_service.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive/hive.dart';
 
@@ -15,6 +17,7 @@ void main() {
     Hive.init(tempDir.path);
     await Hive.openBox('patients_box');
     await Hive.openBox('settings_box');
+    await Hive.openBox('access_direct_box');
   });
 
   tearDown(() async {
@@ -165,6 +168,51 @@ void main() {
       expect(await RgpdLocalService.getCurrentPatient(), isNull);
     },
   );
+
+  testWidgets('patient compact portrait contains advanced identification', (
+    tester,
+  ) async {
+    await pumpPatientScreen(tester, const Size(390, 844));
+
+    expect(find.text('Identification avancée'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('patient phone landscape contains advanced identification', (
+    tester,
+  ) async {
+    await pumpPatientScreen(tester, const Size(844, 390));
+
+    expect(find.text('Identification avancée'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('patient tablet landscape contains advanced identification', (
+    tester,
+  ) async {
+    await pumpPatientScreen(tester, const Size(1024, 768));
+
+    expect(find.text('Identification avancée'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('patient desktop contains advanced identification', (
+    tester,
+  ) async {
+    await pumpPatientScreen(tester, const Size(1440, 900));
+
+    expect(find.text('Identification avancée'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+}
+
+Future<void> pumpPatientScreen(WidgetTester tester, Size size) async {
+  await tester.binding.setSurfaceSize(size);
+  addTearDown(() => tester.binding.setSurfaceSize(null));
+
+  await tester.pumpWidget(const MaterialApp(home: PatientConsentScreen()));
+  await tester.pump();
+  await tester.pump(const Duration(milliseconds: 300));
 }
 
 PatientLocal advancedPatient() {

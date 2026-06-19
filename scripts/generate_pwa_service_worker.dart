@@ -4,6 +4,7 @@ import 'dart:io';
 const _buildWebPath = 'build/web';
 const _outputFileName = 'pwa_service_worker.js';
 const _cachePrefix = 'drapeaux-rouges-pwa';
+const _lastBuildIdFileName = '.last_build_id';
 
 void main() {
   final buildDir = Directory(_buildWebPath);
@@ -13,15 +14,43 @@ void main() {
     return;
   }
 
+  final buildId = _buildId();
+  _writeLastBuildId(buildDir, buildId);
+  _versionBootstrap(buildDir, buildId);
+
   final resources = _collectResources(buildDir);
-  final version = _buildCacheVersion(buildDir, resources);
-  final worker = _renderServiceWorker(version, resources);
+  final version = _buildCacheVersion(buildDir, resources, buildId);
+  final worker = _renderServiceWorker(version, buildId, resources);
 
   File('$_buildWebPath/$_outputFileName').writeAsStringSync(worker);
   stdout.writeln(
     'Generated $_buildWebPath/$_outputFileName with '
-    '${resources.length} cached resources ($version).',
+    '${resources.length} cached resources ($version, buildId=$buildId).',
   );
+}
+
+String _buildId() {
+  final timestamp = DateTime.now().toUtc().toIso8601String();
+  return timestamp.replaceAll(RegExp(r'[^0-9A-Za-z]'), '');
+}
+
+void _writeLastBuildId(Directory buildDir, String buildId) {
+  File('${buildDir.path}/$_lastBuildIdFileName').writeAsStringSync(buildId);
+}
+
+void _versionBootstrap(Directory buildDir, String buildId) {
+  final indexFile = File('${buildDir.path}/index.html');
+  if (!indexFile.existsSync()) return;
+
+  final html = indexFile.readAsStringSync();
+  final versioned = html.replaceAllMapped(
+    RegExp(r'src="flutter_bootstrap\.js(?:\?v=[^"]*)?"'),
+    (_) => 'src="flutter_bootstrap.js?v=$buildId"',
+  );
+
+  if (versioned != html) {
+    indexFile.writeAsStringSync(versioned);
+  }
 }
 
 List<String> _collectResources(Directory buildDir) {
@@ -46,13 +75,19 @@ bool _shouldExclude(String relativePath) {
   final name = relativePath.split('/').last;
   if (name.startsWith('.')) return true;
   if (relativePath.endsWith('.map')) return true;
+  if (relativePath == _lastBuildIdFileName) return true;
   if (relativePath == _outputFileName) return true;
   if (relativePath == 'flutter_service_worker.js') return true;
   return false;
 }
 
-String _buildCacheVersion(Directory buildDir, List<String> resources) {
+String _buildCacheVersion(
+  Directory buildDir,
+  List<String> resources,
+  String buildId,
+) {
   var hash = 0x811c9dc5;
+  hash = _hashString(hash, buildId);
 
   for (final resource in resources) {
     hash = _hashString(hash, resource);
@@ -78,7 +113,11 @@ int _hashBytes(int hash, List<int> bytes) {
   return current;
 }
 
-String _renderServiceWorker(String version, List<String> resources) {
+String _renderServiceWorker(
+  String version,
+  String buildId,
+  List<String> resources,
+) {
   final encodedResources = const JsonEncoder.withIndent(
     '  ',
   ).convert(resources);
@@ -88,6 +127,8 @@ String _renderServiceWorker(String version, List<String> resources) {
 
 const CACHE_NAME = '$version';
 const CACHE_PREFIX = '$_cachePrefix-';
+const SERVICE_WORKER_VERSION = '$version';
+const BUILD_ID = '$buildId';
 const APP_SHELL = $encodedResources;
 
 self.addEventListener('install', (event) => {
@@ -111,7 +152,33 @@ self.addEventListener('activate', (event) => {
           .map((key) => caches.delete(key))
       ))
       .then(() => self.clients.claim())
+      .then(() => self.clients.matchAll({ type: 'window' }))
+      .then((clients) => {
+        clients.forEach((client) => {
+          client.postMessage({
+            type: 'PWA_SERVICE_WORKER_ACTIVE',
+            cacheName: CACHE_NAME,
+            buildId: BUILD_ID,
+            version: SERVICE_WORKER_VERSION
+          });
+        });
+      })
   );
+});
+
+self.addEventListener('message', (event) => {
+  if (!event.data || event.data.type !== 'PWA_DEBUG_VERSION') {
+    return;
+  }
+
+  if (event.source) {
+    event.source.postMessage({
+      type: 'PWA_DEBUG_VERSION_RESPONSE',
+      cacheName: CACHE_NAME,
+      buildId: BUILD_ID,
+      version: SERVICE_WORKER_VERSION
+    });
+  }
 });
 
 self.addEventListener('fetch', (event) => {
