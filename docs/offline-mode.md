@@ -24,6 +24,19 @@ Après une authentification réussie, l'application stocke :
 - `lastSuccessfulLoginAt`
 - une date d'expiration locale
 
+Ces informations sont d'abord conservées dans le stockage local sécurisé de
+l'application. Sur Flutter Web/PWA, une copie de secours non sensible est aussi
+écrite dans `localStorage` avec les clés suivantes :
+
+- `offline_authenticated_once`
+- `offline_last_successful_login_at`
+- `offline_valid_until`
+
+Ce fallback sert uniquement à autoriser le démarrage terrain hors ligne lorsque
+le stockage chiffré Web n'est pas restitué par le navigateur. Il ne contient ni
+mot de passe, ni jeton, ni secret, ni donnée patient. Il ne constitue pas une
+authentification serveur.
+
 La durée de validité actuelle est de 90 jours. Si cette durée est dépassée :
 
 - en ligne : le login classique est demandé ;

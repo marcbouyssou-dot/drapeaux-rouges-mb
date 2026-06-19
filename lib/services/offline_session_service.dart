@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:hive/hive.dart';
 
+import 'offline_session_fallback_store.dart';
+import 'offline_session_fallback_store_factory.dart';
 import 'secure_hive_service.dart';
 
 class OfflineSession {
@@ -23,29 +25,27 @@ class OfflineSession {
 }
 
 class OfflineSessionService {
+  OfflineSessionService({OfflineSessionFallbackStore? fallbackStore})
+    : _fallbackStore = fallbackStore ?? createOfflineSessionFallbackStore();
+
   static const int validityDays = 90;
   static const String _boxName = SecureHiveService.settingsBoxName;
-  static const String _authenticatedOnceKey = 'offline_authenticated_once';
-  static const String _lastLoginAtKey = 'offline_last_successful_login_at';
-  static const String _validUntilKey = 'offline_valid_until';
+  static const String _authenticatedOnceKey =
+      OfflineSessionFallbackKeys.authenticatedOnce;
+  static const String _lastLoginAtKey =
+      OfflineSessionFallbackKeys.lastSuccessfulLoginAt;
+  static const String _validUntilKey = OfflineSessionFallbackKeys.validUntil;
+
+  final OfflineSessionFallbackStore _fallbackStore;
 
   static Box get _box => Hive.box(_boxName);
 
   Future<OfflineSession> getSession() async {
     debugPrint('[BOOT][OfflineSession] getSession() START');
-    final lastLogin = DateTime.tryParse(
-      _box.get(_lastLoginAtKey, defaultValue: '')?.toString() ?? '',
-    );
-    final validUntil = DateTime.tryParse(
-      _box.get(_validUntilKey, defaultValue: '')?.toString() ?? '',
-    );
+    final hiveSession = _readHiveSession();
+    final fallbackSession = await _readFallbackSession();
+    final session = _selectSession(hiveSession, fallbackSession);
 
-    final session = OfflineSession(
-      authenticatedOnce:
-          _box.get(_authenticatedOnceKey, defaultValue: false) == true,
-      lastSuccessfulLoginAt: lastLogin,
-      validUntil: validUntil,
-    );
     debugPrint(
       '[BOOT][OfflineSession] getSession() OK '
       'authenticatedOnce=${session.authenticatedOnce} '
@@ -64,11 +64,14 @@ class OfflineSessionService {
   Future<void> markSuccessfulLogin({DateTime? now}) async {
     debugPrint('[BOOT][OfflineSession] markSuccessfulLogin() START');
     final current = now ?? DateTime.now();
+    final validUntil = current.add(const Duration(days: validityDays));
     await _box.put(_authenticatedOnceKey, true);
     await _box.put(_lastLoginAtKey, current.toIso8601String());
-    await _box.put(
-      _validUntilKey,
-      current.add(const Duration(days: validityDays)).toIso8601String(),
+    await _box.put(_validUntilKey, validUntil.toIso8601String());
+    await _fallbackStore.write(
+      authenticatedOnce: true,
+      lastSuccessfulLoginAt: current.toIso8601String(),
+      validUntil: validUntil.toIso8601String(),
     );
     final session = await getSession();
     debugPrint(
@@ -89,6 +92,79 @@ class OfflineSessionService {
     await _box.delete(_authenticatedOnceKey);
     await _box.delete(_lastLoginAtKey);
     await _box.delete(_validUntilKey);
+    await _fallbackStore.clear();
     debugPrint('[BOOT][OfflineSession] clearSession() OK');
+  }
+
+  OfflineSession _readHiveSession() {
+    try {
+      final session = OfflineSession(
+        authenticatedOnce:
+            _box.get(_authenticatedOnceKey, defaultValue: false) == true,
+        lastSuccessfulLoginAt: DateTime.tryParse(
+          _box.get(_lastLoginAtKey, defaultValue: '')?.toString() ?? '',
+        ),
+        validUntil: DateTime.tryParse(
+          _box.get(_validUntilKey, defaultValue: '')?.toString() ?? '',
+        ),
+      );
+      debugPrint(
+        '[BOOT][OfflineSession] Hive read '
+        'authenticatedOnce=${session.authenticatedOnce} '
+        'valid=${session.isValid} expired=${session.isExpired}',
+      );
+      return session;
+    } catch (error) {
+      debugPrint('[BOOT][OfflineSession] Hive read failed: $error');
+      return const OfflineSession(
+        authenticatedOnce: false,
+        lastSuccessfulLoginAt: null,
+        validUntil: null,
+      );
+    }
+  }
+
+  Future<OfflineSession> _readFallbackSession() async {
+    try {
+      final values = await _fallbackStore.read();
+      final session = OfflineSession(
+        authenticatedOnce:
+            values[OfflineSessionFallbackKeys.authenticatedOnce] == 'true',
+        lastSuccessfulLoginAt: DateTime.tryParse(
+          values[OfflineSessionFallbackKeys.lastSuccessfulLoginAt] ?? '',
+        ),
+        validUntil: DateTime.tryParse(
+          values[OfflineSessionFallbackKeys.validUntil] ?? '',
+        ),
+      );
+      debugPrint(
+        '[BOOT][OfflineSession] Web fallback read '
+        'authenticatedOnce=${session.authenticatedOnce} '
+        'valid=${session.isValid} expired=${session.isExpired}',
+      );
+      return session;
+    } catch (error) {
+      debugPrint('[BOOT][OfflineSession] Web fallback read failed: $error');
+      return const OfflineSession(
+        authenticatedOnce: false,
+        lastSuccessfulLoginAt: null,
+        validUntil: null,
+      );
+    }
+  }
+
+  OfflineSession _selectSession(
+    OfflineSession hiveSession,
+    OfflineSession fallbackSession,
+  ) {
+    if (hiveSession.isValid) return hiveSession;
+    if (fallbackSession.isValid) return fallbackSession;
+    if (hiveSession.isExpired) return hiveSession;
+    if (fallbackSession.isExpired) return fallbackSession;
+    return const OfflineSession(
+      authenticatedOnce: false,
+      lastSuccessfulLoginAt: null,
+      validUntil: null,
+    );
   }
 }
