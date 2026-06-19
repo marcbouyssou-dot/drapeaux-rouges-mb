@@ -1,4 +1,5 @@
 import 'package:drapeaux_rouges_mb/models/clinical_screening/clinical_screening_models.dart';
+import 'package:drapeaux_rouges_mb/models/clinical_screening/clinical_screening_catalog.dart';
 import 'package:drapeaux_rouges_mb/models/clinical_screening/clinical_screening_rule_version.dart';
 import 'package:drapeaux_rouges_mb/models/clinical_screening/clinical_screening_tags.dart';
 import 'package:drapeaux_rouges_mb/services/clinical_screening_engine_v3.dart';
@@ -92,6 +93,155 @@ void main() {
         'experimental_not_clinically_validated',
       );
     });
+
+    test('clinical catalog is not empty', () {
+      expect(ClinicalScreeningCatalog.flagDefinitions, isNotEmpty);
+      expect(ClinicalScreeningCatalog.tagDefinitions, isNotEmpty);
+      expect(ClinicalScreeningCatalog.ruleDefinitions, isNotEmpty);
+    });
+
+    test('all critical tags exist in the catalog', () {
+      expect(
+        ClinicalScreeningCatalog.tags,
+        containsAll(ClinicalScreeningTags.criticalEmergency),
+      );
+
+      final criticalCatalogTags = ClinicalScreeningCatalog.tagDefinitions
+          .where((definition) => definition.isCritical)
+          .map((definition) => definition.tag)
+          .toSet();
+
+      expect(
+        criticalCatalogTags,
+        containsAll(ClinicalScreeningTags.criticalEmergency),
+      );
+    });
+
+    test('all main rule definitions exist in the catalog', () {
+      expect(
+        ClinicalScreeningCatalog.ruleIds,
+        containsAll({
+          'routine',
+          'immediateDanger',
+          'oncologicCluster',
+          'infectiousCluster',
+          'neurologicCluster',
+          'cardiorespiratoryCluster',
+          'fractureRiskCluster',
+          'vascularCluster',
+          'systemicConcern',
+          'yellowFlagsOnly',
+          'highestFlagLevel',
+          'scoreEscalation',
+        }),
+      );
+    });
+
+    test('each catalog rule has a non-empty clinical rationale', () {
+      for (final rule in ClinicalScreeningCatalog.ruleDefinitions) {
+        expect(rule.clinicalRationale.trim(), isNotEmpty, reason: rule.ruleId);
+      }
+    });
+
+    test('each catalog flag has a non-empty suggested question', () {
+      for (final flag in ClinicalScreeningCatalog.flagDefinitions) {
+        expect(flag.suggestedQuestion.trim(), isNotEmpty, reason: flag.id);
+      }
+    });
+
+    test(
+      'catalog rule ids match rule ids emitted by ClinicalScreeningEngineV3',
+      () {
+        final emittedRuleIds = <String>{
+          evaluate(const []).traces.single.ruleId,
+          evaluate([
+            flag(id: 'critical', tags: [ClinicalScreeningTags.urgenceVitale]),
+          ]).traces.single.ruleId,
+          evaluate([
+            flag(
+              id: 'cancer',
+              layer: ClinicalScreeningLayer.systemic,
+              tags: [ClinicalScreeningTags.cancer],
+            ),
+            flag(
+              id: 'weight-loss',
+              layer: ClinicalScreeningLayer.systemic,
+              tags: [ClinicalScreeningTags.pertePoids],
+            ),
+          ]).traces.single.ruleId,
+          evaluate([
+            flag(
+              id: 'fever',
+              layer: ClinicalScreeningLayer.systemic,
+              tags: [ClinicalScreeningTags.fievre],
+            ),
+            flag(
+              id: 'immunosuppression',
+              layer: ClinicalScreeningLayer.systemic,
+              tags: [ClinicalScreeningTags.immunodepression],
+            ),
+          ]).traces.single.ruleId,
+          evaluate([
+            flag(
+              id: 'neuro',
+              layer: ClinicalScreeningLayer.systemic,
+              tags: [ClinicalScreeningTags.deficitMoteurProgressif],
+            ),
+          ]).traces.single.ruleId,
+          evaluate([
+            flag(
+              id: 'chest-pain',
+              layer: ClinicalScreeningLayer.systemic,
+              tags: [ClinicalScreeningTags.douleurThoracique],
+            ),
+            flag(
+              id: 'dyspnea',
+              layer: ClinicalScreeningLayer.systemic,
+              tags: [ClinicalScreeningTags.dyspnee],
+            ),
+          ]).traces.single.ruleId,
+          evaluate([
+            flag(id: 'trauma', tags: [ClinicalScreeningTags.traumatisme]),
+            flag(
+              id: 'osteoporosis',
+              layer: ClinicalScreeningLayer.systemic,
+              tags: [ClinicalScreeningTags.osteoporose],
+            ),
+          ]).traces.single.ruleId,
+          evaluate([
+            flag(
+              id: 'wells-a',
+              category: ClinicalFlagCategory.vascular,
+              tags: [ClinicalScreeningTags.wellsTvp],
+            ),
+            flag(
+              id: 'wells-b',
+              category: ClinicalFlagCategory.vascular,
+              tags: [ClinicalScreeningTags.wellsTvp],
+            ),
+          ]).traces.single.ruleId,
+          evaluate([
+            flag(
+              id: 'systemic',
+              layer: ClinicalScreeningLayer.systemic,
+              tags: [ClinicalScreeningTags.cancer],
+            ),
+          ]).traces.single.ruleId,
+          evaluate([
+            flag(id: 'yellow', layer: ClinicalScreeningLayer.yellowFlag),
+          ]).traces.single.ruleId,
+          evaluate([
+            flag(id: 'intrinsic', level: ClinicalDecisionLevel.urgentReferral),
+          ]).traces.single.ruleId,
+          evaluate([
+            flag(id: 'score-a', weight: 2),
+            flag(id: 'score-b', weight: 2),
+          ]).traces.single.ruleId,
+        };
+
+        expect(ClinicalScreeningCatalog.ruleIds, containsAll(emittedRuleIds));
+      },
+    );
 
     test('yellow flags alone with high score never exceed monitor', () {
       final session = evaluate([
