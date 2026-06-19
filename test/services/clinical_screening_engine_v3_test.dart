@@ -1,4 +1,5 @@
 import 'package:drapeaux_rouges_mb/models/clinical_screening/clinical_screening_models.dart';
+import 'package:drapeaux_rouges_mb/models/clinical_screening/clinical_screening_rule_version.dart';
 import 'package:drapeaux_rouges_mb/models/clinical_screening/clinical_screening_tags.dart';
 import 'package:drapeaux_rouges_mb/services/clinical_screening_engine_v3.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -62,6 +63,34 @@ void main() {
       expect(session.traces, hasLength(1));
       expect(session.traces.single.ruleId, 'routine');
       expect(session.traces.single.causalFlagIds, isEmpty);
+      expect(session.engineVersion, ClinicalScreeningRuleVersion.engineVersion);
+      expect(
+        session.rulesetVersion,
+        ClinicalScreeningRuleVersion.rulesetVersion,
+      );
+      expect(session.rulesetDate, ClinicalScreeningRuleVersion.rulesetDate);
+      expect(
+        session.clinicalStatus,
+        ClinicalScreeningRuleVersion.clinicalStatus,
+      );
+      expect(
+        session.traces.single.rulesetVersion,
+        ClinicalScreeningRuleVersion.rulesetVersion,
+      );
+    });
+
+    test('version values are stable and centralized', () {
+      expect(
+        ClinicalScreeningRuleVersion.engineName,
+        'ClinicalScreeningEngineV3',
+      );
+      expect(ClinicalScreeningRuleVersion.engineVersion, '3.0.0');
+      expect(ClinicalScreeningRuleVersion.rulesetVersion, '2026.06-v1');
+      expect(ClinicalScreeningRuleVersion.rulesetDate, '2026-06-19');
+      expect(
+        ClinicalScreeningRuleVersion.clinicalStatus,
+        'experimental_not_clinically_validated',
+      );
     });
 
     test('yellow flags alone with high score never exceed monitor', () {
@@ -136,6 +165,10 @@ void main() {
           'Avis médical impératif rapide',
         );
         expect(session.traces.single.ruleId, 'oncologicCluster');
+        expect(
+          session.traces.single.rulesetVersion,
+          ClinicalScreeningRuleVersion.rulesetVersion,
+        );
         expect(session.traces.single.causalFlagIds, [
           'cancer-history',
           'weight-loss',
@@ -467,6 +500,7 @@ void main() {
           ClinicalReasoningTrace(
             ruleId: 'test',
             title: 'Test',
+            rulesetVersion: ClinicalScreeningRuleVersion.rulesetVersion,
             layer: ClinicalScreeningLayer.regional,
             decisionLevel: ClinicalDecisionLevel.monitor,
             causalFlagIds: const [],
@@ -502,8 +536,35 @@ void main() {
         expect(text, contains('antécédent de cancer'));
         expect(text, contains('perte de poids inexpliquée'));
         expect(text, contains('Conduite proposée :'));
+        expect(text, contains('Moteur : ClinicalScreeningEngineV3'));
+        expect(text, contains('Version moteur : 3.0.0'));
+        expect(text, contains('Version règles : 2026.06-v1'));
+        expect(
+          text,
+          contains('Statut clinique : expérimental, non validé cliniquement'),
+        );
         expect(session.reasoningSummary, text);
       },
     );
+
+    test('empty session export also contains version metadata', () {
+      final session = evaluate(const []);
+      final text = session.exportReasoningText();
+
+      expect(session.traces.single.ruleId, 'routine');
+      expect(session.engineName, ClinicalScreeningRuleVersion.engineName);
+      expect(session.engineVersion, ClinicalScreeningRuleVersion.engineVersion);
+      expect(
+        session.rulesetVersion,
+        ClinicalScreeningRuleVersion.rulesetVersion,
+      );
+      expect(session.rulesetDate, ClinicalScreeningRuleVersion.rulesetDate);
+      expect(
+        session.clinicalStatus,
+        ClinicalScreeningRuleVersion.clinicalStatus,
+      );
+      expect(text, contains('Version moteur : 3.0.0'));
+      expect(text, contains('Version règles : 2026.06-v1'));
+    });
   });
 }

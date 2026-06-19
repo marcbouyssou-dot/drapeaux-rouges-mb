@@ -1,4 +1,5 @@
 import '../models/clinical_screening/clinical_screening_models.dart';
+import '../models/clinical_screening/clinical_screening_rule_version.dart';
 import '../models/clinical_screening/clinical_screening_tags.dart';
 
 class ClinicalScreeningEngineV3 {
@@ -28,6 +29,11 @@ class ClinicalScreeningEngineV3 {
       recommendedAction: action,
       score: score,
       traces: [decision.trace],
+      engineName: ClinicalScreeningRuleVersion.engineName,
+      engineVersion: ClinicalScreeningRuleVersion.engineVersion,
+      rulesetVersion: ClinicalScreeningRuleVersion.rulesetVersion,
+      rulesetDate: ClinicalScreeningRuleVersion.rulesetDate,
+      clinicalStatus: ClinicalScreeningRuleVersion.clinicalStatus,
     );
   }
 
@@ -41,6 +47,7 @@ class ClinicalScreeningEngineV3 {
         level: ClinicalDecisionLevel.routine,
         trace: ClinicalReasoningTrace(
           ruleId: 'routine',
+          rulesetVersion: ClinicalScreeningRuleVersion.rulesetVersion,
           title: 'Aucun flag présent',
           layer: ClinicalScreeningLayer.regional,
           decisionLevel: ClinicalDecisionLevel.routine,
@@ -66,6 +73,7 @@ class ClinicalScreeningEngineV3 {
         level: ClinicalDecisionLevel.monitor,
         trace: ClinicalReasoningTrace(
           ruleId: 'yellowFlagsOnly',
+          rulesetVersion: ClinicalScreeningRuleVersion.rulesetVersion,
           title: 'Drapeaux jaunes isolés',
           layer: ClinicalScreeningLayer.yellowFlag,
           decisionLevel: ClinicalDecisionLevel.monitor,
@@ -86,6 +94,7 @@ class ClinicalScreeningEngineV3 {
         level: highestFlagLevel,
         trace: ClinicalReasoningTrace(
           ruleId: 'highestFlagLevel',
+          rulesetVersion: ClinicalScreeningRuleVersion.rulesetVersion,
           title: 'Niveau intrinsèque de flag',
           layer: causalFlags.first.layer,
           decisionLevel: highestFlagLevel,
@@ -102,6 +111,7 @@ class ClinicalScreeningEngineV3 {
         level: scoreLevel,
         trace: ClinicalReasoningTrace(
           ruleId: 'scoreEscalation',
+          rulesetVersion: ClinicalScreeningRuleVersion.rulesetVersion,
           title: 'Escalade par score',
           layer: ClinicalScreeningLayer.regional,
           decisionLevel: scoreLevel,
@@ -119,6 +129,7 @@ class ClinicalScreeningEngineV3 {
       level: highestFlagLevel,
       trace: ClinicalReasoningTrace(
         ruleId: 'highestFlagLevel',
+        rulesetVersion: ClinicalScreeningRuleVersion.rulesetVersion,
         title: 'Niveau intrinsèque de flag',
         layer: causalFlags.first.layer,
         decisionLevel: highestFlagLevel,
@@ -213,6 +224,7 @@ class ClinicalScreeningEngineV3 {
       level: level,
       trace: ClinicalReasoningTrace(
         ruleId: 'immediateDanger',
+        rulesetVersion: ClinicalScreeningRuleVersion.rulesetVersion,
         title: 'Danger immédiat',
         layer: ClinicalScreeningLayer.immediateDanger,
         decisionLevel: level,
@@ -311,6 +323,7 @@ class ClinicalScreeningEngineV3 {
         level: ClinicalDecisionLevel.medicalAdvice,
         trace: ClinicalReasoningTrace(
           ruleId: 'systemicConcern',
+          rulesetVersion: ClinicalScreeningRuleVersion.rulesetVersion,
           title: 'Signe systémique isolé',
           layer: ClinicalScreeningLayer.systemic,
           decisionLevel: ClinicalDecisionLevel.medicalAdvice,
@@ -335,6 +348,7 @@ class ClinicalScreeningEngineV3 {
       level: level,
       trace: ClinicalReasoningTrace(
         ruleId: ruleId,
+        rulesetVersion: ClinicalScreeningRuleVersion.rulesetVersion,
         title: title,
         layer: ClinicalScreeningLayer.systemic,
         decisionLevel: level,

@@ -1,3 +1,5 @@
+import 'clinical_screening_rule_version.dart';
+
 enum ClinicalFlagCategory {
   general,
   cardiovascular,
@@ -84,6 +86,7 @@ class ClinicalRecommendedAction {
 
 class ClinicalReasoningTrace {
   final String ruleId;
+  final String rulesetVersion;
   final String title;
   final ClinicalScreeningLayer layer;
   final ClinicalDecisionLevel decisionLevel;
@@ -92,6 +95,7 @@ class ClinicalReasoningTrace {
 
   ClinicalReasoningTrace({
     required this.ruleId,
+    required this.rulesetVersion,
     required this.title,
     required this.layer,
     required this.decisionLevel,
@@ -110,6 +114,11 @@ class ClinicalScreeningSession {
   final ClinicalRecommendedAction recommendedAction;
   final int score;
   final List<ClinicalReasoningTrace> traces;
+  final String engineName;
+  final String engineVersion;
+  final String rulesetVersion;
+  final String rulesetDate;
+  final String clinicalStatus;
 
   ClinicalScreeningSession({
     required this.id,
@@ -120,6 +129,11 @@ class ClinicalScreeningSession {
     required this.recommendedAction,
     required this.score,
     required List<ClinicalReasoningTrace> traces,
+    required this.engineName,
+    required this.engineVersion,
+    required this.rulesetVersion,
+    required this.rulesetDate,
+    required this.clinicalStatus,
     this.patientId,
   }) : flags = List.unmodifiable(flags),
        traces = List.unmodifiable(traces);
@@ -148,6 +162,19 @@ class ClinicalScreeningSession {
         'Éléments retenus : ${causalLabels.join(', ')}.',
       if (primaryTrace != null) 'Interprétation : ${primaryTrace.explanation}',
       'Conduite proposée : ${recommendedAction.message}',
+      'Moteur : $engineName',
+      'Version moteur : $engineVersion',
+      'Version règles : $rulesetVersion',
+      'Date règles : $rulesetDate',
+      'Statut clinique : ${_clinicalStatusLabel(clinicalStatus)}',
     ].join('\n');
+  }
+
+  String _clinicalStatusLabel(String value) {
+    if (value == ClinicalScreeningRuleVersion.clinicalStatus) {
+      return ClinicalScreeningRuleVersion.clinicalStatusLabel;
+    }
+
+    return value;
   }
 }
