@@ -121,6 +121,9 @@ String _renderServiceWorker(
   final encodedResources = const JsonEncoder.withIndent(
     '  ',
   ).convert(resources);
+  final encodedVersionedResources = const JsonEncoder.withIndent(
+    '  ',
+  ).convert(['flutter_bootstrap.js?v=$buildId']);
 
   return '''
 'use strict';
@@ -130,6 +133,30 @@ const CACHE_PREFIX = '$_cachePrefix-';
 const SERVICE_WORKER_VERSION = '$version';
 const BUILD_ID = '$buildId';
 const APP_SHELL = $encodedResources;
+const VERSIONED_APP_SHELL = $encodedVersionedResources;
+
+async function cacheMatchIgnoringSearch(request) {
+  const directMatch = await caches.match(request);
+  if (directMatch) {
+    return directMatch;
+  }
+
+  const url = new URL(request.url || request, self.location.origin);
+  if (url.origin !== self.location.origin) {
+    return null;
+  }
+
+  url.search = '';
+  const cleanPath = url.pathname.startsWith('/')
+      ? url.pathname.substring(1)
+      : url.pathname;
+
+  return (
+    (await caches.match(url.pathname)) ||
+    (await caches.match(cleanPath)) ||
+    null
+  );
+}
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
@@ -137,7 +164,7 @@ self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
       return cache.addAll(
-        APP_SHELL.map((url) => new Request(url, { cache: 'reload' }))
+        APP_SHELL.concat(VERSIONED_APP_SHELL).map((url) => new Request(url, { cache: 'reload' }))
       );
     })
   );
@@ -203,8 +230,8 @@ self.addEventListener('fetch', (event) => {
         })
         .catch(async () => {
           return (
-            (await caches.match('index.html')) ||
-            (await caches.match('/')) ||
+            (await cacheMatchIgnoringSearch('index.html')) ||
+            (await cacheMatchIgnoringSearch('/')) ||
             new Response(
               `<!doctype html>
 <html lang="fr">
@@ -249,7 +276,7 @@ self.addEventListener('fetch', (event) => {
   }
 
   event.respondWith(
-    caches.match(request).then((cached) => {
+    cacheMatchIgnoringSearch(request).then((cached) => {
       if (cached) {
         return cached;
       }

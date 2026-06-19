@@ -267,10 +267,17 @@
           }
         }
 
-        for (const resource of criticalResources) {
+        const resourcesToCheck = [...criticalResources];
+        if (workerVersion && workerVersion.buildId) {
+          resourcesToCheck.push(`flutter_bootstrap.js?v=${workerVersion.buildId}`);
+        }
+
+        for (const resource of resourcesToCheck) {
           const match = await caches.match(resource);
+          const cleanResource = resource.split('?')[0];
+          const cleanMatch = await caches.match(cleanResource);
           resourceReport.append(
-            li(`${match ? '<span class="ok">présent</span>' : '<span class="ko">manquant</span>'} <code>${resource}</code>`)
+            li(`${match ? '<span class="ok">présent direct</span>' : '<span class="ko">direct manquant</span>'} / ${cleanMatch ? '<span class="ok">sans query présent</span>' : '<span class="ko">sans query manquant</span>'} <code>${resource}</code>`)
           );
         }
       }
@@ -295,6 +302,26 @@
         appendRows(markerReport, [
           ['marker attendu', `<code>${appBuildMarker}</code>`],
           ['marker dans main.dart.js', '<span class="ko">non vérifiable</span>'],
+        ]);
+      }
+
+      const bootstrapSrc = workerVersion && workerVersion.buildId
+        ? `flutter_bootstrap.js?v=${workerVersion.buildId}`
+        : 'flutter_bootstrap.js';
+
+      try {
+        const bootstrapResponse = await fetch(bootstrapSrc, { cache: 'no-store' });
+        appendRows(fetchReport, [
+          ['flutter_bootstrap.js versionné fetch', bootstrapResponse.ok ? '<span class="ok">OK</span>' : '<span class="ko">échec</span>'],
+          ['bootstrap src', `<code>${bootstrapSrc}</code>`],
+          ['bootstrap status', `<code>${bootstrapResponse.status} ${bootstrapResponse.statusText}</code>`],
+          ['bootstrap url', `<code>${bootstrapResponse.url}</code>`],
+        ]);
+      } catch (error) {
+        appendRows(fetchReport, [
+          ['flutter_bootstrap.js versionné fetch', '<span class="ko">exception</span>'],
+          ['bootstrap src', `<code>${bootstrapSrc}</code>`],
+          ['bootstrap erreur', `<code>${String(error)}</code>`],
         ]);
       }
     }
