@@ -14,18 +14,19 @@ class ClinicalScreeningEngineV3 {
         .where((flag) => flag.isPresent)
         .toList(growable: false);
     final score = _score(presentFlags);
-    final decisionLevel = _decisionLevel(presentFlags, score);
-    final action = _recommendedAction(decisionLevel, presentFlags);
+    final decision = _decisionTrace(presentFlags, score);
+    final action = _recommendedAction(decision.level, presentFlags);
 
     return ClinicalScreeningSession(
       id: sessionId,
       patientId: patientId,
       reason: reason,
       createdAt: createdAt ?? DateTime.now(),
-      flags: List.unmodifiable(flags),
-      decisionLevel: decisionLevel,
+      flags: flags,
+      decisionLevel: decision.level,
       recommendedAction: action,
       score: score,
+      traces: [decision.trace],
     );
   }
 
@@ -33,34 +34,98 @@ class ClinicalScreeningEngineV3 {
     return flags.fold<int>(0, (total, flag) => total + flag.weight);
   }
 
-  ClinicalDecisionLevel _decisionLevel(List<ClinicalFlag> flags, int score) {
-    if (flags.isEmpty) return ClinicalDecisionLevel.routine;
-
-    final immediateDangerLevel = _immediateDangerLevel(flags);
-    if (immediateDangerLevel != null) {
-      return immediateDangerLevel;
+  _DecisionTrace _decisionTrace(List<ClinicalFlag> flags, int score) {
+    if (flags.isEmpty) {
+      return _DecisionTrace(
+        level: ClinicalDecisionLevel.routine,
+        trace: ClinicalReasoningTrace(
+          ruleId: 'routine',
+          title: 'Aucun flag présent',
+          layer: ClinicalScreeningLayer.regional,
+          decisionLevel: ClinicalDecisionLevel.routine,
+          causalFlagIds: const [],
+          explanation:
+              'Aucun élément clinique présent n’a été retenu dans cette session de dépistage.',
+        ),
+      );
     }
 
-    final systemicClusterLevel = _systemicClusterLevel(flags);
-    if (systemicClusterLevel != null) {
-      return systemicClusterLevel;
+    final immediateDangerDecision = _immediateDangerDecision(flags);
+    if (immediateDangerDecision != null) {
+      return immediateDangerDecision;
+    }
+
+    final systemicClusterDecision = _systemicClusterDecision(flags);
+    if (systemicClusterDecision != null) {
+      return systemicClusterDecision;
     }
 
     if (_hasOnlyYellowFlags(flags)) {
-      return ClinicalDecisionLevel.monitor;
+      return _DecisionTrace(
+        level: ClinicalDecisionLevel.monitor,
+        trace: ClinicalReasoningTrace(
+          ruleId: 'yellowFlagsOnly',
+          title: 'Drapeaux jaunes isolés',
+          layer: ClinicalScreeningLayer.yellowFlag,
+          decisionLevel: ClinicalDecisionLevel.monitor,
+          causalFlagIds: _flagIds(flags),
+          explanation:
+              'Les éléments présents relèvent uniquement de facteurs psychosociaux ou contextuels et justifient une surveillance renforcée sans orientation médicale urgente isolée.',
+        ),
+      );
     }
 
     final highestFlagLevel = _highestFlagLevel(flags);
     if (_levelRank(highestFlagLevel) >=
         _levelRank(ClinicalDecisionLevel.urgentReferral)) {
-      return highestFlagLevel;
+      final causalFlags = flags
+          .where((flag) => flag.level == highestFlagLevel)
+          .toList(growable: false);
+      return _DecisionTrace(
+        level: highestFlagLevel,
+        trace: ClinicalReasoningTrace(
+          ruleId: 'highestFlagLevel',
+          title: 'Niveau intrinsèque de flag',
+          layer: causalFlags.first.layer,
+          decisionLevel: highestFlagLevel,
+          causalFlagIds: _flagIds(causalFlags),
+          explanation:
+              'Le niveau clinique porté par un ou plusieurs flags impose directement le niveau de décision retenu.',
+        ),
+      );
     }
 
-    if (score >= 6) return ClinicalDecisionLevel.urgentReferral;
-    if (score >= 4) return ClinicalDecisionLevel.medicalAdvice;
-    if (score >= 2) return ClinicalDecisionLevel.monitor;
+    final scoreLevel = _scoreDecisionLevel(score);
+    if (scoreLevel != null) {
+      return _DecisionTrace(
+        level: scoreLevel,
+        trace: ClinicalReasoningTrace(
+          ruleId: 'scoreEscalation',
+          title: 'Escalade par score',
+          layer: ClinicalScreeningLayer.regional,
+          decisionLevel: scoreLevel,
+          causalFlagIds: _flagIds(flags),
+          explanation:
+              'L’accumulation de plusieurs éléments cliniques présents atteint le seuil de score associé au niveau de vigilance retenu.',
+        ),
+      );
+    }
 
-    return highestFlagLevel;
+    final causalFlags = flags
+        .where((flag) => flag.level == highestFlagLevel)
+        .toList(growable: false);
+    return _DecisionTrace(
+      level: highestFlagLevel,
+      trace: ClinicalReasoningTrace(
+        ruleId: 'highestFlagLevel',
+        title: 'Niveau intrinsèque de flag',
+        layer: causalFlags.first.layer,
+        decisionLevel: highestFlagLevel,
+        causalFlagIds: _flagIds(causalFlags),
+        explanation:
+            'Le niveau clinique du flag présent le plus significatif est retenu en l’absence de cluster ou de seuil de score supérieur.',
+      ),
+    );
   }
 
   ClinicalRecommendedAction _recommendedAction(
@@ -123,7 +188,7 @@ class ClinicalScreeningEngineV3 {
     }
   }
 
-  ClinicalDecisionLevel? _immediateDangerLevel(List<ClinicalFlag> flags) {
+  _DecisionTrace? _immediateDangerDecision(List<ClinicalFlag> flags) {
     final immediateDangerFlags = flags
         .where(
           (flag) =>
@@ -136,85 +201,220 @@ class ClinicalScreeningEngineV3 {
     if (immediateDangerFlags.isEmpty) return null;
 
     final highestLevel = _highestFlagLevel(immediateDangerFlags);
-    if (highestLevel == ClinicalDecisionLevel.emergency) {
-      return ClinicalDecisionLevel.emergency;
-    }
+    final level = highestLevel == ClinicalDecisionLevel.emergency
+        ? ClinicalDecisionLevel.emergency
+        : ClinicalDecisionLevel.urgentReferral;
 
-    return ClinicalDecisionLevel.urgentReferral;
+    return _DecisionTrace(
+      level: level,
+      trace: ClinicalReasoningTrace(
+        ruleId: 'immediateDanger',
+        title: 'Danger immédiat',
+        layer: ClinicalScreeningLayer.immediateDanger,
+        decisionLevel: level,
+        causalFlagIds: _flagIds(immediateDangerFlags),
+        explanation:
+            'Un ou plusieurs éléments relèvent d’un danger immédiat ou d’un tag critique et imposent une orientation prioritaire.',
+      ),
+    );
   }
 
-  ClinicalDecisionLevel? _systemicClusterLevel(List<ClinicalFlag> flags) {
-    if (_hasCardiorespiratoryCluster(flags)) {
-      return ClinicalDecisionLevel.emergency;
+  _DecisionTrace? _systemicClusterDecision(List<ClinicalFlag> flags) {
+    final cardiorespiratoryFlags = _cardiorespiratoryClusterFlags(flags);
+    if (cardiorespiratoryFlags != null) {
+      return _clusterDecision(
+        ruleId: 'cardiorespiratoryCluster',
+        title: 'Cluster cardio-respiratoire',
+        level: ClinicalDecisionLevel.emergency,
+        causalFlags: cardiorespiratoryFlags,
+        explanation:
+            'L’association douleur thoracique et dyspnée, malaise ou syncope impose une prise en charge urgente.',
+      );
     }
 
-    if (_hasOncologicCluster(flags) ||
-        _hasInfectiousCluster(flags) ||
-        _hasNeurologicCluster(flags) ||
-        _hasFractureRiskCluster(flags) ||
-        _hasVascularCluster(flags)) {
-      return ClinicalDecisionLevel.urgentReferral;
+    final oncologicFlags = _oncologicClusterFlags(flags);
+    if (oncologicFlags != null) {
+      return _clusterDecision(
+        ruleId: 'oncologicCluster',
+        title: 'Cluster oncologique',
+        level: ClinicalDecisionLevel.urgentReferral,
+        causalFlags: oncologicFlags,
+        explanation:
+            'L’association d’un contexte oncologique et de signes généraux ou nocturnes ne permet pas d’exclure une pathologie sous-jacente sérieuse.',
+      );
+    }
+
+    final infectiousFlags = _infectiousClusterFlags(flags);
+    if (infectiousFlags != null) {
+      return _clusterDecision(
+        ruleId: 'infectiousCluster',
+        title: 'Cluster infectieux',
+        level: ClinicalDecisionLevel.urgentReferral,
+        causalFlags: infectiousFlags,
+        explanation:
+            'L’association de signes infectieux et d’un contexte de fragilité ou d’infection récente justifie un avis médical impératif rapide.',
+      );
+    }
+
+    final neurologicFlags = _neurologicClusterFlags(flags);
+    if (neurologicFlags != null) {
+      return _clusterDecision(
+        ruleId: 'neurologicCluster',
+        title: 'Cluster neurologique',
+        level: ClinicalDecisionLevel.urgentReferral,
+        causalFlags: neurologicFlags,
+        explanation:
+            'La présence de signes neurologiques significatifs impose une évaluation médicale rapide.',
+      );
+    }
+
+    final fractureRiskFlags = _fractureRiskClusterFlags(flags);
+    if (fractureRiskFlags != null) {
+      return _clusterDecision(
+        ruleId: 'fractureRiskCluster',
+        title: 'Cluster risque fracturaire',
+        level: ClinicalDecisionLevel.urgentReferral,
+        causalFlags: fractureRiskFlags,
+        explanation:
+            'L’association d’un traumatisme et d’un facteur de fragilité osseuse augmente le risque de lésion sérieuse.',
+      );
+    }
+
+    final vascularFlags = _vascularClusterFlags(flags);
+    if (vascularFlags != null) {
+      return _clusterDecision(
+        ruleId: 'vascularCluster',
+        title: 'Cluster vasculaire',
+        level: ClinicalDecisionLevel.urgentReferral,
+        causalFlags: vascularFlags,
+        explanation:
+            'La répétition d’éléments vasculaires impose un avis médical impératif rapide.',
+      );
     }
 
     if (_hasSingleSystemicConcern(flags)) {
-      return ClinicalDecisionLevel.medicalAdvice;
+      final causalFlags = flags
+          .where(
+            (flag) =>
+                flag.layer == ClinicalScreeningLayer.systemic ||
+                _hasAnyTagInFlag(flag, const [
+                  'cancer',
+                  'neoplasie',
+                  'oncologic',
+                  'fievre',
+                  'fièvre',
+                  'immunodepression',
+                  'immunodépression',
+                ]),
+          )
+          .toList(growable: false);
+      return _DecisionTrace(
+        level: ClinicalDecisionLevel.medicalAdvice,
+        trace: ClinicalReasoningTrace(
+          ruleId: 'systemicConcern',
+          title: 'Signe systémique isolé',
+          layer: ClinicalScreeningLayer.systemic,
+          decisionLevel: ClinicalDecisionLevel.medicalAdvice,
+          causalFlagIds: _flagIds(causalFlags),
+          explanation:
+              'Un élément systémique isolé justifie un avis médical recommandé, sans cluster d’urgence identifié.',
+        ),
+      );
     }
 
     return null;
   }
 
-  bool _hasOncologicCluster(List<ClinicalFlag> flags) {
-    return _hasAnyTag(flags, const ['cancer', 'neoplasie', 'oncologic']) &&
-        _hasAnyTag(flags, const [
-          'perte_poids',
-          'douleur_nocturne',
-          'alteration_etat_general',
-        ]);
+  _DecisionTrace _clusterDecision({
+    required String ruleId,
+    required String title,
+    required ClinicalDecisionLevel level,
+    required List<ClinicalFlag> causalFlags,
+    required String explanation,
+  }) {
+    return _DecisionTrace(
+      level: level,
+      trace: ClinicalReasoningTrace(
+        ruleId: ruleId,
+        title: title,
+        layer: ClinicalScreeningLayer.systemic,
+        decisionLevel: level,
+        causalFlagIds: _flagIds(causalFlags),
+        explanation: explanation,
+      ),
+    );
   }
 
-  bool _hasInfectiousCluster(List<ClinicalFlag> flags) {
-    final systemicInfection = _hasAnyTag(flags, const [
+  List<ClinicalFlag>? _oncologicClusterFlags(List<ClinicalFlag> flags) {
+    final cancerFlags = _flagsWithAnyTag(flags, const [
+      'cancer',
+      'neoplasie',
+      'oncologic',
+    ]);
+    final associatedFlags = _flagsWithAnyTag(flags, const [
+      'perte_poids',
+      'douleur_nocturne',
+      'alteration_etat_general',
+    ]);
+
+    if (cancerFlags.isEmpty || associatedFlags.isEmpty) return null;
+
+    return _uniqueFlags([...cancerFlags, ...associatedFlags]);
+  }
+
+  List<ClinicalFlag>? _infectiousClusterFlags(List<ClinicalFlag> flags) {
+    final systemicInfectionFlags = _flagsWithAnyTag(flags, const [
       'fievre',
       'fièvre',
       'frissons',
       'sueurs_nocturnes',
     ]);
-    final fragileContext = _hasAnyTag(flags, const [
+    final fragileContextFlags = _flagsWithAnyTag(flags, const [
       'immunodepression',
       'immunodépression',
       'infection_recente',
       'infection_récente',
     ]);
 
-    return systemicInfection && fragileContext;
+    if (systemicInfectionFlags.isEmpty || fragileContextFlags.isEmpty) {
+      return null;
+    }
+
+    return _uniqueFlags([...systemicInfectionFlags, ...fragileContextFlags]);
   }
 
-  bool _hasNeurologicCluster(List<ClinicalFlag> flags) {
-    return _hasAnyTag(flags, const [
+  List<ClinicalFlag>? _neurologicClusterFlags(List<ClinicalFlag> flags) {
+    final neurologicFlags = _flagsWithAnyTag(flags, const [
       'deficit_moteur_progressif',
       'déficit_moteur_progressif',
       'signes_neurologiques_centraux',
     ]);
+
+    return neurologicFlags.isEmpty ? null : neurologicFlags;
   }
 
-  bool _hasCardiorespiratoryCluster(List<ClinicalFlag> flags) {
-    final chestPain = _hasAnyTag(flags, const [
+  List<ClinicalFlag>? _cardiorespiratoryClusterFlags(List<ClinicalFlag> flags) {
+    final chestPainFlags = _flagsWithAnyTag(flags, const [
       'douleur_thoracique',
       'douleur_thoracique_critique',
     ]);
-    final respiratoryOrMalaise = _hasAnyTag(flags, const [
+    final respiratoryOrMalaiseFlags = _flagsWithAnyTag(flags, const [
       'dyspnee',
       'dyspnée',
       'malaise',
       'syncope',
     ]);
 
-    return chestPain && respiratoryOrMalaise;
+    if (chestPainFlags.isEmpty || respiratoryOrMalaiseFlags.isEmpty) {
+      return null;
+    }
+
+    return _uniqueFlags([...chestPainFlags, ...respiratoryOrMalaiseFlags]);
   }
 
-  bool _hasFractureRiskCluster(List<ClinicalFlag> flags) {
-    final trauma = _hasAnyTag(flags, const ['traumatisme', 'chute']);
-    final fragility = _hasAnyTag(flags, const [
+  List<ClinicalFlag>? _fractureRiskClusterFlags(List<ClinicalFlag> flags) {
+    final traumaFlags = _flagsWithAnyTag(flags, const ['traumatisme', 'chute']);
+    final fragilityFlags = _flagsWithAnyTag(flags, const [
       'osteoporose',
       'ostéoporose',
       'corticotherapie_prolongee',
@@ -223,13 +423,15 @@ class ClinicalScreeningEngineV3 {
       'âge_avancé',
     ]);
 
-    return trauma && fragility;
+    if (traumaFlags.isEmpty || fragilityFlags.isEmpty) return null;
+
+    return _uniqueFlags([...traumaFlags, ...fragilityFlags]);
   }
 
-  bool _hasVascularCluster(List<ClinicalFlag> flags) {
-    final vascularFlags = flags.where(_isVascularConcern).length;
+  List<ClinicalFlag>? _vascularClusterFlags(List<ClinicalFlag> flags) {
+    final vascularFlags = flags.where(_isVascularConcern).toList();
 
-    return vascularFlags >= 2;
+    return vascularFlags.length >= 2 ? vascularFlags : null;
   }
 
   bool _hasSingleSystemicConcern(List<ClinicalFlag> flags) {
@@ -283,6 +485,15 @@ class ClinicalScreeningEngineV3 {
     return flags.any((flag) => _hasAnyTagInFlag(flag, searchedTags));
   }
 
+  List<ClinicalFlag> _flagsWithAnyTag(
+    List<ClinicalFlag> flags,
+    List<String> searchedTags,
+  ) {
+    return flags
+        .where((flag) => _hasAnyTagInFlag(flag, searchedTags))
+        .toList(growable: false);
+  }
+
   bool _hasAnyTagInFlag(ClinicalFlag flag, List<String> searchedTags) {
     final tags = flag.tags.map((tag) => tag.toLowerCase()).toSet();
 
@@ -312,4 +523,32 @@ class ClinicalScreeningEngineV3 {
         return 4;
     }
   }
+
+  ClinicalDecisionLevel? _scoreDecisionLevel(int score) {
+    if (score >= 6) return ClinicalDecisionLevel.urgentReferral;
+    if (score >= 4) return ClinicalDecisionLevel.medicalAdvice;
+    if (score >= 2) return ClinicalDecisionLevel.monitor;
+
+    return null;
+  }
+
+  List<String> _flagIds(List<ClinicalFlag> flags) {
+    return flags.map((flag) => flag.id).toList(growable: false);
+  }
+
+  List<ClinicalFlag> _uniqueFlags(List<ClinicalFlag> flags) {
+    final byId = <String, ClinicalFlag>{};
+    for (final flag in flags) {
+      byId.putIfAbsent(flag.id, () => flag);
+    }
+
+    return byId.values.toList(growable: false);
+  }
+}
+
+class _DecisionTrace {
+  final ClinicalDecisionLevel level;
+  final ClinicalReasoningTrace trace;
+
+  const _DecisionTrace({required this.level, required this.trace});
 }

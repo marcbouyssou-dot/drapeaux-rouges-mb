@@ -18,6 +18,7 @@ void main() {
 
     ClinicalFlag flag({
       required String id,
+      String? label,
       ClinicalFlagCategory category = ClinicalFlagCategory.general,
       ClinicalDecisionLevel level = ClinicalDecisionLevel.monitor,
       ClinicalScreeningLayer layer = ClinicalScreeningLayer.regional,
@@ -27,7 +28,7 @@ void main() {
     }) {
       return ClinicalFlag(
         id: id,
-        label: id,
+        label: label ?? id,
         category: category,
         level: level,
         layer: layer,
@@ -57,6 +58,9 @@ void main() {
       expect(session.recommendedAction.title, 'Prise en charge habituelle');
       expect(session.recommendedAction.requiresMedicalContact, isFalse);
       expect(session.recommendedAction.requiresEmergencyCall, isFalse);
+      expect(session.traces, hasLength(1));
+      expect(session.traces.single.ruleId, 'routine');
+      expect(session.traces.single.causalFlagIds, isEmpty);
     });
 
     test('yellow flags alone with high score never exceed monitor', () {
@@ -76,6 +80,11 @@ void main() {
       expect(session.score, 8);
       expect(session.decisionLevel, ClinicalDecisionLevel.monitor);
       expect(session.recommendedAction.title, 'Surveillance renforcée');
+      expect(session.traces.single.ruleId, 'yellowFlagsOnly');
+      expect(session.traces.single.causalFlagIds, [
+        'fear-avoidance',
+        'catastrophizing',
+      ]);
     });
 
     test('cancer alone is documented as medical advice', () {
@@ -90,6 +99,7 @@ void main() {
       expect(session.score, 1);
       expect(session.decisionLevel, ClinicalDecisionLevel.medicalAdvice);
       expect(session.recommendedAction.title, 'Avis médical recommandé');
+      expect(session.traces.single.ruleId, 'systemicConcern');
     });
 
     test(
@@ -111,14 +121,25 @@ void main() {
             layer: ClinicalScreeningLayer.systemic,
             tags: ['douleur_nocturne'],
           ),
+          flag(
+            id: 'unrelated',
+            layer: ClinicalScreeningLayer.regional,
+            tags: ['not_causal'],
+          ),
         ]);
 
-        expect(session.score, 3);
+        expect(session.score, 4);
         expect(session.decisionLevel, ClinicalDecisionLevel.urgentReferral);
         expect(
           session.recommendedAction.title,
           'Avis médical impératif rapide',
         );
+        expect(session.traces.single.ruleId, 'oncologicCluster');
+        expect(session.traces.single.causalFlagIds, [
+          'cancer-history',
+          'weight-loss',
+          'night-pain',
+        ]);
       },
     );
 
@@ -139,6 +160,11 @@ void main() {
 
       expect(session.score, 2);
       expect(session.decisionLevel, ClinicalDecisionLevel.urgentReferral);
+      expect(session.traces.single.ruleId, 'infectiousCluster');
+      expect(session.traces.single.causalFlagIds, [
+        'fever',
+        'immunosuppression',
+      ]);
     });
 
     test('chest pain with dyspnea escalates to emergency', () {
@@ -161,6 +187,12 @@ void main() {
       expect(session.decisionLevel, ClinicalDecisionLevel.emergency);
       expect(session.recommendedAction.requiresEmergencyCall, isTrue);
       expect(session.recommendedAction.title, 'Urgence immédiate');
+      expect(session.traces.single.ruleId, 'cardiorespiratoryCluster');
+      expect(
+        session.traces.single.decisionLevel,
+        ClinicalDecisionLevel.emergency,
+      );
+      expect(session.traces.single.causalFlagIds, ['chest-pain', 'dyspnea']);
     });
 
     test(
@@ -182,6 +214,7 @@ void main() {
 
         expect(session.score, 2);
         expect(session.decisionLevel, ClinicalDecisionLevel.urgentReferral);
+        expect(session.traces.single.ruleId, 'fractureRiskCluster');
       },
     );
 
@@ -203,6 +236,7 @@ void main() {
       expect(session.decisionLevel, ClinicalDecisionLevel.urgentReferral);
       expect(session.recommendedAction.requiresMedicalContact, isTrue);
       expect(session.recommendedAction.requiresEmergencyCall, isFalse);
+      expect(session.traces.single.ruleId, 'vascularCluster');
     });
 
     test('score thresholds 1, 2, 3, 4, 5, 6 are applied', () {
@@ -241,6 +275,7 @@ void main() {
       expect(session.score, 1);
       expect(session.decisionLevel, ClinicalDecisionLevel.emergency);
       expect(session.recommendedAction.requiresEmergencyCall, isTrue);
+      expect(session.traces.single.ruleId, 'immediateDanger');
     });
 
     test('emergency level without critical tag produces emergency', () {
@@ -253,9 +288,10 @@ void main() {
       ]);
 
       expect(session.decisionLevel, ClinicalDecisionLevel.emergency);
+      expect(session.traces.single.ruleId, 'immediateDanger');
     });
 
-    test('urgent referral level produces urgent referral', () {
+    test('urgent referral immediate danger level produces urgent referral', () {
       final session = evaluate([
         flag(
           id: 'urgent-clinical-flag',
@@ -266,6 +302,34 @@ void main() {
 
       expect(session.decisionLevel, ClinicalDecisionLevel.urgentReferral);
       expect(session.recommendedAction.title, 'Avis médical impératif rapide');
+      expect(session.traces.single.ruleId, 'immediateDanger');
+    });
+
+    test('score escalation produces scoreEscalation trace', () {
+      final session = evaluate([
+        flag(id: 'score-a', weight: 2),
+        flag(id: 'score-b', weight: 2),
+      ]);
+
+      expect(session.decisionLevel, ClinicalDecisionLevel.medicalAdvice);
+      expect(session.traces.single.ruleId, 'scoreEscalation');
+      expect(session.traces.single.causalFlagIds, ['score-a', 'score-b']);
+    });
+
+    test('highest flag level produces highestFlagLevel trace', () {
+      final session = evaluate([
+        flag(
+          id: 'regional-urgent',
+          category: ClinicalFlagCategory.musculoskeletal,
+          level: ClinicalDecisionLevel.urgentReferral,
+          layer: ClinicalScreeningLayer.regional,
+        ),
+        flag(id: 'context', weight: 1),
+      ]);
+
+      expect(session.decisionLevel, ClinicalDecisionLevel.urgentReferral);
+      expect(session.traces.single.ruleId, 'highestFlagLevel');
+      expect(session.traces.single.causalFlagIds, ['regional-urgent']);
     });
 
     test('ignores absent flags and stores flags as an unmodifiable list', () {
@@ -295,6 +359,48 @@ void main() {
         ),
         throwsUnsupportedError,
       );
+      expect(
+        () => session.traces.add(
+          ClinicalReasoningTrace(
+            ruleId: 'test',
+            title: 'Test',
+            layer: ClinicalScreeningLayer.regional,
+            decisionLevel: ClinicalDecisionLevel.monitor,
+            causalFlagIds: const [],
+            explanation: 'Test',
+          ),
+        ),
+        throwsUnsupportedError,
+      );
     });
+
+    test(
+      'exportReasoningText contains decision, triggered rule and causal flags',
+      () {
+        final session = evaluate([
+          flag(
+            id: 'cancer-history',
+            label: 'antécédent de cancer',
+            layer: ClinicalScreeningLayer.systemic,
+            tags: ['cancer'],
+          ),
+          flag(
+            id: 'weight-loss',
+            label: 'perte de poids inexpliquée',
+            layer: ClinicalScreeningLayer.systemic,
+            tags: ['perte_poids'],
+          ),
+        ]);
+
+        final text = session.exportReasoningText();
+
+        expect(text, contains('Décision : Avis médical impératif rapide.'));
+        expect(text, contains('Règle déclenchée : Cluster oncologique.'));
+        expect(text, contains('antécédent de cancer'));
+        expect(text, contains('perte de poids inexpliquée'));
+        expect(text, contains('Conduite proposée :'));
+        expect(session.reasoningSummary, text);
+      },
+    );
   });
 }

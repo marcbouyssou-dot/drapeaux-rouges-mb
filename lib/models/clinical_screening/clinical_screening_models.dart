@@ -82,6 +82,24 @@ class ClinicalRecommendedAction {
   });
 }
 
+class ClinicalReasoningTrace {
+  final String ruleId;
+  final String title;
+  final ClinicalScreeningLayer layer;
+  final ClinicalDecisionLevel decisionLevel;
+  final List<String> causalFlagIds;
+  final String explanation;
+
+  ClinicalReasoningTrace({
+    required this.ruleId,
+    required this.title,
+    required this.layer,
+    required this.decisionLevel,
+    required List<String> causalFlagIds,
+    required this.explanation,
+  }) : causalFlagIds = List.unmodifiable(causalFlagIds);
+}
+
 class ClinicalScreeningSession {
   final String id;
   final String? patientId;
@@ -91,21 +109,45 @@ class ClinicalScreeningSession {
   final ClinicalDecisionLevel decisionLevel;
   final ClinicalRecommendedAction recommendedAction;
   final int score;
+  final List<ClinicalReasoningTrace> traces;
 
-  const ClinicalScreeningSession({
+  ClinicalScreeningSession({
     required this.id,
     required this.reason,
     required this.createdAt,
-    required this.flags,
+    required List<ClinicalFlag> flags,
     required this.decisionLevel,
     required this.recommendedAction,
     required this.score,
+    required List<ClinicalReasoningTrace> traces,
     this.patientId,
-  });
+  }) : flags = List.unmodifiable(flags),
+       traces = List.unmodifiable(traces);
 
   List<ClinicalFlag> get presentFlags {
     return flags.where((flag) => flag.isPresent).toList(growable: false);
   }
 
   bool get hasPresentFlags => presentFlags.isNotEmpty;
+
+  String get reasoningSummary => exportReasoningText();
+
+  String exportReasoningText() {
+    final primaryTrace = traces.isNotEmpty ? traces.first : null;
+    final flagLabelsById = {for (final flag in flags) flag.id: flag.label};
+    final causalLabels =
+        primaryTrace?.causalFlagIds
+            .map((id) => flagLabelsById[id] ?? id)
+            .toList(growable: false) ??
+        const <String>[];
+
+    return [
+      'Décision : ${recommendedAction.title}.',
+      if (primaryTrace != null) 'Règle déclenchée : ${primaryTrace.title}.',
+      if (causalLabels.isNotEmpty)
+        'Éléments retenus : ${causalLabels.join(', ')}.',
+      if (primaryTrace != null) 'Interprétation : ${primaryTrace.explanation}',
+      'Conduite proposée : ${recommendedAction.message}',
+    ].join('\n');
+  }
 }
