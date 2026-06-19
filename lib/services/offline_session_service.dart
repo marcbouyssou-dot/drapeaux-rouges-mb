@@ -51,6 +51,13 @@ class OfflineSessionService {
       'authenticatedOnce=${session.authenticatedOnce} '
       'isValid=${session.isValid} isExpired=${session.isExpired}',
     );
+    debugPrint(
+      'OFFLINE SESSION READ\n'
+      'authenticatedOnce=${session.authenticatedOnce}\n'
+      'lastSuccessfulLoginAt=${session.lastSuccessfulLoginAt?.toIso8601String()}\n'
+      'expiresAt=${session.validUntil?.toIso8601String()}\n'
+      'valid=${session.isValid}',
+    );
     return session;
   }
 
@@ -62,6 +69,13 @@ class OfflineSessionService {
     await _box.put(
       _validUntilKey,
       current.add(const Duration(days: validityDays)).toIso8601String(),
+    );
+    final session = await getSession();
+    debugPrint(
+      'LOGIN SAVED OFFLINE SESSION\n'
+      'authenticatedOnce=${session.authenticatedOnce}\n'
+      'lastSuccessfulLoginAt=${session.lastSuccessfulLoginAt?.toIso8601String()}\n'
+      'expiresAt=${session.validUntil?.toIso8601String()}',
     );
     debugPrint('[BOOT][OfflineSession] markSuccessfulLogin() OK');
   }

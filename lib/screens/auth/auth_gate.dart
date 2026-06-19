@@ -63,6 +63,13 @@ class _AuthGateState extends State<AuthGate> {
 
       _setStep('LOADING OFFLINE SESSION');
       final session = await widget.sessionService.getSession();
+      debugPrint(
+        'OFFLINE SESSION READ\n'
+        'authenticatedOnce=${session.authenticatedOnce}\n'
+        'lastSuccessfulLoginAt=${session.lastSuccessfulLoginAt?.toIso8601String()}\n'
+        'expiresAt=${session.validUntil?.toIso8601String()}\n'
+        'valid=${session.isValid}',
+      );
 
       _setStep('DECIDING ROUTE');
       if (online) {
