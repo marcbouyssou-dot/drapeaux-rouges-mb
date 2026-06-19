@@ -18,11 +18,14 @@ enum ClinicalDecisionLevel {
   emergency,
 }
 
+enum ClinicalScreeningLayer { immediateDanger, systemic, regional, yellowFlag }
+
 class ClinicalFlag {
   final String id;
   final String label;
   final ClinicalFlagCategory category;
   final ClinicalDecisionLevel level;
+  final ClinicalScreeningLayer layer;
   final List<String> tags;
   final int weight;
   final bool isPresent;
@@ -32,6 +35,7 @@ class ClinicalFlag {
     required this.label,
     required this.category,
     required this.level,
+    this.layer = ClinicalScreeningLayer.regional,
     this.tags = const [],
     this.weight = 1,
     this.isPresent = true,
@@ -42,6 +46,7 @@ class ClinicalFlag {
     String? label,
     ClinicalFlagCategory? category,
     ClinicalDecisionLevel? level,
+    ClinicalScreeningLayer? layer,
     List<String>? tags,
     int? weight,
     bool? isPresent,
@@ -51,6 +56,7 @@ class ClinicalFlag {
       label: label ?? this.label,
       category: category ?? this.category,
       level: level ?? this.level,
+      layer: layer ?? this.layer,
       tags: tags ?? this.tags,
       weight: weight ?? this.weight,
       isPresent: isPresent ?? this.isPresent,

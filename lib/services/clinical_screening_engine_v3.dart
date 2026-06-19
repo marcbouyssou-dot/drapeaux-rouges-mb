@@ -36,21 +36,24 @@ class ClinicalScreeningEngineV3 {
   ClinicalDecisionLevel _decisionLevel(List<ClinicalFlag> flags, int score) {
     if (flags.isEmpty) return ClinicalDecisionLevel.routine;
 
-    if (_hasEmergencyPattern(flags)) {
-      return ClinicalDecisionLevel.emergency;
+    final immediateDangerLevel = _immediateDangerLevel(flags);
+    if (immediateDangerLevel != null) {
+      return immediateDangerLevel;
     }
 
-    final highestFlagLevel = flags
-        .map((flag) => flag.level)
-        .reduce((highest, level) => _maxLevel(highest, level));
+    final systemicClusterLevel = _systemicClusterLevel(flags);
+    if (systemicClusterLevel != null) {
+      return systemicClusterLevel;
+    }
 
+    if (_hasOnlyYellowFlags(flags)) {
+      return ClinicalDecisionLevel.monitor;
+    }
+
+    final highestFlagLevel = _highestFlagLevel(flags);
     if (_levelRank(highestFlagLevel) >=
         _levelRank(ClinicalDecisionLevel.urgentReferral)) {
       return highestFlagLevel;
-    }
-
-    if (_hasVascularCluster(flags)) {
-      return ClinicalDecisionLevel.urgentReferral;
     }
 
     if (score >= 6) return ClinicalDecisionLevel.urgentReferral;
@@ -70,9 +73,9 @@ class ClinicalScreeningEngineV3 {
       case ClinicalDecisionLevel.emergency:
         return ClinicalRecommendedAction(
           level: level,
-          title: 'Orientation urgente immédiate',
+          title: 'Urgence immédiate',
           message:
-              'Présence de signes critiques. Contacter sans délai le 15, le 112 ou le service d’urgence adapté.',
+              'Présence de signes critiques. Appeler le 15, le 112 ou orienter immédiatement vers le service d’urgence adapté.',
           requiresMedicalContact: true,
           requiresEmergencyCall: true,
           relatedFlagIds: relatedFlagIds,
@@ -80,9 +83,9 @@ class ClinicalScreeningEngineV3 {
       case ClinicalDecisionLevel.urgentReferral:
         return ClinicalRecommendedAction(
           level: level,
-          title: 'Orientation médicale urgente',
+          title: 'Avis médical impératif rapide',
           message:
-              'Un avis médical urgent est recommandé avant toute poursuite de prise en charge non médicale.',
+              'Un avis médical impératif et rapide est requis avant toute poursuite de prise en charge non médicale.',
           requiresMedicalContact: true,
           requiresEmergencyCall: false,
           relatedFlagIds: relatedFlagIds,
@@ -90,9 +93,9 @@ class ClinicalScreeningEngineV3 {
       case ClinicalDecisionLevel.medicalAdvice:
         return ClinicalRecommendedAction(
           level: level,
-          title: 'Avis médical rapide',
+          title: 'Avis médical recommandé',
           message:
-              'Des signes significatifs justifient un avis médical rapide et une réévaluation clinique.',
+              'Des signes cliniques significatifs justifient un avis médical recommandé et une réévaluation adaptée.',
           requiresMedicalContact: true,
           requiresEmergencyCall: false,
           relatedFlagIds: relatedFlagIds,
@@ -102,7 +105,7 @@ class ClinicalScreeningEngineV3 {
           level: level,
           title: 'Surveillance renforcée',
           message:
-              'La prise en charge peut être envisagée avec surveillance clinique rapprochée et consignes de réévaluation.',
+              'La prise en charge peut être envisagée avec surveillance renforcée et consignes de réévaluation.',
           requiresMedicalContact: false,
           requiresEmergencyCall: false,
           relatedFlagIds: relatedFlagIds,
@@ -112,7 +115,7 @@ class ClinicalScreeningEngineV3 {
           level: level,
           title: 'Prise en charge habituelle',
           message:
-              'Aucun signe d’alerte majeur n’est identifié dans cette session de dépistage.',
+              'Aucun signe d’alerte majeur n’est identifié. La prise en charge habituelle peut être envisagée.',
           requiresMedicalContact: false,
           requiresEmergencyCall: false,
           relatedFlagIds: relatedFlagIds,
@@ -120,29 +123,172 @@ class ClinicalScreeningEngineV3 {
     }
   }
 
-  bool _hasEmergencyPattern(List<ClinicalFlag> flags) {
-    return flags.any((flag) {
-      final tags = flag.tags.map((tag) => tag.toLowerCase()).toSet();
+  ClinicalDecisionLevel? _immediateDangerLevel(List<ClinicalFlag> flags) {
+    final immediateDangerFlags = flags
+        .where(
+          (flag) =>
+              flag.layer == ClinicalScreeningLayer.immediateDanger ||
+              flag.level == ClinicalDecisionLevel.emergency ||
+              _hasCriticalTag(flag),
+        )
+        .toList(growable: false);
 
-      return flag.level == ClinicalDecisionLevel.emergency ||
-          tags.contains('urgence_vitale') ||
-          tags.contains('embolie_pulmonaire') ||
-          tags.contains('queue_cheval') ||
-          tags.contains('fracture_ouverte') ||
-          tags.contains('douleur_thoracique_critique');
-    });
+    if (immediateDangerFlags.isEmpty) return null;
+
+    final highestLevel = _highestFlagLevel(immediateDangerFlags);
+    if (highestLevel == ClinicalDecisionLevel.emergency) {
+      return ClinicalDecisionLevel.emergency;
+    }
+
+    return ClinicalDecisionLevel.urgentReferral;
+  }
+
+  ClinicalDecisionLevel? _systemicClusterLevel(List<ClinicalFlag> flags) {
+    if (_hasCardiorespiratoryCluster(flags)) {
+      return ClinicalDecisionLevel.emergency;
+    }
+
+    if (_hasOncologicCluster(flags) ||
+        _hasInfectiousCluster(flags) ||
+        _hasNeurologicCluster(flags) ||
+        _hasFractureRiskCluster(flags) ||
+        _hasVascularCluster(flags)) {
+      return ClinicalDecisionLevel.urgentReferral;
+    }
+
+    if (_hasSingleSystemicConcern(flags)) {
+      return ClinicalDecisionLevel.medicalAdvice;
+    }
+
+    return null;
+  }
+
+  bool _hasOncologicCluster(List<ClinicalFlag> flags) {
+    return _hasAnyTag(flags, const ['cancer', 'neoplasie', 'oncologic']) &&
+        _hasAnyTag(flags, const [
+          'perte_poids',
+          'douleur_nocturne',
+          'alteration_etat_general',
+        ]);
+  }
+
+  bool _hasInfectiousCluster(List<ClinicalFlag> flags) {
+    final systemicInfection = _hasAnyTag(flags, const [
+      'fievre',
+      'fièvre',
+      'frissons',
+      'sueurs_nocturnes',
+    ]);
+    final fragileContext = _hasAnyTag(flags, const [
+      'immunodepression',
+      'immunodépression',
+      'infection_recente',
+      'infection_récente',
+    ]);
+
+    return systemicInfection && fragileContext;
+  }
+
+  bool _hasNeurologicCluster(List<ClinicalFlag> flags) {
+    return _hasAnyTag(flags, const [
+      'deficit_moteur_progressif',
+      'déficit_moteur_progressif',
+      'signes_neurologiques_centraux',
+    ]);
+  }
+
+  bool _hasCardiorespiratoryCluster(List<ClinicalFlag> flags) {
+    final chestPain = _hasAnyTag(flags, const [
+      'douleur_thoracique',
+      'douleur_thoracique_critique',
+    ]);
+    final respiratoryOrMalaise = _hasAnyTag(flags, const [
+      'dyspnee',
+      'dyspnée',
+      'malaise',
+      'syncope',
+    ]);
+
+    return chestPain && respiratoryOrMalaise;
+  }
+
+  bool _hasFractureRiskCluster(List<ClinicalFlag> flags) {
+    final trauma = _hasAnyTag(flags, const ['traumatisme', 'chute']);
+    final fragility = _hasAnyTag(flags, const [
+      'osteoporose',
+      'ostéoporose',
+      'corticotherapie_prolongee',
+      'corticothérapie_prolongée',
+      'age_avance',
+      'âge_avancé',
+    ]);
+
+    return trauma && fragility;
   }
 
   bool _hasVascularCluster(List<ClinicalFlag> flags) {
-    final vascularFlags = flags.where((flag) {
-      final tags = flag.tags.map((tag) => tag.toLowerCase()).toSet();
-
-      return flag.category == ClinicalFlagCategory.vascular ||
-          tags.contains('wells_tvp') ||
-          tags.contains('neurovasculaire_cervical');
-    }).length;
+    final vascularFlags = flags.where(_isVascularConcern).length;
 
     return vascularFlags >= 2;
+  }
+
+  bool _hasSingleSystemicConcern(List<ClinicalFlag> flags) {
+    return flags.any((flag) {
+      return flag.layer == ClinicalScreeningLayer.systemic ||
+          _hasAnyTagInFlag(flag, const [
+            'cancer',
+            'neoplasie',
+            'oncologic',
+            'fievre',
+            'fièvre',
+            'immunodepression',
+            'immunodépression',
+          ]);
+    });
+  }
+
+  bool _hasOnlyYellowFlags(List<ClinicalFlag> flags) {
+    return flags.every(
+      (flag) => flag.layer == ClinicalScreeningLayer.yellowFlag,
+    );
+  }
+
+  ClinicalDecisionLevel _highestFlagLevel(List<ClinicalFlag> flags) {
+    return flags
+        .map((flag) => flag.level)
+        .reduce((highest, level) => _maxLevel(highest, level));
+  }
+
+  bool _hasCriticalTag(ClinicalFlag flag) {
+    return _hasAnyTagInFlag(flag, const [
+      'urgence_vitale',
+      'embolie_pulmonaire',
+      'queue_cheval',
+      'fracture_ouverte',
+      'douleur_thoracique_critique',
+    ]);
+  }
+
+  bool _isVascularConcern(ClinicalFlag flag) {
+    return flag.category == ClinicalFlagCategory.vascular ||
+        _hasAnyTagInFlag(flag, const [
+          'wells_tvp',
+          'tvp',
+          'neurovasculaire_cervical',
+          'vasculaire',
+        ]);
+  }
+
+  bool _hasAnyTag(List<ClinicalFlag> flags, List<String> searchedTags) {
+    return flags.any((flag) => _hasAnyTagInFlag(flag, searchedTags));
+  }
+
+  bool _hasAnyTagInFlag(ClinicalFlag flag, List<String> searchedTags) {
+    final tags = flag.tags.map((tag) => tag.toLowerCase()).toSet();
+
+    return searchedTags.any((searchedTag) {
+      return tags.contains(searchedTag.toLowerCase());
+    });
   }
 
   ClinicalDecisionLevel _maxLevel(
