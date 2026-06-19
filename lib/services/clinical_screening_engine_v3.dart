@@ -1,4 +1,5 @@
 import '../models/clinical_screening/clinical_screening_models.dart';
+import '../models/clinical_screening/clinical_screening_tags.dart';
 
 class ClinicalScreeningEngineV3 {
   const ClinicalScreeningEngineV3();
@@ -200,8 +201,11 @@ class ClinicalScreeningEngineV3 {
 
     if (immediateDangerFlags.isEmpty) return null;
 
+    final hasCriticalEmergencyTag = immediateDangerFlags.any(_hasCriticalTag);
     final highestLevel = _highestFlagLevel(immediateDangerFlags);
-    final level = highestLevel == ClinicalDecisionLevel.emergency
+    final level =
+        hasCriticalEmergencyTag ||
+            highestLevel == ClinicalDecisionLevel.emergency
         ? ClinicalDecisionLevel.emergency
         : ClinicalDecisionLevel.urgentReferral;
 
@@ -297,15 +301,10 @@ class ClinicalScreeningEngineV3 {
           .where(
             (flag) =>
                 flag.layer == ClinicalScreeningLayer.systemic ||
-                _hasAnyTagInFlag(flag, const [
-                  'cancer',
-                  'neoplasie',
-                  'oncologic',
-                  'fievre',
-                  'fièvre',
-                  'immunodepression',
-                  'immunodépression',
-                ]),
+                _hasAnyTagInFlag(
+                  flag,
+                  ClinicalScreeningTags.isolatedSystemicConcern,
+                ),
           )
           .toList(growable: false);
       return _DecisionTrace(
@@ -346,16 +345,14 @@ class ClinicalScreeningEngineV3 {
   }
 
   List<ClinicalFlag>? _oncologicClusterFlags(List<ClinicalFlag> flags) {
-    final cancerFlags = _flagsWithAnyTag(flags, const [
-      'cancer',
-      'neoplasie',
-      'oncologic',
-    ]);
-    final associatedFlags = _flagsWithAnyTag(flags, const [
-      'perte_poids',
-      'douleur_nocturne',
-      'alteration_etat_general',
-    ]);
+    final cancerFlags = _flagsWithAnyTag(
+      flags,
+      ClinicalScreeningTags.oncologicContext,
+    );
+    final associatedFlags = _flagsWithAnyTag(
+      flags,
+      ClinicalScreeningTags.oncologicAssociated,
+    );
 
     if (cancerFlags.isEmpty || associatedFlags.isEmpty) return null;
 
@@ -363,18 +360,14 @@ class ClinicalScreeningEngineV3 {
   }
 
   List<ClinicalFlag>? _infectiousClusterFlags(List<ClinicalFlag> flags) {
-    final systemicInfectionFlags = _flagsWithAnyTag(flags, const [
-      'fievre',
-      'fièvre',
-      'frissons',
-      'sueurs_nocturnes',
-    ]);
-    final fragileContextFlags = _flagsWithAnyTag(flags, const [
-      'immunodepression',
-      'immunodépression',
-      'infection_recente',
-      'infection_récente',
-    ]);
+    final systemicInfectionFlags = _flagsWithAnyTag(
+      flags,
+      ClinicalScreeningTags.infectiousSystemic,
+    );
+    final fragileContextFlags = _flagsWithAnyTag(
+      flags,
+      ClinicalScreeningTags.infectiousFragility,
+    );
 
     if (systemicInfectionFlags.isEmpty || fragileContextFlags.isEmpty) {
       return null;
@@ -384,26 +377,23 @@ class ClinicalScreeningEngineV3 {
   }
 
   List<ClinicalFlag>? _neurologicClusterFlags(List<ClinicalFlag> flags) {
-    final neurologicFlags = _flagsWithAnyTag(flags, const [
-      'deficit_moteur_progressif',
-      'déficit_moteur_progressif',
-      'signes_neurologiques_centraux',
-    ]);
+    final neurologicFlags = _flagsWithAnyTag(
+      flags,
+      ClinicalScreeningTags.neurologicCluster,
+    );
 
     return neurologicFlags.isEmpty ? null : neurologicFlags;
   }
 
   List<ClinicalFlag>? _cardiorespiratoryClusterFlags(List<ClinicalFlag> flags) {
-    final chestPainFlags = _flagsWithAnyTag(flags, const [
-      'douleur_thoracique',
-      'douleur_thoracique_critique',
-    ]);
-    final respiratoryOrMalaiseFlags = _flagsWithAnyTag(flags, const [
-      'dyspnee',
-      'dyspnée',
-      'malaise',
-      'syncope',
-    ]);
+    final chestPainFlags = _flagsWithAnyTag(
+      flags,
+      ClinicalScreeningTags.chestPain,
+    );
+    final respiratoryOrMalaiseFlags = _flagsWithAnyTag(
+      flags,
+      ClinicalScreeningTags.respiratoryOrMalaise,
+    );
 
     if (chestPainFlags.isEmpty || respiratoryOrMalaiseFlags.isEmpty) {
       return null;
@@ -413,15 +403,14 @@ class ClinicalScreeningEngineV3 {
   }
 
   List<ClinicalFlag>? _fractureRiskClusterFlags(List<ClinicalFlag> flags) {
-    final traumaFlags = _flagsWithAnyTag(flags, const ['traumatisme', 'chute']);
-    final fragilityFlags = _flagsWithAnyTag(flags, const [
-      'osteoporose',
-      'ostéoporose',
-      'corticotherapie_prolongee',
-      'corticothérapie_prolongée',
-      'age_avance',
-      'âge_avancé',
-    ]);
+    final traumaFlags = _flagsWithAnyTag(
+      flags,
+      ClinicalScreeningTags.fractureTrauma,
+    );
+    final fragilityFlags = _flagsWithAnyTag(
+      flags,
+      ClinicalScreeningTags.fractureFragility,
+    );
 
     if (traumaFlags.isEmpty || fragilityFlags.isEmpty) return null;
 
@@ -437,15 +426,7 @@ class ClinicalScreeningEngineV3 {
   bool _hasSingleSystemicConcern(List<ClinicalFlag> flags) {
     return flags.any((flag) {
       return flag.layer == ClinicalScreeningLayer.systemic ||
-          _hasAnyTagInFlag(flag, const [
-            'cancer',
-            'neoplasie',
-            'oncologic',
-            'fievre',
-            'fièvre',
-            'immunodepression',
-            'immunodépression',
-          ]);
+          _hasAnyTagInFlag(flag, ClinicalScreeningTags.isolatedSystemicConcern);
     });
   }
 
@@ -462,23 +443,12 @@ class ClinicalScreeningEngineV3 {
   }
 
   bool _hasCriticalTag(ClinicalFlag flag) {
-    return _hasAnyTagInFlag(flag, const [
-      'urgence_vitale',
-      'embolie_pulmonaire',
-      'queue_cheval',
-      'fracture_ouverte',
-      'douleur_thoracique_critique',
-    ]);
+    return _hasAnyTagInFlag(flag, ClinicalScreeningTags.criticalEmergency);
   }
 
   bool _isVascularConcern(ClinicalFlag flag) {
     return flag.category == ClinicalFlagCategory.vascular ||
-        _hasAnyTagInFlag(flag, const [
-          'wells_tvp',
-          'tvp',
-          'neurovasculaire_cervical',
-          'vasculaire',
-        ]);
+        _hasAnyTagInFlag(flag, ClinicalScreeningTags.vascularConcern);
   }
 
   bool _hasAnyTag(List<ClinicalFlag> flags, List<String> searchedTags) {

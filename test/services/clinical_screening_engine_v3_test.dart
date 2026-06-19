@@ -1,4 +1,5 @@
 import 'package:drapeaux_rouges_mb/models/clinical_screening/clinical_screening_models.dart';
+import 'package:drapeaux_rouges_mb/models/clinical_screening/clinical_screening_tags.dart';
 import 'package:drapeaux_rouges_mb/services/clinical_screening_engine_v3.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -92,7 +93,7 @@ void main() {
         flag(
           id: 'cancer-history',
           layer: ClinicalScreeningLayer.systemic,
-          tags: ['cancer'],
+          tags: [ClinicalScreeningTags.cancer],
         ),
       ]);
 
@@ -109,17 +110,17 @@ void main() {
           flag(
             id: 'cancer-history',
             layer: ClinicalScreeningLayer.systemic,
-            tags: ['cancer'],
+            tags: [ClinicalScreeningTags.cancer],
           ),
           flag(
             id: 'weight-loss',
             layer: ClinicalScreeningLayer.systemic,
-            tags: ['perte_poids'],
+            tags: [ClinicalScreeningTags.pertePoids],
           ),
           flag(
             id: 'night-pain',
             layer: ClinicalScreeningLayer.systemic,
-            tags: ['douleur_nocturne'],
+            tags: [ClinicalScreeningTags.douleurNocturne],
           ),
           flag(
             id: 'unrelated',
@@ -149,16 +150,21 @@ void main() {
           id: 'fever',
           category: ClinicalFlagCategory.infectious,
           layer: ClinicalScreeningLayer.systemic,
-          tags: ['fievre'],
+          tags: [ClinicalScreeningTags.fievre],
         ),
         flag(
           id: 'immunosuppression',
           layer: ClinicalScreeningLayer.systemic,
-          tags: ['immunodepression'],
+          tags: [ClinicalScreeningTags.immunodepression],
+        ),
+        flag(
+          id: 'non-causal',
+          layer: ClinicalScreeningLayer.regional,
+          tags: ['not_causal'],
         ),
       ]);
 
-      expect(session.score, 2);
+      expect(session.score, 3);
       expect(session.decisionLevel, ClinicalDecisionLevel.urgentReferral);
       expect(session.traces.single.ruleId, 'infectiousCluster');
       expect(session.traces.single.causalFlagIds, [
@@ -173,13 +179,13 @@ void main() {
           id: 'chest-pain',
           category: ClinicalFlagCategory.cardiovascular,
           layer: ClinicalScreeningLayer.systemic,
-          tags: ['douleur_thoracique'],
+          tags: [ClinicalScreeningTags.douleurThoracique],
         ),
         flag(
           id: 'dyspnea',
           category: ClinicalFlagCategory.respiratory,
           layer: ClinicalScreeningLayer.systemic,
-          tags: ['dyspnee'],
+          tags: [ClinicalScreeningTags.dyspnee],
         ),
       ]);
 
@@ -203,12 +209,12 @@ void main() {
             id: 'trauma',
             category: ClinicalFlagCategory.musculoskeletal,
             layer: ClinicalScreeningLayer.regional,
-            tags: ['traumatisme'],
+            tags: [ClinicalScreeningTags.traumatisme],
           ),
           flag(
             id: 'steroids',
             layer: ClinicalScreeningLayer.systemic,
-            tags: ['corticotherapie_prolongee'],
+            tags: [ClinicalScreeningTags.corticotherapieProlongee],
           ),
         ]);
 
@@ -223,12 +229,12 @@ void main() {
         flag(
           id: 'wells-1',
           category: ClinicalFlagCategory.vascular,
-          tags: ['wells_tvp'],
+          tags: [ClinicalScreeningTags.wellsTvp],
         ),
         flag(
           id: 'wells-2',
           category: ClinicalFlagCategory.vascular,
-          tags: ['wells_tvp'],
+          tags: [ClinicalScreeningTags.wellsTvp],
         ),
       ]);
 
@@ -266,8 +272,7 @@ void main() {
       final session = evaluate([
         flag(
           id: 'pulmonary-embolism',
-          level: ClinicalDecisionLevel.emergency,
-          layer: ClinicalScreeningLayer.immediateDanger,
+          level: ClinicalDecisionLevel.monitor,
           tags: ['EMBOLIE_PULMONAIRE'],
         ),
       ]);
@@ -276,6 +281,86 @@ void main() {
       expect(session.decisionLevel, ClinicalDecisionLevel.emergency);
       expect(session.recommendedAction.requiresEmergencyCall, isTrue);
       expect(session.traces.single.ruleId, 'immediateDanger');
+    });
+
+    test('isolated critical tags produce emergency despite monitor level', () {
+      final cases = <String, String>{
+        'queue-cheval': ClinicalScreeningTags.queueCheval,
+        'open-fracture': ClinicalScreeningTags.fractureOuverte,
+        'pulmonary-embolism': ClinicalScreeningTags.emboliePulmonaire,
+        'critical-chest-pain': ClinicalScreeningTags.douleurThoraciqueCritique,
+        'vital-emergency': ClinicalScreeningTags.urgenceVitale,
+      };
+
+      for (final entry in cases.entries) {
+        final session = evaluate([
+          flag(
+            id: entry.key,
+            level: ClinicalDecisionLevel.monitor,
+            tags: [entry.value],
+          ),
+        ]);
+
+        expect(
+          session.decisionLevel,
+          ClinicalDecisionLevel.emergency,
+          reason: entry.value,
+        );
+        expect(session.traces.single.ruleId, 'immediateDanger');
+      }
+    });
+
+    test('explicit neurologic cluster produces urgent referral', () {
+      final session = evaluate([
+        flag(
+          id: 'progressive-motor-deficit',
+          category: ClinicalFlagCategory.neurological,
+          layer: ClinicalScreeningLayer.systemic,
+          tags: [ClinicalScreeningTags.deficitMoteurProgressif],
+        ),
+      ]);
+
+      expect(session.decisionLevel, ClinicalDecisionLevel.urgentReferral);
+      expect(session.traces.single.ruleId, 'neurologicCluster');
+      expect(session.traces.single.causalFlagIds, [
+        'progressive-motor-deficit',
+      ]);
+    });
+
+    test(
+      'isolated non-critical chest pain does not produce emergency by default',
+      () {
+        final session = evaluate([
+          flag(
+            id: 'isolated-chest-pain',
+            category: ClinicalFlagCategory.cardiovascular,
+            level: ClinicalDecisionLevel.monitor,
+            tags: [ClinicalScreeningTags.douleurThoracique],
+          ),
+        ]);
+
+        expect(session.decisionLevel, ClinicalDecisionLevel.monitor);
+        expect(session.traces.single.ruleId, 'highestFlagLevel');
+      },
+    );
+
+    test('yellow flag with red flag keeps red flag priority', () {
+      final session = evaluate([
+        flag(
+          id: 'yellow-context',
+          layer: ClinicalScreeningLayer.yellowFlag,
+          weight: 6,
+        ),
+        flag(
+          id: 'critical-red-flag',
+          level: ClinicalDecisionLevel.monitor,
+          tags: [ClinicalScreeningTags.urgenceVitale],
+        ),
+      ]);
+
+      expect(session.decisionLevel, ClinicalDecisionLevel.emergency);
+      expect(session.traces.single.ruleId, 'immediateDanger');
+      expect(session.traces.single.causalFlagIds, ['critical-red-flag']);
     });
 
     test('emergency level without critical tag produces emergency', () {
@@ -304,6 +389,24 @@ void main() {
       expect(session.recommendedAction.title, 'Avis médical impératif rapide');
       expect(session.traces.single.ruleId, 'immediateDanger');
     });
+
+    test(
+      'single severe vascular flag uses intrinsic urgent referral level',
+      () {
+        final session = evaluate([
+          flag(
+            id: 'single-severe-vascular',
+            category: ClinicalFlagCategory.vascular,
+            level: ClinicalDecisionLevel.urgentReferral,
+            tags: [ClinicalScreeningTags.vasculaire],
+          ),
+        ]);
+
+        expect(session.decisionLevel, ClinicalDecisionLevel.urgentReferral);
+        expect(session.traces.single.ruleId, 'highestFlagLevel');
+        expect(session.traces.single.causalFlagIds, ['single-severe-vascular']);
+      },
+    );
 
     test('score escalation produces scoreEscalation trace', () {
       final session = evaluate([
@@ -382,13 +485,13 @@ void main() {
             id: 'cancer-history',
             label: 'antécédent de cancer',
             layer: ClinicalScreeningLayer.systemic,
-            tags: ['cancer'],
+            tags: [ClinicalScreeningTags.cancer],
           ),
           flag(
             id: 'weight-loss',
             label: 'perte de poids inexpliquée',
             layer: ClinicalScreeningLayer.systemic,
-            tags: ['perte_poids'],
+            tags: [ClinicalScreeningTags.pertePoids],
           ),
         ]);
 
