@@ -1,7 +1,8 @@
 {
   "name": "Accès Direct MK",
   "short_name": "AccèsDirectMK",
-  "start_url": ".",
+  "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#032052",
   "theme_color": "#032052",

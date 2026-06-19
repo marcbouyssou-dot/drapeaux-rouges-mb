@@ -4,6 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#032052">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="AccèsDirectMK">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+  <link rel="manifest" href="manifest.json">
   <title>Diagnostic PWA offline</title>
   <style>
     :root {
@@ -124,6 +130,11 @@
     </section>
 
     <section>
+      <h2>Installation iOS / PWA</h2>
+      <dl id="install-report"></dl>
+    </section>
+
+    <section>
       <h2>Version active</h2>
       <dl id="version-report"></dl>
     </section>
@@ -167,6 +178,7 @@
 
     const timestamp = document.getElementById('timestamp');
     const swReport = document.getElementById('sw-report');
+    const installReport = document.getElementById('install-report');
     const versionReport = document.getElementById('version-report');
     const cacheReport = document.getElementById('cache-report');
     const resourceReport = document.getElementById('resource-report');
@@ -228,6 +240,45 @@
 
     async function runDiagnostic() {
       timestamp.textContent = `Diagnostic généré le ${new Date().toLocaleString()}`;
+
+      const manifestLink = document.querySelector('link[rel="manifest"]');
+      const displayModeStandalone = window.matchMedia('(display-mode: standalone)').matches;
+      const navigatorStandalone =
+        typeof navigator.standalone === 'boolean' ? navigator.standalone : null;
+      const appleCapable = document.querySelector('meta[name="apple-mobile-web-app-capable"]');
+      const mobileCapable = document.querySelector('meta[name="mobile-web-app-capable"]');
+      const appleTitle = document.querySelector('meta[name="apple-mobile-web-app-title"]');
+      const appleStatusBar = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+      const appleTouchIcon = document.querySelector('link[rel="apple-touch-icon"]');
+
+      appendRows(installReport, [
+        ['display-mode standalone', status(displayModeStandalone)],
+        ['navigator.standalone iOS', navigatorStandalone === null ? '<span class="warn">non disponible</span>' : status(navigatorStandalone)],
+        ['manifest link', manifestLink ? `<code>${manifestLink.getAttribute('href')}</code>` : '<span class="ko">absent</span>'],
+        ['apple capable', appleCapable ? `<code>${appleCapable.getAttribute('content')}</code>` : '<span class="ko">absent</span>'],
+        ['mobile capable', mobileCapable ? `<code>${mobileCapable.getAttribute('content')}</code>` : '<span class="ko">absent</span>'],
+        ['apple title', appleTitle ? `<code>${appleTitle.getAttribute('content')}</code>` : '<span class="ko">absent</span>'],
+        ['apple status bar', appleStatusBar ? `<code>${appleStatusBar.getAttribute('content')}</code>` : '<span class="ko">absent</span>'],
+        ['apple touch icon', appleTouchIcon ? `<code>${appleTouchIcon.getAttribute('href')}</code>` : '<span class="ko">absent</span>'],
+      ]);
+
+      try {
+        const manifestResponse = await fetch('manifest.json', { cache: 'no-store' });
+        const manifest = await manifestResponse.json();
+        appendRows(installReport, [
+          ['manifest name', `<code>${manifest.name || ''}</code>`],
+          ['manifest short_name', `<code>${manifest.short_name || ''}</code>`],
+          ['manifest display', `<code>${manifest.display || ''}</code>`],
+          ['manifest start_url', `<code>${manifest.start_url || ''}</code>`],
+          ['manifest scope', `<code>${manifest.scope || ''}</code>`],
+          ['manifest icons', `<code>${Array.isArray(manifest.icons) ? manifest.icons.length : 0}</code>`],
+        ]);
+      } catch (error) {
+        appendRows(installReport, [
+          ['manifest fetch', '<span class="ko">exception</span>'],
+          ['manifest erreur', `<code>${String(error)}</code>`],
+        ]);
+      }
 
       const swSupported = 'serviceWorker' in navigator;
       const controller = swSupported ? navigator.serviceWorker.controller : null;
