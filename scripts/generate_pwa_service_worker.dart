@@ -5,6 +5,14 @@ const _buildWebPath = 'build/web';
 const _outputFileName = 'pwa_service_worker.js';
 const _cachePrefix = 'drapeaux-rouges-pwa';
 const _lastBuildIdFileName = '.last_build_id';
+const _criticalAppShellResources = [
+  'flutter_bootstrap.js',
+  '/flutter_bootstrap.js',
+  'flutter.js',
+  '/flutter.js',
+  'main.dart.js',
+  '/main.dart.js',
+];
 
 void main() {
   final buildDir = Directory(_buildWebPath);
@@ -55,6 +63,7 @@ void _versionBootstrap(Directory buildDir, String buildId) {
 
 List<String> _collectResources(Directory buildDir) {
   final resources = <String>{'/'};
+  resources.addAll(_criticalAppShellResources);
 
   for (final entity in buildDir.listSync(recursive: true, followLinks: false)) {
     if (entity is! File) continue;
@@ -121,9 +130,10 @@ String _renderServiceWorker(
   final encodedResources = const JsonEncoder.withIndent(
     '  ',
   ).convert(resources);
-  final encodedVersionedResources = const JsonEncoder.withIndent(
-    '  ',
-  ).convert(['flutter_bootstrap.js?v=$buildId']);
+  final encodedVersionedResources = const JsonEncoder.withIndent('  ').convert([
+    'flutter_bootstrap.js?v=$buildId',
+    '/flutter_bootstrap.js?v=$buildId',
+  ]);
 
   return '''
 'use strict';
@@ -146,16 +156,56 @@ async function cacheMatchIgnoringSearch(request) {
     return null;
   }
 
+  const cleanHref = new URL(url.href);
+  cleanHref.search = '';
   url.search = '';
   const cleanPath = url.pathname.startsWith('/')
       ? url.pathname.substring(1)
       : url.pathname;
+  const candidates = [
+    cleanHref.toString(),
+    url.pathname,
+    cleanPath,
+  ];
 
-  return (
-    (await caches.match(url.pathname)) ||
-    (await caches.match(cleanPath)) ||
-    null
-  );
+  for (const candidate of candidates) {
+    const match = await caches.match(candidate);
+    if (match) {
+      return match;
+    }
+  }
+
+  return null;
+}
+
+function offlineFetchErrorResponse(requestUrl, cacheMatched) {
+  const safeUrl = JSON.stringify(requestUrl);
+  const safeCacheMatched = JSON.stringify(cacheMatched ? 'oui' : 'non');
+  const body =
+    '(() => {' +
+    'const overlay = document.getElementById("startup-debug-overlay") || document.body.appendChild(document.createElement("div"));' +
+    'overlay.id = "startup-debug-overlay";' +
+    'overlay.style.position = "fixed";' +
+    'overlay.style.zIndex = "2147483647";' +
+    'overlay.style.top = "max(12px, env(safe-area-inset-top))";' +
+    'overlay.style.left = "12px";' +
+    'overlay.style.right = "12px";' +
+    'overlay.style.padding = "10px 12px";' +
+    'overlay.style.borderRadius = "14px";' +
+    'overlay.style.background = "rgba(225, 29, 72, 0.94)";' +
+    'overlay.style.color = "#ffffff";' +
+    'overlay.style.fontFamily = "-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif";' +
+    'overlay.style.fontSize = "13px";' +
+    'overlay.style.fontWeight = "800";' +
+    'overlay.style.lineHeight = "1.25";' +
+    'overlay.style.textAlign = "center";' +
+    'overlay.textContent = "BOOTSTRAP ERROR: fetch offline impossible\\\\nURL: " + ' + safeUrl + ' + "\\\\nCache match: " + ' + safeCacheMatched + ';' +
+    '})();';
+
+  return new Response(body, {
+    status: 504,
+    headers: { 'Content-Type': 'application/javascript; charset=utf-8' }
+  });
 }
 
 self.addEventListener('install', (event) => {
@@ -287,6 +337,20 @@ self.addEventListener('fetch', (event) => {
           caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
         }
         return response;
+      }).catch(async () => {
+        const cachedAfterFailure = await cacheMatchIgnoringSearch(request);
+        if (cachedAfterFailure) {
+          return cachedAfterFailure;
+        }
+
+        if (request.destination === 'script' || url.pathname.endsWith('.js')) {
+          return offlineFetchErrorResponse(url.href, false);
+        }
+
+        return new Response('Offline fetch failed: ' + url.href, {
+          status: 504,
+          headers: { 'Content-Type': 'text/plain; charset=utf-8' }
+        });
       });
     })
   );
