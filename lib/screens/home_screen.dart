@@ -28,6 +28,7 @@ import '../theme/app_spacing.dart';
 
 import 'evaluation/red_flags_category_screen.dart';
 import 'evaluation/evaluation_result_screen.dart';
+import 'clinical_screening/clinical_adaptive_screen_v5.dart';
 import 'patient_consent_screen.dart';
 import 'bdk/bdk_type_screen.dart';
 import 'prescription/prescription_type_screen.dart';
@@ -126,6 +127,12 @@ class _HomeScreenState extends State<HomeScreen> {
     Navigator.of(
       context,
     ).push(CupertinoPageRoute(builder: (_) => const PrescriptionTypeScreen()));
+  }
+
+  void openAdaptiveClinicalEvaluation() {
+    Navigator.of(context).push(
+      CupertinoPageRoute(builder: (_) => const ClinicalAdaptiveScreenV5()),
+    );
   }
 
   int get checkedCount =>
@@ -589,7 +596,12 @@ class _HomeScreenState extends State<HomeScreen> {
                                 onPrescriptionTap: openPrescriptionTypeScreen,
                               ),
                               const SizedBox(height: AppSpacing.lg),
-                              Expanded(child: HomeClinicalAssistantCard()),
+                              Expanded(
+                                child: HomeClinicalAssistantCard(
+                                  onAdaptiveEvaluationTap:
+                                      openAdaptiveClinicalEvaluation,
+                                ),
+                              ),
                             ],
                           ),
                         ),
@@ -646,7 +658,10 @@ class _HomeScreenState extends State<HomeScreen> {
                             ? AppSpacing.xs
                             : AppSpacing.sm,
                       ),
-                      const HomeClinicalAssistantCard(compact: true),
+                      HomeClinicalAssistantCard(
+                        compact: true,
+                        onAdaptiveEvaluationTap: openAdaptiveClinicalEvaluation,
+                      ),
                       SizedBox(
                         height: isPhoneLandscape
                             ? AppSpacing.xs

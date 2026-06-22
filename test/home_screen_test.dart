@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:drapeaux_rouges_mb/models/patient_local.dart';
+import 'package:drapeaux_rouges_mb/screens/clinical_screening/clinical_adaptive_screen_v5.dart';
 import 'package:drapeaux_rouges_mb/screens/patient_consent_screen.dart';
 import 'package:drapeaux_rouges_mb/screens/home_screen.dart';
 import 'package:flutter/material.dart';
@@ -75,6 +76,69 @@ void main() {
     expect(find.text('BDK'), findsOneWidget);
     expect(find.text('Prescription'), findsOneWidget);
     expect(find.text('Commencer le dépistage clinique'), findsOneWidget);
+  });
+
+  testWidgets('keeps legacy clinical screening entry accessible', (
+    tester,
+  ) async {
+    await pumpHomeScreen(tester);
+
+    final legacyEntry = find.text('Commencer le dépistage clinique');
+
+    await tester.ensureVisible(legacyEntry);
+    expect(legacyEntry, findsOneWidget);
+
+    await tester.tap(legacyEntry);
+    await tester.pumpAndSettle();
+
+    expect(find.byType(ClinicalAdaptiveScreenV5), findsNothing);
+    expect(
+      find.textContaining(
+        'Sélectionnez le motif principal pour afficher les drapeaux rouges associés.',
+      ),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('shows experimental adaptive clinical entry', (tester) async {
+    await pumpHomeScreen(tester);
+
+    expect(
+      find.text('Évaluation clinique adaptative — expérimental'),
+      findsOneWidget,
+    );
+    expect(
+      find.text(
+        'Prototype de raisonnement clinique V5. Ne remplace pas encore le parcours actuel.',
+      ),
+      findsOneWidget,
+    );
+    expect(find.text('Questionnaire adaptatif V5'), findsNothing);
+  });
+
+  testWidgets('opens experimental adaptive screen and returns home', (
+    tester,
+  ) async {
+    await pumpHomeScreen(tester);
+
+    final adaptiveEntry = find.byKey(const Key('adaptive-v5-home-entry'));
+
+    await tester.ensureVisible(adaptiveEntry);
+    await tester.tap(adaptiveEntry);
+    await tester.pumpAndSettle();
+
+    expect(find.byType(ClinicalAdaptiveScreenV5), findsOneWidget);
+    expect(find.text('Évaluation clinique'), findsOneWidget);
+    expect(find.text('Questionnaire adaptatif V5'), findsNothing);
+
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+
+    expect(find.byType(HomeScreen), findsOneWidget);
+    expect(
+      find.text('Évaluation clinique adaptative — expérimental'),
+      findsOneWidget,
+    );
   });
 
   testWidgets('shows Patient card and can tap it', (tester) async {

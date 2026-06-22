@@ -8,15 +8,28 @@ import '../../theme/app_shadows.dart';
 import '../../theme/app_spacing.dart';
 
 class HomeClinicalAssistantCard extends StatelessWidget {
-  const HomeClinicalAssistantCard({super.key, this.compact = false});
+  const HomeClinicalAssistantCard({
+    super.key,
+    this.compact = false,
+    this.onAdaptiveEvaluationTap,
+  });
 
   final bool compact;
+  final VoidCallback? onAdaptiveEvaluationTap;
 
   @override
   Widget build(BuildContext context) {
+    final hasAdaptiveEntry = onAdaptiveEvaluationTap != null;
+    final cardPadding = compact || hasAdaptiveEntry
+        ? AppSpacing.md
+        : AppSpacing.lg;
+    final sectionGap = compact || hasAdaptiveEntry
+        ? AppSpacing.sm
+        : AppSpacing.lg;
+
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.all(compact ? AppSpacing.md : AppSpacing.lg),
+      padding: EdgeInsets.all(cardPadding),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           colors: [AppColors.surface, AppColors.surfaceAlt],
@@ -85,7 +98,7 @@ class HomeClinicalAssistantCard extends StatelessWidget {
               ),
             ],
           ),
-          SizedBox(height: compact ? AppSpacing.sm : AppSpacing.lg),
+          SizedBox(height: sectionGap),
           Wrap(
             spacing: AppSpacing.sm,
             runSpacing: AppSpacing.sm,
@@ -107,7 +120,11 @@ class HomeClinicalAssistantCard extends StatelessWidget {
               ),
             ],
           ),
-          SizedBox(height: compact ? AppSpacing.sm : AppSpacing.lg),
+          if (onAdaptiveEvaluationTap != null) ...[
+            const SizedBox(height: AppSpacing.sm),
+            _AdaptiveEvaluationEntry(onTap: onAdaptiveEvaluationTap!),
+          ],
+          SizedBox(height: sectionGap),
           Container(
             width: double.infinity,
             padding: EdgeInsets.all(compact ? AppSpacing.sm : AppSpacing.md),
@@ -127,6 +144,66 @@ class HomeClinicalAssistantCard extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _AdaptiveEvaluationEntry extends StatelessWidget {
+  const _AdaptiveEvaluationEntry({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        key: const Key('adaptive-v5-home-entry'),
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(AppSpacing.sm),
+          decoration: BoxDecoration(
+            color: AppColors.surface.withValues(alpha: 0.82),
+            borderRadius: BorderRadius.circular(AppRadius.lg),
+            border: Border.all(color: AppColors.borderStrong),
+          ),
+          child: const Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(Icons.science_outlined, color: AppColors.primary, size: 22),
+              SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Évaluation clinique adaptative — expérimental',
+                      style: TextStyle(
+                        color: AppColors.textPrimary,
+                        fontSize: 13,
+                        height: 1.2,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    SizedBox(height: 4),
+                    Text(
+                      'Prototype de raisonnement clinique V5. Ne remplace pas encore le parcours actuel.',
+                      style: TextStyle(
+                        color: AppColors.textSecondary,
+                        fontSize: 12,
+                        height: 1.3,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

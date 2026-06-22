@@ -465,10 +465,6 @@ class ClinicalScreeningEngineV3 {
         _hasAnyTagInFlag(flag, ClinicalScreeningTags.vascularConcern);
   }
 
-  bool _hasAnyTag(List<ClinicalFlag> flags, List<String> searchedTags) {
-    return flags.any((flag) => _hasAnyTagInFlag(flag, searchedTags));
-  }
-
   List<ClinicalFlag> _flagsWithAnyTag(
     List<ClinicalFlag> flags,
     List<String> searchedTags,
