@@ -101,6 +101,28 @@ abstract final class ClinicalProbabilityUpdateCatalogV5 {
       clinicalRationale:
           'Un contexte compatible TVP augmente la probabilité qualitative d’une atteinte vasculaire à orienter rapidement.',
     ),
+    ClinicalProbabilityUpdateV5(
+      id: 'v5_probability_update_cervical_vascular',
+      hypothesisId: 'v5_hypothesis_cervical_vasculaire',
+      triggerQuestionId: 'v4_cervical_vascular_001',
+      triggerFlagId: 'cervical_vascular_context',
+      impact: ClinicalProbabilityImpactV5.increase,
+      priorProbability: ClinicalQualitativeProbabilityV5.low,
+      updatedProbability: ClinicalQualitativeProbabilityV5.high,
+      clinicalRationale:
+          'Des signes neurovasculaires cervicaux ou facteurs vasculaires augmentent qualitativement le risque organique malgré une présentation mécanique.',
+    ),
+    ClinicalProbabilityUpdateV5(
+      id: 'v5_probability_update_aaa_vascular_abdominal',
+      hypothesisId: 'v5_hypothesis_aaa_vasculaire_abdominal',
+      triggerQuestionId: 'v4_aaa_vascular_abdominal_001',
+      triggerFlagId: 'aaa_vascular_abdominal_context',
+      impact: ClinicalProbabilityImpactV5.increase,
+      priorProbability: ClinicalQualitativeProbabilityV5.low,
+      updatedProbability: ClinicalQualitativeProbabilityV5.high,
+      clinicalRationale:
+          'Une douleur lombaire ou abdominale profonde inhabituelle sur terrain vasculaire impose de renforcer l’hypothèse vasculaire abdominale.',
+    ),
   ];
 
   static Set<String> get updateIds {

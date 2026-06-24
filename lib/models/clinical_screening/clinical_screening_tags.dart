@@ -39,6 +39,23 @@ abstract final class ClinicalScreeningTags {
   static const tvp = 'tvp';
   static const neurovasculaireCervical = 'neurovasculaire_cervical';
   static const vasculaire = 'vasculaire';
+  static const cephaleeInhabituelle = 'cephalee_inhabituelle';
+  static const vertigesInhabituels = 'vertiges_inhabituels';
+  static const troublesVisuels = 'troubles_visuels';
+  static const dysarthrie = 'dysarthrie';
+  static const traumaCervicalMineur = 'trauma_cervical_mineur';
+  static const hta = 'hta';
+  static const tabac = 'tabac';
+  static const facteursVasculaires = 'facteurs_vasculaires';
+  static const douleurLombaireAbdominaleProfonde =
+      'douleur_lombaire_abdominale_profonde';
+  static const douleurBrutale = 'douleur_brutale';
+  static const douleurLieeMouvement = 'douleur_liee_mouvement';
+  static const douleurReproductible = 'douleur_reproductible';
+  static const ameliorationRepos = 'amelioration_repos';
+  static const surchargeMecanique = 'surcharge_mecanique';
+  static const episodeMecaniqueStable = 'episode_mecanique_stable';
+  static const absenceSignesSystemiques = 'absence_signes_systemiques';
 
   static const criticalEmergency = [
     urgenceVitale,
@@ -78,6 +95,33 @@ abstract final class ClinicalScreeningTags {
     tvp,
     neurovasculaireCervical,
     vasculaire,
+    cephaleeInhabituelle,
+    vertigesInhabituels,
+    troublesVisuels,
+    dysarthrie,
+    douleurLombaireAbdominaleProfonde,
+    douleurBrutale,
+  ];
+
+  static const cervicalVascular = [
+    neurovasculaireCervical,
+    cephaleeInhabituelle,
+    vertigesInhabituels,
+    troublesVisuels,
+    dysarthrie,
+    traumaCervicalMineur,
+    hta,
+    tabac,
+    facteursVasculaires,
+  ];
+
+  static const aaaVascularAbdominal = [
+    ageAvance,
+    tabac,
+    hta,
+    douleurLombaireAbdominaleProfonde,
+    malaise,
+    douleurBrutale,
   ];
 
   static const isolatedSystemicConcern = [
@@ -86,5 +130,14 @@ abstract final class ClinicalScreeningTags {
     oncologic,
     fievre,
     immunodepression,
+  ];
+
+  static const mechanicalReassurance = [
+    douleurLieeMouvement,
+    douleurReproductible,
+    ameliorationRepos,
+    surchargeMecanique,
+    episodeMecaniqueStable,
+    absenceSignesSystemiques,
   ];
 }

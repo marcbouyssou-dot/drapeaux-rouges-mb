@@ -284,6 +284,86 @@ abstract final class ClinicalScreeningCatalog {
       suggestedQuestion:
           'Existe-t-il une douleur du mollet, un œdème, une chaleur, une asymétrie ou des facteurs de risque de TVP ?',
     ),
+    ClinicalFlagDefinition(
+      id: 'cervical_vascular_context',
+      label: 'Contexte neurovasculaire cervical',
+      description:
+          'Céphalée inhabituelle, vertiges inhabituels, troubles visuels, dysarthrie ou facteurs vasculaires après traumatisme cervical même mineur.',
+      layer: ClinicalScreeningLayer.systemic,
+      category: ClinicalFlagCategory.vascular,
+      defaultDecisionLevel: ClinicalDecisionLevel.urgentReferral,
+      defaultWeight: 1,
+      tags: ClinicalScreeningTags.cervicalVascular,
+      clinicalRationale:
+          'Les signes neurovasculaires cervicaux ou facteurs vasculaires doivent empêcher une réassurance mécanique simple.',
+      suggestedQuestion:
+          'Existe-t-il une céphalée inhabituelle, des vertiges inhabituels, des troubles visuels, une dysarthrie ou un contexte vasculaire après traumatisme cervical même mineur ?',
+    ),
+    ClinicalFlagDefinition(
+      id: 'aaa_vascular_abdominal_context',
+      label: 'Contexte vasculaire abdominal ou AAA',
+      description:
+          'Douleur lombaire ou abdominale profonde inhabituelle, brutale ou avec malaise sur terrain vasculaire.',
+      layer: ClinicalScreeningLayer.systemic,
+      category: ClinicalFlagCategory.vascular,
+      defaultDecisionLevel: ClinicalDecisionLevel.urgentReferral,
+      defaultWeight: 1,
+      tags: ClinicalScreeningTags.aaaVascularAbdominal,
+      clinicalRationale:
+          'Une douleur profonde inhabituelle ou brutale sur terrain vasculaire impose un avis médical rapide avant réassurance.',
+      suggestedQuestion:
+          'Existe-t-il une douleur lombaire ou abdominale profonde inhabituelle, brutale ou associée à malaise chez une personne avec âge avancé, tabagisme ou HTA ?',
+    ),
+    ClinicalFlagDefinition(
+      id: 'mechanical_pain_pattern',
+      label: 'Profil mécanique rassurant',
+      description:
+          'Douleur liée au mouvement, reproductible, améliorée au repos ou cohérente avec une surcharge mécanique.',
+      layer: ClinicalScreeningLayer.regional,
+      category: ClinicalFlagCategory.musculoskeletal,
+      defaultDecisionLevel: ClinicalDecisionLevel.routine,
+      defaultWeight: 0,
+      tags: [
+        ClinicalScreeningTags.douleurLieeMouvement,
+        ClinicalScreeningTags.douleurReproductible,
+        ClinicalScreeningTags.ameliorationRepos,
+        ClinicalScreeningTags.surchargeMecanique,
+      ],
+      clinicalRationale:
+          'Un profil mécanique cohérent peut soutenir une réassurance seulement en l’absence de hard stop ou signal critique.',
+      suggestedQuestion:
+          'La douleur est-elle liée au mouvement, reproductible et améliorée par le repos ou la réduction de charge ?',
+    ),
+    ClinicalFlagDefinition(
+      id: 'known_stable_mechanical_episode',
+      label: 'Épisode mécanique connu stable',
+      description:
+          'Épisode déjà connu, comparable aux épisodes précédents et sans changement clinique inquiétant.',
+      layer: ClinicalScreeningLayer.regional,
+      category: ClinicalFlagCategory.musculoskeletal,
+      defaultDecisionLevel: ClinicalDecisionLevel.routine,
+      defaultWeight: 0,
+      tags: [ClinicalScreeningTags.episodeMecaniqueStable],
+      clinicalRationale:
+          'Un épisode stable connu est rassurant uniquement si aucun signal organique critique n’est positif.',
+      suggestedQuestion:
+          'Cet épisode est-il comparable à un épisode mécanique déjà connu, stable et sans aggravation inhabituelle ?',
+    ),
+    ClinicalFlagDefinition(
+      id: 'structured_absence_systemic_signs',
+      label: 'Absence structurée de signes systémiques',
+      description:
+          'Absence explicitement recherchée de fièvre, altération de l’état général, perte de poids ou douleur nocturne non mécanique.',
+      layer: ClinicalScreeningLayer.regional,
+      category: ClinicalFlagCategory.general,
+      defaultDecisionLevel: ClinicalDecisionLevel.routine,
+      defaultWeight: 0,
+      tags: [ClinicalScreeningTags.absenceSignesSystemiques],
+      clinicalRationale:
+          'L’absence structurée de signes systémiques soutient une réassurance prudente sans neutraliser les signaux critiques.',
+      suggestedQuestion:
+          'Avez-vous vérifié l’absence de fièvre, perte de poids, altération générale ou douleur nocturne non mécanique ?',
+    ),
   ];
 
   static const tagDefinitions = [
@@ -406,6 +486,77 @@ abstract final class ClinicalScreeningCatalog {
       isCritical: false,
       expectedDecisionLevel: ClinicalDecisionLevel.urgentReferral,
     ),
+    ClinicalTagDefinition(
+      tag: ClinicalScreeningTags.neurovasculaireCervical,
+      label: 'Neurovasculaire cervical',
+      description: 'Élément compatible avec une atteinte vasculaire cervicale.',
+      isCritical: false,
+      expectedDecisionLevel: ClinicalDecisionLevel.urgentReferral,
+    ),
+    ClinicalTagDefinition(
+      tag: ClinicalScreeningTags.cephaleeInhabituelle,
+      label: 'Céphalée inhabituelle',
+      description: 'Céphalée inhabituelle dans un contexte cervical.',
+      isCritical: false,
+      expectedDecisionLevel: ClinicalDecisionLevel.urgentReferral,
+    ),
+    ClinicalTagDefinition(
+      tag: ClinicalScreeningTags.douleurLombaireAbdominaleProfonde,
+      label: 'Douleur profonde lombaire ou abdominale',
+      description:
+          'Douleur lombaire ou abdominale profonde inhabituelle dans un contexte vasculaire.',
+      isCritical: false,
+      expectedDecisionLevel: ClinicalDecisionLevel.urgentReferral,
+    ),
+    ClinicalTagDefinition(
+      tag: ClinicalScreeningTags.douleurBrutale,
+      label: 'Douleur brutale',
+      description: 'Douleur brutale ou inhabituelle à contextualiser.',
+      isCritical: false,
+      expectedDecisionLevel: ClinicalDecisionLevel.urgentReferral,
+    ),
+    ClinicalTagDefinition(
+      tag: ClinicalScreeningTags.douleurLieeMouvement,
+      label: 'Douleur liée au mouvement',
+      description: 'Argument de profil mécanique, non critique isolément.',
+      isCritical: false,
+      expectedDecisionLevel: ClinicalDecisionLevel.routine,
+    ),
+    ClinicalTagDefinition(
+      tag: ClinicalScreeningTags.douleurReproductible,
+      label: 'Douleur reproductible',
+      description: 'Douleur reproduite par un mouvement ou test mécanique.',
+      isCritical: false,
+      expectedDecisionLevel: ClinicalDecisionLevel.routine,
+    ),
+    ClinicalTagDefinition(
+      tag: ClinicalScreeningTags.ameliorationRepos,
+      label: 'Amélioration au repos',
+      description: 'Amélioration avec repos ou diminution de charge.',
+      isCritical: false,
+      expectedDecisionLevel: ClinicalDecisionLevel.routine,
+    ),
+    ClinicalTagDefinition(
+      tag: ClinicalScreeningTags.surchargeMecanique,
+      label: 'Surcharge mécanique',
+      description: 'Contexte de surcharge cohérent avec la plainte.',
+      isCritical: false,
+      expectedDecisionLevel: ClinicalDecisionLevel.routine,
+    ),
+    ClinicalTagDefinition(
+      tag: ClinicalScreeningTags.episodeMecaniqueStable,
+      label: 'Épisode mécanique stable',
+      description: 'Épisode connu, stable et comparable.',
+      isCritical: false,
+      expectedDecisionLevel: ClinicalDecisionLevel.routine,
+    ),
+    ClinicalTagDefinition(
+      tag: ClinicalScreeningTags.absenceSignesSystemiques,
+      label: 'Absence de signes systémiques',
+      description: 'Absence structurée de signes systémiques recherchés.',
+      isCritical: false,
+      expectedDecisionLevel: ClinicalDecisionLevel.routine,
+    ),
   ];
 
   static const ruleDefinitions = [
@@ -501,6 +652,42 @@ abstract final class ClinicalScreeningCatalog {
       optionalTags: [],
       clinicalRationale:
           'La répétition d’éléments vasculaires justifie un avis médical impératif rapide.',
+    ),
+    ClinicalRuleDefinition(
+      ruleId: 'cervicalVascularCluster',
+      title: 'Cluster neurovasculaire cervical',
+      description:
+          'Céphalée inhabituelle, vertiges, troubles visuels, dysarthrie ou facteurs vasculaires dans un contexte cervical.',
+      layer: ClinicalScreeningLayer.systemic,
+      decisionLevel: ClinicalDecisionLevel.urgentReferral,
+      requiredTags: ClinicalScreeningTags.cervicalVascular,
+      optionalTags: [],
+      clinicalRationale:
+          'Un tableau cervical avec signes neurovasculaires ne doit pas être neutralisé par des arguments mécaniques seuls.',
+    ),
+    ClinicalRuleDefinition(
+      ruleId: 'aaaVascularAbdominalCluster',
+      title: 'Cluster vasculaire abdominal ou AAA',
+      description:
+          'Douleur lombaire ou abdominale profonde, brutale ou avec malaise sur terrain vasculaire.',
+      layer: ClinicalScreeningLayer.systemic,
+      decisionLevel: ClinicalDecisionLevel.urgentReferral,
+      requiredTags: ClinicalScreeningTags.aaaVascularAbdominal,
+      optionalTags: [],
+      clinicalRationale:
+          'Une douleur profonde inhabituelle sur terrain vasculaire doit empêcher une conclusion de réassurance simple.',
+    ),
+    ClinicalRuleDefinition(
+      ruleId: 'mechanicalReassurance',
+      title: 'Réassurance mécanique prudente',
+      description:
+          'Arguments mécaniques cohérents retenus sans hard stop ni signal critique positif.',
+      layer: ClinicalScreeningLayer.regional,
+      decisionLevel: ClinicalDecisionLevel.routine,
+      requiredTags: ClinicalScreeningTags.mechanicalReassurance,
+      optionalTags: [],
+      clinicalRationale:
+          'Ces arguments soutiennent DEC_REASSURE uniquement si aucun hard stop, signal critique ou vulnérabilité organique suspecte n’est présent.',
     ),
     ClinicalRuleDefinition(
       ruleId: 'systemicConcern',

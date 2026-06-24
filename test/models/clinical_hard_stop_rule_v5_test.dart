@@ -1,4 +1,5 @@
 import 'package:drapeaux_rouges_mb/models/clinical_screening/clinical_hard_stop_catalog_v5.dart';
+import 'package:drapeaux_rouges_mb/models/clinical_screening/clinical_hard_stop_rule_v5.dart';
 import 'package:drapeaux_rouges_mb/models/clinical_screening/clinical_screening_catalog.dart';
 import 'package:drapeaux_rouges_mb/models/clinical_screening/clinical_screening_models.dart';
 import 'package:drapeaux_rouges_mb/models/clinical_screening/clinical_screening_questionnaire_v4.dart';
@@ -61,6 +62,35 @@ void main() {
 
     test('expected decision levels are hard-stop compatible', () {
       for (final rule in ClinicalHardStopCatalogV5.rules) {
+        expect(
+          {
+            ClinicalDecisionLevel.urgentReferral,
+            ClinicalDecisionLevel.emergency,
+          },
+          contains(rule.expectedDecisionLevel),
+          reason: rule.id,
+        );
+      }
+    });
+
+    test('hard stop states are explicit and clinically compatible', () {
+      final cauda = ClinicalHardStopCatalogV5.ruleById(
+        'v5_hard_stop_queue_cheval',
+      );
+      final cervical = ClinicalHardStopCatalogV5.ruleById(
+        'v5_hard_stop_cervical_vasculaire',
+      );
+      final aaa = ClinicalHardStopCatalogV5.ruleById(
+        'v5_hard_stop_aaa_vasculaire_abdominal',
+      );
+
+      expect(cauda?.state, ClinicalHardStopStateV5.confirmed);
+      expect(cervical?.state, ClinicalHardStopStateV5.suspected);
+      expect(aaa?.state, ClinicalHardStopStateV5.suspected);
+
+      for (final rule in ClinicalHardStopCatalogV5.rules.where(
+        (rule) => rule.state == ClinicalHardStopStateV5.confirmed,
+      )) {
         expect(
           {
             ClinicalDecisionLevel.urgentReferral,

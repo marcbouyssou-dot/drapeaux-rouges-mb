@@ -27,9 +27,15 @@ void main() {
       expect(viewState.patientQuestionText, isNotEmpty);
       expect(viewState.canAnswer, isTrue);
       expect(viewState.answeredCount, 0);
-      expect(viewState.totalQuestionCount, 9);
+      expect(
+        viewState.totalQuestionCount,
+        ClinicalScreeningQuestionnaireV4.questions.length,
+      );
       expect(viewState.progressRatio, 0);
-      expect(viewState.progressLabel, 'Question 1 sur 9');
+      expect(
+        viewState.progressLabel,
+        'Question 1 sur ${ClinicalScreeningQuestionnaireV4.questions.length}',
+      );
       expect(viewState.currentRiskLevel, ClinicalDecisionLevel.routine);
       expect(viewState.currentRiskLabel, 'Prise en charge habituelle');
       expect(viewState.isFinal, isFalse);
@@ -123,7 +129,10 @@ void main() {
       );
 
       expect(viewState.answeredCount, 20);
-      expect(viewState.totalQuestionCount, 9);
+      expect(
+        viewState.totalQuestionCount,
+        ClinicalScreeningQuestionnaireV4.questions.length,
+      );
       expect(viewState.progressRatio, 1);
     });
 
@@ -224,6 +233,7 @@ ClinicalAdaptiveSessionV5 _manualSession({
   return ClinicalAdaptiveSessionV5(
     answeredQuestionIds: answeredQuestionIds,
     positiveFlagIds: positiveFlagIds,
+    reassuringFlagIds: const [],
     hypothesisProbabilities: {
       for (final hypothesisId in _allHypothesisIds)
         hypothesisId: ClinicalQualitativeProbabilityV5.low,

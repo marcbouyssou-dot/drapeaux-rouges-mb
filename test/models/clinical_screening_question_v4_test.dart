@@ -1,6 +1,7 @@
 import 'package:drapeaux_rouges_mb/models/clinical_screening/clinical_screening_models.dart';
 import 'package:drapeaux_rouges_mb/models/clinical_screening/clinical_screening_question_v4.dart';
 import 'package:drapeaux_rouges_mb/models/clinical_screening/clinical_screening_questionnaire_v4.dart';
+import 'package:drapeaux_rouges_mb/models/clinical_screening/clinical_script_v7.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -28,6 +29,47 @@ void main() {
       expect(
         ClinicalScreeningQuestionnaireV4.questionIds.length,
         ClinicalScreeningQuestionnaireV4.questions.length,
+      );
+    });
+
+    test('questions expose explicit V7 clinical scripts', () {
+      final scriptIds = ClinicalScreeningQuestionnaireV4.questions
+          .map((question) => question.scriptId)
+          .whereType<String>()
+          .toSet();
+
+      expect(
+        ClinicalScriptIdsV7.all,
+        containsAll({
+          ClinicalScriptIdsV7.oncologique,
+          ClinicalScriptIdsV7.infectieux,
+          ClinicalScriptIdsV7.fracture,
+          ClinicalScriptIdsV7.neurologique,
+          ClinicalScriptIdsV7.queueDeCheval,
+          ClinicalScriptIdsV7.vasculaire,
+          ClinicalScriptIdsV7.cervicalVasculaire,
+          ClinicalScriptIdsV7.aaaVasculaireAbdominal,
+        }),
+      );
+      expect(
+        scriptIds,
+        containsAll({
+          ClinicalScriptIdsV7.oncologique,
+          ClinicalScriptIdsV7.infectieux,
+          ClinicalScriptIdsV7.fracture,
+          ClinicalScriptIdsV7.neurologique,
+          ClinicalScriptIdsV7.queueDeCheval,
+          ClinicalScriptIdsV7.vasculaire,
+          ClinicalScriptIdsV7.cervicalVasculaire,
+          ClinicalScriptIdsV7.aaaVasculaireAbdominal,
+        }),
+      );
+      expect(
+        ClinicalScriptIdsV7.all,
+        containsAll({
+          ClinicalScriptIdsV7.mecanique,
+          ClinicalScriptIdsV7.psychosocial,
+        }),
       );
     });
 

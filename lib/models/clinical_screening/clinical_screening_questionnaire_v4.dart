@@ -2,6 +2,7 @@ import 'clinical_screening_catalog.dart';
 import 'clinical_screening_models.dart';
 import 'clinical_screening_question_v4.dart';
 import 'clinical_screening_tags.dart';
+import 'clinical_script_v7.dart';
 
 abstract final class ClinicalScreeningQuestionnaireV4 {
   static const lowBackPainSource = ClinicalScientificSource(
@@ -68,6 +69,7 @@ abstract final class ClinicalScreeningQuestionnaireV4 {
       targetResponseTime: Duration(seconds: 20),
       tags: [ClinicalScreeningTags.queueCheval],
       scientificSources: [lowBackPainSource],
+      scriptId: ClinicalScriptIdsV7.queueDeCheval,
     ),
     ClinicalScreeningQuestionV4(
       id: 'v4_embolie_pulmonaire_001',
@@ -86,6 +88,7 @@ abstract final class ClinicalScreeningQuestionnaireV4 {
       targetResponseTime: Duration(seconds: 20),
       tags: [ClinicalScreeningTags.emboliePulmonaire],
       scientificSources: [pulmonaryEmbolismSource],
+      scriptId: ClinicalScriptIdsV7.vasculaire,
     ),
     ClinicalScreeningQuestionV4(
       id: 'v4_fracture_ouverte_001',
@@ -103,6 +106,7 @@ abstract final class ClinicalScreeningQuestionnaireV4 {
       targetResponseTime: Duration(seconds: 15),
       tags: [ClinicalScreeningTags.fractureOuverte],
       scientificSources: [ottawaAnkleRulesSource],
+      scriptId: ClinicalScriptIdsV7.fracture,
     ),
     ClinicalScreeningQuestionV4(
       id: 'v4_oncologic_context_001',
@@ -125,6 +129,7 @@ abstract final class ClinicalScreeningQuestionnaireV4 {
         ClinicalScreeningTags.douleurNocturne,
       ],
       scientificSources: [suspectedCancerSource],
+      scriptId: ClinicalScriptIdsV7.oncologique,
     ),
     ClinicalScreeningQuestionV4(
       id: 'v4_infectious_fragility_001',
@@ -145,6 +150,7 @@ abstract final class ClinicalScreeningQuestionnaireV4 {
         ClinicalScreeningTags.immunodepression,
       ],
       scientificSources: [lowBackPainSource],
+      scriptId: ClinicalScriptIdsV7.infectieux,
     ),
     ClinicalScreeningQuestionV4(
       id: 'v4_neurologic_deficit_001',
@@ -162,6 +168,7 @@ abstract final class ClinicalScreeningQuestionnaireV4 {
       targetResponseTime: Duration(seconds: 20),
       tags: [ClinicalScreeningTags.deficitMoteurProgressif],
       scientificSources: [lowBackPainSource],
+      scriptId: ClinicalScriptIdsV7.neurologique,
     ),
     ClinicalScreeningQuestionV4(
       id: 'v4_cardiorespiratory_001',
@@ -184,6 +191,7 @@ abstract final class ClinicalScreeningQuestionnaireV4 {
         ClinicalScreeningTags.syncope,
       ],
       scientificSources: [pulmonaryEmbolismSource],
+      scriptId: ClinicalScriptIdsV7.vasculaire,
     ),
     ClinicalScreeningQuestionV4(
       id: 'v4_fracture_risk_001',
@@ -206,6 +214,7 @@ abstract final class ClinicalScreeningQuestionnaireV4 {
         ClinicalScreeningTags.ageAvance,
       ],
       scientificSources: [ottawaAnkleRulesSource],
+      scriptId: ClinicalScriptIdsV7.fracture,
     ),
     ClinicalScreeningQuestionV4(
       id: 'v4_vascular_tvp_001',
@@ -223,6 +232,125 @@ abstract final class ClinicalScreeningQuestionnaireV4 {
       targetResponseTime: Duration(seconds: 30),
       tags: [ClinicalScreeningTags.wellsTvp, ClinicalScreeningTags.tvp],
       scientificSources: [wellsDvtSource],
+      scriptId: ClinicalScriptIdsV7.vasculaire,
+    ),
+    ClinicalScreeningQuestionV4(
+      id: 'v4_cervical_vascular_001',
+      text:
+          'Existe-t-il une céphalée inhabituelle, des vertiges inhabituels, des troubles visuels, une dysarthrie ou un contexte vasculaire après traumatisme cervical même mineur ?',
+      clinicalIntent:
+          'Repérer une suspicion neurovasculaire cervicale nécessitant un avis médical rapide.',
+      associatedFlagId: 'cervical_vascular_context',
+      clusterId: 'cervicalVascularCluster',
+      ruleId: 'cervicalVascularCluster',
+      layer: ClinicalScreeningLayer.systemic,
+      category: ClinicalFlagCategory.vascular,
+      responseType: ClinicalQuestionResponseType.yesNo,
+      potentialDecisionLevel: ClinicalDecisionLevel.urgentReferral,
+      evidenceLevel: ClinicalEvidenceLevel.expertConsensus,
+      targetResponseTime: Duration(seconds: 30),
+      tags: ClinicalScreeningTags.cervicalVascular,
+      scientificSources: [lowBackPainSource],
+      scriptId: ClinicalScriptIdsV7.cervicalVasculaire,
+    ),
+    ClinicalScreeningQuestionV4(
+      id: 'v4_aaa_vascular_abdominal_001',
+      text:
+          'Existe-t-il une douleur lombaire ou abdominale profonde inhabituelle, brutale ou associée à malaise chez une personne avec âge avancé, tabagisme ou HTA ?',
+      clinicalIntent:
+          'Repérer une suspicion vasculaire abdominale ou AAA nécessitant un avis médical rapide.',
+      associatedFlagId: 'aaa_vascular_abdominal_context',
+      clusterId: 'aaaVascularAbdominalCluster',
+      ruleId: 'aaaVascularAbdominalCluster',
+      layer: ClinicalScreeningLayer.systemic,
+      category: ClinicalFlagCategory.vascular,
+      responseType: ClinicalQuestionResponseType.yesNo,
+      potentialDecisionLevel: ClinicalDecisionLevel.urgentReferral,
+      evidenceLevel: ClinicalEvidenceLevel.expertConsensus,
+      targetResponseTime: Duration(seconds: 30),
+      tags: ClinicalScreeningTags.aaaVascularAbdominal,
+      scientificSources: [wellsDvtSource],
+      scriptId: ClinicalScriptIdsV7.aaaVasculaireAbdominal,
+    ),
+    ClinicalScreeningQuestionV4(
+      id: 'v4_mechanical_pattern_001',
+      text:
+          'La douleur est-elle liée au mouvement, reproductible et améliorée par le repos ou la réduction de charge ?',
+      clinicalIntent:
+          'Identifier un profil mécanique rassurant en l’absence de signal critique.',
+      associatedFlagId: 'mechanical_pain_pattern',
+      clusterId: 'mechanicalReassurance',
+      ruleId: 'mechanicalReassurance',
+      layer: ClinicalScreeningLayer.regional,
+      category: ClinicalFlagCategory.musculoskeletal,
+      responseType: ClinicalQuestionResponseType.yesNo,
+      potentialDecisionLevel: ClinicalDecisionLevel.routine,
+      evidenceLevel: ClinicalEvidenceLevel.expertConsensus,
+      targetResponseTime: Duration(seconds: 20),
+      tags: [
+        ClinicalScreeningTags.douleurLieeMouvement,
+        ClinicalScreeningTags.douleurReproductible,
+        ClinicalScreeningTags.ameliorationRepos,
+      ],
+      scientificSources: [lowBackPainSource],
+      scriptId: ClinicalScriptIdsV7.mecanique,
+    ),
+    ClinicalScreeningQuestionV4(
+      id: 'v4_mechanical_overload_001',
+      text:
+          'Le contexte est-il cohérent avec une surcharge mécanique récente sans symptôme inhabituel associé ?',
+      clinicalIntent:
+          'Identifier une surcharge mécanique cohérente sans élément organique critique.',
+      associatedFlagId: 'mechanical_pain_pattern',
+      clusterId: 'mechanicalReassurance',
+      ruleId: 'mechanicalReassurance',
+      layer: ClinicalScreeningLayer.regional,
+      category: ClinicalFlagCategory.musculoskeletal,
+      responseType: ClinicalQuestionResponseType.yesNo,
+      potentialDecisionLevel: ClinicalDecisionLevel.routine,
+      evidenceLevel: ClinicalEvidenceLevel.expertConsensus,
+      targetResponseTime: Duration(seconds: 20),
+      tags: [ClinicalScreeningTags.surchargeMecanique],
+      scientificSources: [lowBackPainSource],
+      scriptId: ClinicalScriptIdsV7.mecanique,
+    ),
+    ClinicalScreeningQuestionV4(
+      id: 'v4_known_stable_mechanical_episode_001',
+      text:
+          'Cet épisode est-il comparable à un épisode mécanique déjà connu, stable et sans aggravation inhabituelle ?',
+      clinicalIntent:
+          'Identifier un épisode mécanique stable sans signal clinique nouveau.',
+      associatedFlagId: 'known_stable_mechanical_episode',
+      clusterId: 'mechanicalReassurance',
+      ruleId: 'mechanicalReassurance',
+      layer: ClinicalScreeningLayer.regional,
+      category: ClinicalFlagCategory.musculoskeletal,
+      responseType: ClinicalQuestionResponseType.yesNo,
+      potentialDecisionLevel: ClinicalDecisionLevel.routine,
+      evidenceLevel: ClinicalEvidenceLevel.expertConsensus,
+      targetResponseTime: Duration(seconds: 20),
+      tags: [ClinicalScreeningTags.episodeMecaniqueStable],
+      scientificSources: [lowBackPainSource],
+      scriptId: ClinicalScriptIdsV7.mecanique,
+    ),
+    ClinicalScreeningQuestionV4(
+      id: 'v4_structured_absence_systemic_signs_001',
+      text:
+          'L’entretien retrouve-t-il l’absence de fièvre, perte de poids, altération générale et douleur nocturne non mécanique ?',
+      clinicalIntent:
+          'Documenter l’absence structurée de signes systémiques avant réassurance.',
+      associatedFlagId: 'structured_absence_systemic_signs',
+      clusterId: 'mechanicalReassurance',
+      ruleId: 'mechanicalReassurance',
+      layer: ClinicalScreeningLayer.regional,
+      category: ClinicalFlagCategory.general,
+      responseType: ClinicalQuestionResponseType.yesNo,
+      potentialDecisionLevel: ClinicalDecisionLevel.routine,
+      evidenceLevel: ClinicalEvidenceLevel.expertConsensus,
+      targetResponseTime: Duration(seconds: 20),
+      tags: [ClinicalScreeningTags.absenceSignesSystemiques],
+      scientificSources: [lowBackPainSource],
+      scriptId: ClinicalScriptIdsV7.mecanique,
     ),
   ];
 

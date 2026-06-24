@@ -131,6 +131,32 @@ abstract final class ClinicalHypothesisCatalogV5 {
       scientificSources: [ClinicalScreeningQuestionnaireV4.wellsDvtSource],
       validationCaseIds: ['HS_TVP_001'],
     ),
+    ClinicalHypothesisV5(
+      id: 'v5_hypothesis_cervical_vasculaire',
+      title: 'Atteinte neurovasculaire cervicale',
+      clinicalDescription:
+          'Atteinte vasculaire cervicale possible devant céphalée inhabituelle, vertiges, troubles visuels, dysarthrie ou contexte vasculaire après traumatisme cervical même mineur.',
+      severity: ClinicalHypothesisSeverityV5.serious,
+      targetDecisionLevel: ClinicalDecisionLevel.urgentReferral,
+      initialProbability: ClinicalHypothesisInitialProbabilityV5.low,
+      associatedClusterIds: ['cervicalVascularCluster'],
+      associatedFlagIds: ['cervical_vascular_context'],
+      scientificSources: [ClinicalScreeningQuestionnaireV4.lowBackPainSource],
+      validationCaseIds: ['HS_CERVICAL_VASCULAR_001'],
+    ),
+    ClinicalHypothesisV5(
+      id: 'v5_hypothesis_aaa_vasculaire_abdominal',
+      title: 'Pathologie vasculaire abdominale ou AAA',
+      clinicalDescription:
+          'Atteinte vasculaire abdominale possible devant douleur lombaire ou abdominale profonde inhabituelle, brutale ou avec malaise sur terrain vasculaire.',
+      severity: ClinicalHypothesisSeverityV5.serious,
+      targetDecisionLevel: ClinicalDecisionLevel.urgentReferral,
+      initialProbability: ClinicalHypothesisInitialProbabilityV5.low,
+      associatedClusterIds: ['aaaVascularAbdominalCluster'],
+      associatedFlagIds: ['aaa_vascular_abdominal_context'],
+      scientificSources: [ClinicalScreeningQuestionnaireV4.wellsDvtSource],
+      validationCaseIds: ['HS_AAA_VASCULAR_001'],
+    ),
   ];
 
   static Set<String> get hypothesisIds {

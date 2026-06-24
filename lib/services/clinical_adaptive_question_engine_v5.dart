@@ -7,6 +7,7 @@ import '../models/clinical_screening/clinical_probability_update_v5.dart';
 import '../models/clinical_screening/clinical_screening_models.dart';
 import '../models/clinical_screening/clinical_screening_question_v4.dart';
 import '../models/clinical_screening/clinical_screening_questionnaire_v4.dart';
+import '../models/clinical_screening/clinical_script_v7.dart';
 
 class ClinicalAdaptiveQuestionEngineV5 {
   ClinicalAdaptiveSessionV5 initialSession() {
@@ -23,6 +24,7 @@ class ClinicalAdaptiveQuestionEngineV5 {
     return ClinicalAdaptiveSessionV5(
       answeredQuestionIds: const {},
       positiveFlagIds: const [],
+      reassuringFlagIds: const [],
       hypothesisProbabilities: probabilities,
       appliedProbabilityUpdateIds: const [],
       triggeredHardStopIds: const [],
@@ -30,6 +32,7 @@ class ClinicalAdaptiveQuestionEngineV5 {
       reasoningSummary: _buildSummary(
         answeredQuestionIds: const {},
         positiveFlagIds: const [],
+        reassuringFlagIds: const [],
         hypothesisProbabilities: probabilities,
         appliedProbabilityUpdateIds: const [],
         triggeredHardStopIds: const [],
@@ -57,6 +60,7 @@ class ClinicalAdaptiveQuestionEngineV5 {
       questionId: isPositive,
     };
     final positiveFlagIds = [...session.positiveFlagIds];
+    final reassuringFlagIds = [...session.reassuringFlagIds];
     final hypothesisProbabilities = {...session.hypothesisProbabilities};
     final appliedProbabilityUpdateIds = [
       ...session.appliedProbabilityUpdateIds,
@@ -64,27 +68,31 @@ class ClinicalAdaptiveQuestionEngineV5 {
     final triggeredHardStopIds = [...session.triggeredHardStopIds];
 
     if (isPositive) {
-      _addIfAbsent(positiveFlagIds, question.associatedFlagId);
+      if (_isReassuringQuestion(question)) {
+        _addIfAbsent(reassuringFlagIds, question.associatedFlagId);
+      } else {
+        _addIfAbsent(positiveFlagIds, question.associatedFlagId);
 
-      final probabilityUpdates = _updatesTriggeredBy(question);
-      for (final update in probabilityUpdates) {
-        hypothesisProbabilities[update.hypothesisId] = _maxProbability(
-          hypothesisProbabilities[update.hypothesisId],
-          update.updatedProbability,
-        );
-        _addIfAbsent(appliedProbabilityUpdateIds, update.id);
-      }
+        final probabilityUpdates = _updatesTriggeredBy(question);
+        for (final update in probabilityUpdates) {
+          hypothesisProbabilities[update.hypothesisId] = _maxProbability(
+            hypothesisProbabilities[update.hypothesisId],
+            update.updatedProbability,
+          );
+          _addIfAbsent(appliedProbabilityUpdateIds, update.id);
+        }
 
-      for (final hardStop in ClinicalHardStopCatalogV5.rules) {
-        final matchesQuestion = hardStop.triggeringQuestionIds.contains(
-          question.id,
-        );
-        final matchesFlag = hardStop.triggeringFlagIds.contains(
-          question.associatedFlagId,
-        );
+        for (final hardStop in ClinicalHardStopCatalogV5.rules) {
+          final matchesQuestion = hardStop.triggeringQuestionIds.contains(
+            question.id,
+          );
+          final matchesFlag = hardStop.triggeringFlagIds.contains(
+            question.associatedFlagId,
+          );
 
-        if (matchesQuestion || matchesFlag) {
-          _addIfAbsent(triggeredHardStopIds, hardStop.id);
+          if (matchesQuestion || matchesFlag) {
+            _addIfAbsent(triggeredHardStopIds, hardStop.id);
+          }
         }
       }
     }
@@ -99,6 +107,7 @@ class ClinicalAdaptiveQuestionEngineV5 {
     return ClinicalAdaptiveSessionV5(
       answeredQuestionIds: answeredQuestionIds,
       positiveFlagIds: positiveFlagIds,
+      reassuringFlagIds: reassuringFlagIds,
       hypothesisProbabilities: hypothesisProbabilities,
       appliedProbabilityUpdateIds: appliedProbabilityUpdateIds,
       triggeredHardStopIds: triggeredHardStopIds,
@@ -106,6 +115,7 @@ class ClinicalAdaptiveQuestionEngineV5 {
       reasoningSummary: _buildSummary(
         answeredQuestionIds: answeredQuestionIds,
         positiveFlagIds: positiveFlagIds,
+        reassuringFlagIds: reassuringFlagIds,
         hypothesisProbabilities: hypothesisProbabilities,
         appliedProbabilityUpdateIds: appliedProbabilityUpdateIds,
         triggeredHardStopIds: triggeredHardStopIds,
@@ -183,6 +193,11 @@ class ClinicalAdaptiveQuestionEngineV5 {
         .toList(growable: false);
   }
 
+  bool _isReassuringQuestion(ClinicalScreeningQuestionV4 question) {
+    return question.scriptId == ClinicalScriptIdsV7.mecanique &&
+        question.potentialDecisionLevel == ClinicalDecisionLevel.routine;
+  }
+
   ClinicalScreeningQuestionV4? _questionById(String questionId) {
     for (final question in ClinicalScreeningQuestionnaireV4.questions) {
       if (question.id == questionId) {
@@ -220,6 +235,7 @@ class ClinicalAdaptiveQuestionEngineV5 {
   String _buildSummary({
     required Map<String, bool> answeredQuestionIds,
     required List<String> positiveFlagIds,
+    required List<String> reassuringFlagIds,
     required Map<String, ClinicalQualitativeProbabilityV5>
     hypothesisProbabilities,
     required List<String> appliedProbabilityUpdateIds,
@@ -239,6 +255,8 @@ class ClinicalAdaptiveQuestionEngineV5 {
       'Questions répondues : ${answeredQuestionIds.length}.',
       if (positiveFlagIds.isNotEmpty)
         'Flags positifs : ${positiveFlagIds.join(', ')}.',
+      if (reassuringFlagIds.isNotEmpty)
+        'Arguments rassurants : ${reassuringFlagIds.join(', ')}.',
       if (appliedProbabilityUpdateIds.isNotEmpty)
         'Mises à jour appliquées : ${appliedProbabilityUpdateIds.join(', ')}.',
       if (raisedHypotheses.isNotEmpty)

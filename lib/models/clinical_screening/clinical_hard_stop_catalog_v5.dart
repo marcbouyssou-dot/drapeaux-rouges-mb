@@ -13,6 +13,7 @@ abstract final class ClinicalHardStopCatalogV5 {
       triggeringFlagIds: ['queue_cheval_suspected'],
       clusterId: 'immediateDanger',
       expectedDecisionLevel: ClinicalDecisionLevel.emergency,
+      state: ClinicalHardStopStateV5.confirmed,
       clinicalRationale:
           'Une suspicion de queue de cheval est un hard stop car le délai d’orientation conditionne le pronostic neurologique.',
       scientificSources: [ClinicalScreeningQuestionnaireV4.lowBackPainSource],
@@ -27,6 +28,7 @@ abstract final class ClinicalHardStopCatalogV5 {
       triggeringFlagIds: ['pulmonary_embolism_suspected'],
       clusterId: 'immediateDanger',
       expectedDecisionLevel: ClinicalDecisionLevel.emergency,
+      state: ClinicalHardStopStateV5.confirmed,
       clinicalRationale:
           'La suspicion embolique ne doit pas être poursuivie en accès direct et impose une orientation urgente.',
       scientificSources: [
@@ -43,6 +45,7 @@ abstract final class ClinicalHardStopCatalogV5 {
       triggeringFlagIds: ['open_fracture_suspected'],
       clusterId: 'immediateDanger',
       expectedDecisionLevel: ClinicalDecisionLevel.emergency,
+      state: ClinicalHardStopStateV5.confirmed,
       clinicalRationale:
           'Une fracture ouverte expose à des complications infectieuses et neurovasculaires et impose une prise en charge urgente.',
       scientificSources: [
@@ -103,6 +106,7 @@ abstract final class ClinicalHardStopCatalogV5 {
       triggeringFlagIds: ['chest_pain', 'dyspnea_or_malaise'],
       clusterId: 'cardiorespiratoryCluster',
       expectedDecisionLevel: ClinicalDecisionLevel.emergency,
+      state: ClinicalHardStopStateV5.confirmed,
       clinicalRationale:
           'L’association douleur thoracique et signe cardio-respiratoire constitue un hard stop d’urgence.',
       scientificSources: [
@@ -140,6 +144,36 @@ abstract final class ClinicalHardStopCatalogV5 {
       scientificSources: [ClinicalScreeningQuestionnaireV4.wellsDvtSource],
       validationCaseId: 'validation_v5_vascular_cluster_001',
     ),
+    ClinicalHardStopRuleV5(
+      id: 'v5_hard_stop_cervical_vasculaire',
+      title: 'Suspicion neurovasculaire cervicale',
+      clinicalDescription:
+          'Céphalée inhabituelle, vertiges inhabituels, troubles visuels, dysarthrie ou contexte vasculaire après traumatisme cervical même mineur.',
+      triggeringQuestionIds: ['v4_cervical_vascular_001'],
+      triggeringFlagIds: ['cervical_vascular_context'],
+      clusterId: 'cervicalVascularCluster',
+      expectedDecisionLevel: ClinicalDecisionLevel.urgentReferral,
+      state: ClinicalHardStopStateV5.suspected,
+      clinicalRationale:
+          'Un tableau cervical avec signes neurovasculaires ou facteurs vasculaires ne doit pas être rassuré par une présentation mécanique seule.',
+      scientificSources: [ClinicalScreeningQuestionnaireV4.lowBackPainSource],
+      validationCaseId: 'validation_v7_cervical_vascular_001',
+    ),
+    ClinicalHardStopRuleV5(
+      id: 'v5_hard_stop_aaa_vasculaire_abdominal',
+      title: 'Suspicion vasculaire abdominale ou AAA',
+      clinicalDescription:
+          'Douleur lombaire ou abdominale profonde inhabituelle, brutale ou avec malaise sur terrain vasculaire.',
+      triggeringQuestionIds: ['v4_aaa_vascular_abdominal_001'],
+      triggeringFlagIds: ['aaa_vascular_abdominal_context'],
+      clusterId: 'aaaVascularAbdominalCluster',
+      expectedDecisionLevel: ClinicalDecisionLevel.urgentReferral,
+      state: ClinicalHardStopStateV5.suspected,
+      clinicalRationale:
+          'Une douleur profonde inhabituelle ou brutale sur terrain vasculaire doit empêcher une conclusion de réassurance simple.',
+      scientificSources: [ClinicalScreeningQuestionnaireV4.wellsDvtSource],
+      validationCaseId: 'validation_v7_aaa_vascular_abdominal_001',
+    ),
   ];
 
   static Set<String> get hardStopIds {
@@ -162,5 +196,15 @@ abstract final class ClinicalHardStopCatalogV5 {
     return rules
         .where((rule) => rule.clusterId == clusterId)
         .toList(growable: false);
+  }
+
+  static ClinicalHardStopRuleV5? ruleById(String hardStopId) {
+    for (final rule in rules) {
+      if (rule.id == hardStopId) {
+        return rule;
+      }
+    }
+
+    return null;
   }
 }

@@ -55,7 +55,7 @@ final _clinicalScenarios = [
     expectedDominantHypothesisId: null,
     expectedProbability: null,
     expectedHardStopId: null,
-    expectedQuestionCount: 9,
+    expectedQuestionCount: 15,
     expectedNextQuestionId: null,
   ),
   _ClinicalScenario(
@@ -191,7 +191,7 @@ final _clinicalScenarios = [
     expectedDominantHypothesisId: null,
     expectedProbability: null,
     expectedHardStopId: null,
-    expectedQuestionCount: 9,
+    expectedQuestionCount: 15,
     expectedNextQuestionId: null,
   ),
   _ClinicalScenario(
@@ -201,7 +201,7 @@ final _clinicalScenarios = [
     expectedDominantHypothesisId: null,
     expectedProbability: null,
     expectedHardStopId: null,
-    expectedQuestionCount: 9,
+    expectedQuestionCount: 15,
     expectedNextQuestionId: null,
   ),
   _ClinicalScenario(
@@ -226,6 +226,12 @@ const _allNegativeResponses = [
   _QuestionAnswer('v4_fracture_risk_001', false),
   _QuestionAnswer('v4_vascular_tvp_001', false),
   _QuestionAnswer('v4_oncologic_context_001', false),
+  _QuestionAnswer('v4_cervical_vascular_001', false),
+  _QuestionAnswer('v4_aaa_vascular_abdominal_001', false),
+  _QuestionAnswer('v4_mechanical_pattern_001', false),
+  _QuestionAnswer('v4_mechanical_overload_001', false),
+  _QuestionAnswer('v4_known_stable_mechanical_episode_001', false),
+  _QuestionAnswer('v4_structured_absence_systemic_signs_001', false),
 ];
 
 _ScenarioResult _runScenario(_ClinicalScenario scenario) {

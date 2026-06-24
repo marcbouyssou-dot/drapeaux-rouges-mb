@@ -1,4 +1,5 @@
 import 'package:drapeaux_rouges_mb/screens/clinical_screening/clinical_adaptive_screen_v5.dart';
+import 'package:drapeaux_rouges_mb/models/clinical_screening/clinical_screening_questionnaire_v4.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -8,8 +9,8 @@ void main() {
       await _pumpScreen(tester);
 
       expect(find.text('Évaluation clinique'), findsOneWidget);
-      expect(find.text('Question 1 sur 9'), findsOneWidget);
-      expect(find.text('Question 0 sur 9'), findsNothing);
+      expect(find.text('Question 1 sur $_totalQuestionCount'), findsOneWidget);
+      expect(find.text('Question 0 sur $_totalQuestionCount'), findsNothing);
       expect(
         find.byKey(const Key('adaptive-v5-question-text')),
         findsOneWidget,
@@ -40,7 +41,7 @@ void main() {
 
       await _tapNo(tester);
 
-      expect(find.text('Question 2 sur 9'), findsOneWidget);
+      expect(find.text('Question 2 sur $_totalQuestionCount'), findsOneWidget);
       expect(find.textContaining('essoufflement brutal'), findsOneWidget);
     });
 
@@ -92,7 +93,7 @@ void main() {
     ) async {
       await _pumpScreen(tester);
 
-      for (var index = 0; index < 9; index++) {
+      for (var index = 0; index < _totalQuestionCount; index++) {
         await _tapNo(tester);
       }
 
@@ -124,6 +125,9 @@ void main() {
     });
   });
 }
+
+int get _totalQuestionCount =>
+    ClinicalScreeningQuestionnaireV4.questions.length;
 
 Future<void> _pumpScreen(WidgetTester tester) async {
   await tester.pumpWidget(const MaterialApp(home: ClinicalAdaptiveScreenV5()));

@@ -1,3 +1,4 @@
+import 'package:drapeaux_rouges_mb/models/clinical_screening/clinical_hard_stop_rule_v5.dart';
 import 'package:drapeaux_rouges_mb/models/clinical_screening/clinical_hypothesis_catalog_v5.dart';
 import 'package:drapeaux_rouges_mb/models/clinical_screening/clinical_probability_update_v5.dart';
 import 'package:drapeaux_rouges_mb/services/clinical_adaptive_question_engine_v5.dart';
@@ -33,6 +34,7 @@ void main() {
         throwsUnsupportedError,
       );
       expect(() => session.positiveFlagIds.add('x'), throwsUnsupportedError);
+      expect(() => session.reassuringFlagIds.add('x'), throwsUnsupportedError);
       expect(
         () => session.hypothesisProbabilities['x'] =
             ClinicalQualitativeProbabilityV5.high,
@@ -123,6 +125,116 @@ void main() {
         contains('v5_hard_stop_oncologique'),
       );
     });
+
+    test('cervical vascular suspect produces suspected hard stop', () {
+      final session = engine.answerQuestion(
+        session: engine.initialSession(),
+        questionId: 'v4_cervical_vascular_001',
+        isPositive: true,
+      );
+
+      expect(session.positiveFlagIds, contains('cervical_vascular_context'));
+      expect(
+        session.hypothesisProbabilities['v5_hypothesis_cervical_vasculaire'],
+        ClinicalQualitativeProbabilityV5.high,
+      );
+      expect(
+        session.triggeredHardStopIds,
+        contains('v5_hard_stop_cervical_vasculaire'),
+      );
+      expect(session.hardStopState, ClinicalHardStopStateV5.suspected);
+      expect(session.canReassure, isFalse);
+      expect(session.nextQuestion, isNull);
+    });
+
+    test('AAA vascular abdominal suspect produces suspected hard stop', () {
+      final session = engine.answerQuestion(
+        session: engine.initialSession(),
+        questionId: 'v4_aaa_vascular_abdominal_001',
+        isPositive: true,
+      );
+
+      expect(
+        session.positiveFlagIds,
+        contains('aaa_vascular_abdominal_context'),
+      );
+      expect(
+        session
+            .hypothesisProbabilities['v5_hypothesis_aaa_vasculaire_abdominal'],
+        ClinicalQualitativeProbabilityV5.high,
+      );
+      expect(
+        session.triggeredHardStopIds,
+        contains('v5_hard_stop_aaa_vasculaire_abdominal'),
+      );
+      expect(session.hardStopState, ClinicalHardStopStateV5.suspected);
+      expect(session.canReassure, isFalse);
+      expect(session.nextQuestion, isNull);
+    });
+
+    test('confirmed hard stop blocks reassurance and confirms urgency', () {
+      final session = engine.answerQuestion(
+        session: engine.initialSession(),
+        questionId: 'v4_queue_cheval_001',
+        isPositive: true,
+      );
+
+      expect(session.hardStopState, ClinicalHardStopStateV5.confirmed);
+      expect(session.canReassure, isFalse);
+      expect(session.hasTriggeredHardStop, isTrue);
+    });
+
+    test('mechanical reassurance remains possible without hard stop', () {
+      var session = engine.initialSession();
+
+      while (session.nextQuestion != null) {
+        session = engine.answerQuestion(
+          session: session,
+          questionId: session.nextQuestion!.id,
+          isPositive: false,
+        );
+      }
+
+      expect(session.hardStopState, ClinicalHardStopStateV5.absent);
+      expect(session.canReassure, isTrue);
+      expect(session.nextQuestion, isNull);
+    });
+
+    test('mechanical reassurance flags are tracked separately', () {
+      final session = engine.answerQuestion(
+        session: engine.initialSession(),
+        questionId: 'v4_mechanical_pattern_001',
+        isPositive: true,
+      );
+
+      expect(session.positiveFlagIds, isEmpty);
+      expect(session.reassuringFlagIds, contains('mechanical_pain_pattern'));
+      expect(session.triggeredHardStopIds, isEmpty);
+      expect(session.canReassure, isTrue);
+      expect(session.reasoningSummary, contains('Arguments rassurants'));
+    });
+
+    test(
+      'isolated critical sign is not neutralized by reassurance context',
+      () {
+        final mechanicalSession = engine.answerQuestion(
+          session: engine.initialSession(),
+          questionId: 'v4_mechanical_pattern_001',
+          isPositive: true,
+        );
+        final session = engine.answerQuestion(
+          session: mechanicalSession,
+          questionId: 'v4_queue_cheval_001',
+          isPositive: true,
+        );
+
+        expect(session.reassuringFlagIds, contains('mechanical_pain_pattern'));
+        expect(session.positiveFlagIds, contains('queue_cheval_suspected'));
+        expect(session.hardStopState, ClinicalHardStopStateV5.confirmed);
+        expect(session.canReassure, isFalse);
+        expect(session.nextQuestion, isNull);
+      },
+    );
 
     test('next question prioritizes remaining immediate danger questions', () {
       final afterCaudaNegative = engine.answerQuestion(

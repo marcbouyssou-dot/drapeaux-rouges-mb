@@ -40,6 +40,7 @@ class ClinicalScreeningQuestionV4 {
   final Duration targetResponseTime;
   final List<String> tags;
   final List<ClinicalScientificSource> scientificSources;
+  final String? scriptId;
 
   const ClinicalScreeningQuestionV4({
     required this.id,
@@ -56,5 +57,6 @@ class ClinicalScreeningQuestionV4 {
     required this.targetResponseTime,
     required this.tags,
     required this.scientificSources,
+    this.scriptId,
   });
 }
