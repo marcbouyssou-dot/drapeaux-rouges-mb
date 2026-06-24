@@ -3,11 +3,14 @@ import 'package:flutter/material.dart';
 import '../../models/clinical_screening/clinical_adaptive_session_v5.dart';
 import '../../models/clinical_screening/clinical_adaptive_view_state_v5.dart';
 import '../../models/clinical_screening/clinical_screening_models.dart';
+import '../../models/clinical_screening/clinical_screening_questionnaire_v4.dart';
 import '../../services/clinical_adaptive_question_engine_v5.dart';
 import '../../services/clinical_adaptive_view_state_mapper_v5.dart';
 
 class ClinicalAdaptiveScreenV5 extends StatefulWidget {
   const ClinicalAdaptiveScreenV5({super.key});
+
+  static const routeName = '/questionnaire-v7';
 
   @override
   State<ClinicalAdaptiveScreenV5> createState() =>
@@ -59,7 +62,7 @@ class _ClinicalAdaptiveScreenV5State extends State<ClinicalAdaptiveScreenV5> {
               const SizedBox(height: 16),
               _ExplanationPanel(viewState: viewState),
               const SizedBox(height: 16),
-              _ClinicalDetails(viewState: viewState),
+              _ClinicalDetails(viewState: viewState, session: _session),
             ],
           ),
         ),
@@ -297,11 +300,22 @@ class _ExplanationPanel extends StatelessWidget {
 
 class _ClinicalDetails extends StatelessWidget {
   final ClinicalAdaptiveViewStateV5 viewState;
+  final ClinicalAdaptiveSessionV5 session;
 
-  const _ClinicalDetails({required this.viewState});
+  const _ClinicalDetails({required this.viewState, required this.session});
 
   @override
   Widget build(BuildContext context) {
+    final detailsText = [
+      'Décision : ${viewState.finalDecisionLevel?.name ?? viewState.currentRiskLevel.name}',
+      'hardStopState : ${session.hardStopState.name}',
+      'canReassure : ${session.canReassure}',
+      'script : ${_dominantScriptId(session) ?? 'aucun'}',
+      'hypothèse : ${viewState.primaryHypothesisId ?? 'aucune'}',
+      '',
+      viewState.technicalSummary,
+    ].join('\n');
+
     return ExpansionTile(
       key: const Key('adaptive-v5-clinical-details'),
       tilePadding: EdgeInsets.zero,
@@ -310,12 +324,30 @@ class _ClinicalDetails extends StatelessWidget {
         Align(
           alignment: Alignment.centerLeft,
           child: SelectableText(
-            viewState.technicalSummary,
+            detailsText,
             key: const Key('adaptive-v5-technical-summary'),
           ),
         ),
       ],
     );
+  }
+
+  String? _dominantScriptId(ClinicalAdaptiveSessionV5 session) {
+    final positiveQuestionIds = session.answeredQuestionIds.entries
+        .where((entry) => entry.value)
+        .map((entry) => entry.key)
+        .toSet();
+    if (positiveQuestionIds.isEmpty) {
+      return null;
+    }
+
+    for (final question in ClinicalScreeningQuestionnaireV4.questions) {
+      if (positiveQuestionIds.contains(question.id)) {
+        return question.scriptId;
+      }
+    }
+
+    return null;
   }
 }
 

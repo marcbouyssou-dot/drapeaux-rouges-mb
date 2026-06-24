@@ -103,13 +103,10 @@ void main() {
   testWidgets('shows experimental adaptive clinical entry', (tester) async {
     await pumpHomeScreen(tester);
 
-    expect(
-      find.text('Évaluation clinique adaptative — expérimental'),
-      findsOneWidget,
-    );
+    expect(find.text('Questionnaire V7'), findsOneWidget);
     expect(
       find.text(
-        'Prototype de raisonnement clinique V5. Ne remplace pas encore le parcours actuel.',
+        'Prototype de raisonnement clinique adaptatif. Ne remplace pas encore le parcours actuel.',
       ),
       findsOneWidget,
     );
@@ -135,10 +132,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(HomeScreen), findsOneWidget);
-    expect(
-      find.text('Évaluation clinique adaptative — expérimental'),
-      findsOneWidget,
-    );
+    expect(find.text('Questionnaire V7'), findsOneWidget);
   });
 
   testWidgets('shows Patient card and can tap it', (tester) async {

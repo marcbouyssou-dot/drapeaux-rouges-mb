@@ -131,7 +131,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void openAdaptiveClinicalEvaluation() {
     Navigator.of(context).push(
-      CupertinoPageRoute(builder: (_) => const ClinicalAdaptiveScreenV5()),
+      CupertinoPageRoute(
+        settings: const RouteSettings(name: ClinicalAdaptiveScreenV5.routeName),
+        builder: (_) => const ClinicalAdaptiveScreenV5(),
+      ),
     );
   }
 

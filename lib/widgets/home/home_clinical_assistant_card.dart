@@ -180,7 +180,7 @@ class _AdaptiveEvaluationEntry extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Évaluation clinique adaptative — expérimental',
+                      'Questionnaire V7',
                       style: TextStyle(
                         color: AppColors.textPrimary,
                         fontSize: 13,
@@ -190,7 +190,7 @@ class _AdaptiveEvaluationEntry extends StatelessWidget {
                     ),
                     SizedBox(height: 4),
                     Text(
-                      'Prototype de raisonnement clinique V5. Ne remplace pas encore le parcours actuel.',
+                      'Prototype de raisonnement clinique adaptatif. Ne remplace pas encore le parcours actuel.',
                       style: TextStyle(
                         color: AppColors.textSecondary,
                         fontSize: 12,

@@ -59,8 +59,6 @@ class RedFlagsApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    setStartupDebugStep('FIRST FRAME');
-
     return MaterialApp(
       title: 'Accès Direct MK',
       debugShowCheckedModeBanner: false,

@@ -123,6 +123,25 @@ void main() {
         findsNothing,
       );
     });
+
+    testWidgets('clinical details expose internal V7 state when expanded', (
+      tester,
+    ) async {
+      await _pumpScreen(tester);
+
+      await tester.tap(find.text('Détails cliniques'));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.byKey(const Key('adaptive-v5-technical-summary')),
+        findsOneWidget,
+      );
+      expect(find.textContaining('Décision : routine'), findsOneWidget);
+      expect(find.textContaining('hardStopState : absent'), findsOneWidget);
+      expect(find.textContaining('canReassure : true'), findsOneWidget);
+      expect(find.textContaining('script : aucun'), findsOneWidget);
+      expect(find.textContaining('hypothèse : aucune'), findsOneWidget);
+    });
   });
 }
 
