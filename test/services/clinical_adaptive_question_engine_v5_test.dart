@@ -214,6 +214,20 @@ void main() {
       expect(session.reasoningSummary, contains('Arguments rassurants'));
     });
 
+    test('psychosocial flags do not create hard stops or urgent decisions', () {
+      final session = engine.answerQuestion(
+        session: engine.initialSession(),
+        questionId: 'v4_psychosocial_anxiety_001',
+        isPositive: true,
+      );
+
+      expect(session.positiveFlagIds, isEmpty);
+      expect(session.reassuringFlagIds, contains('psychosocial_anxiety'));
+      expect(session.triggeredHardStopIds, isEmpty);
+      expect(session.hardStopState, ClinicalHardStopStateV5.absent);
+      expect(session.canReassure, isTrue);
+    });
+
     test(
       'isolated critical sign is not neutralized by reassurance context',
       () {
@@ -235,6 +249,28 @@ void main() {
         expect(session.nextQuestion, isNull);
       },
     );
+
+    test('hard stop remains blocking after psychosocial context', () {
+      final psychosocialSession = engine.answerQuestion(
+        session: engine.initialSession(),
+        questionId: 'v4_psychosocial_catastrophizing_001',
+        isPositive: true,
+      );
+      final session = engine.answerQuestion(
+        session: psychosocialSession,
+        questionId: 'v4_queue_cheval_001',
+        isPositive: true,
+      );
+
+      expect(
+        session.reassuringFlagIds,
+        contains('psychosocial_catastrophizing'),
+      );
+      expect(session.positiveFlagIds, contains('queue_cheval_suspected'));
+      expect(session.hardStopState, ClinicalHardStopStateV5.confirmed);
+      expect(session.canReassure, isFalse);
+      expect(session.nextQuestion, isNull);
+    });
 
     test('next question prioritizes remaining immediate danger questions', () {
       final afterCaudaNegative = engine.answerQuestion(

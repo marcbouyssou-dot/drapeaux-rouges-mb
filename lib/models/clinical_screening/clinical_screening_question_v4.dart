@@ -41,6 +41,7 @@ class ClinicalScreeningQuestionV4 {
   final List<String> tags;
   final List<ClinicalScientificSource> scientificSources;
   final String? scriptId;
+  final String? psychosocialLevel;
 
   const ClinicalScreeningQuestionV4({
     required this.id,
@@ -58,5 +59,6 @@ class ClinicalScreeningQuestionV4 {
     required this.tags,
     required this.scientificSources,
     this.scriptId,
+    this.psychosocialLevel,
   });
 }

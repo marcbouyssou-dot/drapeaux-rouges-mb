@@ -364,6 +364,66 @@ abstract final class ClinicalScreeningCatalog {
       suggestedQuestion:
           'Avez-vous vérifié l’absence de fièvre, perte de poids, altération générale ou douleur nocturne non mécanique ?',
     ),
+    ClinicalFlagDefinition(
+      id: 'psychosocial_catastrophizing',
+      label: 'Catastrophisme',
+      description:
+          'Pensées catastrophiques ou inquiétude disproportionnée autour de la douleur, sans signal organique critique associé.',
+      layer: ClinicalScreeningLayer.yellowFlag,
+      category: ClinicalFlagCategory.other,
+      defaultDecisionLevel: ClinicalDecisionLevel.routine,
+      defaultWeight: 0,
+      tags: [ClinicalScreeningTags.catastrophisme],
+      clinicalRationale:
+          'Un facteur psychosocial isolé module l’accompagnement mais ne crée pas de hard stop et ne neutralise jamais un signal critique.',
+      suggestedQuestion:
+          'La personne exprime-t-elle des pensées catastrophiques importantes à propos de sa douleur ?',
+    ),
+    ClinicalFlagDefinition(
+      id: 'psychosocial_fear_of_movement',
+      label: 'Peur du mouvement',
+      description:
+          'Évitement ou peur du mouvement sans signe clinique organique prioritaire.',
+      layer: ClinicalScreeningLayer.yellowFlag,
+      category: ClinicalFlagCategory.other,
+      defaultDecisionLevel: ClinicalDecisionLevel.routine,
+      defaultWeight: 0,
+      tags: [ClinicalScreeningTags.peurMouvement],
+      clinicalRationale:
+          'La peur du mouvement isolée ne doit pas déclencher d’orientation urgente ni masquer un red flag.',
+      suggestedQuestion:
+          'La personne évite-t-elle fortement certains mouvements par peur d’aggraver la situation ?',
+    ),
+    ClinicalFlagDefinition(
+      id: 'psychosocial_anxiety',
+      label: 'Anxiété importante',
+      description:
+          'Anxiété élevée autour du symptôme, sans signal clinique critique associé.',
+      layer: ClinicalScreeningLayer.yellowFlag,
+      category: ClinicalFlagCategory.other,
+      defaultDecisionLevel: ClinicalDecisionLevel.routine,
+      defaultWeight: 0,
+      tags: [ClinicalScreeningTags.anxieteImportante],
+      clinicalRationale:
+          'L’anxiété isolée peut nécessiter une adaptation relationnelle sans modifier une décision urgente.',
+      suggestedQuestion:
+          'L’anxiété autour du symptôme est-elle importante pendant l’entretien ?',
+    ),
+    ClinicalFlagDefinition(
+      id: 'psychosocial_disproportionate_impact',
+      label: 'Impact fonctionnel disproportionné',
+      description:
+          'Retentissement fonctionnel disproportionné par rapport aux éléments cliniques retrouvés.',
+      layer: ClinicalScreeningLayer.yellowFlag,
+      category: ClinicalFlagCategory.other,
+      defaultDecisionLevel: ClinicalDecisionLevel.routine,
+      defaultWeight: 0,
+      tags: [ClinicalScreeningTags.impactFonctionnelDisproportionne],
+      clinicalRationale:
+          'Un impact fonctionnel disproportionné isolé relève d’une vigilance psychosociale, sans effet sur les hard stops.',
+      suggestedQuestion:
+          'Le retentissement fonctionnel paraît-il disproportionné par rapport aux éléments cliniques observés ?',
+    ),
   ];
 
   static const tagDefinitions = [
@@ -554,6 +614,34 @@ abstract final class ClinicalScreeningCatalog {
       tag: ClinicalScreeningTags.absenceSignesSystemiques,
       label: 'Absence de signes systémiques',
       description: 'Absence structurée de signes systémiques recherchés.',
+      isCritical: false,
+      expectedDecisionLevel: ClinicalDecisionLevel.routine,
+    ),
+    ClinicalTagDefinition(
+      tag: ClinicalScreeningTags.catastrophisme,
+      label: 'Catastrophisme',
+      description: 'Facteur psychosocial isolé, non critique.',
+      isCritical: false,
+      expectedDecisionLevel: ClinicalDecisionLevel.routine,
+    ),
+    ClinicalTagDefinition(
+      tag: ClinicalScreeningTags.peurMouvement,
+      label: 'Peur du mouvement',
+      description: 'Évitement ou peur du mouvement isolé.',
+      isCritical: false,
+      expectedDecisionLevel: ClinicalDecisionLevel.routine,
+    ),
+    ClinicalTagDefinition(
+      tag: ClinicalScreeningTags.anxieteImportante,
+      label: 'Anxiété importante',
+      description: 'Anxiété importante sans signal clinique critique.',
+      isCritical: false,
+      expectedDecisionLevel: ClinicalDecisionLevel.routine,
+    ),
+    ClinicalTagDefinition(
+      tag: ClinicalScreeningTags.impactFonctionnelDisproportionne,
+      label: 'Impact fonctionnel disproportionné',
+      description: 'Retentissement fonctionnel disproportionné isolé.',
       isCritical: false,
       expectedDecisionLevel: ClinicalDecisionLevel.routine,
     ),

@@ -73,6 +73,29 @@ void main() {
       );
     });
 
+    test('psychosocial questions expose stable V7 levels', () {
+      final psychosocialQuestions = ClinicalScreeningQuestionnaireV4.questions
+          .where(
+            (question) => question.scriptId == ClinicalScriptIdsV7.psychosocial,
+          )
+          .toList();
+
+      expect(psychosocialQuestions, isNotEmpty);
+      expect(
+        psychosocialQuestions.map((question) => question.psychosocialLevel),
+        containsAll(ClinicalPsychosocialLevelsV7.all),
+      );
+      expect(
+        psychosocialQuestions.every(
+          (question) =>
+              question.potentialDecisionLevel ==
+                  ClinicalDecisionLevel.routine &&
+              question.ruleId == 'yellowFlagsOnly',
+        ),
+        isTrue,
+      );
+    });
+
     test('questions reference existing V3 catalog flags and rules', () {
       expect(
         ClinicalScreeningQuestionnaireV4.catalogFlagIds,

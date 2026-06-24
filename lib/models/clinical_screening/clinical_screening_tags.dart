@@ -56,6 +56,11 @@ abstract final class ClinicalScreeningTags {
   static const surchargeMecanique = 'surcharge_mecanique';
   static const episodeMecaniqueStable = 'episode_mecanique_stable';
   static const absenceSignesSystemiques = 'absence_signes_systemiques';
+  static const catastrophisme = 'catastrophisme';
+  static const peurMouvement = 'peur_mouvement';
+  static const anxieteImportante = 'anxiete_importante';
+  static const impactFonctionnelDisproportionne =
+      'impact_fonctionnel_disproportionne';
 
   static const criticalEmergency = [
     urgenceVitale,
@@ -139,5 +144,12 @@ abstract final class ClinicalScreeningTags {
     surchargeMecanique,
     episodeMecaniqueStable,
     absenceSignesSystemiques,
+  ];
+
+  static const psychosocialContext = [
+    catastrophisme,
+    peurMouvement,
+    anxieteImportante,
+    impactFonctionnelDisproportionne,
   ];
 }

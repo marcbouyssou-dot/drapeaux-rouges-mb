@@ -55,7 +55,7 @@ final _clinicalScenarios = [
     expectedDominantHypothesisId: null,
     expectedProbability: null,
     expectedHardStopId: null,
-    expectedQuestionCount: 15,
+    expectedQuestionCount: 19,
     expectedNextQuestionId: null,
   ),
   _ClinicalScenario(
@@ -191,7 +191,7 @@ final _clinicalScenarios = [
     expectedDominantHypothesisId: null,
     expectedProbability: null,
     expectedHardStopId: null,
-    expectedQuestionCount: 15,
+    expectedQuestionCount: 19,
     expectedNextQuestionId: null,
   ),
   _ClinicalScenario(
@@ -201,7 +201,7 @@ final _clinicalScenarios = [
     expectedDominantHypothesisId: null,
     expectedProbability: null,
     expectedHardStopId: null,
-    expectedQuestionCount: 15,
+    expectedQuestionCount: 19,
     expectedNextQuestionId: null,
   ),
   _ClinicalScenario(
@@ -232,6 +232,10 @@ const _allNegativeResponses = [
   _QuestionAnswer('v4_mechanical_overload_001', false),
   _QuestionAnswer('v4_known_stable_mechanical_episode_001', false),
   _QuestionAnswer('v4_structured_absence_systemic_signs_001', false),
+  _QuestionAnswer('v4_psychosocial_catastrophizing_001', false),
+  _QuestionAnswer('v4_psychosocial_fear_movement_001', false),
+  _QuestionAnswer('v4_psychosocial_anxiety_001', false),
+  _QuestionAnswer('v4_psychosocial_disproportionate_impact_001', false),
 ];
 
 _ScenarioResult _runScenario(_ClinicalScenario scenario) {

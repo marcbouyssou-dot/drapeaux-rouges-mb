@@ -194,7 +194,11 @@ class ClinicalAdaptiveQuestionEngineV5 {
   }
 
   bool _isReassuringQuestion(ClinicalScreeningQuestionV4 question) {
-    return question.scriptId == ClinicalScriptIdsV7.mecanique &&
+    final isNonBlockingScript =
+        question.scriptId == ClinicalScriptIdsV7.mecanique ||
+        question.scriptId == ClinicalScriptIdsV7.psychosocial;
+
+    return isNonBlockingScript &&
         question.potentialDecisionLevel == ClinicalDecisionLevel.routine;
   }
 

@@ -65,22 +65,41 @@ Principe de securite :
 - ils ne declenchent pas de hard stop ;
 - ils ne peuvent soutenir `canReassure` que si `hardStopState == absent` et si aucun signal critique positif n'est present.
 
+## Etat V7-E
+
+V7-E a ajoute une couche psychosociale minimale pour fermer les quatre scenarios FP restant skipped.
+
+Elements representes :
+- catastrophisme ;
+- peur du mouvement ;
+- anxiete importante ;
+- impact fonctionnel disproportionne.
+
+Niveaux techniques disponibles :
+- `PSYCHO_LOW`
+- `PSYCHO_MODERATE`
+- `PSYCHO_HIGH`
+
+Principe de securite :
+- les facteurs psychosociaux ne creent jamais de hard stop ;
+- ils ne neutralisent jamais un hard stop ;
+- ils ne modifient jamais une decision urgente ;
+- ils restent rattaches a `yellowFlagsOnly` et au script `SCRIPT_PSYCHOSOCIAL`.
+
 ## Resultat operationnel final
 
 Scenarios declares : 30
 
-Scenarios executes : 26
+Scenarios executes : 30
 
-Scenarios passes : 26
+Scenarios passes : 30
 
-Scenarios skipped : 4
+Scenarios skipped : 0
 
 Echecs critiques : 0
 
 Raison precise des skipped :
-- absence de representation positive dediee au domaine psychosocial avance ;
-- absence de representation positive dediee aux yellow flags isoles dans le moteur adaptatif actuel ;
-- ces concepts sont volontairement laisses hors perimetre V7-C pour eviter une extension clinique non validee.
+- aucun scenario V7 de validation FN/FP n'est skipped apres V7-E.
 
 ## Scenarios FN valides
 
@@ -112,6 +131,9 @@ Scenarios FP executes et passes :
 - `CAS_FP_02`
 - `CAS_FP_03`
 - `CAS_FP_04`
+- `CAS_FP_05`
+- `CAS_FP_06`
+- `CAS_FP_07`
 - `CAS_FP_08`
 - `CAS_FP_09`
 - `CAS_FP_10`
@@ -119,19 +141,15 @@ Scenarios FP executes et passes :
 - `CAS_FP_12`
 - `CAS_FP_13`
 - `CAS_FP_14`
+- `CAS_FP_15`
 
-Ces scenarios confirment que le moteur peut conserver une decision `routine` et `canReassure == true` lorsque les signaux critiques sont absents et que le profil mecanique est rassurant.
+Ces scenarios confirment que le moteur peut conserver une decision `routine` et `canReassure == true` lorsque les signaux critiques sont absents et que le profil mecanique ou psychosocial isole est non critique.
 
 ## Scenarios non couverts
 
-Scenarios skipped :
+Aucun scenario FN/FP V7 n'est skipped apres V7-E.
 
-- `CAS_FP_05` : contexte psychosocial isole sans signe organique ;
-- `CAS_FP_06` : anxiete elevee sans signe clinique critique ;
-- `CAS_FP_07` : peur-evitement isolee sans red flag ;
-- `CAS_FP_15` : yellow flags isoles sans signal organique.
-
-Ces scenarios ne doivent pas etre forces a passer avant d'avoir ajoute une representation clinique dediee aux facteurs psychosociaux et yellow flags dans le moteur adaptatif.
+Limite residuelle : la couche psychosociale reste volontairement minimale et ne remplace pas une evaluation psychosociale complete.
 
 ## Tableau synthetique
 
@@ -156,9 +174,9 @@ Ces scenarios ne doivent pas etre forces a passer avant d'avoir ajoute une repre
 | CAS_FP_02 | FP | Passe | routine | routine | absent | absent | Douleur strictement mecanique reproductible. |
 | CAS_FP_03 | FP | Passe | routine | routine | absent | absent | Profil mecanique sans signe systemique positif. |
 | CAS_FP_04 | FP | Passe | routine | routine | absent | absent | Episode mecanique connu stable. |
-| CAS_FP_05 | FP | Skipped | routine | non execute | absent | non execute | Psychosocial isole non represente. |
-| CAS_FP_06 | FP | Skipped | routine | non execute | absent | non execute | Anxiete elevee non representee comme entree positive. |
-| CAS_FP_07 | FP | Skipped | routine | non execute | absent | non execute | Peur-evitement isolee non representee. |
+| CAS_FP_05 | FP | Passe | routine | routine | absent | absent | Psychosocial isole sans signe organique. |
+| CAS_FP_06 | FP | Passe | routine | routine | absent | absent | Anxiete elevee sans signe clinique critique. |
+| CAS_FP_07 | FP | Passe | routine | routine | absent | absent | Peur-evitement isolee sans red flag. |
 | CAS_FP_08 | FP | Passe | routine | routine | absent | absent | Douleur chronique stable sans changement recent. |
 | CAS_FP_09 | FP | Passe | routine | routine | absent | absent | Trauma mineur sans critere fracturaire positif. |
 | CAS_FP_10 | FP | Passe | routine | routine | absent | absent | Cervicalgie mecanique sans signe neurovasculaire. |
@@ -166,23 +184,23 @@ Ces scenarios ne doivent pas etre forces a passer avant d'avoir ajoute une repre
 | CAS_FP_12 | FP | Passe | routine | routine | absent | absent | Symptome vague sans cluster systemique. |
 | CAS_FP_13 | FP | Passe | routine | routine | absent | absent | Douleur thoracique musculosquelettique rassurante. |
 | CAS_FP_14 | FP | Passe | routine | routine | absent | absent | Mollet douloureux sans criteres TVP. |
-| CAS_FP_15 | FP | Skipped | routine | non execute | absent | non execute | Yellow flags isoles non representes dans ce lot. |
+| CAS_FP_15 | FP | Passe | routine | routine | absent | absent | Yellow flags isoles sans signal organique. |
 
 ## Limites restantes
 
-- Les scenarios psychosociaux ne sont pas encore representes comme entrees positives explicites.
-- Les yellow flags isoles ne sont pas encore representes dans le moteur adaptatif V7.
+- La couche psychosociale est minimale : elle represente seulement quatre facteurs, sans gradation clinique avancee.
+- Les yellow flags isoles sont representes uniquement pour fermer les scenarios FP V7, pas comme module psychosocial complet.
 - La validation reste automatisee et technique ; elle ne vaut pas validation clinique externe.
 - Les libelles, questions et seuils doivent encore etre relus par un referent metier avant usage clinique reel.
 - Les scenarios CAS_01 a CAS_30 de reference ne sont pas tous integres dans ce fichier V7 de validation operationnelle, meme si 11 scenarios V5 historiques existent deja dans les tests.
 
 ## Decision
 
-Decision technique : candidat au gel clinique V1 interne pour le noyau de securite FN et la reassurance mecanique minimale.
+Decision technique : candidat au gel clinique V1 interne pour le noyau de securite FN, la reassurance mecanique minimale et la couche psychosociale minimale.
 
 Decision clinique : non pret pour beta clinique externe sans validation metier formelle, revue des scenarios psychosociaux, revue des yellow flags et verrouillage documentaire des regles.
 
 Recommandation :
 - geler provisoirement le comportement critique FN ;
-- conserver les 4 skips comme ecarts documentes ;
-- ouvrir un lot separe pour psychosocial et yellow flags, avec validation clinique explicite avant implementation.
+- conserver la couche psychosociale comme minimale et non decisionnelle ;
+- ouvrir un lot separe seulement si un module psychosocial avance est souhaite, avec validation clinique explicite avant implementation.

@@ -263,9 +263,24 @@ final _v7ValidationScenarios = [
     },
     'Épisode mécanique connu stable et absence de signes généraux.',
   ),
-  _nonTestableFp(5, 'Contexte psychosocial isolé sans signe organique'),
-  _nonTestableFp(6, 'Anxiété élevée sans signe clinique critique'),
-  _nonTestableFp(7, 'Peur-évitement isolée sans red flag'),
+  _psychosocialFp(
+    5,
+    'Contexte psychosocial isolé sans signe organique',
+    {'v4_psychosocial_disproportionate_impact_001'},
+    'Facteur psychosocial isolé sans signal organique positif.',
+  ),
+  _psychosocialFp(
+    6,
+    'Anxiété élevée sans signe clinique critique',
+    {'v4_psychosocial_anxiety_001'},
+    'Anxiété importante isolée, sans hard stop ni signal critique.',
+  ),
+  _psychosocialFp(
+    7,
+    'Peur-évitement isolée sans red flag',
+    {'v4_psychosocial_fear_movement_001'},
+    'Peur du mouvement isolée sans red flag.',
+  ),
   _mechanicalFp(
     8,
     'Douleur chronique stable sans changement récent',
@@ -308,7 +323,16 @@ final _v7ValidationScenarios = [
     {'v4_mechanical_pattern_001', 'v4_structured_absence_systemic_signs_001'},
     'Douleur de mollet représentée par un profil mécanique avec item TVP négatif.',
   ),
-  _nonTestableFp(15, 'Yellow flags isolés sans signal organique'),
+  _psychosocialFp(
+    15,
+    'Yellow flags isolés sans signal organique',
+    {
+      'v4_psychosocial_catastrophizing_001',
+      'v4_psychosocial_fear_movement_001',
+      'v4_psychosocial_anxiety_001',
+    },
+    'Yellow flags isolés représentés sans signal organique prioritaire.',
+  ),
 ];
 
 _V7ValidationScenario _mechanicalFp(
@@ -330,20 +354,22 @@ _V7ValidationScenario _mechanicalFp(
   );
 }
 
-_V7ValidationScenario _nonTestableFp(int index, String title) {
+_V7ValidationScenario _psychosocialFp(
+  int index,
+  String title,
+  Set<String> positiveQuestionIds,
+  String clinicalComment,
+) {
   return _V7ValidationScenario(
     id: 'CAS_FP_${index.toString().padLeft(2, '0')}',
     title: title,
-    positiveQuestionIds: const {},
-    expectedScriptId: ClinicalScriptIdsV7.mecanique,
+    positiveQuestionIds: positiveQuestionIds,
+    expectedScriptId: ClinicalScriptIdsV7.psychosocial,
     expectedDominantHypothesisId: null,
     expectedDecision: ClinicalDecisionLevel.routine,
     expectedHardStopState: ClinicalHardStopStateV5.absent,
     expectedCanReassure: true,
-    clinicalComment:
-        'Non testable sans entrée dédiée au domaine psychosocial ou aux yellow flags isolés.',
-    skipReason:
-        'Concept V6 non représentable dans le moteur actuel : pas de question/flag positif psychosocial ou yellow flag isolé.',
+    clinicalComment: clinicalComment,
   );
 }
 

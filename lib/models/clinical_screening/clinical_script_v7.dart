@@ -23,3 +23,11 @@ abstract final class ClinicalScriptIdsV7 {
     aaaVasculaireAbdominal,
   ];
 }
+
+abstract final class ClinicalPsychosocialLevelsV7 {
+  static const psychoLow = 'PSYCHO_LOW';
+  static const psychoModerate = 'PSYCHO_MODERATE';
+  static const psychoHigh = 'PSYCHO_HIGH';
+
+  static const all = [psychoLow, psychoModerate, psychoHigh];
+}
