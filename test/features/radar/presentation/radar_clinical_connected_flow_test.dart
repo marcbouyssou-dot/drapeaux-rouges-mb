@@ -48,7 +48,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(observer.didPushCount, routeCountBeforeStart + 1);
-      expect(find.textContaining('essoufflement brutal'), findsOneWidget);
+      expect(find.textContaining('cancer actif'), findsOneWidget);
       expect(
         find.textContaining('troubles urinaires ou fécaux nouveaux'),
         findsNothing,

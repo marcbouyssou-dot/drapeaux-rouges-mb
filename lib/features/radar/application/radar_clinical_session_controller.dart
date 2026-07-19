@@ -5,28 +5,33 @@ import '../../../models/clinical_screening/clinical_screening_question_v4.dart';
 import '../../../services/clinical_adaptive_question_engine_v5.dart';
 import '../../../services/clinical_adaptive_view_state_mapper_v5.dart';
 import 'radar_clinical_answer.dart';
+import 'radar_clinical_engine_adapter.dart';
 import 'radar_clinical_region.dart';
 import 'radar_clinical_status.dart';
+import 'radar_clinical_stop_policy.dart';
 import 'radar_clinical_view_state.dart';
 import 'radar_decision_view_data.dart';
 import 'radar_question_view_data.dart';
+import 'radar_regional_clinical_orchestrator.dart';
 
 class RadarClinicalSessionController {
   RadarClinicalSessionController({
     ClinicalAdaptiveQuestionEngineV5? engine,
     ClinicalAdaptiveViewStateMapperV5? mapper,
+    RadarRegionalClinicalOrchestrator? orchestrator,
     String Function()? sessionIdFactory,
-  }) : _engine = engine ?? ClinicalAdaptiveQuestionEngineV5(),
-       _mapper = mapper ?? ClinicalAdaptiveViewStateMapperV5(),
-       _sessionIdFactory =
-           sessionIdFactory ??
-           (() => 'radar-clinical-${DateTime.now().microsecondsSinceEpoch}');
+  }) : _orchestrator =
+           orchestrator ??
+           RadarRegionalClinicalOrchestrator(
+             engineAdapter: RadarClinicalEngineAdapter(
+               engine: engine,
+               mapper: mapper,
+             ),
+             sessionIdFactory: sessionIdFactory,
+           );
 
-  final ClinicalAdaptiveQuestionEngineV5 _engine;
-  final ClinicalAdaptiveViewStateMapperV5 _mapper;
-  final String Function() _sessionIdFactory;
+  final RadarRegionalClinicalOrchestrator _orchestrator;
 
-  ClinicalAdaptiveSessionV5? _session;
   RadarClinicalRegion? _region;
   String? _sessionId;
   RadarClinicalViewState? _state;
@@ -40,16 +45,15 @@ class RadarClinicalSessionController {
   }
 
   RadarClinicalViewState startSession({required RadarClinicalRegion region}) {
-    _session = _engine.initialSession();
     _region = region;
-    _sessionId = _sessionIdFactory();
+    _orchestrator.startSession(region: region, gates: const {});
+    _sessionId = _orchestrator.sessionId;
     _state = _buildState();
     return state;
   }
 
   RadarClinicalViewState answer(RadarClinicalAnswer answer) {
-    final session = _requireSession();
-    final question = session.nextQuestion;
+    final question = _orchestrator.nextQuestion();
     if (question == null) {
       _state = _buildState();
       return state;
@@ -64,17 +68,13 @@ class RadarClinicalSessionController {
       return state;
     }
 
-    _session = _engine.answerQuestion(
-      session: session,
-      questionId: question.id,
-      isPositive: runtimeValue,
-    );
+    _orchestrator.answerQuestion(question.id, isPositive: runtimeValue);
     _state = _buildState();
     return state;
   }
 
   ClinicalAdaptiveSessionV5 _requireSession() {
-    final session = _session;
+    final session = _orchestrator.engineSession;
     if (session == null) {
       throw StateError('No Radar clinical session has been started.');
     }
@@ -92,14 +92,17 @@ class RadarClinicalSessionController {
       throw StateError('No Radar clinical session has been started.');
     }
 
-    final mapped = _mapper.map(sessionId: sessionId, session: session);
+    final mapped = _orchestrator.engineViewState;
+    if (mapped == null) {
+      throw StateError('No Radar clinical session has been started.');
+    }
     final status = statusOverride ?? _statusFrom(mapped);
 
     return RadarClinicalViewState(
       sessionId: sessionId,
       region: region,
       status: status,
-      question: _questionFrom(session.nextQuestion),
+      question: _questionFrom(_orchestrator.nextQuestion()),
       decision: _decisionFrom(mapped, session),
       answeredQuestionIds: session.answeredQuestionIds.keys.toSet(),
       unsupportedAnswer: unsupportedAnswer,
@@ -110,10 +113,22 @@ class RadarClinicalSessionController {
     if (mapped.hardStopId != null) {
       return RadarClinicalStatus.hardStop;
     }
-    if (mapped.isFinal) {
+    if (mapped.isFinal || _hasRegionalDecision) {
       return RadarClinicalStatus.decision;
     }
     return RadarClinicalStatus.question;
+  }
+
+  bool get _hasRegionalDecision {
+    return switch (_orchestrator.currentOutcome) {
+      RadarSessionOutcome.reassure ||
+      RadarSessionOutcome.monitor ||
+      RadarSessionOutcome.monitorWithShortFollowUpAndLetter ||
+      RadarSessionOutcome.immediateOrientation => true,
+      RadarSessionOutcome.hardStop ||
+      RadarSessionOutcome.delegateToEngine ||
+      null => false,
+    };
   }
 
   RadarQuestionViewData? _questionFrom(ClinicalScreeningQuestionV4? question) {
@@ -133,7 +148,7 @@ class RadarClinicalSessionController {
     ClinicalAdaptiveViewStateV5 mapped,
     ClinicalAdaptiveSessionV5 session,
   ) {
-    if (!mapped.isFinal) {
+    if (!mapped.isFinal && !_hasRegionalDecision) {
       return null;
     }
 

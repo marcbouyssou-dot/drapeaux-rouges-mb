@@ -27,6 +27,21 @@ void main() {
       expect(state.answeredQuestionIds, isEmpty);
     });
 
+    test('selects the next question from the regional orchestrator', () {
+      final directV5InitialQuestionId = ClinicalAdaptiveQuestionEngineV5()
+          .initialSession()
+          .nextQuestion
+          ?.id;
+      final controller = _controller();
+
+      final state = controller.startSession(
+        region: RadarClinicalRegion.cervical,
+      );
+
+      expect(directV5InitialQuestionId, 'v4_queue_cheval_001');
+      expect(state.question?.id, 'v4_cervical_vascular_001');
+    });
+
     test(
       'answer no advances through the runtime without positive conversion',
       () {
@@ -37,7 +52,7 @@ void main() {
 
         expect(state.answeredQuestionIds, contains('v4_queue_cheval_001'));
         expect(state.status, RadarClinicalStatus.question);
-        expect(state.question?.id, 'v4_embolie_pulmonaire_001');
+        expect(state.question?.id, 'v4_oncologic_context_001');
         expect(state.decision, isNull);
       },
     );
@@ -73,7 +88,7 @@ void main() {
       expect(unsupported.answeredQuestionIds, initial.answeredQuestionIds);
       expect(resumed.status, RadarClinicalStatus.question);
       expect(resumed.answeredQuestionIds, contains('v4_queue_cheval_001'));
-      expect(resumed.question?.id, 'v4_embolie_pulmonaire_001');
+      expect(resumed.question?.id, 'v4_oncologic_context_001');
     });
 
     test('unsupported bilateral keeps runtime session unchanged', () {

@@ -1,5 +1,6 @@
 import '../../../models/clinical_screening/clinical_adaptive_session_v5.dart';
 import '../../../models/clinical_screening/clinical_adaptive_view_state_v5.dart';
+import '../../../models/clinical_screening/clinical_screening_question_v4.dart';
 import 'radar_clinical_engine_adapter.dart';
 import 'radar_clinical_pathway_definition.dart';
 import 'radar_clinical_pathway_repository.dart';
@@ -41,6 +42,8 @@ class RadarRegionalClinicalOrchestrator {
   RadarSessionOutcome? _terminalOutcome;
 
   RadarClinicalSessionTrace? get lastTrace => _lastTrace;
+  RadarSessionOutcome? get currentOutcome => _lastTrace?.producedOutcome;
+  String? get sessionId => _sessionId;
   bool get engineHasTakenOver => _engineEscalated;
   ClinicalAdaptiveSessionV5? get engineSession => _engineSession;
 
@@ -103,6 +106,15 @@ class RadarRegionalClinicalOrchestrator {
     }
 
     return null;
+  }
+
+  ClinicalScreeningQuestionV4? nextQuestion() {
+    final questionId = nextQuestionId();
+    if (questionId == null) {
+      return null;
+    }
+
+    return _engineAdapter.questionById(questionId);
   }
 
   RadarClinicalOrchestratorStep answerCurrentQuestion({
