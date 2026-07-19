@@ -10,6 +10,10 @@ void platformSetStartupDebugStep(String step) {
   overlay.text = step;
 }
 
+void platformHideStartupDebugOverlay() {
+  html.document.getElementById('startup-debug-overlay')?.remove();
+}
+
 html.Element _createStartupDebugOverlay() {
   final overlay = html.DivElement()
     ..id = 'startup-debug-overlay'

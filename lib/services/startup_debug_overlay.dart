@@ -4,3 +4,7 @@ import 'startup_debug_overlay_stub.dart'
 void setStartupDebugStep(String step) {
   platformSetStartupDebugStep(step);
 }
+
+void hideStartupDebugOverlay() {
+  platformHideStartupDebugOverlay();
+}

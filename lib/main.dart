@@ -6,6 +6,7 @@ import 'services/secure_hive_service.dart';
 import 'services/startup_debug_overlay.dart';
 import 'theme/app_theme.dart';
 import 'screens/auth/auth_gate.dart';
+import 'features/radar/presentation/radar_demo_shell.dart';
 
 Future<void> main() async {
   setStartupDebugStep('MAIN START');
@@ -17,6 +18,7 @@ Future<void> main() async {
   setStartupDebugStep('RUNAPP');
   debugPrint('[BOOT] runApp()');
   runApp(const RedFlagsApp());
+  hideStartupDebugOverlay();
 }
 
 Future<void> initializeApp() async {
@@ -64,6 +66,7 @@ class RedFlagsApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       home: AuthGate(),
+      routes: {'/radar-demo': (_) => const RadarDemoShell()},
     );
   }
 }

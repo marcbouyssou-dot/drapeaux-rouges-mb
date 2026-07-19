@@ -67,7 +67,7 @@
 
           showStartupStep('BEFORE RUN APP');
           await appRunner.runApp();
-          showStartupStep('AFTER RUN APP');
+          document.getElementById('startup-debug-overlay')?.remove();
         },
       });
     } catch (error) {
