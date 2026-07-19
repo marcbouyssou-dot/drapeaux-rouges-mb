@@ -46,6 +46,7 @@ class RadarRegionalClinicalOrchestrator {
   RadarSessionOutcome? get currentOutcome => _lastTrace?.producedOutcome;
   String? get sessionId => _sessionId;
   bool get engineHasTakenOver => _engineEscalated;
+  RadarClinicalEngineAdapter get engineAdapter => _engineAdapter;
   ClinicalAdaptiveSessionV5? get engineSession => _engineSession;
 
   ClinicalAdaptiveViewStateV5? get engineViewState {

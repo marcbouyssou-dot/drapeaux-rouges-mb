@@ -1,11 +1,28 @@
 import '../../../models/clinical_screening/clinical_adaptive_session_v5.dart';
 import '../../../models/clinical_screening/clinical_adaptive_view_state_v5.dart';
+import '../../../models/clinical_screening/clinical_hard_stop_catalog_v5.dart';
 import '../../../models/clinical_screening/clinical_screening_question_v4.dart';
 import '../../../models/clinical_screening/clinical_screening_questionnaire_v4.dart';
 import '../../../services/clinical_adaptive_question_engine_v5.dart';
 import '../../../services/clinical_adaptive_view_state_mapper_v5.dart';
 
 const String kRadarClinicalEngineVersion = 'ClinicalAdaptiveQuestionEngineV5';
+
+class RadarHardStopMetadata {
+  RadarHardStopMetadata({
+    required this.id,
+    required this.title,
+    required this.clinicalFamilyId,
+    required List<String> triggeringQuestionIds,
+    required this.clinicalDescription,
+  }) : triggeringQuestionIds = List.unmodifiable(triggeringQuestionIds);
+
+  final String id;
+  final String title;
+  final String clinicalFamilyId;
+  final List<String> triggeringQuestionIds;
+  final String clinicalDescription;
+}
 
 class RadarClinicalEngineAdapter {
   RadarClinicalEngineAdapter({
@@ -50,4 +67,19 @@ class RadarClinicalEngineAdapter {
 
   Set<String> get catalogQuestionIds =>
       ClinicalScreeningQuestionnaireV4.questionIds;
+
+  RadarHardStopMetadata? hardStopMetadataById(String hardStopId) {
+    final rule = ClinicalHardStopCatalogV5.ruleById(hardStopId);
+    if (rule == null) {
+      return null;
+    }
+
+    return RadarHardStopMetadata(
+      id: rule.id,
+      title: rule.title,
+      clinicalFamilyId: rule.clusterId,
+      triggeringQuestionIds: rule.triggeringQuestionIds,
+      clinicalDescription: rule.clinicalDescription,
+    );
+  }
 }

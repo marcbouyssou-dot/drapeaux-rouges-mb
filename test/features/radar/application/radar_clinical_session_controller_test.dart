@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:drapeaux_rouges_mb/features/radar/application/radar_clinical_answer.dart';
 import 'package:drapeaux_rouges_mb/features/radar/application/radar_clinical_engine_adapter.dart';
 import 'package:drapeaux_rouges_mb/features/radar/application/radar_clinical_pathway_definition.dart';
@@ -420,6 +422,42 @@ void main() {
         expect(renderedProjection, isNot(contains('Aucun autre risque')));
       },
     );
+
+    test('hard stop metadata is read through the Radar adapter', () {
+      final adapter = _HardStopMetadataTrackingAdapter();
+      final controller = RadarClinicalSessionController(
+        orchestrator: RadarRegionalClinicalOrchestrator(
+          engineAdapter: adapter,
+          sessionIdFactory: () => 'radar-metadata-adapter-test',
+        ),
+      );
+      controller.startSession(region: RadarClinicalRegion.lumbar);
+
+      final state = controller.answer(RadarClinicalAnswer.yes);
+      final hardStop = state.hardStop!;
+
+      expect(adapter.requestedHardStopIds, ['v5_hard_stop_queue_cheval']);
+      expect(hardStop.hardStopId, 'v5_hard_stop_queue_cheval');
+      expect(hardStop.hardStopTitle, 'Titre fourni par adapter Radar');
+      expect(hardStop.clinicalFamilyId, 'adapter-family');
+      expect(hardStop.hardStopState, ClinicalHardStopStateV5.confirmed);
+      expect(hardStop.triggeringQuestionId, 'v4_queue_cheval_001');
+      expect(hardStop.contributingQuestionIds, ['v4_queue_cheval_001']);
+      expect(
+        hardStop.criticalArguments,
+        contains('Description fournie par adapter Radar.'),
+      );
+    });
+
+    test('controller does not import ClinicalHardStopCatalogV5 directly', () {
+      final source = File(
+        'lib/features/radar/application/'
+        'radar_clinical_session_controller.dart',
+      ).readAsStringSync();
+
+      expect(source, isNot(contains('clinical_hard_stop_catalog_v5.dart')));
+      expect(source, isNot(contains('ClinicalHardStopCatalogV5')));
+    });
   });
 }
 
@@ -428,6 +466,22 @@ RadarClinicalSessionController _controller() {
     engine: ClinicalAdaptiveQuestionEngineV5(),
     sessionIdFactory: () => 'radar-test-session',
   );
+}
+
+class _HardStopMetadataTrackingAdapter extends RadarClinicalEngineAdapter {
+  final List<String> requestedHardStopIds = [];
+
+  @override
+  RadarHardStopMetadata? hardStopMetadataById(String hardStopId) {
+    requestedHardStopIds.add(hardStopId);
+    return RadarHardStopMetadata(
+      id: hardStopId,
+      title: 'Titre fourni par adapter Radar',
+      clinicalFamilyId: 'adapter-family',
+      triggeringQuestionIds: const ['v4_queue_cheval_001'],
+      clinicalDescription: 'Description fournie par adapter Radar.',
+    );
+  }
 }
 
 class _RedFlagWithoutHardStopAdapter extends RadarClinicalEngineAdapter {

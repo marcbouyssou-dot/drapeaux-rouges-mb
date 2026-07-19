@@ -1,7 +1,5 @@
 import '../../../models/clinical_screening/clinical_adaptive_session_v5.dart';
 import '../../../models/clinical_screening/clinical_adaptive_view_state_v5.dart';
-import '../../../models/clinical_screening/clinical_hard_stop_catalog_v5.dart';
-import '../../../models/clinical_screening/clinical_hard_stop_rule_v5.dart';
 import '../../../models/clinical_screening/clinical_screening_models.dart';
 import '../../../models/clinical_screening/clinical_screening_question_v4.dart';
 import '../../../services/clinical_adaptive_question_engine_v5.dart';
@@ -157,12 +155,12 @@ class RadarClinicalSessionController {
     final trace = _orchestrator.lastTrace;
     final hardStopId =
         mapped.hardStopId ?? _firstOrNull(session.triggeredHardStopIds);
-    final rule = hardStopId == null
+    final metadata = hardStopId == null
         ? null
-        : ClinicalHardStopCatalogV5.ruleById(hardStopId);
-    final triggeringQuestionId = rule?.triggeringQuestionIds.firstWhere(
+        : _orchestrator.engineAdapter.hardStopMetadataById(hardStopId);
+    final triggeringQuestionId = metadata?.triggeringQuestionIds.firstWhere(
       (id) => session.answeredQuestionIds[id] == true,
-      orElse: () => rule.triggeringQuestionIds.first,
+      orElse: () => metadata.triggeringQuestionIds.first,
     );
 
     return RadarClinicalHardStopViewState(
@@ -170,16 +168,17 @@ class RadarClinicalSessionController {
       region: region,
       hardStopState: session.hardStopState,
       hardStopId: hardStopId,
-      hardStopTitle: mapped.hardStopTitle ?? rule?.title,
-      clinicalFamilyId: rule?.clusterId ?? mapped.primaryHypothesisId,
+      hardStopTitle: metadata?.title ?? mapped.hardStopTitle,
+      clinicalFamilyId:
+          metadata?.clinicalFamilyId ?? mapped.primaryHypothesisId,
       decisionLevel: mapped.finalDecisionLevel ?? mapped.currentRiskLevel,
       criticalArguments: _hardStopArguments(
-        rule: rule,
+        metadata: metadata,
         session: session,
         triggeringQuestionId: triggeringQuestionId,
       ),
       contributingQuestionIds: [
-        for (final id in rule?.triggeringQuestionIds ?? const <String>[])
+        for (final id in metadata?.triggeringQuestionIds ?? const <String>[])
           if (session.answeredQuestionIds[id] == true) id,
       ],
       triggeringQuestionId: triggeringQuestionId,
@@ -202,7 +201,7 @@ class RadarClinicalSessionController {
   }
 
   List<String> _hardStopArguments({
-    required ClinicalHardStopRuleV5? rule,
+    required RadarHardStopMetadata? metadata,
     required ClinicalAdaptiveSessionV5 session,
     required String? triggeringQuestionId,
   }) {
@@ -214,7 +213,7 @@ class RadarClinicalSessionController {
     for (final flagId in session.positiveFlagIds) {
       arguments.add('Signal V5 positif : $flagId');
     }
-    final description = rule?.clinicalDescription;
+    final description = metadata?.clinicalDescription;
     if (description != null && description.isNotEmpty) {
       arguments.add(description);
     }
