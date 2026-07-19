@@ -1,4 +1,5 @@
 import 'package:drapeaux_rouges_mb/features/radar/application/radar_clinical_engine_adapter.dart';
+import 'package:drapeaux_rouges_mb/features/radar/application/radar_clinical_pathway_definition.dart';
 import 'package:drapeaux_rouges_mb/features/radar/application/radar_clinical_region.dart';
 import 'package:drapeaux_rouges_mb/features/radar/application/radar_clinical_session_controller.dart';
 import 'package:drapeaux_rouges_mb/features/radar/application/radar_regional_clinical_orchestrator.dart';
@@ -265,15 +266,12 @@ void main() {
 
       await tester.tap(find.text('Oui'));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Données ayant contribué à l’arrêt'));
-      await tester.pumpAndSettle();
+      await _tapSection(tester, 'Données ayant contribué à l’arrêt');
 
       expect(find.textContaining('Question déclenchante'), findsOneWidget);
       expect(find.textContaining('queue_cheval_suspected'), findsOneWidget);
 
-      await _scrollUntilText(tester, 'Contexte et traçabilité');
-      await tester.tap(find.text('Contexte et traçabilité'));
-      await tester.pumpAndSettle();
+      await _tapSection(tester, 'Contexte et traçabilité');
 
       expect(
         find.textContaining('ClinicalAdaptiveQuestionEngineV5'),
@@ -317,6 +315,107 @@ void main() {
       expect(find.text('ARRÊT DU PARCOURS CLINIQUE'), findsNothing);
     });
 
+    testWidgets('thorax cardio pathway reaches the real dynamic hard stop', (
+      tester,
+    ) async {
+      await _pumpStartScreen(tester);
+      await tester.tap(find.text('Thorax'));
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('La douleur thoracique'), findsOneWidget);
+
+      await tester.tap(find.text('Oui'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('ARRÊT DU PARCOURS CLINIQUE'), findsOneWidget);
+      expect(
+        find.text('Douleur thoracique avec signe cardio-respiratoire'),
+        findsOneWidget,
+      );
+      expect(
+        find.textContaining('v5_hard_stop_cardiorespiratoire'),
+        findsOneWidget,
+      );
+      expect(find.textContaining('Statut : confirmé'), findsOneWidget);
+      expect(find.textContaining('Niveau fourni : emergency'), findsOneWidget);
+      expect(find.textContaining('Région : Thorax / dos'), findsWidgets);
+      expect(find.text('Poursuivre la consultation'), findsNothing);
+
+      await _tapSection(tester, 'Données ayant contribué à l’arrêt');
+      expect(find.textContaining('v4_cardiorespiratory_001'), findsOneWidget);
+
+      await _tapSection(tester, 'Contexte et traçabilité');
+      expect(
+        find.textContaining('ClinicalAdaptiveQuestionEngineV5'),
+        findsOneWidget,
+      );
+      expect(find.textContaining('0.1-experimental'), findsOneWidget);
+      expect(find.textContaining('NON VALIDÉE'), findsOneWidget);
+
+      await _scrollUntilText(tester, 'Revenir à l’accueil');
+      await tester.tap(find.text('Revenir à l’accueil'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Thorax'), findsOneWidget);
+      expect(find.text('ARRÊT DU PARCOURS CLINIQUE'), findsNothing);
+    });
+
+    testWidgets(
+      'knee TVP pathway reaches the real vascular terminal state with explicit context',
+      (tester) async {
+        await _pumpStartScreen(
+          tester,
+          initialContext: const RadarClinicalInitialContext(
+            gates: {RadarContextGate.recentImmobilization},
+          ),
+        );
+        await _scrollUntilText(tester, 'Genou');
+        await tester.tap(find.text('Genou'));
+        await tester.pumpAndSettle();
+
+        await _answerUntilQuestionContaining(
+          tester,
+          'facteurs de risque de TVP',
+        );
+        await tester.tap(find.text('Oui'));
+        await tester.pumpAndSettle();
+
+        expect(find.text('ARRÊT DU PARCOURS CLINIQUE'), findsOneWidget);
+        expect(
+          find.text('Suspicion TVP ou atteinte vasculaire'),
+          findsOneWidget,
+        );
+        expect(
+          find.textContaining('v5_hard_stop_vasculaire_tvp'),
+          findsOneWidget,
+        );
+        expect(find.textContaining('Statut : suspecté'), findsOneWidget);
+        expect(
+          find.textContaining('Niveau fourni : urgentReferral'),
+          findsOneWidget,
+        );
+        expect(find.textContaining('Région : Genou / jambe'), findsWidgets);
+
+        await _tapSection(tester, 'Données ayant contribué à l’arrêt');
+        expect(find.textContaining('v4_vascular_tvp_001'), findsOneWidget);
+
+        await _tapSection(tester, 'Contexte et traçabilité');
+        expect(
+          find.textContaining('Portes activées : recentImmobilization'),
+          findsOneWidget,
+        );
+        expect(find.textContaining('0.1-experimental'), findsOneWidget);
+        expect(find.textContaining('NON VALIDÉE'), findsOneWidget);
+
+        await _scrollUntilText(tester, 'Revenir à l’accueil');
+        await tester.tap(find.text('Revenir à l’accueil'));
+        await tester.pumpAndSettle();
+
+        expect(find.byType(RadarClinicalStartScreen), findsOneWidget);
+        expect(find.text('ARRÊT DU PARCOURS CLINIQUE'), findsNothing);
+      },
+    );
+
     testWidgets('non hard-stop delegation keeps question flow', (tester) async {
       final controller = RadarClinicalSessionController(
         orchestrator: RadarRegionalClinicalOrchestrator(
@@ -355,6 +454,15 @@ Future<void> _scrollUntilText(WidgetTester tester, String text) async {
     180,
     scrollable: find.byType(Scrollable).last,
   );
+  await tester.ensureVisible(find.text(text));
+  await tester.pumpAndSettle();
+}
+
+Future<void> _tapSection(WidgetTester tester, String title) async {
+  await _scrollUntilText(tester, title);
+  await tester.drag(find.byType(Scrollable).last, const Offset(0, -120));
+  await tester.pumpAndSettle();
+  await tester.tap(find.text(title));
   await tester.pumpAndSettle();
 }
 
@@ -376,13 +484,31 @@ Future<void> _answerUntilSummary(
   }
 }
 
+Future<void> _answerUntilQuestionContaining(
+  WidgetTester tester,
+  String text, {
+  String defaultAnswer = 'Non',
+}) async {
+  var guard = 0;
+  while (find.textContaining(text).evaluate().isEmpty) {
+    await tester.tap(find.text(defaultAnswer));
+    await tester.pumpAndSettle();
+    guard++;
+    if (guard > 20) {
+      throw StateError('Radar question containing "$text" was not reached.');
+    }
+  }
+}
+
 Future<void> _pumpStartScreen(
   WidgetTester tester, {
   NavigatorObserver? observer,
+  RadarClinicalInitialContext initialContext =
+      const RadarClinicalInitialContext(),
 }) async {
   await tester.pumpWidget(
     MaterialApp(
-      home: const RadarClinicalStartScreen(),
+      home: RadarClinicalStartScreen(initialContext: initialContext),
       navigatorObservers: [?observer],
     ),
   );

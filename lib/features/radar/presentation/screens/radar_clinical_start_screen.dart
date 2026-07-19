@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../application/radar_clinical_pathway_definition.dart';
 import '../../application/radar_clinical_region.dart';
 import '../../application/radar_clinical_session_controller.dart';
 import '../../application/radar_regional_clinical_orchestrator.dart';
@@ -11,14 +12,22 @@ import '../widgets/radar_region_action.dart';
 import 'radar_clinical_question_screen.dart';
 
 class RadarClinicalStartScreen extends StatelessWidget {
-  const RadarClinicalStartScreen({super.key});
+  const RadarClinicalStartScreen({
+    super.key,
+    this.initialContext = const RadarClinicalInitialContext(),
+  });
+
+  final RadarClinicalInitialContext initialContext;
 
   void _openQuestion(BuildContext context, RadarClinicalRegion region) {
     final orchestrator = RadarRegionalClinicalOrchestrator();
     final controller = RadarClinicalSessionController(
       orchestrator: orchestrator,
     );
-    final initialState = controller.startSession(region: region);
+    final initialState = controller.startSession(
+      region: region,
+      initialContext: initialContext,
+    );
 
     Navigator.of(context).push(
       MaterialPageRoute(
