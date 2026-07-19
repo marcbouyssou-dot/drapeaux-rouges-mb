@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../application/radar_clinical_region.dart';
+import '../../application/radar_clinical_session_controller.dart';
 import '../theme/radar_colors.dart';
 import '../theme/radar_spacing.dart';
 import '../theme/radar_text_styles.dart';
@@ -11,8 +13,18 @@ class RadarClinicalStartScreen extends StatelessWidget {
   const RadarClinicalStartScreen({super.key});
 
   void _openQuestion(BuildContext context) {
+    final controller = RadarClinicalSessionController();
+    final initialState = controller.startSession(
+      region: RadarClinicalRegion.lumbar,
+    );
+
     Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => const RadarClinicalQuestionScreen()),
+      MaterialPageRoute(
+        builder: (_) => RadarClinicalQuestionScreen(
+          controller: controller,
+          initialState: initialState,
+        ),
+      ),
     );
   }
 

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../application/radar_clinical_view_state.dart';
 import '../theme/radar_colors.dart';
 import '../theme/radar_spacing.dart';
 import '../theme/radar_text_styles.dart';
@@ -9,7 +10,9 @@ import '../widgets/radar_primary_button.dart';
 import '../widgets/radar_secondary_action.dart';
 
 class RadarClinicalSummaryScreen extends StatelessWidget {
-  const RadarClinicalSummaryScreen({super.key});
+  const RadarClinicalSummaryScreen({super.key, this.finalState});
+
+  final RadarClinicalViewState? finalState;
 
   void _closeSummary(BuildContext context) {
     Navigator.of(context).popUntil((route) => route.isFirst);
