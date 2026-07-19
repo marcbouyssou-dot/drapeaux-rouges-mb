@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../application/radar_clinical_region.dart';
+import '../../application/radar_clinical_summary_view_state.dart';
 import '../../application/radar_clinical_view_state.dart';
 import '../theme/radar_colors.dart';
 import '../theme/radar_spacing.dart';
@@ -20,6 +22,9 @@ class RadarClinicalSummaryScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final summary = finalState?.summary;
+    final decision = summary?.decision ?? finalState?.decision;
+
     return Scaffold(
       backgroundColor: RadarColors.background,
       body: SafeArea(
@@ -29,18 +34,77 @@ class RadarClinicalSummaryScreen extends StatelessWidget {
             child: ListView(
               padding: const EdgeInsets.symmetric(horizontal: RadarSpacing.md),
               children: [
-                const RadarContextBar(
-                  patientName: 'Marie Dupont',
-                  status: 'Consultation en cours',
+                RadarContextBar(
+                  patientName: summary == null
+                      ? 'Session Radar'
+                      : 'Session ${summary.sessionId}',
+                  status: summary == null
+                      ? 'Résumé clinique'
+                      : 'Région : ${_regionLabel(summary.region)}',
                 ),
                 const SizedBox(height: RadarSpacing.lg),
-                const RadarDecisionCard(
-                  title: 'Prise en charge possible',
-                  subtitle: 'Aucun drapeau rouge identifié',
+                RadarDecisionCard(
+                  title: decision?.title ?? 'Résumé clinique',
+                  subtitle:
+                      summary?.hardStopTitle ??
+                      summary?.primaryHypothesisTitle ??
+                      _decisionSubtitle(summary),
                   body:
-                      'Les éléments recueillis sont compatibles avec une prise en charge kinésithérapique habituelle.',
-                  vigilance: 'Réévaluer en cas d’évolution défavorable.',
+                      decision?.summary ??
+                      'Résumé construit à partir des données disponibles.',
+                  vigilance: decision?.vigilanceMessage ?? '',
                 ),
+                const SizedBox(height: RadarSpacing.lg),
+                if (summary == null)
+                  const _SummarySection(
+                    title: 'Parcours clinique réalisé',
+                    lines: ['Aucune projection dynamique disponible.'],
+                  )
+                else ...[
+                  if (summary.positiveAnswers.isNotEmpty)
+                    _SummarySection(
+                      title: 'Éléments ayant contribué à la décision',
+                      lines: [
+                        for (final answer in summary.positiveAnswers)
+                          'Réponse positive : ${answer.text}',
+                        for (final flagId in summary.positiveFlagIds)
+                          'Signal V5 positif : $flagId',
+                      ],
+                    ),
+                  if (summary.negativeAnswers.isNotEmpty)
+                    _SummarySection(
+                      title: 'Éléments rassurants ou négatifs utiles',
+                      lines: [
+                        for (final answer in summary.negativeAnswers)
+                          'Élément non retrouvé : ${answer.text}',
+                        if (summary.hardStopId == null)
+                          'Aucun Hard Stop identifié dans les données recueillies.',
+                      ],
+                    ),
+                  _SummarySection(
+                    title: 'Parcours clinique réalisé',
+                    lines: [
+                      'Région : ${_regionLabel(summary.region)}',
+                      'Raison de fin : ${summary.endReason}',
+                      if (summary.contextGates.isNotEmpty)
+                        'Portes activées : ${summary.contextGates.map((gate) => gate.name).join(', ')}',
+                      if (summary.clinicalTriggers.isNotEmpty)
+                        'Déclencheurs activés : ${summary.clinicalTriggers.map((trigger) => trigger.name).join(', ')}',
+                      if (summary.contextActivations.isNotEmpty)
+                        for (final activation in summary.contextActivations)
+                          'Activation ${activation.id} via ${activation.source.name}'
+                              '${activation.sourceQuestionId == null ? '' : ' après ${activation.sourceQuestionId}'}',
+                    ],
+                  ),
+                  _SummarySection(
+                    title: 'Statut expérimental et version',
+                    lines: [
+                      '${summary.validationStatus} - matrice ${summary.matrixVersion}',
+                      'Mode : ${summary.operatingMode.name}',
+                      'Moteur : ${summary.engineVersion}',
+                    ],
+                  ),
+                ],
                 const SizedBox(height: RadarSpacing.lg),
                 RadarPrimaryButton(
                   label: 'Poursuivre la consultation',
@@ -51,13 +115,6 @@ class RadarClinicalSummaryScreen extends StatelessWidget {
                   label: 'Créer ou compléter le BDK',
                   onPressed: () {},
                 ),
-                const SizedBox(height: RadarSpacing.sm),
-                RadarSecondaryAction(
-                  label: 'Télécharger la synthèse (PDF)',
-                  onPressed: () {},
-                ),
-                const SizedBox(height: RadarSpacing.lg),
-                const _AnalysisDetails(),
               ],
             ),
           ),
@@ -65,10 +122,40 @@ class RadarClinicalSummaryScreen extends StatelessWidget {
       ),
     );
   }
+
+  String _decisionSubtitle(RadarClinicalSummaryViewState? summary) {
+    if (summary == null) {
+      return 'Données de session non disponibles';
+    }
+
+    final level = summary.decisionLevel;
+    if (level == null) {
+      return 'Décision issue du flow clinique Radar';
+    }
+
+    return 'Niveau de décision : ${level.name}';
+  }
+
+  String _regionLabel(RadarClinicalRegion region) {
+    return switch (region) {
+      RadarClinicalRegion.lumbar => 'Lombaires',
+      RadarClinicalRegion.cervical => 'Cou',
+      RadarClinicalRegion.thoracic => 'Thorax / dos',
+      RadarClinicalRegion.shoulderUpperLimbProximal => 'Épaule / bras',
+      RadarClinicalRegion.upperLimbDistal => 'Coude / main',
+      RadarClinicalRegion.hipLowerLimbProximal => 'Bassin / hanche',
+      RadarClinicalRegion.kneeLeg => 'Genou / jambe',
+      RadarClinicalRegion.ankleFoot => 'Cheville / pied',
+      RadarClinicalRegion.diffuse => 'Douleur diffuse',
+    };
+  }
 }
 
-class _AnalysisDetails extends StatelessWidget {
-  const _AnalysisDetails();
+class _SummarySection extends StatelessWidget {
+  const _SummarySection({required this.title, required this.lines});
+
+  final String title;
+  final List<String> lines;
 
   @override
   Widget build(BuildContext context) {
@@ -78,26 +165,20 @@ class _AnalysisDetails extends StatelessWidget {
         border: Border.all(color: RadarColors.border),
         borderRadius: BorderRadius.circular(8),
       ),
-      child: const ExpansionTile(
+      child: ExpansionTile(
         initiallyExpanded: false,
-        tilePadding: EdgeInsets.symmetric(horizontal: RadarSpacing.md),
-        childrenPadding: EdgeInsets.fromLTRB(
+        tilePadding: const EdgeInsets.symmetric(horizontal: RadarSpacing.md),
+        childrenPadding: const EdgeInsets.fromLTRB(
           RadarSpacing.md,
           0,
           RadarSpacing.md,
           RadarSpacing.md,
         ),
-        title: Text(
-          'Voir les détails de l’analyse',
-          style: RadarTextStyles.sectionTitle,
-        ),
+        title: Text(title, style: RadarTextStyles.sectionTitle),
         children: [
           Align(
             alignment: Alignment.centerLeft,
-            child: Text(
-              'Facteurs rassurants : réponses compatibles avec une situation non urgente.\n\nPoints de vigilance : surveiller l’évolution des symptômes.\n\nExplication de la décision : aucun élément recueilli ne justifie une orientation médicale immédiate.',
-              style: RadarTextStyles.muted,
-            ),
+            child: Text(lines.join('\n\n'), style: RadarTextStyles.muted),
           ),
         ],
       ),

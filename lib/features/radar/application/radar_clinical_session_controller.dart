@@ -8,6 +8,7 @@ import 'radar_clinical_answer.dart';
 import 'radar_clinical_engine_adapter.dart';
 import 'radar_clinical_pathway_definition.dart';
 import 'radar_clinical_region.dart';
+import 'radar_clinical_summary_view_state.dart';
 import 'radar_clinical_status.dart';
 import 'radar_clinical_stop_policy.dart';
 import 'radar_clinical_view_state.dart';
@@ -110,14 +111,23 @@ class RadarClinicalSessionController {
       throw StateError('No Radar clinical session has been started.');
     }
     final status = statusOverride ?? _statusFrom(mapped);
+    final decision = _decisionFrom(mapped, session);
 
     return RadarClinicalViewState(
       sessionId: sessionId,
       region: region,
       status: status,
       question: _questionFrom(_orchestrator.nextQuestion()),
-      decision: _decisionFrom(mapped, session),
+      decision: decision,
       answeredQuestionIds: session.answeredQuestionIds.keys.toSet(),
+      summary: _summaryFrom(
+        mapped: mapped,
+        session: session,
+        region: region,
+        sessionId: sessionId,
+        status: status,
+        decision: decision,
+      ),
       unsupportedAnswer: unsupportedAnswer,
     );
   }
@@ -175,6 +185,104 @@ class RadarClinicalSessionController {
       vigilanceMessage: _vigilanceMessage(decisionLevel, hardStopIds),
       hardStopIds: hardStopIds,
     );
+  }
+
+  RadarClinicalSummaryViewState? _summaryFrom({
+    required ClinicalAdaptiveViewStateV5 mapped,
+    required ClinicalAdaptiveSessionV5 session,
+    required RadarClinicalRegion region,
+    required String sessionId,
+    required RadarClinicalStatus status,
+    required RadarDecisionViewData? decision,
+  }) {
+    if (status != RadarClinicalStatus.decision &&
+        status != RadarClinicalStatus.hardStop) {
+      return null;
+    }
+
+    final trace = _orchestrator.lastTrace;
+    return RadarClinicalSummaryViewState(
+      sessionId: sessionId,
+      region: region,
+      status: status,
+      decision: decision,
+      regionalOutcome: trace?.producedOutcome,
+      endReason: _endReason(
+        status: status,
+        trace: trace,
+        mapped: mapped,
+        session: session,
+      ),
+      questions: _questionSummaries(session, trace),
+      contextGates: trace?.contextGates ?? const {},
+      clinicalTriggers: trace?.clinicalTriggers ?? const {},
+      contextActivations: trace?.contextActivations ?? const [],
+      positiveFlagIds: session.positiveFlagIds,
+      reassuringFlagIds: session.reassuringFlagIds,
+      hardStopId: mapped.hardStopId,
+      hardStopTitle: mapped.hardStopTitle,
+      primaryHypothesisId: mapped.primaryHypothesisId,
+      primaryHypothesisTitle: mapped.primaryHypothesisTitle,
+      shortExplanation: mapped.shortExplanation,
+      matrixVersion: trace?.matrixVersion ?? kRadarPathwayMatrixVersion,
+      validationStatus:
+          trace?.validationStatus ?? kRadarPathwayClinicalValidationStatus,
+      operatingMode:
+          trace?.operatingMode ?? RadarClinicalOperatingMode.experimental,
+      engineVersion: trace?.engineVersion ?? kRadarClinicalEngineVersion,
+    );
+  }
+
+  List<RadarClinicalQuestionSummary> _questionSummaries(
+    ClinicalAdaptiveSessionV5 session,
+    RadarClinicalSessionTrace? trace,
+  ) {
+    final orderedIds = [
+      ...?trace?.askedQuestionIds,
+      for (final id in session.answeredQuestionIds.keys)
+        if (!(trace?.askedQuestionIds.contains(id) ?? false)) id,
+    ];
+
+    return [
+      for (final id in orderedIds)
+        if (session.answeredQuestionIds.containsKey(id))
+          RadarClinicalQuestionSummary(
+            questionId: id,
+            text: _orchestrator.questionById(id).text,
+            isPositive: session.answeredQuestionIds[id]!,
+          ),
+    ];
+  }
+
+  String _endReason({
+    required RadarClinicalStatus status,
+    required RadarClinicalSessionTrace? trace,
+    required ClinicalAdaptiveViewStateV5 mapped,
+    required ClinicalAdaptiveSessionV5 session,
+  }) {
+    if (status == RadarClinicalStatus.hardStop) {
+      return mapped.hardStopTitle == null
+          ? 'Hard Stop identifié par le moteur V5.'
+          : 'Hard Stop identifié par le moteur V5 : ${mapped.hardStopTitle}.';
+    }
+
+    return switch (trace?.producedOutcome) {
+      RadarSessionOutcome.reassure =>
+        'Complétude régionale atteinte avec décision V5 compatible routine.',
+      RadarSessionOutcome.monitor =>
+        'Complétude régionale atteinte sans critère de réassurance positive.',
+      RadarSessionOutcome.monitorWithShortFollowUpAndLetter =>
+        'Complétude régionale atteinte pour un parcours non rassurable en V0.1.',
+      RadarSessionOutcome.immediateOrientation =>
+        'Orientation immédiate produite par la politique régionale Radar.',
+      RadarSessionOutcome.delegateToEngine =>
+        'Drapeau positif sans Hard Stop : suite déléguée au moteur V5.',
+      RadarSessionOutcome.hardStop => 'Hard Stop identifié par le moteur V5.',
+      null when mapped.isFinal => 'Fin de session indiquée par le moteur V5.',
+      null when session.hasTriggeredHardStop =>
+        'Hard Stop identifié par le moteur V5.',
+      null => 'Fin de session clinique Radar.',
+    };
   }
 
   String _decisionTitle(ClinicalDecisionLevel level, List<String> hardStopIds) {

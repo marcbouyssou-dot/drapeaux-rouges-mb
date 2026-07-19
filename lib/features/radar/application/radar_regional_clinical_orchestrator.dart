@@ -122,6 +122,10 @@ class RadarRegionalClinicalOrchestrator {
     return _engineAdapter.questionById(questionId);
   }
 
+  ClinicalScreeningQuestionV4 questionById(String questionId) {
+    return _engineAdapter.questionById(questionId);
+  }
+
   RadarClinicalOrchestratorStep answerCurrentQuestion({
     required bool isPositive,
     Set<RadarClinicalTrigger> newTriggers = const {},

@@ -117,7 +117,128 @@ void main() {
         findsNothing,
       );
     });
+
+    testWidgets('lumbar summary displays dynamic session data', (tester) async {
+      await _pumpStartScreen(tester);
+      await tester.tap(find.text('Lombaires'));
+      await tester.pumpAndSettle();
+
+      await _answerUntilSummary(tester, defaultAnswer: 'Non');
+
+      expect(find.textContaining('Région : Lombaires'), findsWidgets);
+      expect(find.text('Parcours clinique réalisé'), findsOneWidget);
+      await _scrollUntilText(tester, 'Statut expérimental et version');
+      expect(find.text('Statut expérimental et version'), findsOneWidget);
+    });
+
+    testWidgets('another pathway summary displays its own region', (
+      tester,
+    ) async {
+      await _pumpStartScreen(tester);
+      await tester.tap(find.text('Cou'));
+      await tester.pumpAndSettle();
+
+      await _answerUntilSummary(tester, defaultAnswer: 'Non');
+
+      expect(find.textContaining('Région : Cou'), findsWidgets);
+      expect(find.textContaining('Région : Lombaires'), findsNothing);
+    });
+
+    testWidgets('positive answer appears dynamically in summary', (
+      tester,
+    ) async {
+      await _pumpStartScreen(tester);
+      await tester.tap(find.text('Lombaires'));
+      await tester.pumpAndSettle();
+
+      await _answerUntilSummary(
+        tester,
+        answerForCurrentQuestion: () {
+          if (find.textContaining('liée au mouvement').evaluate().isNotEmpty) {
+            return 'Oui';
+          }
+          return 'Non';
+        },
+      );
+
+      await tester.tap(find.text('Éléments ayant contribué à la décision'));
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('Réponse positive'), findsOneWidget);
+      expect(find.textContaining('liée au mouvement'), findsOneWidget);
+    });
+
+    testWidgets('empty contribution section is hidden', (tester) async {
+      await _pumpStartScreen(tester);
+      await tester.tap(find.text('Lombaires'));
+      await tester.pumpAndSettle();
+
+      await _answerUntilSummary(tester, defaultAnswer: 'Non');
+
+      expect(find.text('Éléments ayant contribué à la décision'), findsNothing);
+    });
+
+    testWidgets('experimental non validated status is visible in summary', (
+      tester,
+    ) async {
+      await _pumpStartScreen(tester);
+      await tester.tap(find.text('Lombaires'));
+      await tester.pumpAndSettle();
+
+      await _answerUntilSummary(tester, defaultAnswer: 'Non');
+      await _scrollUntilText(tester, 'Statut expérimental et version');
+      await tester.tap(find.text('Statut expérimental et version'));
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('NON VALIDÉE'), findsOneWidget);
+      expect(find.textContaining('0.1-experimental'), findsOneWidget);
+    });
+
+    testWidgets('old static summary data is no longer rendered', (
+      tester,
+    ) async {
+      await _pumpStartScreen(tester);
+      await tester.tap(find.text('Lombaires'));
+      await tester.pumpAndSettle();
+
+      await _answerUntilSummary(tester, defaultAnswer: 'Non');
+
+      expect(find.text('Marie Dupont'), findsNothing);
+      expect(find.text('Télécharger la synthèse (PDF)'), findsNothing);
+      expect(find.textContaining('Facteurs rassurants'), findsNothing);
+      expect(
+        find.textContaining('prise en charge kinésithérapique habituelle'),
+        findsNothing,
+      );
+    });
   });
+}
+
+Future<void> _scrollUntilText(WidgetTester tester, String text) async {
+  await tester.scrollUntilVisible(
+    find.text(text),
+    180,
+    scrollable: find.byType(Scrollable).last,
+  );
+  await tester.pumpAndSettle();
+}
+
+Future<void> _answerUntilSummary(
+  WidgetTester tester, {
+  String defaultAnswer = 'Non',
+  String Function()? answerForCurrentQuestion,
+}) async {
+  var guard = 0;
+  while (find.text('Oui').evaluate().isNotEmpty ||
+      find.text('Non').evaluate().isNotEmpty) {
+    final label = answerForCurrentQuestion?.call() ?? defaultAnswer;
+    await tester.tap(find.text(label));
+    await tester.pumpAndSettle();
+    guard++;
+    if (guard > 20) {
+      throw StateError('Radar summary was not reached.');
+    }
+  }
 }
 
 Future<void> _pumpStartScreen(

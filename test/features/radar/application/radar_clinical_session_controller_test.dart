@@ -1,4 +1,5 @@
 import 'package:drapeaux_rouges_mb/features/radar/application/radar_clinical_answer.dart';
+import 'package:drapeaux_rouges_mb/features/radar/application/radar_clinical_pathway_definition.dart';
 import 'package:drapeaux_rouges_mb/features/radar/application/radar_clinical_region.dart';
 import 'package:drapeaux_rouges_mb/features/radar/application/radar_clinical_session_controller.dart';
 import 'package:drapeaux_rouges_mb/features/radar/application/radar_clinical_status.dart';
@@ -193,6 +194,106 @@ void main() {
         );
       },
     );
+
+    test('summary projection contains real region, outcome and answers', () {
+      final controller = _controller();
+      var state = controller.startSession(region: RadarClinicalRegion.lumbar);
+
+      while (state.status == RadarClinicalStatus.question) {
+        state = controller.answer(RadarClinicalAnswer.no);
+      }
+
+      final summary = state.summary;
+      expect(summary, isNotNull);
+      expect(summary!.sessionId, 'radar-test-session');
+      expect(summary.region, RadarClinicalRegion.lumbar);
+      expect(summary.status, RadarClinicalStatus.decision);
+      expect(summary.regionalOutcome?.name, 'monitor');
+      expect(summary.questions, isNotEmpty);
+      expect(
+        summary.questions.every((question) => !question.isPositive),
+        isTrue,
+      );
+      expect(summary.negativeAnswers.length, summary.questions.length);
+      expect(summary.endReason, contains('Complétude régionale'));
+    });
+
+    test(
+      'summary projection contains gates, triggers and experimental status',
+      () {
+        final controller = _controller();
+        var state = controller.startSession(
+          region: RadarClinicalRegion.lumbar,
+          initialContext: const RadarClinicalInitialContext(
+            triggers: {RadarClinicalTrigger.cardiovascularRiskFactors},
+          ),
+        );
+
+        while (state.status == RadarClinicalStatus.question) {
+          state = controller.answer(RadarClinicalAnswer.no);
+        }
+
+        final summary = state.summary!;
+        expect(
+          summary.clinicalTriggers,
+          contains(RadarClinicalTrigger.cardiovascularRiskFactors),
+        );
+        expect(
+          summary.contextActivations.single.id,
+          'trigger.cardiovascularRiskFactors',
+        );
+        expect(summary.contextActivations.single.sourceQuestionId, isNull);
+        expect(summary.matrixVersion, kRadarPathwayMatrixVersion);
+        expect(summary.validationStatus, kRadarPathwayClinicalValidationStatus);
+        expect(summary.operatingMode, RadarClinicalOperatingMode.experimental);
+        expect(summary.engineVersion, 'ClinicalAdaptiveQuestionEngineV5');
+      },
+    );
+
+    test(
+      'summary projection includes dynamic positive answers only when present',
+      () {
+        final controller = _controller();
+        var state = controller.startSession(region: RadarClinicalRegion.lumbar);
+
+        while (state.status == RadarClinicalStatus.question) {
+          final answer = state.question?.id == 'v4_mechanical_pattern_001'
+              ? RadarClinicalAnswer.yes
+              : RadarClinicalAnswer.no;
+          state = controller.answer(answer);
+        }
+
+        final summary = state.summary!;
+        expect(summary.positiveAnswers, hasLength(1));
+        expect(
+          summary.positiveAnswers.single.questionId,
+          'v4_mechanical_pattern_001',
+        );
+        expect(summary.positiveAnswers.single.text, contains('mouvement'));
+        expect(summary.regionalOutcome?.name, 'reassure');
+      },
+    );
+
+    test('summary projection does not inject static exclusion wording', () {
+      final controller = _controller();
+      var state = controller.startSession(region: RadarClinicalRegion.cervical);
+
+      while (state.status == RadarClinicalStatus.question) {
+        state = controller.answer(RadarClinicalAnswer.no);
+      }
+
+      final summary = state.summary!;
+      final renderedProjection = [
+        summary.endReason,
+        ...summary.questions.map((question) => question.text),
+        ...summary.positiveFlagIds,
+        ...summary.reassuringFlagIds,
+      ].join('\n');
+
+      expect(renderedProjection, isNot(contains('pathologie exclue')));
+      expect(renderedProjection, isNot(contains('diagnostic certain')));
+      expect(renderedProjection, isNot(contains('absence de risque')));
+    });
   });
 }
 
