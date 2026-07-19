@@ -1,4 +1,5 @@
 import 'radar_clinical_answer.dart';
+import 'radar_clinical_hard_stop_view_state.dart';
 import 'radar_clinical_region.dart';
 import 'radar_clinical_summary_view_state.dart';
 import 'radar_clinical_status.dart';
@@ -13,6 +14,7 @@ class RadarClinicalViewState {
     required this.question,
     required this.decision,
     required Set<String> answeredQuestionIds,
+    this.hardStop,
     this.summary,
     this.unsupportedAnswer,
   }) : answeredQuestionIds = Set.unmodifiable(answeredQuestionIds);
@@ -23,6 +25,7 @@ class RadarClinicalViewState {
   final RadarQuestionViewData? question;
   final RadarDecisionViewData? decision;
   final Set<String> answeredQuestionIds;
+  final RadarClinicalHardStopViewState? hardStop;
   final RadarClinicalSummaryViewState? summary;
   final RadarClinicalAnswer? unsupportedAnswer;
 }

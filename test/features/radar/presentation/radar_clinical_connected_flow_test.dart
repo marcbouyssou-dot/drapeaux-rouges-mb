@@ -1,4 +1,13 @@
+import 'package:drapeaux_rouges_mb/features/radar/application/radar_clinical_engine_adapter.dart';
+import 'package:drapeaux_rouges_mb/features/radar/application/radar_clinical_region.dart';
+import 'package:drapeaux_rouges_mb/features/radar/application/radar_clinical_session_controller.dart';
+import 'package:drapeaux_rouges_mb/features/radar/application/radar_regional_clinical_orchestrator.dart';
+import 'package:drapeaux_rouges_mb/features/radar/presentation/screens/radar_clinical_question_screen.dart';
 import 'package:drapeaux_rouges_mb/features/radar/presentation/screens/radar_clinical_start_screen.dart';
+import 'package:drapeaux_rouges_mb/models/clinical_screening/clinical_adaptive_session_v5.dart';
+import 'package:drapeaux_rouges_mb/models/clinical_screening/clinical_adaptive_view_state_v5.dart';
+import 'package:drapeaux_rouges_mb/models/clinical_screening/clinical_probability_update_v5.dart';
+import 'package:drapeaux_rouges_mb/models/clinical_screening/clinical_screening_models.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -211,6 +220,134 @@ void main() {
         findsNothing,
       );
     });
+
+    testWidgets('hard stop flow opens the dynamic hard stop screen', (
+      tester,
+    ) async {
+      await _pumpStartScreen(tester);
+      await tester.tap(find.text('Lombaires'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Oui'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('ARRÊT DU PARCOURS CLINIQUE'), findsOneWidget);
+      expect(
+        find.text('Suspicion de syndrome de la queue de cheval'),
+        findsOneWidget,
+      );
+      expect(find.textContaining('v5_hard_stop_queue_cheval'), findsOneWidget);
+      expect(find.textContaining('Statut : confirmé'), findsOneWidget);
+      expect(find.textContaining('Région : Lombaires'), findsWidgets);
+      expect(find.text('Poursuivre la consultation'), findsNothing);
+    });
+
+    testWidgets('old hard stop placeholder static data is gone', (
+      tester,
+    ) async {
+      await _pumpStartScreen(tester);
+      await tester.tap(find.text('Lombaires'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Oui'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Marie Dupont'), findsNothing);
+      expect(find.text('Consultation en cours'), findsNothing);
+      expect(find.text('Orientation prioritaire'), findsNothing);
+      expect(find.textContaining('Suivre la conduite adaptée'), findsNothing);
+    });
+
+    testWidgets('hard stop details and non validated status are traceable', (
+      tester,
+    ) async {
+      await _pumpStartScreen(tester);
+      await tester.tap(find.text('Lombaires'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Oui'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Données ayant contribué à l’arrêt'));
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('Question déclenchante'), findsOneWidget);
+      expect(find.textContaining('queue_cheval_suspected'), findsOneWidget);
+
+      await _scrollUntilText(tester, 'Contexte et traçabilité');
+      await tester.tap(find.text('Contexte et traçabilité'));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.textContaining('ClinicalAdaptiveQuestionEngineV5'),
+        findsOneWidget,
+      );
+      expect(find.textContaining('0.1-experimental'), findsOneWidget);
+      expect(find.textContaining('NON VALIDÉE'), findsOneWidget);
+    });
+
+    testWidgets('hard stop screen hides forbidden wording', (tester) async {
+      await _pumpStartScreen(tester);
+      await tester.tap(find.text('Lombaires'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Oui'));
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('Appelez immédiatement le 15'), findsNothing);
+      expect(find.textContaining('Urgence vitale'), findsNothing);
+      expect(find.textContaining('Diagnostic confirmé'), findsNothing);
+      expect(find.textContaining('Le patient présente'), findsNothing);
+      expect(
+        find.textContaining('Cette pathologie est certaine'),
+        findsNothing,
+      );
+      expect(find.textContaining('Aucun autre risque'), findsNothing);
+    });
+
+    testWidgets('hard stop safe return action goes back home', (tester) async {
+      await _pumpStartScreen(tester);
+      await tester.tap(find.text('Lombaires'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Oui'));
+      await tester.pumpAndSettle();
+      await _scrollUntilText(tester, 'Revenir à l’accueil');
+      await tester.tap(find.text('Revenir à l’accueil'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Lombaires'), findsOneWidget);
+      expect(find.text('ARRÊT DU PARCOURS CLINIQUE'), findsNothing);
+    });
+
+    testWidgets('non hard-stop delegation keeps question flow', (tester) async {
+      final controller = RadarClinicalSessionController(
+        orchestrator: RadarRegionalClinicalOrchestrator(
+          engineAdapter: _RedFlagWithoutHardStopAdapter(),
+          sessionIdFactory: () => 'radar-presentation-delegate-test',
+        ),
+      );
+      final initialState = controller.startSession(
+        region: RadarClinicalRegion.lumbar,
+      );
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: RadarClinicalQuestionScreen(
+            controller: controller,
+            initialState: initialState,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Oui'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('ARRÊT DU PARCOURS CLINIQUE'), findsNothing);
+      expect(find.textContaining('La douleur thoracique'), findsOneWidget);
+      expect(find.text('Oui'), findsOneWidget);
+      expect(find.text('Non'), findsOneWidget);
+    });
   });
 }
 
@@ -261,5 +398,76 @@ class _RecordingNavigatorObserver extends NavigatorObserver {
   void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) {
     didPushCount += 1;
     super.didPush(route, previousRoute);
+  }
+}
+
+class _RedFlagWithoutHardStopAdapter extends RadarClinicalEngineAdapter {
+  @override
+  ClinicalAdaptiveSessionV5 initialSession() {
+    return ClinicalAdaptiveSessionV5(
+      answeredQuestionIds: const {},
+      positiveFlagIds: const [],
+      reassuringFlagIds: const [],
+      hypothesisProbabilities: const {},
+      appliedProbabilityUpdateIds: const [],
+      triggeredHardStopIds: const [],
+      nextQuestion: questionById('v4_queue_cheval_001'),
+      reasoningSummary: 'Fake V5 state for Radar presentation delegation test.',
+    );
+  }
+
+  @override
+  ClinicalAdaptiveSessionV5 answerQuestion({
+    required ClinicalAdaptiveSessionV5 session,
+    required String questionId,
+    required bool isPositive,
+  }) {
+    return ClinicalAdaptiveSessionV5(
+      answeredQuestionIds: {
+        ...session.answeredQuestionIds,
+        questionId: isPositive,
+      },
+      positiveFlagIds: isPositive ? const ['fake_red_flag'] : const [],
+      reassuringFlagIds: const [],
+      hypothesisProbabilities: const {},
+      appliedProbabilityUpdateIds: const [],
+      triggeredHardStopIds: const [],
+      nextQuestion: questionById('v4_cardiorespiratory_001'),
+      reasoningSummary: 'Fake V5 red flag without hard stop.',
+    );
+  }
+
+  @override
+  ClinicalAdaptiveViewStateV5 map({
+    required String sessionId,
+    required ClinicalAdaptiveSessionV5 session,
+  }) {
+    final hasRedFlag = session.positiveFlagIds.isNotEmpty;
+    return ClinicalAdaptiveViewStateV5(
+      sessionId: sessionId,
+      questionId: session.nextQuestion?.id,
+      patientQuestionText: session.nextQuestion?.text,
+      canAnswer: session.nextQuestion != null,
+      answeredCount: session.answeredQuestionIds.length,
+      totalQuestionCount: 2,
+      progressRatio: session.answeredQuestionIds.length / 2,
+      progressLabel: 'Fake V5',
+      currentRiskLevel: hasRedFlag
+          ? ClinicalDecisionLevel.medicalAdvice
+          : ClinicalDecisionLevel.routine,
+      currentRiskLabel: 'Fake V5',
+      hardStopId: null,
+      hardStopTitle: null,
+      finalDecisionLevel: null,
+      finalDecisionLabel: null,
+      primaryHypothesisId: hasRedFlag ? 'fake' : null,
+      primaryHypothesisTitle: hasRedFlag ? 'Fake' : null,
+      probabilityLevel: hasRedFlag
+          ? ClinicalQualitativeProbabilityV5.high
+          : null,
+      shortExplanation: 'Fake V5 state.',
+      technicalSummary: session.reasoningSummary,
+      isFinal: false,
+    );
   }
 }

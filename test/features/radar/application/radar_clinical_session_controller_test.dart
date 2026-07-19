@@ -1,9 +1,15 @@
 import 'package:drapeaux_rouges_mb/features/radar/application/radar_clinical_answer.dart';
+import 'package:drapeaux_rouges_mb/features/radar/application/radar_clinical_engine_adapter.dart';
 import 'package:drapeaux_rouges_mb/features/radar/application/radar_clinical_pathway_definition.dart';
 import 'package:drapeaux_rouges_mb/features/radar/application/radar_clinical_region.dart';
 import 'package:drapeaux_rouges_mb/features/radar/application/radar_clinical_session_controller.dart';
 import 'package:drapeaux_rouges_mb/features/radar/application/radar_clinical_status.dart';
 import 'package:drapeaux_rouges_mb/features/radar/application/radar_question_view_data.dart';
+import 'package:drapeaux_rouges_mb/features/radar/application/radar_regional_clinical_orchestrator.dart';
+import 'package:drapeaux_rouges_mb/models/clinical_screening/clinical_adaptive_session_v5.dart';
+import 'package:drapeaux_rouges_mb/models/clinical_screening/clinical_adaptive_view_state_v5.dart';
+import 'package:drapeaux_rouges_mb/models/clinical_screening/clinical_hard_stop_rule_v5.dart';
+import 'package:drapeaux_rouges_mb/models/clinical_screening/clinical_probability_update_v5.dart';
 import 'package:drapeaux_rouges_mb/models/clinical_screening/clinical_screening_models.dart';
 import 'package:drapeaux_rouges_mb/services/clinical_adaptive_question_engine_v5.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -294,6 +300,126 @@ void main() {
       expect(renderedProjection, isNot(contains('diagnostic certain')));
       expect(renderedProjection, isNot(contains('absence de risque')));
     });
+
+    test('hard stop projection is terminal and preserves real V5 data', () {
+      final controller = _controller();
+      controller.startSession(region: RadarClinicalRegion.lumbar);
+
+      final state = controller.answer(RadarClinicalAnswer.yes);
+      final hardStop = state.hardStop;
+
+      expect(state.status, RadarClinicalStatus.hardStop);
+      expect(state.question, isNull);
+      expect(hardStop, isNotNull);
+      expect(hardStop!.region, RadarClinicalRegion.lumbar);
+      expect(hardStop.hardStopId, 'v5_hard_stop_queue_cheval');
+      expect(
+        hardStop.hardStopTitle,
+        'Suspicion de syndrome de la queue de cheval',
+      );
+      expect(hardStop.hardStopState, ClinicalHardStopStateV5.confirmed);
+      expect(hardStop.triggeringQuestionId, 'v4_queue_cheval_001');
+      expect(hardStop.contributingQuestionIds, ['v4_queue_cheval_001']);
+      expect(hardStop.criticalArguments, isNotEmpty);
+      expect(hardStop.stopReason, contains('moteur V5'));
+      expect(hardStop.regionalOutcome?.name, 'hardStop');
+      expect(hardStop.engineVersion, 'ClinicalAdaptiveQuestionEngineV5');
+      expect(hardStop.matrixVersion, kRadarPathwayMatrixVersion);
+      expect(hardStop.validationStatus, kRadarPathwayClinicalValidationStatus);
+    });
+
+    test(
+      'hard stop projection preserves suspected state when V5 reports it',
+      () {
+        final controller = _controller();
+        var state = controller.startSession(
+          region: RadarClinicalRegion.lumbar,
+          initialContext: const RadarClinicalInitialContext(
+            triggers: {RadarClinicalTrigger.cardiovascularRiskFactors},
+          ),
+        );
+
+        while (state.status == RadarClinicalStatus.question) {
+          final answer = state.question?.id == 'v4_aaa_vascular_abdominal_001'
+              ? RadarClinicalAnswer.yes
+              : RadarClinicalAnswer.no;
+          state = controller.answer(answer);
+        }
+
+        expect(state.status, RadarClinicalStatus.hardStop);
+        expect(state.question, isNull);
+        expect(
+          state.hardStop?.hardStopId,
+          'v5_hard_stop_aaa_vasculaire_abdominal',
+        );
+        expect(
+          state.hardStop?.hardStopState,
+          ClinicalHardStopStateV5.suspected,
+        );
+        expect(
+          state.hardStop?.triggeringQuestionId,
+          'v4_aaa_vascular_abdominal_001',
+        );
+      },
+    );
+
+    test('hard stop remains prioritized over regional completion', () {
+      final controller = _controller();
+      controller.startSession(region: RadarClinicalRegion.lumbar);
+
+      final state = controller.answer(RadarClinicalAnswer.yes);
+
+      expect(state.status, RadarClinicalStatus.hardStop);
+      expect(state.summary?.regionalOutcome?.name, 'hardStop');
+      expect(state.question, isNull);
+      expect(state.answeredQuestionIds, ['v4_queue_cheval_001']);
+    });
+
+    test('non hard-stop delegation is not converted into hard stop', () {
+      final controller = RadarClinicalSessionController(
+        orchestrator: RadarRegionalClinicalOrchestrator(
+          engineAdapter: _RedFlagWithoutHardStopAdapter(),
+          sessionIdFactory: () => 'radar-delegate-test',
+        ),
+      );
+
+      controller.startSession(region: RadarClinicalRegion.lumbar);
+      final state = controller.answer(RadarClinicalAnswer.yes);
+
+      expect(state.status, RadarClinicalStatus.question);
+      expect(state.hardStop, isNull);
+      expect(state.decision, isNull);
+      expect(state.question?.id, 'v4_cardiorespiratory_001');
+    });
+
+    test(
+      'hard stop projection does not add static clinical recommendations',
+      () {
+        final controller = _controller();
+        controller.startSession(region: RadarClinicalRegion.lumbar);
+
+        final state = controller.answer(RadarClinicalAnswer.yes);
+        final hardStop = state.hardStop!;
+        final renderedProjection = [
+          hardStop.hardStopTitle,
+          hardStop.stopReason,
+          ...hardStop.criticalArguments,
+        ].join('\n');
+
+        expect(
+          renderedProjection,
+          isNot(contains('Appelez immédiatement le 15')),
+        );
+        expect(renderedProjection, isNot(contains('Urgence vitale')));
+        expect(renderedProjection, isNot(contains('Diagnostic confirmé')));
+        expect(renderedProjection, isNot(contains('Le patient présente')));
+        expect(
+          renderedProjection,
+          isNot(contains('Cette pathologie est certaine')),
+        );
+        expect(renderedProjection, isNot(contains('Aucun autre risque')));
+      },
+    );
   });
 }
 
@@ -302,4 +428,75 @@ RadarClinicalSessionController _controller() {
     engine: ClinicalAdaptiveQuestionEngineV5(),
     sessionIdFactory: () => 'radar-test-session',
   );
+}
+
+class _RedFlagWithoutHardStopAdapter extends RadarClinicalEngineAdapter {
+  @override
+  ClinicalAdaptiveSessionV5 initialSession() {
+    return ClinicalAdaptiveSessionV5(
+      answeredQuestionIds: const {},
+      positiveFlagIds: const [],
+      reassuringFlagIds: const [],
+      hypothesisProbabilities: const {},
+      appliedProbabilityUpdateIds: const [],
+      triggeredHardStopIds: const [],
+      nextQuestion: questionById('v4_queue_cheval_001'),
+      reasoningSummary: 'Fake V5 state for Radar delegation test.',
+    );
+  }
+
+  @override
+  ClinicalAdaptiveSessionV5 answerQuestion({
+    required ClinicalAdaptiveSessionV5 session,
+    required String questionId,
+    required bool isPositive,
+  }) {
+    return ClinicalAdaptiveSessionV5(
+      answeredQuestionIds: {
+        ...session.answeredQuestionIds,
+        questionId: isPositive,
+      },
+      positiveFlagIds: isPositive ? const ['fake_red_flag'] : const [],
+      reassuringFlagIds: const [],
+      hypothesisProbabilities: const {},
+      appliedProbabilityUpdateIds: const [],
+      triggeredHardStopIds: const [],
+      nextQuestion: questionById('v4_cardiorespiratory_001'),
+      reasoningSummary: 'Fake V5 red flag without hard stop.',
+    );
+  }
+
+  @override
+  ClinicalAdaptiveViewStateV5 map({
+    required String sessionId,
+    required ClinicalAdaptiveSessionV5 session,
+  }) {
+    final hasRedFlag = session.positiveFlagIds.isNotEmpty;
+    return ClinicalAdaptiveViewStateV5(
+      sessionId: sessionId,
+      questionId: session.nextQuestion?.id,
+      patientQuestionText: session.nextQuestion?.text,
+      canAnswer: session.nextQuestion != null,
+      answeredCount: session.answeredQuestionIds.length,
+      totalQuestionCount: 2,
+      progressRatio: session.answeredQuestionIds.length / 2,
+      progressLabel: 'Fake V5',
+      currentRiskLevel: hasRedFlag
+          ? ClinicalDecisionLevel.medicalAdvice
+          : ClinicalDecisionLevel.routine,
+      currentRiskLabel: 'Fake V5',
+      hardStopId: null,
+      hardStopTitle: null,
+      finalDecisionLevel: null,
+      finalDecisionLabel: null,
+      primaryHypothesisId: hasRedFlag ? 'fake' : null,
+      primaryHypothesisTitle: hasRedFlag ? 'Fake' : null,
+      probabilityLevel: hasRedFlag
+          ? ClinicalQualitativeProbabilityV5.high
+          : null,
+      shortExplanation: 'Fake V5 state.',
+      technicalSummary: session.reasoningSummary,
+      isFinal: false,
+    );
+  }
 }

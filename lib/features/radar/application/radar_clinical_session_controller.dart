@@ -1,11 +1,14 @@
 import '../../../models/clinical_screening/clinical_adaptive_session_v5.dart';
 import '../../../models/clinical_screening/clinical_adaptive_view_state_v5.dart';
+import '../../../models/clinical_screening/clinical_hard_stop_catalog_v5.dart';
+import '../../../models/clinical_screening/clinical_hard_stop_rule_v5.dart';
 import '../../../models/clinical_screening/clinical_screening_models.dart';
 import '../../../models/clinical_screening/clinical_screening_question_v4.dart';
 import '../../../services/clinical_adaptive_question_engine_v5.dart';
 import '../../../services/clinical_adaptive_view_state_mapper_v5.dart';
 import 'radar_clinical_answer.dart';
 import 'radar_clinical_engine_adapter.dart';
+import 'radar_clinical_hard_stop_view_state.dart';
 import 'radar_clinical_pathway_definition.dart';
 import 'radar_clinical_region.dart';
 import 'radar_clinical_summary_view_state.dart';
@@ -112,6 +115,13 @@ class RadarClinicalSessionController {
     }
     final status = statusOverride ?? _statusFrom(mapped);
     final decision = _decisionFrom(mapped, session);
+    final hardStop = _hardStopFrom(
+      mapped: mapped,
+      session: session,
+      region: region,
+      sessionId: sessionId,
+      status: status,
+    );
 
     return RadarClinicalViewState(
       sessionId: sessionId,
@@ -120,6 +130,7 @@ class RadarClinicalSessionController {
       question: _questionFrom(_orchestrator.nextQuestion()),
       decision: decision,
       answeredQuestionIds: session.answeredQuestionIds.keys.toSet(),
+      hardStop: hardStop,
       summary: _summaryFrom(
         mapped: mapped,
         session: session,
@@ -130,6 +141,89 @@ class RadarClinicalSessionController {
       ),
       unsupportedAnswer: unsupportedAnswer,
     );
+  }
+
+  RadarClinicalHardStopViewState? _hardStopFrom({
+    required ClinicalAdaptiveViewStateV5 mapped,
+    required ClinicalAdaptiveSessionV5 session,
+    required RadarClinicalRegion region,
+    required String sessionId,
+    required RadarClinicalStatus status,
+  }) {
+    if (status != RadarClinicalStatus.hardStop) {
+      return null;
+    }
+
+    final trace = _orchestrator.lastTrace;
+    final hardStopId =
+        mapped.hardStopId ?? _firstOrNull(session.triggeredHardStopIds);
+    final rule = hardStopId == null
+        ? null
+        : ClinicalHardStopCatalogV5.ruleById(hardStopId);
+    final triggeringQuestionId = rule?.triggeringQuestionIds.firstWhere(
+      (id) => session.answeredQuestionIds[id] == true,
+      orElse: () => rule.triggeringQuestionIds.first,
+    );
+
+    return RadarClinicalHardStopViewState(
+      sessionId: sessionId,
+      region: region,
+      hardStopState: session.hardStopState,
+      hardStopId: hardStopId,
+      hardStopTitle: mapped.hardStopTitle ?? rule?.title,
+      clinicalFamilyId: rule?.clusterId ?? mapped.primaryHypothesisId,
+      decisionLevel: mapped.finalDecisionLevel ?? mapped.currentRiskLevel,
+      criticalArguments: _hardStopArguments(
+        rule: rule,
+        session: session,
+        triggeringQuestionId: triggeringQuestionId,
+      ),
+      contributingQuestionIds: [
+        for (final id in rule?.triggeringQuestionIds ?? const <String>[])
+          if (session.answeredQuestionIds[id] == true) id,
+      ],
+      triggeringQuestionId: triggeringQuestionId,
+      stopReason: _endReason(
+        status: status,
+        trace: trace,
+        mapped: mapped,
+        session: session,
+      ),
+      regionalOutcome: trace?.producedOutcome,
+      contextGates: trace?.contextGates ?? const {},
+      clinicalTriggers: trace?.clinicalTriggers ?? const {},
+      engineVersion: trace?.engineVersion ?? kRadarClinicalEngineVersion,
+      matrixVersion: trace?.matrixVersion ?? kRadarPathwayMatrixVersion,
+      validationStatus:
+          trace?.validationStatus ?? kRadarPathwayClinicalValidationStatus,
+      operatingMode:
+          trace?.operatingMode ?? RadarClinicalOperatingMode.experimental,
+    );
+  }
+
+  List<String> _hardStopArguments({
+    required ClinicalHardStopRuleV5? rule,
+    required ClinicalAdaptiveSessionV5 session,
+    required String? triggeringQuestionId,
+  }) {
+    final arguments = <String>[];
+
+    if (triggeringQuestionId != null) {
+      arguments.add('Question déclenchante : $triggeringQuestionId');
+    }
+    for (final flagId in session.positiveFlagIds) {
+      arguments.add('Signal V5 positif : $flagId');
+    }
+    final description = rule?.clinicalDescription;
+    if (description != null && description.isNotEmpty) {
+      arguments.add(description);
+    }
+
+    return arguments;
+  }
+
+  T? _firstOrNull<T>(List<T> values) {
+    return values.isEmpty ? null : values.first;
   }
 
   RadarClinicalStatus _statusFrom(ClinicalAdaptiveViewStateV5 mapped) {
