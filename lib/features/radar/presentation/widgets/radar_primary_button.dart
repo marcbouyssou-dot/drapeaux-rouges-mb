@@ -18,17 +18,17 @@ class RadarPrimaryButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox(
       width: double.infinity,
-      height: 54,
+      height: 46,
       child: FilledButton.icon(
         onPressed: onPressed,
-        icon: icon == null ? const SizedBox.shrink() : Icon(icon, size: 20),
+        icon: icon == null ? const SizedBox.shrink() : Icon(icon, size: 18),
         label: Text(label),
         style: FilledButton.styleFrom(
           backgroundColor: RadarColors.primary,
           foregroundColor: Colors.white,
           disabledBackgroundColor: RadarColors.border,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-          textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800),
+          textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
         ),
       ),
     );

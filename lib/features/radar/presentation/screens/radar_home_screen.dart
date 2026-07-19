@@ -6,7 +6,6 @@ import '../theme/radar_text_styles.dart';
 import '../widgets/radar_action_card.dart';
 import '../widgets/radar_bottom_navigation_bar.dart';
 import '../widgets/radar_context_bar.dart';
-import '../widgets/radar_primary_button.dart';
 import 'radar_clinical_start_screen.dart';
 
 class RadarHomeScreen extends StatelessWidget {
@@ -22,48 +21,89 @@ class RadarHomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: RadarColors.background,
-      bottomNavigationBar: const RadarBottomNavigationBar(),
       body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.all(RadarSpacing.md),
-          children: [
-            const SizedBox(height: RadarSpacing.sm),
-            const Text('Radar', style: RadarTextStyles.display),
-            const SizedBox(height: RadarSpacing.xs),
-            const Text('Consultation en cours', style: RadarTextStyles.muted),
-            const SizedBox(height: RadarSpacing.lg),
-            const RadarContextBar(
-              patientName: 'Marie Dupont',
-              status: 'Consultation en cours',
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 440),
+            child: Column(
+              children: [
+                Expanded(
+                  child: ListView(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: RadarSpacing.md,
+                      vertical: RadarSpacing.lg,
+                    ),
+                    children: [
+                      const Text('Radar', style: RadarTextStyles.display),
+                      const SizedBox(height: RadarSpacing.xs),
+                      const Text(
+                        'Consultation en cours',
+                        style: RadarTextStyles.muted,
+                      ),
+                      const SizedBox(height: 26),
+                      const RadarContextBar(
+                        patientName: 'Marie Dupont',
+                        status: 'Consultation en cours',
+                      ),
+                      const SizedBox(height: RadarSpacing.md),
+                      _ResumeConsultationButton(
+                        onPressed: () => _openClinicalStart(context),
+                      ),
+                      const SizedBox(height: 26),
+                      RadarActionCard(
+                        title: 'Évaluation clinique',
+                        subtitle: 'Compatible accès direct',
+                        icon: Icons.health_and_safety_outlined,
+                        onTap: () => _openClinicalStart(context),
+                      ),
+                      const SizedBox(height: 12),
+                      RadarActionCard(
+                        title: 'Bilan',
+                        subtitle: 'BDK',
+                        description: 'Créer ou compléter un BDK',
+                        icon: Icons.assignment_outlined,
+                        onTap: () {},
+                      ),
+                      const SizedBox(height: 12),
+                      RadarActionCard(
+                        title: 'Documents',
+                        subtitle: 'Consulter ou créer un document',
+                        icon: Icons.folder_open_outlined,
+                        onTap: () {},
+                      ),
+                    ],
+                  ),
+                ),
+                const RadarBottomNavigationBar(),
+              ],
             ),
-            const SizedBox(height: RadarSpacing.lg),
-            RadarPrimaryButton(
-              label: 'Reprendre la consultation',
-              icon: Icons.play_arrow,
-              onPressed: () => _openClinicalStart(context),
-            ),
-            const SizedBox(height: RadarSpacing.lg),
-            RadarActionCard(
-              title: 'Évaluation clinique',
-              subtitle: 'Démarrer le parcours de dépistage Radar',
-              icon: Icons.health_and_safety_outlined,
-              onTap: () => _openClinicalStart(context),
-            ),
-            const SizedBox(height: RadarSpacing.md),
-            RadarActionCard(
-              title: 'Bilan / BDK',
-              subtitle: 'Créer ou compléter le bilan de la consultation',
-              icon: Icons.assignment_outlined,
-              onTap: () {},
-            ),
-            const SizedBox(height: RadarSpacing.md),
-            RadarActionCard(
-              title: 'Documents',
-              subtitle: 'Synthèses, courriers et exports de consultation',
-              icon: Icons.folder_open_outlined,
-              onTap: () {},
-            ),
-          ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ResumeConsultationButton extends StatelessWidget {
+  const _ResumeConsultationButton({required this.onPressed});
+
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      height: 42,
+      child: OutlinedButton.icon(
+        onPressed: onPressed,
+        icon: const Icon(Icons.play_arrow, size: 17),
+        label: const Text('Reprendre la consultation'),
+        style: OutlinedButton.styleFrom(
+          backgroundColor: RadarColors.surface,
+          foregroundColor: RadarColors.primary,
+          side: const BorderSide(color: RadarColors.border),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
         ),
       ),
     );

@@ -23,26 +23,36 @@ class RadarContextBar extends StatelessWidget {
         borderRadius: BorderRadius.circular(8),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(RadarSpacing.md),
+        padding: const EdgeInsets.symmetric(
+          horizontal: RadarSpacing.md,
+          vertical: 12,
+        ),
         child: Row(
           children: [
-            const CircleAvatar(
-              radius: 22,
-              backgroundColor: RadarColors.surfaceMuted,
-              child: Icon(Icons.person_outline, color: RadarColors.primary),
+            const DecoratedBox(
+              decoration: BoxDecoration(
+                color: RadarColors.success,
+                shape: BoxShape.circle,
+              ),
+              child: SizedBox.square(dimension: 24),
             ),
-            const SizedBox(width: RadarSpacing.md),
+            const SizedBox(width: 12),
             Expanded(
               child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(patientName, style: RadarTextStyles.sectionTitle),
-                  const SizedBox(height: RadarSpacing.xs),
+                  const SizedBox(height: 2),
                   Text(status, style: RadarTextStyles.muted),
                 ],
               ),
             ),
-            const Icon(Icons.more_horiz, color: RadarColors.mutedInk),
+            const Icon(
+              Icons.chevron_right,
+              color: RadarColors.mutedInk,
+              size: 26,
+            ),
           ],
         ),
       ),

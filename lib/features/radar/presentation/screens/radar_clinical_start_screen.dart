@@ -21,45 +21,109 @@ class RadarClinicalStartScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: RadarColors.background,
       body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.all(RadarSpacing.md),
-          children: [
-            Align(
-              alignment: Alignment.centerLeft,
-              child: IconButton(
-                tooltip: 'Retour',
-                onPressed: () => Navigator.of(context).pop(),
-                icon: const Icon(Icons.arrow_back, color: RadarColors.mutedInk),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 440),
+            child: ListView(
+              padding: const EdgeInsets.symmetric(horizontal: RadarSpacing.md),
+              children: [
+                const RadarContextBar(
+                  patientName: 'Marie Dupont',
+                  status: 'Consultation en cours',
+                ),
+                const SizedBox(height: RadarSpacing.lg),
+                const Text(
+                  'Où se situe le problème ?',
+                  style: RadarTextStyles.title,
+                ),
+                const SizedBox(height: RadarSpacing.sm),
+                const Text(
+                  'Sélectionnez la région principalement concernée.',
+                  style: RadarTextStyles.muted,
+                ),
+                const SizedBox(height: RadarSpacing.lg),
+                _RegionGroup(
+                  title: 'TÊTE ET COU',
+                  regions: const ['Tête / Face', 'Cou'],
+                  onRegionTap: () => _openQuestion(context),
+                ),
+                _RegionGroup(
+                  title: 'MEMBRE SUPÉRIEUR',
+                  regions: const ['Épaule / Bras', 'Coude / Main'],
+                  onRegionTap: () => _openQuestion(context),
+                ),
+                _RegionGroup(
+                  title: 'TRONC',
+                  regions: const ['Thorax', 'Dos', 'Lombaires'],
+                  onRegionTap: () => _openQuestion(context),
+                ),
+                _RegionGroup(
+                  title: 'MEMBRE INFÉRIEUR',
+                  regions: const [
+                    'Bassin / Hanche',
+                    'Genou',
+                    'Cheville / Pied',
+                  ],
+                  onRegionTap: () => _openQuestion(context),
+                ),
+                _RegionGroup(
+                  title: 'AUTRE',
+                  regions: const ['Autre localisation'],
+                  onRegionTap: () => _openQuestion(context),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _RegionGroup extends StatelessWidget {
+  const _RegionGroup({
+    required this.title,
+    required this.regions,
+    required this.onRegionTap,
+  });
+
+  final String title;
+  final List<String> regions;
+  final VoidCallback onRegionTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(title, style: RadarTextStyles.label),
+          const SizedBox(height: 5),
+          DecoratedBox(
+            decoration: BoxDecoration(
+              color: RadarColors.surface,
+              border: Border.all(color: RadarColors.border),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(14),
+              child: Column(
+                children: [
+                  for (final region in regions) ...[
+                    RadarRegionAction(label: region, onTap: onRegionTap),
+                    if (region != regions.last)
+                      const Divider(
+                        height: 1,
+                        thickness: 1,
+                        color: RadarColors.border,
+                      ),
+                  ],
+                ],
               ),
             ),
-            const SizedBox(height: RadarSpacing.sm),
-            const RadarContextBar(
-              patientName: 'Marie Dupont',
-              status: 'Consultation en cours',
-            ),
-            const SizedBox(height: RadarSpacing.lg),
-            const Text('Groupes anatomiques', style: RadarTextStyles.title),
-            const SizedBox(height: RadarSpacing.sm),
-            const Text(
-              'Sélectionnez la région concernée pour orienter le questionnaire.',
-              style: RadarTextStyles.muted,
-            ),
-            const SizedBox(height: RadarSpacing.lg),
-            RadarRegionAction(
-              label: 'Lombaires',
-              selected: true,
-              onTap: () => _openQuestion(context),
-            ),
-            const SizedBox(height: RadarSpacing.sm),
-            RadarRegionAction(label: 'Cervicales', onTap: () {}),
-            const SizedBox(height: RadarSpacing.sm),
-            RadarRegionAction(label: 'Épaule', onTap: () {}),
-            const SizedBox(height: RadarSpacing.sm),
-            RadarRegionAction(label: 'Genou', onTap: () {}),
-            const SizedBox(height: RadarSpacing.sm),
-            RadarRegionAction(label: 'Cheville / pied', onTap: () {}),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

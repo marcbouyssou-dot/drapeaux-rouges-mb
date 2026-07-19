@@ -11,54 +11,53 @@ import '../widgets/radar_secondary_action.dart';
 class RadarClinicalSummaryScreen extends StatelessWidget {
   const RadarClinicalSummaryScreen({super.key});
 
+  void _closeSummary(BuildContext context) {
+    Navigator.of(context).popUntil((route) => route.isFirst);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: RadarColors.background,
       body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.all(RadarSpacing.md),
-          children: [
-            Align(
-              alignment: Alignment.centerLeft,
-              child: IconButton(
-                tooltip: 'Retour',
-                onPressed: () => Navigator.of(context).pop(),
-                icon: const Icon(Icons.arrow_back, color: RadarColors.mutedInk),
-              ),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 440),
+            child: ListView(
+              padding: const EdgeInsets.symmetric(horizontal: RadarSpacing.md),
+              children: [
+                const RadarContextBar(
+                  patientName: 'Marie Dupont',
+                  status: 'Consultation en cours',
+                ),
+                const SizedBox(height: RadarSpacing.lg),
+                const RadarDecisionCard(
+                  title: 'Prise en charge possible',
+                  subtitle: 'Aucun drapeau rouge identifié',
+                  body:
+                      'Les éléments recueillis sont compatibles avec une prise en charge kinésithérapique habituelle.',
+                  vigilance: 'Réévaluer en cas d’évolution défavorable.',
+                ),
+                const SizedBox(height: RadarSpacing.lg),
+                RadarPrimaryButton(
+                  label: 'Poursuivre la consultation',
+                  onPressed: () => _closeSummary(context),
+                ),
+                const SizedBox(height: RadarSpacing.sm),
+                RadarSecondaryAction(
+                  label: 'Créer ou compléter le BDK',
+                  onPressed: () {},
+                ),
+                const SizedBox(height: RadarSpacing.sm),
+                RadarSecondaryAction(
+                  label: 'Télécharger la synthèse (PDF)',
+                  onPressed: () {},
+                ),
+                const SizedBox(height: RadarSpacing.lg),
+                const _AnalysisDetails(),
+              ],
             ),
-            const SizedBox(height: RadarSpacing.sm),
-            const RadarContextBar(
-              patientName: 'Marie Dupont',
-              status: 'Synthèse verte',
-            ),
-            const SizedBox(height: RadarSpacing.lg),
-            const RadarDecisionCard(
-              title: 'Prise en charge possible',
-              subtitle:
-                  'Aucun drapeau rouge identifié. La consultation peut se poursuivre avec surveillance clinique habituelle.',
-            ),
-            const SizedBox(height: RadarSpacing.lg),
-            RadarPrimaryButton(
-              label: 'Poursuivre la consultation',
-              icon: Icons.arrow_forward,
-              onPressed: () {},
-            ),
-            const SizedBox(height: RadarSpacing.sm),
-            RadarSecondaryAction(
-              label: 'Créer ou compléter le BDK',
-              icon: Icons.assignment_outlined,
-              onPressed: () {},
-            ),
-            const SizedBox(height: RadarSpacing.sm),
-            RadarSecondaryAction(
-              label: 'Télécharger la synthèse (PDF)',
-              icon: Icons.picture_as_pdf_outlined,
-              onPressed: () {},
-            ),
-            const SizedBox(height: RadarSpacing.lg),
-            const _AnalysisDetails(),
-          ],
+          ),
         ),
       ),
     );
@@ -93,7 +92,7 @@ class _AnalysisDetails extends StatelessWidget {
           Align(
             alignment: Alignment.centerLeft,
             child: Text(
-              'Prototype statique Radar. Région : Lombaires. Question : douleur descendant dans une jambe. Synthèse de démonstration : aucun drapeau rouge identifié.',
+              'Facteurs rassurants : réponses compatibles avec une situation non urgente.\n\nPoints de vigilance : surveiller l’évolution des symptômes.\n\nExplication de la décision : aucun élément recueilli ne justifie une orientation médicale immédiate.',
               style: RadarTextStyles.muted,
             ),
           ),

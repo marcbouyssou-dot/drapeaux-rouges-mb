@@ -9,12 +9,14 @@ class RadarActionCard extends StatelessWidget {
     super.key,
     required this.title,
     required this.subtitle,
+    this.description,
     required this.icon,
     required this.onTap,
   });
 
   final String title;
   final String subtitle;
+  final String? description;
   final IconData icon;
   final VoidCallback onTap;
 
@@ -26,37 +28,52 @@ class RadarActionCard extends StatelessWidget {
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(8),
-        child: Container(
-          padding: const EdgeInsets.all(RadarSpacing.md),
-          decoration: BoxDecoration(
-            border: Border.all(color: RadarColors.border),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Row(
-            children: [
-              DecoratedBox(
-                decoration: BoxDecoration(
-                  color: RadarColors.surfaceMuted,
-                  borderRadius: BorderRadius.circular(8),
+        child: SizedBox(
+          height: 94,
+          child: Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: RadarSpacing.md,
+              vertical: 12,
+            ),
+            decoration: BoxDecoration(
+              border: Border.all(color: RadarColors.border),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Row(
+              children: [
+                DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: RadarColors.surfaceMuted,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(9),
+                    child: Icon(icon, color: RadarColors.primary, size: 21),
+                  ),
                 ),
-                child: Padding(
-                  padding: const EdgeInsets.all(10),
-                  child: Icon(icon, color: RadarColors.primary),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(title, style: RadarTextStyles.sectionTitle),
+                      const SizedBox(height: 2),
+                      Text(subtitle, style: RadarTextStyles.muted),
+                      if (description != null) ...[
+                        const SizedBox(height: 1),
+                        Text(description!, style: RadarTextStyles.muted),
+                      ],
+                    ],
+                  ),
                 ),
-              ),
-              const SizedBox(width: RadarSpacing.md),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(title, style: RadarTextStyles.sectionTitle),
-                    const SizedBox(height: RadarSpacing.xs),
-                    Text(subtitle, style: RadarTextStyles.muted),
-                  ],
+                const Icon(
+                  Icons.chevron_right,
+                  color: RadarColors.mutedInk,
+                  size: 22,
                 ),
-              ),
-              const Icon(Icons.chevron_right, color: RadarColors.mutedInk),
-            ],
+              ],
+            ),
           ),
         ),
       ),
