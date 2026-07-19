@@ -6,6 +6,7 @@ import '../../../services/clinical_adaptive_question_engine_v5.dart';
 import '../../../services/clinical_adaptive_view_state_mapper_v5.dart';
 import 'radar_clinical_answer.dart';
 import 'radar_clinical_engine_adapter.dart';
+import 'radar_clinical_pathway_definition.dart';
 import 'radar_clinical_region.dart';
 import 'radar_clinical_status.dart';
 import 'radar_clinical_stop_policy.dart';
@@ -44,15 +45,23 @@ class RadarClinicalSessionController {
     return current;
   }
 
-  RadarClinicalViewState startSession({required RadarClinicalRegion region}) {
+  RadarClinicalViewState startSession({
+    required RadarClinicalRegion region,
+    RadarClinicalInitialContext initialContext =
+        const RadarClinicalInitialContext(),
+  }) {
     _region = region;
-    _orchestrator.startSession(region: region, gates: const {});
+    _orchestrator.startSession(region: region, initialContext: initialContext);
     _sessionId = _orchestrator.sessionId;
     _state = _buildState();
     return state;
   }
 
-  RadarClinicalViewState answer(RadarClinicalAnswer answer) {
+  RadarClinicalViewState answer(
+    RadarClinicalAnswer answer, {
+    RadarClinicalResponseContext responseContext =
+        const RadarClinicalResponseContext(),
+  }) {
     final question = _orchestrator.nextQuestion();
     if (question == null) {
       _state = _buildState();
@@ -68,7 +77,11 @@ class RadarClinicalSessionController {
       return state;
     }
 
-    _orchestrator.answerQuestion(question.id, isPositive: runtimeValue);
+    _orchestrator.answerQuestion(
+      question.id,
+      isPositive: runtimeValue,
+      responseContext: responseContext,
+    );
     _state = _buildState();
     return state;
   }

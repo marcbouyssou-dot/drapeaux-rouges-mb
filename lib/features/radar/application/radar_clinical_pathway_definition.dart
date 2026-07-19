@@ -9,6 +9,48 @@ const String kRadarPathwayClinicalValidationStatus = 'NON VALIDÉE';
 
 enum RadarClinicalOperatingMode { experimental }
 
+class RadarClinicalInitialContext {
+  final Set<RadarContextGate> gates;
+  final Set<RadarClinicalTrigger> triggers;
+
+  const RadarClinicalInitialContext({
+    this.gates = const {},
+    this.triggers = const {},
+  });
+}
+
+class RadarClinicalResponseContext {
+  final Set<RadarContextGate> gates;
+  final Set<RadarClinicalTrigger> triggers;
+
+  const RadarClinicalResponseContext({
+    this.gates = const {},
+    this.triggers = const {},
+  });
+}
+
+enum RadarContextActivationSource {
+  initialContext,
+  clinicalAnswer,
+  engineState,
+}
+
+class RadarContextActivationTrace {
+  final String id;
+  final RadarContextActivationSource source;
+  final String? sourceQuestionId;
+  final int activatedAfterAnswerCount;
+  final Set<String> accessibleQuestionIds;
+
+  RadarContextActivationTrace({
+    required this.id,
+    required this.source,
+    required this.sourceQuestionId,
+    required this.activatedAfterAnswerCount,
+    required Set<String> accessibleQuestionIds,
+  }) : accessibleQuestionIds = Set.unmodifiable(accessibleQuestionIds);
+}
+
 /// Rôle d'une question dans un pathway régional.
 enum RadarQuestionRole {
   /// Socle universel : posée à 100 % des patients, toutes régions,
