@@ -19,6 +19,69 @@ void main() {
       expect(find.text('ÉVALUATION CLINIQUE'), findsOneWidget);
     });
 
+    testWidgets('tapping Cou opens the cervical pathway question', (
+      tester,
+    ) async {
+      await _pumpStartScreen(tester);
+
+      await tester.tap(find.text('Cou'));
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('céphalée inhabituelle'), findsOneWidget);
+      expect(
+        find.textContaining('troubles urinaires ou fécaux nouveaux'),
+        findsNothing,
+      );
+    });
+
+    testWidgets(
+      'different supported regions can start with different questions',
+      (tester) async {
+        await _pumpStartScreen(tester);
+        await tester.tap(find.text('Lombaires'));
+        await tester.pumpAndSettle();
+        expect(
+          find.textContaining('troubles urinaires ou fécaux nouveaux'),
+          findsOneWidget,
+        );
+
+        await tester.pumpWidget(const SizedBox.shrink());
+        await tester.pumpAndSettle();
+        await _pumpStartScreen(tester);
+        await tester.tap(find.text('Cou'));
+        await tester.pumpAndSettle();
+
+        expect(find.textContaining('céphalée inhabituelle'), findsOneWidget);
+        expect(
+          find.textContaining('troubles urinaires ou fécaux nouveaux'),
+          findsNothing,
+        );
+      },
+    );
+
+    testWidgets('unsupported Tête / Face does not start a lumbar session', (
+      tester,
+    ) async {
+      final observer = _RecordingNavigatorObserver();
+      await _pumpStartScreen(tester, observer: observer);
+      final routeCountBeforeTap = observer.didPushCount;
+
+      await tester.tap(find.text('Tête / Face'));
+      await tester.pump();
+
+      expect(observer.didPushCount, routeCountBeforeTap);
+      expect(
+        find.textContaining(
+          'Parcours clinique non disponible dans la matrice expérimentale V0.1',
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.textContaining('troubles urinaires ou fécaux nouveaux'),
+        findsNothing,
+      );
+    });
+
     testWidgets('only yes and no are visible in the connected V5 flow', (
       tester,
     ) async {

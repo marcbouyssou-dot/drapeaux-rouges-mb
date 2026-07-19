@@ -13,14 +13,12 @@ import 'radar_clinical_question_screen.dart';
 class RadarClinicalStartScreen extends StatelessWidget {
   const RadarClinicalStartScreen({super.key});
 
-  void _openQuestion(BuildContext context) {
+  void _openQuestion(BuildContext context, RadarClinicalRegion region) {
     final orchestrator = RadarRegionalClinicalOrchestrator();
     final controller = RadarClinicalSessionController(
       orchestrator: orchestrator,
     );
-    final initialState = controller.startSession(
-      region: RadarClinicalRegion.lumbar,
-    );
+    final initialState = controller.startSession(region: region);
 
     Navigator.of(context).push(
       MaterialPageRoute(
@@ -30,6 +28,26 @@ class RadarClinicalStartScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  void _showUnavailableRegion(BuildContext context) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text(
+          'Parcours clinique non disponible dans la matrice expérimentale V0.1 — NON VALIDÉE.',
+        ),
+      ),
+    );
+  }
+
+  void _handleRegionTap(BuildContext context, _RadarRegionOption option) {
+    final region = option.region;
+    if (region == null) {
+      _showUnavailableRegion(context);
+      return;
+    }
+
+    _openQuestion(context, region);
   }
 
   @override
@@ -60,32 +78,59 @@ class RadarClinicalStartScreen extends StatelessWidget {
                 const SizedBox(height: RadarSpacing.lg),
                 _RegionGroup(
                   title: 'TÊTE ET COU',
-                  regions: const ['Tête / Face', 'Cou'],
-                  onRegionTap: () => _openQuestion(context),
+                  regions: const [
+                    _RadarRegionOption('Tête / Face'),
+                    _RadarRegionOption('Cou', RadarClinicalRegion.cervical),
+                  ],
+                  onRegionTap: (option) => _handleRegionTap(context, option),
                 ),
                 _RegionGroup(
                   title: 'MEMBRE SUPÉRIEUR',
-                  regions: const ['Épaule / Bras', 'Coude / Main'],
-                  onRegionTap: () => _openQuestion(context),
+                  regions: const [
+                    _RadarRegionOption(
+                      'Épaule / Bras',
+                      RadarClinicalRegion.shoulderUpperLimbProximal,
+                    ),
+                    _RadarRegionOption(
+                      'Coude / Main',
+                      RadarClinicalRegion.upperLimbDistal,
+                    ),
+                  ],
+                  onRegionTap: (option) => _handleRegionTap(context, option),
                 ),
                 _RegionGroup(
                   title: 'TRONC',
-                  regions: const ['Thorax', 'Dos', 'Lombaires'],
-                  onRegionTap: () => _openQuestion(context),
+                  regions: const [
+                    _RadarRegionOption('Thorax', RadarClinicalRegion.thoracic),
+                    _RadarRegionOption('Dos', RadarClinicalRegion.thoracic),
+                    _RadarRegionOption('Lombaires', RadarClinicalRegion.lumbar),
+                  ],
+                  onRegionTap: (option) => _handleRegionTap(context, option),
                 ),
                 _RegionGroup(
                   title: 'MEMBRE INFÉRIEUR',
                   regions: const [
-                    'Bassin / Hanche',
-                    'Genou',
-                    'Cheville / Pied',
+                    _RadarRegionOption(
+                      'Bassin / Hanche',
+                      RadarClinicalRegion.hipLowerLimbProximal,
+                    ),
+                    _RadarRegionOption('Genou', RadarClinicalRegion.kneeLeg),
+                    _RadarRegionOption(
+                      'Cheville / Pied',
+                      RadarClinicalRegion.ankleFoot,
+                    ),
                   ],
-                  onRegionTap: () => _openQuestion(context),
+                  onRegionTap: (option) => _handleRegionTap(context, option),
                 ),
                 _RegionGroup(
                   title: 'AUTRE',
-                  regions: const ['Autre localisation'],
-                  onRegionTap: () => _openQuestion(context),
+                  regions: const [
+                    _RadarRegionOption(
+                      'Autre localisation',
+                      RadarClinicalRegion.diffuse,
+                    ),
+                  ],
+                  onRegionTap: (option) => _handleRegionTap(context, option),
                 ),
               ],
             ),
@@ -96,6 +141,13 @@ class RadarClinicalStartScreen extends StatelessWidget {
   }
 }
 
+class _RadarRegionOption {
+  const _RadarRegionOption(this.label, [this.region]);
+
+  final String label;
+  final RadarClinicalRegion? region;
+}
+
 class _RegionGroup extends StatelessWidget {
   const _RegionGroup({
     required this.title,
@@ -104,8 +156,8 @@ class _RegionGroup extends StatelessWidget {
   });
 
   final String title;
-  final List<String> regions;
-  final VoidCallback onRegionTap;
+  final List<_RadarRegionOption> regions;
+  final ValueChanged<_RadarRegionOption> onRegionTap;
 
   @override
   Widget build(BuildContext context) {
@@ -126,9 +178,12 @@ class _RegionGroup extends StatelessWidget {
               borderRadius: BorderRadius.circular(14),
               child: Column(
                 children: [
-                  for (final region in regions) ...[
-                    RadarRegionAction(label: region, onTap: onRegionTap),
-                    if (region != regions.last)
+                  for (final option in regions) ...[
+                    RadarRegionAction(
+                      label: option.label,
+                      onTap: () => onRegionTap(option),
+                    ),
+                    if (option != regions.last)
                       const Divider(
                         height: 1,
                         thickness: 1,
