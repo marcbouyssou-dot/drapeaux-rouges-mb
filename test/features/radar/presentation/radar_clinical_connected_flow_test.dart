@@ -242,9 +242,7 @@ void main() {
       expect(find.text('Poursuivre la consultation'), findsNothing);
     });
 
-    testWidgets('old hard stop placeholder static data is gone', (
-      tester,
-    ) async {
+    testWidgets('old hard stop static data is gone', (tester) async {
       await _pumpStartScreen(tester);
       await tester.tap(find.text('Lombaires'));
       await tester.pumpAndSettle();

@@ -45,6 +45,37 @@ void main() {
       );
     });
 
+    test('thoracic cardio positive follows the real V5 hard stop', () {
+      final result = _runRegionalScenario(
+        region: RadarClinicalRegion.thoracic,
+        positiveQuestionIds: {'v4_cardiorespiratory_001'},
+      );
+
+      expect(result.askedQuestionIds, ['v4_cardiorespiratory_001']);
+      expect(result.outcome, RadarSessionOutcome.hardStop);
+      expect(result.session.hardStopState, ClinicalHardStopStateV5.confirmed);
+      expect(
+        result.viewState.finalDecisionLevel,
+        ClinicalDecisionLevel.emergency,
+      );
+    });
+
+    test('knee TVP pathway reaches the real V5 vascular decision', () {
+      final result = _runRegionalScenario(
+        region: RadarClinicalRegion.kneeLeg,
+        gates: {RadarContextGate.recentImmobilization},
+        positiveQuestionIds: {'v4_vascular_tvp_001'},
+      );
+
+      expect(result.askedQuestionIds, contains('v4_vascular_tvp_001'));
+      expect(result.outcome, RadarSessionOutcome.hardStop);
+      expect(result.session.canReassure, isFalse);
+      expect(
+        result.viewState.finalDecisionLevel,
+        ClinicalDecisionLevel.urgentReferral,
+      );
+    });
+
     test('AAA is asked only when the lumbar context activates it', () {
       final simple = _runRegionalScenario(
         region: RadarClinicalRegion.lumbar,

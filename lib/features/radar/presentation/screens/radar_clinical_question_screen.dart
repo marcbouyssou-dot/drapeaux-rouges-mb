@@ -9,7 +9,7 @@ import '../theme/radar_spacing.dart';
 import '../theme/radar_text_styles.dart';
 import '../widgets/radar_context_bar.dart';
 import '../widgets/radar_question_option.dart';
-import 'radar_clinical_hard_stop_placeholder_screen.dart';
+import 'radar_clinical_hard_stop_screen.dart';
 import 'radar_clinical_summary_screen.dart';
 
 class RadarClinicalQuestionScreen extends StatefulWidget {
@@ -55,8 +55,7 @@ class _RadarClinicalQuestionScreenState
       case RadarClinicalStatus.hardStop:
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(
-            builder: (_) =>
-                RadarClinicalHardStopPlaceholderScreen(finalState: nextState),
+            builder: (_) => RadarClinicalHardStopScreen(finalState: nextState),
           ),
         );
     }

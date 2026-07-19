@@ -9,11 +9,8 @@ import '../theme/radar_text_styles.dart';
 import '../widgets/radar_context_bar.dart';
 import '../widgets/radar_primary_button.dart';
 
-class RadarClinicalHardStopPlaceholderScreen extends StatelessWidget {
-  const RadarClinicalHardStopPlaceholderScreen({
-    super.key,
-    required this.finalState,
-  });
+class RadarClinicalHardStopScreen extends StatelessWidget {
+  const RadarClinicalHardStopScreen({super.key, required this.finalState});
 
   final RadarClinicalViewState finalState;
 
