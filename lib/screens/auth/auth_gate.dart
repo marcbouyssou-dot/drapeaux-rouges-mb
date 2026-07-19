@@ -177,18 +177,8 @@ class _AuthGateState extends State<AuthGate> {
   }
 
   Widget _buildWithDebugBanner(_AuthGateDecision decision, Widget child) {
-    return Stack(
-      children: [
-        child,
-        Positioned(
-          top: 0,
-          left: 0,
-          right: 0,
-          child: _AuthGateDebugBanner(decision: decision),
-        ),
-      ],
-    );
-  }
+  return child;
+}
 }
 
 enum _AuthGateDecisionType {
