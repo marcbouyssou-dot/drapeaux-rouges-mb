@@ -4,6 +4,8 @@ import '../../application/radar_clinical_hard_stop_view_state.dart';
 import '../../application/radar_clinical_region.dart';
 import '../../application/radar_clinical_view_state.dart';
 import '../theme/radar_colors.dart';
+import '../theme/radar_radius.dart';
+import '../theme/radar_shadows.dart';
 import '../theme/radar_spacing.dart';
 import '../theme/radar_text_styles.dart';
 import '../widgets/radar_context_bar.dart';
@@ -29,7 +31,12 @@ class RadarClinicalHardStopScreen extends StatelessWidget {
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 440),
             child: ListView(
-              padding: const EdgeInsets.symmetric(horizontal: RadarSpacing.md),
+              padding: const EdgeInsets.fromLTRB(
+                RadarSpacing.xl,
+                RadarSpacing.xxxl,
+                RadarSpacing.xl,
+                RadarSpacing.xxl,
+              ),
               children: [
                 RadarContextBar(
                   patientName: hardStop == null
@@ -39,76 +46,34 @@ class RadarClinicalHardStopScreen extends StatelessWidget {
                       ? 'Parcours interrompu'
                       : 'Région : ${_regionLabel(hardStop.region)}',
                 ),
-                const SizedBox(height: RadarSpacing.xl),
-                const Text(
-                  'ARRÊT DU PARCOURS CLINIQUE',
-                  style: RadarTextStyles.label,
-                ),
-                const SizedBox(height: RadarSpacing.lg),
-                DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: RadarColors.surface,
-                    border: Border.all(color: RadarColors.border),
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(RadarSpacing.lg),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Icon(
-                          Icons.priority_high,
-                          color: RadarColors.primary,
-                          size: 28,
-                        ),
-                        const SizedBox(height: RadarSpacing.md),
-                        Text(
-                          hardStop?.hardStopTitle ??
-                              hardStop?.hardStopId ??
-                              'Élément prioritaire détecté',
-                          style: RadarTextStyles.title,
-                        ),
-                        const SizedBox(height: RadarSpacing.sm),
-                        Text(
-                          hardStop == null
-                              ? 'Le parcours a été interrompu.'
-                              : 'Le parcours a été interrompu par le moteur clinique V5.',
-                          style: RadarTextStyles.body,
-                        ),
-                        if (hardStop != null) ...[
-                          const SizedBox(height: RadarSpacing.md),
-                          Text(
-                            'Statut : ${_hardStopStateLabel(hardStop)}',
-                            style: RadarTextStyles.muted,
-                          ),
-                          if (hardStop.hardStopId != null) ...[
-                            const SizedBox(height: RadarSpacing.sm),
-                            Text(
-                              'Identifiant : ${hardStop.hardStopId}',
-                              style: RadarTextStyles.muted,
-                            ),
-                          ],
-                          if (hardStop.decisionLevel != null) ...[
-                            const SizedBox(height: RadarSpacing.sm),
-                            Text(
-                              'Niveau fourni : ${hardStop.decisionLevel!.name}',
-                              style: RadarTextStyles.muted,
-                            ),
-                          ],
+                const SizedBox(height: RadarSpacing.cardGap),
+                _HardStopDecisionCard(
+                  title:
+                      hardStop?.hardStopTitle ??
+                      hardStop?.hardStopId ??
+                      'Élément prioritaire détecté',
+                  explanation: hardStop == null
+                      ? 'Le parcours a été interrompu.'
+                      : 'Le parcours a été interrompu par le moteur clinique V5.',
+                  metadata: hardStop == null
+                      ? const []
+                      : [
+                          'Statut : ${_hardStopStateLabel(hardStop)}',
+                          if (hardStop.hardStopId != null)
+                            'Identifiant : ${hardStop.hardStopId}',
+                          if (hardStop.decisionLevel != null)
+                            'Niveau fourni : ${hardStop.decisionLevel!.name}',
                         ],
-                      ],
-                    ),
-                  ),
                 ),
                 if (hardStop != null) ...[
                   if (hardStop.criticalArguments.isNotEmpty) ...[
-                    const SizedBox(height: RadarSpacing.lg),
+                    const SizedBox(height: RadarSpacing.xl),
                     _HardStopSection(
                       title: 'Données ayant contribué à l’arrêt',
                       lines: hardStop.criticalArguments,
                     ),
                   ],
-                  const SizedBox(height: RadarSpacing.lg),
+                  const SizedBox(height: RadarSpacing.md),
                   _HardStopSection(
                     title: 'Contexte et traçabilité',
                     lines: [
@@ -128,7 +93,7 @@ class RadarClinicalHardStopScreen extends StatelessWidget {
                     ],
                   ),
                 ],
-                const SizedBox(height: RadarSpacing.lg),
+                const SizedBox(height: RadarSpacing.xl),
                 RadarPrimaryButton(
                   label: 'Revenir à l’accueil',
                   onPressed: () => _returnHome(context),
@@ -165,34 +130,216 @@ class RadarClinicalHardStopScreen extends StatelessWidget {
   }
 }
 
-class _HardStopSection extends StatelessWidget {
-  const _HardStopSection({required this.title, required this.lines});
+class _HardStopDecisionCard extends StatelessWidget {
+  const _HardStopDecisionCard({
+    required this.title,
+    required this.explanation,
+    required this.metadata,
+  });
 
   final String title;
-  final List<String> lines;
+  final String explanation;
+  final List<String> metadata;
 
   @override
   Widget build(BuildContext context) {
     return DecoratedBox(
       decoration: BoxDecoration(
         color: RadarColors.surface,
-        border: Border.all(color: RadarColors.border),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(RadarRadius.signature),
+        boxShadow: RadarShadows.card,
       ),
-      child: ExpansionTile(
-        initiallyExpanded: false,
-        tilePadding: const EdgeInsets.symmetric(horizontal: RadarSpacing.md),
-        childrenPadding: const EdgeInsets.fromLTRB(
-          RadarSpacing.md,
-          0,
-          RadarSpacing.md,
-          RadarSpacing.md,
+      child: Padding(
+        padding: const EdgeInsets.all(RadarSpacing.xl),
+        child: IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              DecoratedBox(
+                decoration: BoxDecoration(
+                  color: RadarColors.clinicalDanger.withValues(alpha: 0.72),
+                  borderRadius: BorderRadius.circular(RadarRadius.pill),
+                ),
+                child: const SizedBox(width: 4),
+              ),
+              const SizedBox(width: RadarSpacing.lg),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const _HardStopBadge(),
+                    const SizedBox(height: RadarSpacing.xl),
+                    Text(title, style: RadarTextStyles.sectionTitle),
+                    const SizedBox(height: RadarSpacing.cardGap),
+                    Text(explanation, style: RadarTextStyles.body),
+                    if (metadata.isNotEmpty) ...[
+                      const SizedBox(height: RadarSpacing.xl),
+                      for (final line in metadata)
+                        Padding(
+                          padding: const EdgeInsets.only(
+                            bottom: RadarSpacing.sm,
+                          ),
+                          child: Text(line, style: RadarTextStyles.secondary),
+                        ),
+                    ],
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
-        title: Text(title, style: RadarTextStyles.sectionTitle),
+      ),
+    );
+  }
+}
+
+class _HardStopBadge extends StatelessWidget {
+  const _HardStopBadge();
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: RadarColors.clinicalDanger.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(RadarRadius.pill),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: RadarSpacing.lg,
+          vertical: RadarSpacing.sm,
+        ),
+        child: Row(
+          children: [
+            Icon(
+              Icons.health_and_safety_outlined,
+              color: RadarColors.clinicalDanger.withValues(alpha: 0.9),
+              size: 16,
+            ),
+            const SizedBox(width: RadarSpacing.sm),
+            Flexible(
+              child: Text(
+                'ARRÊT DU PARCOURS CLINIQUE',
+                style: RadarTextStyles.badge.copyWith(
+                  color: RadarColors.clinicalDanger,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _HardStopSection extends StatefulWidget {
+  const _HardStopSection({required this.title, required this.lines});
+
+  final String title;
+  final List<String> lines;
+
+  @override
+  State<_HardStopSection> createState() => _HardStopSectionState();
+}
+
+class _HardStopSectionState extends State<_HardStopSection> {
+  bool _expanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: RadarColors.surface,
+        borderRadius: BorderRadius.circular(RadarRadius.card),
+        boxShadow: [
+          BoxShadow(
+            color: RadarColors.textPrimary.withValues(alpha: 0.018),
+            blurRadius: 16,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
         children: [
-          Align(
-            alignment: Alignment.centerLeft,
-            child: Text(lines.join('\n\n'), style: RadarTextStyles.muted),
+          Semantics(
+            button: true,
+            expanded: _expanded,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(RadarRadius.card),
+              onTap: () => setState(() => _expanded = !_expanded),
+              child: Padding(
+                padding: const EdgeInsets.all(RadarSpacing.cardGap),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        widget.title,
+                        style: RadarTextStyles.contextTitle,
+                      ),
+                    ),
+                    AnimatedRotation(
+                      turns: _expanded ? 0.5 : 0,
+                      duration: const Duration(milliseconds: 220),
+                      curve: Curves.easeOut,
+                      child: const Icon(
+                        Icons.keyboard_arrow_down,
+                        color: RadarColors.blueGrey,
+                        size: 20,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          AnimatedSize(
+            duration: const Duration(milliseconds: 220),
+            curve: Curves.easeOut,
+            child: _expanded
+                ? Padding(
+                    padding: const EdgeInsets.fromLTRB(
+                      RadarSpacing.cardGap,
+                      0,
+                      RadarSpacing.cardGap,
+                      RadarSpacing.cardGap,
+                    ),
+                    child: Column(
+                      children: [
+                        for (final line in widget.lines)
+                          Padding(
+                            padding: const EdgeInsets.only(
+                              bottom: RadarSpacing.sm,
+                            ),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 7),
+                                  child: DecoratedBox(
+                                    decoration: BoxDecoration(
+                                      color: RadarColors.blueGrey.withValues(
+                                        alpha: 0.55,
+                                      ),
+                                      borderRadius: BorderRadius.circular(
+                                        RadarSpacing.xs,
+                                      ),
+                                    ),
+                                    child: const SizedBox.square(dimension: 5),
+                                  ),
+                                ),
+                                const SizedBox(width: RadarSpacing.sm),
+                                Expanded(
+                                  child: Text(
+                                    line,
+                                    style: RadarTextStyles.secondary,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                      ],
+                    ),
+                  )
+                : const SizedBox(width: double.infinity),
           ),
         ],
       ),
