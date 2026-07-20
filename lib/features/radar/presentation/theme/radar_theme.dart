@@ -101,7 +101,6 @@ abstract final class RadarTheme {
         margin: EdgeInsets.zero,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(RadarRadius.card),
-          side: const BorderSide(color: RadarColors.border),
         ),
       ),
       dividerTheme: const DividerThemeData(

@@ -1,5 +1,6 @@
 import 'package:drapeaux_rouges_mb/features/radar/presentation/theme/radar_colors.dart';
 import 'package:drapeaux_rouges_mb/features/radar/presentation/theme/radar_radius.dart';
+import 'package:drapeaux_rouges_mb/features/radar/presentation/theme/radar_shadows.dart';
 import 'package:drapeaux_rouges_mb/features/radar/presentation/theme/radar_spacing.dart';
 import 'package:drapeaux_rouges_mb/features/radar/presentation/theme/radar_text_styles.dart';
 import 'package:drapeaux_rouges_mb/features/radar/presentation/theme/radar_theme.dart';
@@ -20,6 +21,7 @@ void main() {
 
     test('exposes the RC1 spacing and radius scales', () {
       expect(RadarSpacing.md, 12);
+      expect(RadarSpacing.cardGap, 20);
       expect(RadarSpacing.xxxl, 40);
       expect(RadarRadius.small, 12);
       expect(RadarRadius.card, 16);
@@ -46,6 +48,13 @@ void main() {
       expect(theme.colorScheme.primary, RadarColors.primary);
       expect(theme.appBarTheme.elevation, 0);
       expect(theme.cardTheme.elevation, 0);
+    });
+
+    test('exposes the subtle RC1 presentation shadows', () {
+      expect(RadarShadows.card.single.blurRadius, 24);
+      expect(RadarShadows.card.single.offset, const Offset(0, 12));
+      expect(RadarShadows.navigation.single.blurRadius, 28);
+      expect(RadarShadows.navigation.single.offset, const Offset(0, 10));
     });
   });
 }

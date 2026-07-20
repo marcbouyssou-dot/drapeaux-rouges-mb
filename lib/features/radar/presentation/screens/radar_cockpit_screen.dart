@@ -31,9 +31,9 @@ class RadarCockpitScreen extends StatelessWidget {
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 480),
+            constraints: const BoxConstraints(maxWidth: 440),
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: RadarSpacing.lg),
+              padding: const EdgeInsets.symmetric(horizontal: RadarSpacing.xl),
               child: Column(
                 children: [
                   Expanded(
@@ -45,19 +45,20 @@ class RadarCockpitScreen extends StatelessWidget {
                               minHeight: constraints.maxHeight,
                             ),
                             child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                vertical: RadarSpacing.xl,
+                              padding: const EdgeInsets.only(
+                                top: RadarSpacing.xxxl,
+                                bottom: RadarSpacing.xxl,
                               ),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   const _RadarCockpitHeader(),
-                                  const SizedBox(height: RadarSpacing.xl),
+                                  const SizedBox(height: RadarSpacing.xxl),
                                   const RadarContextBar(
                                     patientName: 'Aucun patient sélectionné',
                                     status: 'Contexte patient neutre',
                                   ),
-                                  const SizedBox(height: RadarSpacing.xl),
+                                  const SizedBox(height: RadarSpacing.xxl),
                                   RadarActionCard(
                                     title: 'Évaluation clinique',
                                     subtitle:
@@ -67,7 +68,7 @@ class RadarCockpitScreen extends StatelessWidget {
                                     accentColor: RadarColors.primary,
                                     onTap: () => _openClinicalStart(context),
                                   ),
-                                  const SizedBox(height: RadarSpacing.md),
+                                  const SizedBox(height: RadarSpacing.xl),
                                   RadarActionCard(
                                     title: 'Bilan',
                                     subtitle: 'BDK',
@@ -76,7 +77,7 @@ class RadarCockpitScreen extends StatelessWidget {
                                     accentColor: RadarColors.indigo,
                                     onTap: () => _showComingSoon(context),
                                   ),
-                                  const SizedBox(height: RadarSpacing.md),
+                                  const SizedBox(height: RadarSpacing.xl),
                                   RadarActionCard(
                                     title: 'Documents',
                                     subtitle: 'Créer un document clinique',
@@ -92,7 +93,10 @@ class RadarCockpitScreen extends StatelessWidget {
                       },
                     ),
                   ),
-                  const RadarBottomNavigationBar(currentIndex: 0),
+                  const Padding(
+                    padding: EdgeInsets.only(bottom: RadarSpacing.xl),
+                    child: RadarBottomNavigationBar(currentIndex: 0),
+                  ),
                 ],
               ),
             ),
@@ -119,7 +123,7 @@ class _RadarCockpitHeader extends StatelessWidget {
           SizedBox(height: RadarSpacing.xs),
           Text(
             'Assistant clinique du kinésithérapeute',
-            style: RadarTextStyles.secondary,
+            style: RadarTextStyles.caption,
           ),
         ],
       ),
