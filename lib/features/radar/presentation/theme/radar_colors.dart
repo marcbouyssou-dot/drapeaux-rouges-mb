@@ -1,16 +1,36 @@
 import 'package:flutter/material.dart';
 
 abstract final class RadarColors {
-  static const background = Color(0xFFF6F8FB);
+  // Identity
+  static const primary = Color(0xFF3B82F6);
+  static const indigo = Color(0xFF6366F1);
+  static const slate = Color(0xFF64748B);
+  static const blueGrey = Color(0xFF94A3B8);
+  static const neutralGrey = Color(0xFF9CA3AF);
+
+  // Clinical
+  static const clinicalSuccess = Color(0xFF22C55E);
+  static const clinicalWarning = Color(0xFFF59E0B);
+  static const clinicalDanger = Color(0xFFEF4444);
+  static const clinicalAction = Color(0xFF2563EB);
+
+  // Neutrals
+  static const background = Color(0xFFF8FAFC);
   static const surface = Color(0xFFFFFFFF);
-  static const surfaceMuted = Color(0xFFEFF4F8);
-  static const ink = Color(0xFF16212D);
-  static const mutedInk = Color(0xFF617080);
-  static const border = Color(0xFFDCE5ED);
-  static const primary = Color(0xFF0B6E69);
-  static const primaryDark = Color(0xFF074E4B);
-  static const accent = Color(0xFF3B82F6);
-  static const success = Color(0xFF168A5B);
-  static const successSoft = Color(0xFFE4F6EE);
-  static const warningSoft = Color(0xFFFFF4DB);
+  static const border = Color(0xFFE2E8F0);
+  static const divider = Color(0xFFCBD5E1);
+  static const textPrimary = Color(0xFF0F172A);
+  static const textSecondary = Color(0xFF475569);
+  static const textMuted = Color(0xFF64748B);
+  static const disabled = Color(0xFFCBD5E1);
+
+  // Backward-compatible aliases for the current Radar presentation widgets.
+  static const surfaceMuted = Color(0xFFEFF6FF);
+  static const ink = textPrimary;
+  static const mutedInk = textMuted;
+  static const primaryDark = clinicalAction;
+  static const accent = primary;
+  static const success = clinicalSuccess;
+  static const successSoft = Color(0xFFDCFCE7);
+  static const warningSoft = Color(0xFFFEF3C7);
 }

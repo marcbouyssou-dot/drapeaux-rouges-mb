@@ -3,43 +3,65 @@ import 'package:flutter/material.dart';
 import 'radar_colors.dart';
 
 abstract final class RadarTextStyles {
-  static const display = TextStyle(
-    color: RadarColors.ink,
-    fontSize: 30,
-    fontWeight: FontWeight.w800,
-    height: 1.08,
-  );
-
-  static const title = TextStyle(
-    color: RadarColors.ink,
-    fontSize: 22,
-    fontWeight: FontWeight.w800,
-    height: 1.18,
+  static const screenTitle = TextStyle(
+    color: RadarColors.textPrimary,
+    fontSize: 28,
+    fontWeight: FontWeight.bold,
+    height: 1.12,
   );
 
   static const sectionTitle = TextStyle(
-    color: RadarColors.ink,
-    fontSize: 17,
-    fontWeight: FontWeight.w800,
+    color: RadarColors.textPrimary,
+    fontSize: 22,
+    fontWeight: FontWeight.w600,
+    height: 1.18,
+  );
+
+  static const question = TextStyle(
+    color: RadarColors.textPrimary,
+    fontSize: 20,
+    fontWeight: FontWeight.w600,
+    height: 1.24,
+  );
+
+  static const decision = TextStyle(
+    color: RadarColors.textPrimary,
+    fontSize: 20,
+    fontWeight: FontWeight.w600,
+    height: 1.24,
   );
 
   static const body = TextStyle(
-    color: RadarColors.ink,
-    fontSize: 15,
-    fontWeight: FontWeight.w500,
-    height: 1.35,
+    color: RadarColors.textPrimary,
+    fontSize: 16,
+    fontWeight: FontWeight.w400,
+    height: 1.38,
   );
 
-  static const muted = TextStyle(
-    color: RadarColors.mutedInk,
+  static const secondary = TextStyle(
+    color: RadarColors.textSecondary,
     fontSize: 14,
-    fontWeight: FontWeight.w500,
-    height: 1.35,
+    fontWeight: FontWeight.w400,
+    height: 1.36,
   );
 
-  static const label = TextStyle(
-    color: RadarColors.mutedInk,
+  static const caption = TextStyle(
+    color: RadarColors.textMuted,
     fontSize: 12,
-    fontWeight: FontWeight.w700,
+    fontWeight: FontWeight.w500,
+    height: 1.32,
   );
+
+  static const badge = TextStyle(
+    color: RadarColors.textMuted,
+    fontSize: 12,
+    fontWeight: FontWeight.w600,
+    height: 1.2,
+  );
+
+  // Backward-compatible aliases for the current Radar presentation widgets.
+  static const display = screenTitle;
+  static const title = sectionTitle;
+  static const muted = secondary;
+  static const label = badge;
 }
