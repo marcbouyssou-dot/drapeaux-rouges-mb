@@ -90,7 +90,10 @@ class _RadarClinicalQuestionScreenState
   Widget build(BuildContext context) {
     final question = _state.question;
     final currentStep = _state.answeredQuestionIds.length + 1;
-    final stepLabel = '${_regionLabel(_state.region)} • Étape $currentStep / 8';
+    // UI provisoire RC1 : le total n'est pas exposé par le ViewState.
+    const provisionalStepTotal = 8;
+    final stepLabel =
+        '${_regionLabel(_state.region)} • Étape $currentStep / $provisionalStepTotal';
 
     return Scaffold(
       backgroundColor: RadarColors.background,
@@ -117,19 +120,14 @@ class _RadarClinicalQuestionScreenState
                 ),
                 const SizedBox(height: RadarSpacing.sm),
                 Text(stepLabel, style: RadarTextStyles.secondary),
-                const SizedBox(height: RadarSpacing.xxl),
+                const SizedBox(height: RadarSpacing.lg),
                 if (question == null)
                   const Text(
                     'La question clinique n’est pas disponible.',
                     style: RadarTextStyles.question,
                   )
                 else
-                  Text(
-                    question.text,
-                    style: RadarTextStyles.question,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
+                  Text(question.text, style: RadarTextStyles.question),
                 const SizedBox(height: RadarSpacing.xl),
                 if (question != null)
                   Column(
@@ -282,9 +280,16 @@ class _RadarBackActionState extends State<_RadarBackAction> {
             opacity: _pressed ? 0.7 : 1,
             child: const SizedBox(
               height: 44,
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: Text('Retour', style: RadarTextStyles.secondary),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.arrow_back_ios_new,
+                    color: RadarColors.primary,
+                    size: 16,
+                  ),
+                  SizedBox(width: RadarSpacing.sm),
+                  Text('Retour', style: RadarTextStyles.action),
+                ],
               ),
             ),
           ),

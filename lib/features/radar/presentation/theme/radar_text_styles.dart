@@ -59,6 +59,20 @@ abstract final class RadarTextStyles {
     height: 1.3,
   );
 
+  static const categoryLabel = TextStyle(
+    color: RadarColors.textMuted,
+    fontSize: 12,
+    fontWeight: FontWeight.w600,
+    height: 1.2,
+  );
+
+  static const action = TextStyle(
+    color: RadarColors.primary,
+    fontSize: 14,
+    fontWeight: FontWeight.w500,
+    height: 1.3,
+  );
+
   static const caption = TextStyle(
     color: RadarColors.textMuted,
     fontSize: 12,

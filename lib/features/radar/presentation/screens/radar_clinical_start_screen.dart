@@ -5,6 +5,7 @@ import '../../application/radar_clinical_region.dart';
 import '../../application/radar_clinical_session_controller.dart';
 import '../../application/radar_regional_clinical_orchestrator.dart';
 import '../theme/radar_colors.dart';
+import '../theme/radar_radius.dart';
 import '../theme/radar_spacing.dart';
 import '../theme/radar_text_styles.dart';
 import '../widgets/radar_context_bar.dart';
@@ -68,7 +69,12 @@ class RadarClinicalStartScreen extends StatelessWidget {
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 440),
             child: ListView(
-              padding: const EdgeInsets.symmetric(horizontal: RadarSpacing.md),
+              padding: const EdgeInsets.fromLTRB(
+                RadarSpacing.xl,
+                RadarSpacing.xl,
+                RadarSpacing.xl,
+                RadarSpacing.xl,
+              ),
               children: [
                 const RadarContextBar(
                   patientName: 'Marie Dupont',
@@ -171,36 +177,25 @@ class _RegionGroup extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.only(bottom: RadarSpacing.lg),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title, style: RadarTextStyles.label),
-          const SizedBox(height: 5),
-          DecoratedBox(
-            decoration: BoxDecoration(
-              color: RadarColors.surface,
-              border: Border.all(color: RadarColors.border),
-              borderRadius: BorderRadius.circular(14),
-            ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(14),
-              child: Column(
-                children: [
-                  for (final option in regions) ...[
-                    RadarRegionAction(
-                      label: option.label,
-                      onTap: () => onRegionTap(option),
-                    ),
-                    if (option != regions.last)
-                      const Divider(
-                        height: 1,
-                        thickness: 1,
-                        color: RadarColors.border,
-                      ),
-                  ],
+          Text(title, style: RadarTextStyles.categoryLabel),
+          const SizedBox(height: RadarSpacing.xs),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(RadarRadius.card),
+            child: Column(
+              children: [
+                for (final option in regions) ...[
+                  RadarRegionAction(
+                    label: option.label,
+                    onTap: () => onRegionTap(option),
+                  ),
+                  if (option != regions.last)
+                    const SizedBox(height: RadarSpacing.sm),
                 ],
-              ),
+              ],
             ),
           ),
         ],

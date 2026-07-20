@@ -19,6 +19,13 @@ void main() {
     ) async {
       await _pumpStartScreen(tester);
 
+      expect(find.text('TÊTE ET COU'), findsOneWidget);
+      expect(find.text('MEMBRE SUPÉRIEUR'), findsOneWidget);
+      expect(find.text('TRONC'), findsOneWidget);
+      expect(find.text('MEMBRE INFÉRIEUR'), findsOneWidget);
+      expect(find.text('AUTRE'), findsOneWidget);
+      expect(find.byType(RadioListTile), findsNothing);
+
       await tester.tap(find.text('Lombaires'));
       await tester.pumpAndSettle();
 
@@ -29,6 +36,8 @@ void main() {
       expect(find.text('Évaluation clinique'), findsOneWidget);
       expect(find.text('Lombaires • Étape 1 / 8'), findsOneWidget);
       expect(find.text('Retour'), findsOneWidget);
+      expect(find.byIcon(Icons.arrow_back_ios_new), findsOneWidget);
+      expect(tester.takeException(), isNull);
     });
 
     testWidgets('tapping Cou opens the cervical pathway question', (
@@ -107,6 +116,24 @@ void main() {
       expect(find.text('Des deux côtés'), findsNothing);
       expect(find.text('Impossible à préciser'), findsNothing);
       expect(find.byType(RadioListTile), findsNothing);
+    });
+
+    testWidgets('question text is allowed to wrap without ellipsis', (
+      tester,
+    ) async {
+      await _pumpStartScreen(tester);
+
+      await tester.tap(find.text('Lombaires'));
+      await tester.pumpAndSettle();
+
+      final questionFinder = find.textContaining(
+        'troubles urinaires ou fécaux nouveaux',
+      );
+      expect(questionFinder, findsOneWidget);
+
+      final questionText = tester.widget<Text>(questionFinder);
+      expect(questionText.maxLines, isNull);
+      expect(questionText.overflow, isNull);
     });
 
     testWidgets('question screen supports increased text scaling', (
@@ -545,6 +572,9 @@ Future<void> _pumpStartScreen(
   RadarClinicalInitialContext initialContext =
       const RadarClinicalInitialContext(),
 }) async {
+  await tester.binding.setSurfaceSize(const Size(390, 844));
+  addTearDown(() => tester.binding.setSurfaceSize(null));
+
   await tester.pumpWidget(
     MaterialApp(
       home: RadarClinicalStartScreen(initialContext: initialContext),
