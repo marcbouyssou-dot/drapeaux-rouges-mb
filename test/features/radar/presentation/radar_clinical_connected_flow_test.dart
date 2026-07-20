@@ -26,7 +26,9 @@ void main() {
         find.textContaining('troubles urinaires ou fécaux nouveaux'),
         findsOneWidget,
       );
-      expect(find.text('ÉVALUATION CLINIQUE'), findsOneWidget);
+      expect(find.text('Évaluation clinique'), findsOneWidget);
+      expect(find.text('Lombaires • Étape 1 / 8'), findsOneWidget);
+      expect(find.text('Retour'), findsOneWidget);
     });
 
     testWidgets('tapping Cou opens the cervical pathway question', (
@@ -104,6 +106,43 @@ void main() {
       expect(find.text('Non'), findsOneWidget);
       expect(find.text('Des deux côtés'), findsNothing);
       expect(find.text('Impossible à préciser'), findsNothing);
+      expect(find.byType(RadioListTile), findsNothing);
+    });
+
+    testWidgets('question screen supports increased text scaling', (
+      tester,
+    ) async {
+      await tester.binding.setSurfaceSize(const Size(390, 844));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+
+      final controller = RadarClinicalSessionController(
+        orchestrator: RadarRegionalClinicalOrchestrator(),
+      );
+      final initialState = controller.startSession(
+        region: RadarClinicalRegion.shoulderUpperLimbProximal,
+      );
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: MediaQuery(
+            data: const MediaQueryData(
+              size: Size(390, 844),
+              textScaler: TextScaler.linear(1.2),
+            ),
+            child: RadarClinicalQuestionScreen(
+              controller: controller,
+              initialState: initialState,
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Évaluation clinique'), findsOneWidget);
+      expect(find.text('Épaule • Étape 1 / 8'), findsOneWidget);
+      expect(find.text('Oui'), findsOneWidget);
+      expect(find.text('Non'), findsOneWidget);
+      expect(tester.takeException(), isNull);
     });
 
     testWidgets('tapping no shows next real question without pushing a route', (
