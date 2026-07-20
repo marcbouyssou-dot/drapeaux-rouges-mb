@@ -36,6 +36,10 @@ void main() {
       expect(RadarTextStyles.sectionTitle.fontWeight, FontWeight.w600);
       expect(RadarTextStyles.body.fontSize, 16);
       expect(RadarTextStyles.body.fontWeight, FontWeight.w400);
+      expect(RadarTextStyles.contextTitle.fontSize, 14);
+      expect(RadarTextStyles.contextTitle.fontWeight, FontWeight.w600);
+      expect(RadarTextStyles.contextSecondary.fontSize, 13);
+      expect(RadarTextStyles.contextSecondary.fontWeight, FontWeight.w400);
       expect(RadarTextStyles.badge.fontSize, 12);
       expect(RadarTextStyles.badge.fontWeight, FontWeight.w600);
     });
@@ -51,10 +55,10 @@ void main() {
     });
 
     test('exposes the subtle RC1 presentation shadows', () {
-      expect(RadarShadows.card.single.blurRadius, 24);
-      expect(RadarShadows.card.single.offset, const Offset(0, 12));
-      expect(RadarShadows.navigation.single.blurRadius, 28);
-      expect(RadarShadows.navigation.single.offset, const Offset(0, 10));
+      expect(RadarShadows.card.single.blurRadius, 20);
+      expect(RadarShadows.card.single.offset, const Offset(0, 2));
+      expect(RadarShadows.navigation.single.blurRadius, 24);
+      expect(RadarShadows.navigation.single.offset, const Offset(0, 4));
     });
   });
 }

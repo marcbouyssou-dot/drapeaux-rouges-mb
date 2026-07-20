@@ -68,7 +68,7 @@ class RadarCockpitScreen extends StatelessWidget {
                                     accentColor: RadarColors.primary,
                                     onTap: () => _openClinicalStart(context),
                                   ),
-                                  const SizedBox(height: RadarSpacing.xl),
+                                  const SizedBox(height: RadarSpacing.lg),
                                   RadarActionCard(
                                     title: 'Bilan',
                                     subtitle: 'BDK',
@@ -77,7 +77,7 @@ class RadarCockpitScreen extends StatelessWidget {
                                     accentColor: RadarColors.indigo,
                                     onTap: () => _showComingSoon(context),
                                   ),
-                                  const SizedBox(height: RadarSpacing.xl),
+                                  const SizedBox(height: RadarSpacing.lg),
                                   RadarActionCard(
                                     title: 'Documents',
                                     subtitle: 'Créer un document clinique',
@@ -123,7 +123,7 @@ class _RadarCockpitHeader extends StatelessWidget {
           SizedBox(height: RadarSpacing.xs),
           Text(
             'Assistant clinique du kinésithérapeute',
-            style: RadarTextStyles.caption,
+            style: RadarTextStyles.secondary,
           ),
         ],
       ),

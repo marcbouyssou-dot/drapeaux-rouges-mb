@@ -22,24 +22,27 @@ class RadarContextBar extends StatelessWidget {
 
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: RadarColors.surface,
+        color: RadarColors.surfaceMuted,
         borderRadius: borderRadius,
         boxShadow: RadarShadows.card,
       ),
       child: Padding(
-        padding: const EdgeInsets.all(RadarSpacing.xl),
+        padding: const EdgeInsets.symmetric(
+          horizontal: RadarSpacing.xl,
+          vertical: RadarSpacing.lg,
+        ),
         child: Row(
           children: [
             const _RadarNeutralAvatar(),
-            const SizedBox(width: RadarSpacing.cardGap),
+            const SizedBox(width: RadarSpacing.lg),
             Expanded(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(patientName, style: RadarTextStyles.body),
+                  Text(patientName, style: RadarTextStyles.contextTitle),
                   const SizedBox(height: RadarSpacing.xs),
-                  Text(status, style: RadarTextStyles.caption),
+                  Text(status, style: RadarTextStyles.contextSecondary),
                 ],
               ),
             ),
@@ -62,12 +65,12 @@ class _RadarNeutralAvatar extends StatelessWidget {
   Widget build(BuildContext context) {
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: RadarColors.background,
+        color: RadarColors.blueGrey.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(RadarRadius.small),
       ),
       child: const SizedBox.square(
-        dimension: 48,
-        child: Icon(Icons.person_outline, color: RadarColors.slate, size: 24),
+        dimension: 36,
+        child: Icon(Icons.person_outline, color: RadarColors.slate, size: 20),
       ),
     );
   }

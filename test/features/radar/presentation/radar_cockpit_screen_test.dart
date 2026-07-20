@@ -1,6 +1,8 @@
 import 'package:drapeaux_rouges_mb/features/radar/presentation/radar_demo_shell.dart';
 import 'package:drapeaux_rouges_mb/features/radar/presentation/screens/radar_clinical_start_screen.dart';
 import 'package:drapeaux_rouges_mb/features/radar/presentation/screens/radar_cockpit_screen.dart';
+import 'package:drapeaux_rouges_mb/features/radar/presentation/theme/radar_colors.dart';
+import 'package:drapeaux_rouges_mb/features/radar/presentation/widgets/radar_context_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -27,6 +29,78 @@ void main() {
       expect(find.text('Accueil'), findsOneWidget);
       expect(find.text('Historique'), findsOneWidget);
       expect(find.text('Réglages'), findsOneWidget);
+    });
+
+    testWidgets('uses a neutral patient context without clinical green', (
+      tester,
+    ) async {
+      await _pumpCockpit(tester);
+
+      final contextBar = find.byType(RadarContextBar);
+      expect(contextBar, findsOneWidget);
+      expect(
+        find.descendant(
+          of: contextBar,
+          matching: find.byIcon(Icons.person_outline),
+        ),
+        findsOneWidget,
+      );
+
+      final decorations = tester
+          .widgetList<DecoratedBox>(
+            find.descendant(
+              of: contextBar,
+              matching: find.byType(DecoratedBox),
+            ),
+          )
+          .map((widget) => widget.decoration)
+          .whereType<BoxDecoration>();
+
+      expect(
+        decorations.any(
+          (decoration) => decoration.color == RadarColors.success,
+        ),
+        isFalse,
+      );
+      expect(
+        decorations.any(
+          (decoration) => decoration.color == RadarColors.clinicalSuccess,
+        ),
+        isFalse,
+      );
+    });
+
+    testWidgets(
+      'keeps the cockpit free of overflow with standard text scaling',
+      (tester) async {
+        await _pumpCockpit(tester);
+
+        expect(tester.takeException(), isNull);
+      },
+    );
+
+    testWidgets('supports a reasonably increased text scaler', (tester) async {
+      await tester.binding.setSurfaceSize(const Size(390, 844));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: MediaQuery(
+            data: const MediaQueryData(
+              size: Size(390, 844),
+              textScaler: TextScaler.linear(1.2),
+            ),
+            child: const RadarDemoShell(),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.byType(RadarCockpitScreen), findsOneWidget);
+      expect(find.text('Évaluation clinique'), findsOneWidget);
+      expect(find.text('Bilan'), findsOneWidget);
+      expect(find.text('Documents'), findsOneWidget);
+      expect(tester.takeException(), isNull);
     });
 
     testWidgets('opens the existing clinical flow from clinical evaluation', (

@@ -52,9 +52,9 @@ class RadarActionCard extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(title, style: RadarTextStyles.sectionTitle),
+                      Text(title, style: RadarTextStyles.question),
                       const SizedBox(height: RadarSpacing.sm),
-                      Text(subtitle, style: RadarTextStyles.body),
+                      Text(subtitle, style: RadarTextStyles.secondary),
                       if (description != null) ...[
                         const SizedBox(height: RadarSpacing.sm),
                         Text(description!, style: RadarTextStyles.caption),
@@ -87,7 +87,7 @@ class _RadarActionIcon extends StatelessWidget {
   Widget build(BuildContext context) {
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: accentColor.withValues(alpha: 0.08),
+        color: accentColor.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(RadarRadius.small),
       ),
       child: SizedBox.square(

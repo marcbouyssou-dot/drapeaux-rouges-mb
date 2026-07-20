@@ -45,6 +45,20 @@ abstract final class RadarTextStyles {
     height: 1.36,
   );
 
+  static const contextTitle = TextStyle(
+    color: RadarColors.textPrimary,
+    fontSize: 14,
+    fontWeight: FontWeight.w600,
+    height: 1.28,
+  );
+
+  static const contextSecondary = TextStyle(
+    color: RadarColors.textSecondary,
+    fontSize: 13,
+    fontWeight: FontWeight.w400,
+    height: 1.3,
+  );
+
   static const caption = TextStyle(
     color: RadarColors.textMuted,
     fontSize: 12,

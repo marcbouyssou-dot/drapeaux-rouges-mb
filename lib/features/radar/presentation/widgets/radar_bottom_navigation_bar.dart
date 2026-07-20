@@ -22,7 +22,7 @@ class RadarBottomNavigationBar extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.symmetric(
           horizontal: RadarSpacing.lg,
-          vertical: RadarSpacing.sm,
+          vertical: RadarSpacing.xs,
         ),
         child: Row(
           children: [
@@ -82,7 +82,7 @@ class _RadarNavigationItem extends StatelessWidget {
       selected: selected,
       button: true,
       child: SizedBox(
-        height: 64,
+        height: 56,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -94,11 +94,11 @@ class _RadarNavigationItem extends StatelessWidget {
                 borderRadius: BorderRadius.circular(RadarRadius.small),
               ),
               child: SizedBox.square(
-                dimension: 40,
+                dimension: 32,
                 child: Icon(
                   selected ? selectedIcon : icon,
                   color: color,
-                  size: 24,
+                  size: 20,
                 ),
               ),
             ),
