@@ -8,6 +8,8 @@ import 'theme/app_theme.dart';
 import 'screens/auth/auth_gate.dart';
 import 'features/radar/presentation/radar_demo_shell.dart';
 
+const String kRadarDemoRoute = '/radar-demo';
+
 Future<void> main() async {
   setStartupDebugStep('MAIN START');
   debugPrint('[BOOT] main() START');
@@ -57,7 +59,15 @@ Future<void> _configureSmartphoneOrientation() async {
 }
 
 class RedFlagsApp extends StatelessWidget {
-  const RedFlagsApp({super.key});
+  const RedFlagsApp({super.key, this.initialRouteName});
+
+  final String? initialRouteName;
+
+  bool get _shouldOpenRadarDemo {
+    final routeName =
+        initialRouteName ?? PlatformDispatcher.instance.defaultRouteName;
+    return kDebugMode && routeName == kRadarDemoRoute;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -65,8 +75,8 @@ class RedFlagsApp extends StatelessWidget {
       title: 'Accès Direct MK',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
-      home: AuthGate(),
-      routes: {'/radar-demo': (_) => const RadarDemoShell()},
+      home: _shouldOpenRadarDemo ? const RadarDemoShell() : AuthGate(),
+      routes: {kRadarDemoRoute: (_) => const RadarDemoShell()},
     );
   }
 }
