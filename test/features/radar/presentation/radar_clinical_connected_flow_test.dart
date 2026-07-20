@@ -210,14 +210,15 @@ void main() {
       expect(find.text('Créer ou compléter le BDK'), findsOneWidget);
       expect(find.text('Poursuivre la consultation'), findsOneWidget);
       expect(find.text('Voir les détails de l’analyse'), findsOneWidget);
-      expect(find.text('Parcours clinique réalisé'), findsNothing);
-      expect(find.textContaining('Région : Lombaires'), findsWidgets);
+      expect(find.text('Détails cliniques'), findsNothing);
+      expect(find.textContaining('Région : Lombaires'), findsNothing);
       await tester.tap(find.text('Voir les détails de l’analyse'));
       await tester.pumpAndSettle();
 
-      expect(find.text('Parcours clinique réalisé'), findsOneWidget);
-      await _scrollUntilText(tester, 'Statut expérimental et version');
-      expect(find.text('Statut expérimental et version'), findsOneWidget);
+      expect(find.text('Détails cliniques'), findsOneWidget);
+      expect(find.textContaining('Région : Lombaires'), findsOneWidget);
+      await _scrollUntilText(tester, 'Traçabilité technique avancée');
+      expect(find.text('Traçabilité technique avancée'), findsOneWidget);
     });
 
     testWidgets('another pathway summary displays its own region', (
@@ -229,7 +230,10 @@ void main() {
 
       await _answerUntilSummary(tester, defaultAnswer: 'Non');
 
-      expect(find.textContaining('Région : Cou'), findsWidgets);
+      await tester.tap(find.text('Voir les détails de l’analyse'));
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('Région : Cou'), findsOneWidget);
       expect(find.textContaining('Région : Lombaires'), findsNothing);
     });
 
@@ -284,7 +288,7 @@ void main() {
       await _answerUntilSummary(tester, defaultAnswer: 'Non');
       await tester.tap(find.text('Voir les détails de l’analyse'));
       await tester.pumpAndSettle();
-      await _scrollUntilText(tester, 'Statut expérimental et version');
+      await _scrollUntilText(tester, 'Traçabilité technique avancée');
 
       expect(find.textContaining('NON VALIDÉE'), findsOneWidget);
       expect(find.textContaining('0.1-experimental'), findsOneWidget);
@@ -363,14 +367,18 @@ void main() {
       await tester.tap(find.text('Oui'));
       await tester.pumpAndSettle();
 
-      expect(find.text('ARRÊT DU PARCOURS CLINIQUE'), findsOneWidget);
+      expect(find.text('Urgence médicale'), findsOneWidget);
       expect(
         find.text('Suspicion de syndrome de la queue de cheval'),
         findsOneWidget,
       );
-      expect(find.textContaining('v5_hard_stop_queue_cheval'), findsOneWidget);
+      expect(
+        find.text('Évaluation médicale urgente recommandée.'),
+        findsOneWidget,
+      );
+      expect(find.textContaining('v5_hard_stop_queue_cheval'), findsNothing);
       expect(find.textContaining('Statut : confirmé'), findsOneWidget);
-      expect(find.textContaining('Région : Lombaires'), findsWidgets);
+      expect(find.textContaining('Région : Lombaires'), findsNothing);
       expect(find.text('Poursuivre la consultation'), findsNothing);
     });
 
@@ -383,7 +391,6 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Marie Dupont'), findsNothing);
-      expect(find.text('Consultation en cours'), findsNothing);
       expect(find.text('Orientation prioritaire'), findsNothing);
       expect(find.textContaining('Suivre la conduite adaptée'), findsNothing);
     });
@@ -397,13 +404,13 @@ void main() {
 
       await tester.tap(find.text('Oui'));
       await tester.pumpAndSettle();
-      await _tapSection(tester, 'Données ayant contribué à l’arrêt');
+      await _tapSection(tester, 'Arguments cliniques');
 
-      expect(find.textContaining('Question déclenchante'), findsOneWidget);
       expect(find.textContaining('queue_cheval_suspected'), findsOneWidget);
 
-      await _tapSection(tester, 'Contexte et traçabilité');
+      await _tapSection(tester, 'Traçabilité technique avancée');
 
+      expect(find.textContaining('Question déclenchante'), findsWidgets);
       expect(
         find.textContaining('ClinicalAdaptiveQuestionEngineV5'),
         findsOneWidget,
@@ -443,7 +450,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Lombaires'), findsOneWidget);
-      expect(find.text('ARRÊT DU PARCOURS CLINIQUE'), findsNothing);
+      expect(find.text('Urgence médicale'), findsNothing);
     });
 
     testWidgets('thorax cardio pathway reaches the real dynamic hard stop', (
@@ -458,24 +465,32 @@ void main() {
       await tester.tap(find.text('Oui'));
       await tester.pumpAndSettle();
 
-      expect(find.text('ARRÊT DU PARCOURS CLINIQUE'), findsOneWidget);
+      expect(find.text('Urgence médicale'), findsOneWidget);
       expect(
         find.text('Douleur thoracique avec signe cardio-respiratoire'),
         findsOneWidget,
       );
       expect(
         find.textContaining('v5_hard_stop_cardiorespiratoire'),
-        findsOneWidget,
+        findsNothing,
       );
       expect(find.textContaining('Statut : confirmé'), findsOneWidget);
-      expect(find.textContaining('Niveau fourni : emergency'), findsOneWidget);
-      expect(find.textContaining('Région : Thorax / dos'), findsWidgets);
+      expect(find.textContaining('Niveau fourni : emergency'), findsNothing);
+      expect(find.textContaining('Région : Thorax / dos'), findsNothing);
       expect(find.text('Poursuivre la consultation'), findsNothing);
 
-      await _tapSection(tester, 'Données ayant contribué à l’arrêt');
+      await _tapSection(tester, 'Arguments cliniques');
       expect(find.textContaining('v4_cardiorespiratory_001'), findsOneWidget);
 
-      await _tapSection(tester, 'Contexte et traçabilité');
+      await _tapSection(tester, 'Contexte clinique');
+      expect(find.textContaining('Région : Thorax / dos'), findsOneWidget);
+
+      await _tapSection(tester, 'Traçabilité technique avancée');
+      expect(find.textContaining('Niveau fourni : emergency'), findsOneWidget);
+      expect(
+        find.textContaining('v5_hard_stop_cardiorespiratoire'),
+        findsOneWidget,
+      );
       expect(
         find.textContaining('ClinicalAdaptiveQuestionEngineV5'),
         findsOneWidget,
@@ -488,7 +503,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Thorax'), findsOneWidget);
-      expect(find.text('ARRÊT DU PARCOURS CLINIQUE'), findsNothing);
+      expect(find.text('Urgence médicale'), findsNothing);
     });
 
     testWidgets(
@@ -511,28 +526,39 @@ void main() {
         await tester.tap(find.text('Oui'));
         await tester.pumpAndSettle();
 
-        expect(find.text('ARRÊT DU PARCOURS CLINIQUE'), findsOneWidget);
+        expect(find.text('Urgence médicale'), findsOneWidget);
         expect(
           find.text('Suspicion TVP ou atteinte vasculaire'),
           findsOneWidget,
         );
         expect(
           find.textContaining('v5_hard_stop_vasculaire_tvp'),
-          findsOneWidget,
+          findsNothing,
         );
         expect(find.textContaining('Statut : suspecté'), findsOneWidget);
         expect(
           find.textContaining('Niveau fourni : urgentReferral'),
-          findsOneWidget,
+          findsNothing,
         );
-        expect(find.textContaining('Région : Genou / jambe'), findsWidgets);
+        expect(find.textContaining('Région : Genou / jambe'), findsNothing);
 
-        await _tapSection(tester, 'Données ayant contribué à l’arrêt');
+        await _tapSection(tester, 'Arguments cliniques');
         expect(find.textContaining('v4_vascular_tvp_001'), findsOneWidget);
 
-        await _tapSection(tester, 'Contexte et traçabilité');
+        await _tapSection(tester, 'Contexte clinique');
+        expect(find.textContaining('Région : Genou / jambe'), findsOneWidget);
+
+        await _tapSection(tester, 'Traçabilité technique avancée');
         expect(
           find.textContaining('Portes activées : recentImmobilization'),
+          findsOneWidget,
+        );
+        expect(
+          find.textContaining('Niveau fourni : urgentReferral'),
+          findsOneWidget,
+        );
+        expect(
+          find.textContaining('v5_hard_stop_vasculaire_tvp'),
           findsOneWidget,
         );
         expect(find.textContaining('0.1-experimental'), findsOneWidget);
@@ -543,7 +569,7 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(find.byType(RadarClinicalStartScreen), findsOneWidget);
-        expect(find.text('ARRÊT DU PARCOURS CLINIQUE'), findsNothing);
+        expect(find.text('Urgence médicale'), findsNothing);
       },
     );
 
@@ -571,7 +597,7 @@ void main() {
       await tester.tap(find.text('Oui'));
       await tester.pumpAndSettle();
 
-      expect(find.text('ARRÊT DU PARCOURS CLINIQUE'), findsNothing);
+      expect(find.text('Urgence médicale'), findsNothing);
       expect(find.textContaining('La douleur thoracique'), findsOneWidget);
       expect(find.text('Oui'), findsOneWidget);
       expect(find.text('Non'), findsOneWidget);

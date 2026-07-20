@@ -39,12 +39,8 @@ class RadarClinicalHardStopScreen extends StatelessWidget {
               ),
               children: [
                 RadarContextBar(
-                  patientName: hardStop == null
-                      ? 'Session Radar'
-                      : 'Session ${hardStop.sessionId}',
-                  status: hardStop == null
-                      ? 'Parcours interrompu'
-                      : 'Région : ${_regionLabel(hardStop.region)}',
+                  patientName: 'Consultation en cours',
+                  status: 'Patient non associé',
                 ),
                 const SizedBox(height: RadarSpacing.cardGap),
                 _HardStopDecisionCard(
@@ -54,33 +50,40 @@ class RadarClinicalHardStopScreen extends StatelessWidget {
                       'Élément prioritaire détecté',
                   explanation: hardStop == null
                       ? 'Le parcours a été interrompu.'
-                      : 'Le parcours a été interrompu par le moteur clinique V5.',
-                  metadata: hardStop == null
+                      : 'Les éléments recueillis justifient l’arrêt de l’évaluation et une orientation médicale adaptée.',
+                  recommendation: 'Évaluation médicale urgente recommandée.',
+                  clinicalContext: hardStop == null
                       ? const []
-                      : [
-                          'Statut : ${_hardStopStateLabel(hardStop)}',
-                          if (hardStop.hardStopId != null)
-                            'Identifiant : ${hardStop.hardStopId}',
-                          if (hardStop.decisionLevel != null)
-                            'Niveau fourni : ${hardStop.decisionLevel!.name}',
-                        ],
+                      : ['Statut : ${_hardStopStateLabel(hardStop)}'],
                 ),
                 if (hardStop != null) ...[
                   if (hardStop.criticalArguments.isNotEmpty) ...[
                     const SizedBox(height: RadarSpacing.xl),
                     _HardStopSection(
-                      title: 'Données ayant contribué à l’arrêt',
+                      title: 'Arguments cliniques',
                       lines: hardStop.criticalArguments,
                     ),
                   ],
                   const SizedBox(height: RadarSpacing.md),
                   _HardStopSection(
-                    title: 'Contexte et traçabilité',
+                    title: 'Contexte clinique',
                     lines: [
                       'Région : ${_regionLabel(hardStop.region)}',
+                      'Statut : ${_hardStopStateLabel(hardStop)}',
+                    ],
+                  ),
+                  const SizedBox(height: RadarSpacing.md),
+                  _HardStopSection(
+                    title: 'Traçabilité technique avancée',
+                    lines: [
+                      'Session : ${hardStop.sessionId}',
+                      if (hardStop.hardStopId != null)
+                        'Identifiant : ${hardStop.hardStopId}',
                       'Raison d’arrêt : ${hardStop.stopReason}',
                       if (hardStop.triggeringQuestionId != null)
                         'Question déclenchante : ${hardStop.triggeringQuestionId}',
+                      if (hardStop.decisionLevel != null)
+                        'Niveau fourni : ${hardStop.decisionLevel!.name}',
                       if (hardStop.clinicalFamilyId != null)
                         'Famille clinique : ${hardStop.clinicalFamilyId}',
                       if (hardStop.contextGates.isNotEmpty)
@@ -134,12 +137,14 @@ class _HardStopDecisionCard extends StatelessWidget {
   const _HardStopDecisionCard({
     required this.title,
     required this.explanation,
-    required this.metadata,
+    required this.recommendation,
+    required this.clinicalContext,
   });
 
   final String title;
   final String explanation;
-  final List<String> metadata;
+  final String recommendation;
+  final List<String> clinicalContext;
 
   @override
   Widget build(BuildContext context) {
@@ -172,9 +177,11 @@ class _HardStopDecisionCard extends StatelessWidget {
                     Text(title, style: RadarTextStyles.sectionTitle),
                     const SizedBox(height: RadarSpacing.cardGap),
                     Text(explanation, style: RadarTextStyles.body),
-                    if (metadata.isNotEmpty) ...[
+                    const SizedBox(height: RadarSpacing.cardGap),
+                    Text(recommendation, style: RadarTextStyles.contextTitle),
+                    if (clinicalContext.isNotEmpty) ...[
                       const SizedBox(height: RadarSpacing.xl),
-                      for (final line in metadata)
+                      for (final line in clinicalContext)
                         Padding(
                           padding: const EdgeInsets.only(
                             bottom: RadarSpacing.sm,
@@ -218,7 +225,7 @@ class _HardStopBadge extends StatelessWidget {
             const SizedBox(width: RadarSpacing.sm),
             Flexible(
               child: Text(
-                'ARRÊT DU PARCOURS CLINIQUE',
+                'Urgence médicale',
                 style: RadarTextStyles.badge.copyWith(
                   color: RadarColors.clinicalDanger,
                 ),

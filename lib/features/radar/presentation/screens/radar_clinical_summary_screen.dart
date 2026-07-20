@@ -44,12 +44,8 @@ class RadarClinicalSummaryScreen extends StatelessWidget {
               ),
               children: [
                 RadarContextBar(
-                  patientName: summary == null
-                      ? 'Session Radar'
-                      : 'Session ${summary.sessionId}',
-                  status: summary == null
-                      ? 'Résumé clinique'
-                      : 'Région : ${_regionLabel(summary.region)}',
+                  patientName: 'Consultation en cours',
+                  status: 'Patient non associé',
                 ),
                 const SizedBox(height: RadarSpacing.cardGap),
                 const Text(
@@ -87,21 +83,7 @@ class RadarClinicalSummaryScreen extends StatelessWidget {
 
     return summary.hardStopTitle ??
         summary.primaryHypothesisTitle ??
-        'Décision issue du flow clinique Radar';
-  }
-
-  String _regionLabel(RadarClinicalRegion region) {
-    return switch (region) {
-      RadarClinicalRegion.lumbar => 'Lombaires',
-      RadarClinicalRegion.cervical => 'Cou',
-      RadarClinicalRegion.thoracic => 'Thorax / dos',
-      RadarClinicalRegion.shoulderUpperLimbProximal => 'Épaule / bras',
-      RadarClinicalRegion.upperLimbDistal => 'Coude / main',
-      RadarClinicalRegion.hipLowerLimbProximal => 'Bassin / hanche',
-      RadarClinicalRegion.kneeLeg => 'Genou / jambe',
-      RadarClinicalRegion.ankleFoot => 'Cheville / pied',
-      RadarClinicalRegion.diffuse => 'Douleur diffuse',
-    };
+        'Synthèse établie à partir des éléments recueillis';
   }
 }
 
@@ -129,8 +111,6 @@ class _SummaryDetails extends StatelessWidget {
             lines: [
               for (final answer in summary.positiveAnswers)
                 'Réponse positive : ${answer.text}',
-              for (final flagId in summary.positiveFlagIds)
-                'Signal V5 positif : $flagId',
             ],
           ),
         if (summary.negativeAnswers.isNotEmpty)
@@ -144,10 +124,16 @@ class _SummaryDetails extends StatelessWidget {
             ],
           ),
         _SummaryDetailLines(
-          title: 'Parcours clinique réalisé',
+          title: 'Détails cliniques',
+          lines: ['Région : ${_regionLabel(summary.region)}'],
+        ),
+        _SummaryDetailLines(
+          title: 'Traçabilité technique avancée',
           lines: [
-            'Région : ${_regionLabel(summary.region)}',
+            'Session : ${summary.sessionId}',
             'Raison de fin : ${summary.endReason}',
+            for (final flagId in summary.positiveFlagIds)
+              'Signal clinique positif : $flagId',
             if (summary.contextGates.isNotEmpty)
               'Portes activées : ${summary.contextGates.map((gate) => gate.name).join(', ')}',
             if (summary.clinicalTriggers.isNotEmpty)
@@ -156,11 +142,6 @@ class _SummaryDetails extends StatelessWidget {
               for (final activation in summary.contextActivations)
                 'Activation ${activation.id} via ${activation.source.name}'
                     '${activation.sourceQuestionId == null ? '' : ' après ${activation.sourceQuestionId}'}',
-          ],
-        ),
-        _SummaryDetailLines(
-          title: 'Statut expérimental et version',
-          lines: [
             '${summary.validationStatus} - matrice ${summary.matrixVersion}',
             'Mode : ${summary.operatingMode.name}',
             'Moteur : ${summary.engineVersion}',
