@@ -51,12 +51,12 @@ class RadarClinicalSummaryScreen extends StatelessWidget {
                       ? 'Résumé clinique'
                       : 'Région : ${_regionLabel(summary.region)}',
                 ),
-                const SizedBox(height: RadarSpacing.xl),
+                const SizedBox(height: RadarSpacing.cardGap),
                 const Text(
                   'Synthèse clinique',
                   style: RadarTextStyles.screenTitle,
                 ),
-                const SizedBox(height: RadarSpacing.xl),
+                const SizedBox(height: RadarSpacing.cardGap),
                 RadarDecisionCard(
                   title: decision?.title ?? 'Résumé clinique',
                   subtitle: _decisionSubtitle(summary),
@@ -198,13 +198,33 @@ class _SummaryDetailLines extends StatelessWidget {
     }
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: RadarSpacing.lg),
+      padding: const EdgeInsets.only(bottom: RadarSpacing.xl),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(title, style: RadarTextStyles.contextTitle),
-          const SizedBox(height: RadarSpacing.sm),
-          Text(lines.join('\n\n'), style: RadarTextStyles.secondary),
+          const SizedBox(height: RadarSpacing.md),
+          for (final line in lines)
+            Padding(
+              padding: const EdgeInsets.only(bottom: RadarSpacing.sm),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(top: 7),
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: RadarColors.blueGrey.withValues(alpha: 0.55),
+                        borderRadius: BorderRadius.circular(RadarSpacing.xs),
+                      ),
+                      child: const SizedBox.square(dimension: 5),
+                    ),
+                  ),
+                  const SizedBox(width: RadarSpacing.sm),
+                  Expanded(child: Text(line, style: RadarTextStyles.secondary)),
+                ],
+              ),
+            ),
         ],
       ),
     );

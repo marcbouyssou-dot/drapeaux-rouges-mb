@@ -39,12 +39,20 @@ class RadarDecisionCard extends StatelessWidget {
 
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: accentColor.withValues(alpha: 0.04),
+        color: Color.alphaBlend(
+          accentColor.withValues(alpha: 0.018),
+          RadarColors.surface,
+        ),
         borderRadius: BorderRadius.circular(RadarRadius.signature),
         boxShadow: RadarShadows.card,
       ),
       child: Padding(
-        padding: const EdgeInsets.all(RadarSpacing.xl),
+        padding: const EdgeInsets.fromLTRB(
+          RadarSpacing.xl,
+          RadarSpacing.xl,
+          RadarSpacing.xl,
+          RadarSpacing.lg,
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -52,19 +60,19 @@ class RadarDecisionCard extends StatelessWidget {
               label: _badgeLabel(decisionLevel),
               color: accentColor,
             ),
-            const SizedBox(height: RadarSpacing.cardGap),
+            const SizedBox(height: RadarSpacing.xl),
             Text(title, style: RadarTextStyles.decision),
             if (subtitle.isNotEmpty) ...[
-              const SizedBox(height: RadarSpacing.sm),
+              const SizedBox(height: RadarSpacing.md),
               Text(subtitle, style: RadarTextStyles.secondary),
             ],
-            const SizedBox(height: RadarSpacing.lg),
+            const SizedBox(height: RadarSpacing.cardGap),
             Text(body, style: RadarTextStyles.secondary),
             if (vigilance.isNotEmpty) ...[
-              const SizedBox(height: RadarSpacing.sm),
+              const SizedBox(height: RadarSpacing.md),
               Text(vigilance, style: RadarTextStyles.secondary),
             ],
-            const SizedBox(height: RadarSpacing.xl),
+            const SizedBox(height: RadarSpacing.xxl),
             _DecisionPrimaryAction(
               label: primaryActionLabel,
               color: accentColor,
@@ -116,12 +124,12 @@ class _ClinicalBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.12),
+        color: color.withValues(alpha: 0.09),
         borderRadius: BorderRadius.circular(RadarRadius.pill),
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(
-          horizontal: RadarSpacing.md,
+          horizontal: RadarSpacing.lg,
           vertical: RadarSpacing.xs,
         ),
         child: Text(label, style: RadarTextStyles.badge.copyWith(color: color)),
@@ -160,6 +168,8 @@ class _DecisionPrimaryActionState extends State<_DecisionPrimaryAction> {
 
   @override
   Widget build(BuildContext context) {
+    final buttonColor = Color.lerp(widget.color, RadarColors.surface, 0.12)!;
+
     return Semantics(
       button: true,
       label: widget.label,
@@ -177,8 +187,8 @@ class _DecisionPrimaryActionState extends State<_DecisionPrimaryAction> {
             opacity: _pressed ? 0.82 : 1,
             child: DecoratedBox(
               decoration: BoxDecoration(
-                color: widget.color,
-                borderRadius: BorderRadius.circular(14),
+                color: buttonColor,
+                borderRadius: BorderRadius.circular(RadarRadius.small),
               ),
               child: SizedBox(
                 height: 50,
@@ -251,7 +261,7 @@ class _DecisionDetailsState extends State<_DecisionDetails> {
   Widget build(BuildContext context) {
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: RadarColors.surface.withValues(alpha: 0.68),
+        color: RadarColors.surface.withValues(alpha: 0.72),
         borderRadius: BorderRadius.circular(RadarRadius.card),
       ),
       child: Column(
@@ -264,8 +274,8 @@ class _DecisionDetailsState extends State<_DecisionDetails> {
               onTap: () => setState(() => _expanded = !_expanded),
               child: Padding(
                 padding: const EdgeInsets.symmetric(
-                  horizontal: RadarSpacing.lg,
-                  vertical: RadarSpacing.md,
+                  horizontal: RadarSpacing.cardGap,
+                  vertical: RadarSpacing.lg,
                 ),
                 child: Row(
                   children: [
@@ -296,10 +306,10 @@ class _DecisionDetailsState extends State<_DecisionDetails> {
             child: _expanded
                 ? Padding(
                     padding: const EdgeInsets.fromLTRB(
-                      RadarSpacing.lg,
+                      RadarSpacing.cardGap,
                       0,
-                      RadarSpacing.lg,
-                      RadarSpacing.lg,
+                      RadarSpacing.cardGap,
+                      RadarSpacing.cardGap,
                     ),
                     child: widget.details,
                   )
