@@ -1,10 +1,14 @@
 import 'package:drapeaux_rouges_mb/features/radar/application/radar_clinical_engine_adapter.dart';
+import 'package:drapeaux_rouges_mb/features/radar/application/radar_clinical_answer.dart';
 import 'package:drapeaux_rouges_mb/features/radar/application/radar_clinical_pathway_definition.dart';
 import 'package:drapeaux_rouges_mb/features/radar/application/radar_clinical_region.dart';
 import 'package:drapeaux_rouges_mb/features/radar/application/radar_clinical_session_controller.dart';
+import 'package:drapeaux_rouges_mb/features/radar/application/radar_clinical_view_state.dart';
 import 'package:drapeaux_rouges_mb/features/radar/application/radar_regional_clinical_orchestrator.dart';
 import 'package:drapeaux_rouges_mb/features/radar/presentation/screens/radar_clinical_question_screen.dart';
 import 'package:drapeaux_rouges_mb/features/radar/presentation/screens/radar_clinical_start_screen.dart';
+import 'package:drapeaux_rouges_mb/features/radar/presentation/screens/radar_clinical_summary_screen.dart';
+import 'package:drapeaux_rouges_mb/features/radar/presentation/widgets/radar_decision_card.dart';
 import 'package:drapeaux_rouges_mb/models/clinical_screening/clinical_adaptive_session_v5.dart';
 import 'package:drapeaux_rouges_mb/models/clinical_screening/clinical_adaptive_view_state_v5.dart';
 import 'package:drapeaux_rouges_mb/models/clinical_screening/clinical_probability_update_v5.dart';
@@ -201,7 +205,16 @@ void main() {
 
       await _answerUntilSummary(tester, defaultAnswer: 'Non');
 
+      expect(find.text('Synthèse clinique'), findsOneWidget);
+      expect(find.byType(RadarDecisionCard), findsOneWidget);
+      expect(find.text('Créer ou compléter le BDK'), findsOneWidget);
+      expect(find.text('Poursuivre la consultation'), findsOneWidget);
+      expect(find.text('Voir les détails de l’analyse'), findsOneWidget);
+      expect(find.text('Parcours clinique réalisé'), findsNothing);
       expect(find.textContaining('Région : Lombaires'), findsWidgets);
+      await tester.tap(find.text('Voir les détails de l’analyse'));
+      await tester.pumpAndSettle();
+
       expect(find.text('Parcours clinique réalisé'), findsOneWidget);
       await _scrollUntilText(tester, 'Statut expérimental et version');
       expect(find.text('Statut expérimental et version'), findsOneWidget);
@@ -237,9 +250,14 @@ void main() {
         },
       );
 
-      await tester.tap(find.text('Éléments ayant contribué à la décision'));
+      expect(find.text('Éléments ayant contribué à la décision'), findsNothing);
+      await tester.tap(find.text('Voir les détails de l’analyse'));
       await tester.pumpAndSettle();
 
+      expect(
+        find.text('Éléments ayant contribué à la décision'),
+        findsOneWidget,
+      );
       expect(find.textContaining('Réponse positive'), findsOneWidget);
       expect(find.textContaining('liée au mouvement'), findsOneWidget);
     });
@@ -250,6 +268,8 @@ void main() {
       await tester.pumpAndSettle();
 
       await _answerUntilSummary(tester, defaultAnswer: 'Non');
+      await tester.tap(find.text('Voir les détails de l’analyse'));
+      await tester.pumpAndSettle();
 
       expect(find.text('Éléments ayant contribué à la décision'), findsNothing);
     });
@@ -262,12 +282,57 @@ void main() {
       await tester.pumpAndSettle();
 
       await _answerUntilSummary(tester, defaultAnswer: 'Non');
-      await _scrollUntilText(tester, 'Statut expérimental et version');
-      await tester.tap(find.text('Statut expérimental et version'));
+      await tester.tap(find.text('Voir les détails de l’analyse'));
       await tester.pumpAndSettle();
+      await _scrollUntilText(tester, 'Statut expérimental et version');
 
       expect(find.textContaining('NON VALIDÉE'), findsOneWidget);
       expect(find.textContaining('0.1-experimental'), findsOneWidget);
+    });
+
+    testWidgets('summary primary action is unique and gives sober feedback', (
+      tester,
+    ) async {
+      await _pumpStartScreen(tester);
+      await tester.tap(find.text('Lombaires'));
+      await tester.pumpAndSettle();
+
+      await _answerUntilSummary(tester, defaultAnswer: 'Non');
+
+      expect(find.byType(RadarDecisionCard), findsOneWidget);
+      expect(find.text('Créer ou compléter le BDK'), findsOneWidget);
+      await tester.tap(find.text('Créer ou compléter le BDK'));
+      await tester.pump();
+
+      expect(find.text('Fonction disponible prochainement'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('summary supports increased text scaling without overflow', (
+      tester,
+    ) async {
+      await tester.binding.setSurfaceSize(const Size(390, 844));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+
+      final finalState = _completeLumbarRoutineState();
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: MediaQuery(
+            data: const MediaQueryData(
+              size: Size(390, 844),
+              textScaler: TextScaler.linear(1.2),
+            ),
+            child: RadarClinicalSummaryScreen(finalState: finalState),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Synthèse clinique'), findsOneWidget);
+      expect(find.byType(RadarDecisionCard), findsOneWidget);
+      expect(find.text(finalState.decision!.title), findsOneWidget);
+      expect(tester.takeException(), isNull);
     });
 
     testWidgets('old static summary data is no longer rendered', (
@@ -564,6 +629,24 @@ Future<void> _answerUntilQuestionContaining(
       throw StateError('Radar question containing "$text" was not reached.');
     }
   }
+}
+
+RadarClinicalViewState _completeLumbarRoutineState() {
+  final controller = RadarClinicalSessionController(
+    orchestrator: RadarRegionalClinicalOrchestrator(),
+  );
+  var state = controller.startSession(region: RadarClinicalRegion.lumbar);
+
+  var guard = 0;
+  while (state.summary == null) {
+    state = controller.answer(RadarClinicalAnswer.no);
+    guard++;
+    if (guard > 20) {
+      throw StateError('Radar summary was not reached.');
+    }
+  }
+
+  return state;
 }
 
 Future<void> _pumpStartScreen(
