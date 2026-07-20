@@ -38,14 +38,9 @@ class RadarBottomNavigationBar extends StatelessWidget {
             label: 'Accueil',
           ),
           NavigationDestination(
-            icon: Icon(Icons.people_outline),
-            selectedIcon: Icon(Icons.people),
-            label: 'Patients',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.assignment_outlined),
-            selectedIcon: Icon(Icons.assignment),
-            label: 'BDK',
+            icon: Icon(Icons.history_outlined),
+            selectedIcon: Icon(Icons.history),
+            label: 'Historique',
           ),
           NavigationDestination(
             icon: Icon(Icons.settings_outlined),
