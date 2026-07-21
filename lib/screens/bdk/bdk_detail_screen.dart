@@ -6,7 +6,11 @@ import '../../services/bdk_pdf_service.dart';
 import '../../services/bdk_session_service.dart';
 import '../../services/practitioner_profile_service.dart';
 import '../../services/rgpd_local_service.dart';
-import '../../theme/app_design_system.dart';
+import '../../features/radar/presentation/theme/radar_colors.dart';
+import '../../features/radar/presentation/theme/radar_radius.dart';
+import '../../features/radar/presentation/theme/radar_shadows.dart';
+import '../../features/radar/presentation/theme/radar_spacing.dart';
+import '../../features/radar/presentation/theme/radar_text_styles.dart';
 import '../../widgets/design_system/clinical_auto_summary_card.dart';
 import '../../widgets/design_system/clinical_bottom_action_bar.dart';
 import '../../widgets/design_system/clinical_primary_button.dart';
@@ -158,14 +162,11 @@ class _BDKDetailScreenState extends State<BDKDetailScreen> {
 
     return Container(
       padding: const EdgeInsets.all(14),
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: RadarSpacing.md),
       decoration: BoxDecoration(
-        color: AppColors.softGreen,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-          color: AppColors.successGreen.withValues(alpha: 0.22),
-        ),
-        boxShadow: AppShadows.softShadow,
+        color: RadarColors.successSoft.withValues(alpha: 0.55),
+        borderRadius: BorderRadius.circular(RadarRadius.card),
+        boxShadow: RadarShadows.card,
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -174,12 +175,12 @@ class _BDKDetailScreenState extends State<BDKDetailScreen> {
             width: 42,
             height: 42,
             decoration: BoxDecoration(
-              color: AppColors.successGreen.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(16),
+              color: RadarColors.clinicalSuccess.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(RadarRadius.small),
             ),
             child: Icon(
               Icons.auto_awesome,
-              color: AppColors.successGreen,
+              color: RadarColors.clinicalSuccess,
               size: 24,
             ),
           ),
@@ -190,11 +191,8 @@ class _BDKDetailScreenState extends State<BDKDetailScreen> {
               children: [
                 Text(
                   'Préremplissage depuis l’évaluation',
-                  style: TextStyle(
-                    color: AppColors.successGreen,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w900,
-                    height: 1.2,
+                  style: RadarTextStyles.contextTitle.copyWith(
+                    color: RadarColors.clinicalSuccess,
                   ),
                 ),
                 const SizedBox(height: 6),
@@ -202,11 +200,9 @@ class _BDKDetailScreenState extends State<BDKDetailScreen> {
                   'Risque : ${BDKSessionService.riskLevel} · '
                   'score ${BDKSessionService.riskScore}\n'
                   '${BDKSessionService.redFlags.length} drapeau(x) transféré(s).',
-                  style: TextStyle(
-                    color: AppColors.textPrimary,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                    height: 1.35,
+                  style: RadarTextStyles.contextSecondary.copyWith(
+                    color: RadarColors.textPrimary,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ],
@@ -220,12 +216,11 @@ class _BDKDetailScreenState extends State<BDKDetailScreen> {
   Widget buildNoImportedEvaluationBanner() {
     return Container(
       padding: const EdgeInsets.all(14),
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: RadarSpacing.md),
       decoration: BoxDecoration(
-        color: AppColors.card,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: AppColors.border),
-        boxShadow: AppShadows.softShadow,
+        color: RadarColors.surface,
+        borderRadius: BorderRadius.circular(RadarRadius.card),
+        boxShadow: RadarShadows.card,
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -234,24 +229,21 @@ class _BDKDetailScreenState extends State<BDKDetailScreen> {
             width: 42,
             height: 42,
             decoration: BoxDecoration(
-              color: AppColors.softBlue,
-              borderRadius: BorderRadius.circular(16),
+              color: RadarColors.primary.withValues(alpha: 0.10),
+              borderRadius: BorderRadius.circular(RadarRadius.small),
             ),
             child: Icon(
               Icons.edit_note_rounded,
-              color: AppColors.primaryBlue,
+              color: RadarColors.primary,
               size: 24,
             ),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: RadarSpacing.md),
           Expanded(
             child: Text(
               'Aucune évaluation importée pour le moment. Vous pouvez compléter le BDK manuellement et générer la synthèse clinique.',
-              style: TextStyle(
-                color: AppColors.textSecondary,
-                fontSize: 13,
-                fontWeight: FontWeight.w700,
-                height: 1.35,
+              style: RadarTextStyles.contextSecondary.copyWith(
+                fontWeight: FontWeight.w600,
               ),
             ),
           ),
@@ -264,16 +256,12 @@ class _BDKDetailScreenState extends State<BDKDetailScreen> {
     final compact = MediaQuery.sizeOf(context).width < 430;
 
     return Container(
-      margin: EdgeInsets.all(compact ? 8 : 14),
-      padding: EdgeInsets.all(compact ? 10 : 14),
+      margin: EdgeInsets.all(compact ? RadarSpacing.sm : RadarSpacing.lg),
+      padding: EdgeInsets.all(compact ? RadarSpacing.md : RadarSpacing.lg),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [AppColors.primaryBlue, AppColors.successGreen],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(28),
-        boxShadow: AppShadows.softShadow,
+        color: RadarColors.surface,
+        borderRadius: BorderRadius.circular(RadarRadius.signature),
+        boxShadow: RadarShadows.card,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -282,43 +270,37 @@ class _BDKDetailScreenState extends State<BDKDetailScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               InkWell(
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(RadarRadius.small),
                 onTap: () => Navigator.pop(context),
                 child: Container(
                   width: 44,
                   height: 44,
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.16),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.20),
-                    ),
+                    color: RadarColors.primary.withValues(alpha: 0.10),
+                    borderRadius: BorderRadius.circular(RadarRadius.small),
                   ),
                   child: const Icon(
                     Icons.arrow_back_ios_new_rounded,
-                    color: Colors.white,
+                    color: RadarColors.primary,
                   ),
                 ),
               ),
               if (!compact) ...[
-                const SizedBox(width: 12),
+                const SizedBox(width: RadarSpacing.md),
                 Container(
                   width: 44,
                   height: 44,
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.16),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.20),
-                    ),
+                    color: RadarColors.indigo.withValues(alpha: 0.10),
+                    borderRadius: BorderRadius.circular(RadarRadius.small),
                   ),
                   child: const Icon(
                     Icons.assignment_turned_in_outlined,
-                    color: Colors.white,
+                    color: RadarColors.indigo,
                   ),
                 ),
               ],
-              const SizedBox(width: 12),
+              const SizedBox(width: RadarSpacing.md),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -327,22 +309,19 @@ class _BDKDetailScreenState extends State<BDKDetailScreen> {
                       widget.title,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: AppTextStyles.screenTitle.copyWith(
-                        color: Colors.white,
+                      style: RadarTextStyles.screenTitle.copyWith(
+                        color: RadarColors.textPrimary,
                         fontSize: compact ? 20 : 25,
                       ),
                     ),
                     if (!compact) ...[
-                      const SizedBox(height: 6),
+                      const SizedBox(height: RadarSpacing.xs),
                       Text(
                         'Bilan clinique structuré · export PDF',
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.84),
-                          fontSize: 13,
-                          height: 1.35,
-                          fontWeight: FontWeight.w700,
+                        style: RadarTextStyles.contextSecondary.copyWith(
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ],
@@ -352,10 +331,10 @@ class _BDKDetailScreenState extends State<BDKDetailScreen> {
             ],
           ),
           if (!compact) ...[
-            const SizedBox(height: 12),
+            const SizedBox(height: RadarSpacing.md),
             Wrap(
-              spacing: 8,
-              runSpacing: 8,
+              spacing: RadarSpacing.sm,
+              runSpacing: RadarSpacing.sm,
               children: [
                 buildHeaderChip(
                   Icons.person_outline_rounded,
@@ -380,24 +359,22 @@ class _BDKDetailScreenState extends State<BDKDetailScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.14),
-        borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.20)),
+        color: RadarColors.surfaceMuted,
+        borderRadius: BorderRadius.circular(RadarRadius.pill),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, color: Colors.white, size: 14),
-          const SizedBox(width: 4),
+          Icon(icon, color: RadarColors.primary, size: 14),
+          const SizedBox(width: RadarSpacing.xs),
           Flexible(
             child: Text(
               label,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 11,
-                fontWeight: FontWeight.w900,
+              style: RadarTextStyles.caption.copyWith(
+                color: RadarColors.primary,
+                fontWeight: FontWeight.w700,
               ),
             ),
           ),
@@ -411,12 +388,11 @@ class _BDKDetailScreenState extends State<BDKDetailScreen> {
 
     return Container(
       padding: const EdgeInsets.all(14),
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: RadarSpacing.md),
       decoration: BoxDecoration(
-        color: AppColors.card,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: AppColors.border),
-        boxShadow: AppShadows.softShadow,
+        color: RadarColors.surface,
+        borderRadius: BorderRadius.circular(RadarRadius.card),
+        boxShadow: RadarShadows.card,
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -426,49 +402,38 @@ class _BDKDetailScreenState extends State<BDKDetailScreen> {
             height: 44,
             decoration: BoxDecoration(
               color: patient == null
-                  ? AppColors.softOrange
-                  : AppColors.softBlue,
-              borderRadius: BorderRadius.circular(16),
+                  ? RadarColors.warningSoft
+                  : RadarColors.primary.withValues(alpha: 0.10),
+              borderRadius: BorderRadius.circular(RadarRadius.small),
             ),
             child: Icon(
               patient == null
                   ? Icons.no_accounts_outlined
                   : Icons.badge_outlined,
               color: patient == null
-                  ? AppColors.warningOrange
-                  : AppColors.primaryBlue,
+                  ? RadarColors.clinicalWarning
+                  : RadarColors.primary,
               size: 25,
             ),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: RadarSpacing.md),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   'Patient du BDK',
-                  style: TextStyle(
-                    color: AppColors.textSecondary,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w900,
+                  style: RadarTextStyles.caption.copyWith(
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: RadarSpacing.xs),
                 Text(
                   patientDisplayName,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: AppTextStyles.cardTitle.copyWith(fontSize: 18),
+                  style: RadarTextStyles.question,
                 ),
-                if (patient != null) ...[
-                  const SizedBox(height: 5),
-                  Text(
-                    '${patient.anonymousId} · Né(e) le ${patient.dateNaissance}',
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: AppTextStyles.cardSubtitle.copyWith(fontSize: 12.5),
-                  ),
-                ],
               ],
             ),
           ),
@@ -519,23 +484,33 @@ Une prise en charge kinésithérapique adaptée semble indiquée avec surveillan
   }
 
   Future<void> _exportPdf() async {
-    await BdkPdfService.exportBdkPdf(
-      title: widget.title,
-      patient: currentPatient,
-      motif: motifController.text,
-      contexte: contexteController.text,
-      antecedents: antecedentsController.text,
-      evaluation: evaluationController.text,
-      tests: testsController.text,
-      limitations: limitationsController.text,
-      diagnostic: diagnosticController.text,
-      vigilance: vigilanceController.text,
-      objectifs: objectifsController.text,
-      planTraitement: planTraitementController.text,
-      criteresReevaluation: criteresReevaluationController.text,
-      syntheseClinique: BDKSessionService.syntheseClinique,
-      practitioner: practitioner,
-    );
+    try {
+      await BdkPdfService.exportBdkPdf(
+        title: widget.title,
+        patient: currentPatient,
+        motif: motifController.text,
+        contexte: contexteController.text,
+        antecedents: antecedentsController.text,
+        evaluation: evaluationController.text,
+        tests: testsController.text,
+        limitations: limitationsController.text,
+        diagnostic: diagnosticController.text,
+        vigilance: vigilanceController.text,
+        objectifs: objectifsController.text,
+        planTraitement: planTraitementController.text,
+        criteresReevaluation: criteresReevaluationController.text,
+        syntheseClinique: BDKSessionService.syntheseClinique,
+        practitioner: practitioner,
+      );
+    } catch (_) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Le PDF n’a pas pu être généré. Veuillez réessayer.'),
+        ),
+      );
+    }
   }
 
   @override
@@ -561,7 +536,7 @@ Une prise en charge kinésithérapique adaptée semble indiquée avec surveillan
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: RadarColors.background,
       bottomNavigationBar: ClinicalBottomActionBar(
         secondaryLabel: 'Réinitialiser',
         secondaryIcon: Icons.restart_alt_rounded,
@@ -578,7 +553,12 @@ Une prise en charge kinésithérapique adaptée semble indiquée avec surveillan
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 960),
                 child: ListView(
-                  padding: EdgeInsets.fromLTRB(14, 0, 14, 88),
+                  padding: const EdgeInsets.fromLTRB(
+                    RadarSpacing.lg,
+                    0,
+                    RadarSpacing.lg,
+                    RadarSpacing.xxxl + RadarSpacing.xxl + RadarSpacing.lg,
+                  ),
                   children: [
                     buildPatientSummaryCard(),
                     buildImportedEvaluationBanner(),
@@ -586,7 +566,7 @@ Une prise en charge kinésithérapique adaptée semble indiquée avec surveillan
                       title: 'Motif et contexte',
                       subtitle: 'Données patient et raison de consultation',
                       icon: Icons.edit_note_rounded,
-                      color: AppColors.primaryBlue,
+                      color: RadarColors.primary,
                       initiallyExpanded: true,
                       children: [
                         ClinicalTextField(
@@ -596,7 +576,7 @@ Une prise en charge kinésithérapique adaptée semble indiquée avec surveillan
                           maxLines: 3,
                           controller: motifController,
                         ),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: RadarSpacing.md),
                         ClinicalTextField(
                           label: 'Contexte',
                           hint:
@@ -604,7 +584,7 @@ Une prise en charge kinésithérapique adaptée semble indiquée avec surveillan
                           maxLines: 3,
                           controller: contexteController,
                         ),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: RadarSpacing.md),
                         ClinicalTextField(
                           label: 'Antécédents utiles',
                           hint:
@@ -618,7 +598,7 @@ Une prise en charge kinésithérapique adaptée semble indiquée avec surveillan
                       title: 'Évaluation clinique',
                       subtitle: 'Tests, signes fonctionnels et drapeaux',
                       icon: Icons.monitor_heart_outlined,
-                      color: AppColors.successGreen,
+                      color: RadarColors.clinicalSuccess,
                       children: [
                         ClinicalTextField(
                           label: 'Données issues de l’évaluation',
@@ -626,7 +606,7 @@ Une prise en charge kinésithérapique adaptée semble indiquée avec surveillan
                           maxLines: 4,
                           controller: evaluationController,
                         ),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: RadarSpacing.md),
                         ClinicalTextField(
                           label: 'Tests cliniques',
                           hint:
@@ -634,7 +614,7 @@ Une prise en charge kinésithérapique adaptée semble indiquée avec surveillan
                           maxLines: 4,
                           controller: testsController,
                         ),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: RadarSpacing.md),
                         ClinicalTextField(
                           label: 'Limitations fonctionnelles',
                           hint:
@@ -648,7 +628,7 @@ Une prise en charge kinésithérapique adaptée semble indiquée avec surveillan
                       title: 'Diagnostic MK',
                       subtitle: 'Synthèse clinique et hypothèses',
                       icon: Icons.psychology_alt_outlined,
-                      color: AppColors.warningOrange,
+                      color: RadarColors.clinicalWarning,
                       children: [
                         ClinicalAutoSummaryCard(
                           title: 'Synthèse clinique automatique',
@@ -656,13 +636,13 @@ Une prise en charge kinésithérapique adaptée semble indiquée avec surveillan
                           emptyText:
                               'La synthèse automatique apparaîtra ici après génération.',
                         ),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: RadarSpacing.md),
                         ClinicalPrimaryButton(
                           label: 'Générer la synthèse clinique',
                           icon: Icons.auto_awesome,
                           onPressed: _generateClinicalSummary,
                         ),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: RadarSpacing.md),
                         ClinicalTextField(
                           label: 'Diagnostic kinésithérapique',
                           hint:
@@ -670,7 +650,7 @@ Une prise en charge kinésithérapique adaptée semble indiquée avec surveillan
                           maxLines: 5,
                           controller: diagnosticController,
                         ),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: RadarSpacing.md),
                         ClinicalTextField(
                           label: 'Points de vigilance',
                           hint:
@@ -684,7 +664,7 @@ Une prise en charge kinésithérapique adaptée semble indiquée avec surveillan
                       title: 'Objectifs et plan de soin',
                       subtitle: 'Objectifs, fréquence, progression',
                       icon: Icons.route_outlined,
-                      color: Colors.deepPurple,
+                      color: RadarColors.indigo,
                       children: [
                         ClinicalTextField(
                           label: 'Objectifs thérapeutiques',
@@ -692,7 +672,7 @@ Une prise en charge kinésithérapique adaptée semble indiquée avec surveillan
                           maxLines: 4,
                           controller: objectifsController,
                         ),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: RadarSpacing.md),
                         ClinicalTextField(
                           label: 'Plan de traitement',
                           hint:
@@ -700,7 +680,7 @@ Une prise en charge kinésithérapique adaptée semble indiquée avec surveillan
                           maxLines: 4,
                           controller: planTraitementController,
                         ),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: RadarSpacing.md),
                         ClinicalTextField(
                           label: 'Critères de réévaluation',
                           hint:

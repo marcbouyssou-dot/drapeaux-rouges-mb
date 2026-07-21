@@ -6,6 +6,8 @@ import 'radar_clinical_status.dart';
 import 'radar_decision_view_data.dart';
 import 'radar_question_view_data.dart';
 
+enum RadarClinicalDestination { question, summary, hardStop, unsupportedAnswer }
+
 class RadarClinicalViewState {
   RadarClinicalViewState({
     required this.sessionId,
@@ -28,4 +30,14 @@ class RadarClinicalViewState {
   final RadarClinicalHardStopViewState? hardStop;
   final RadarClinicalSummaryViewState? summary;
   final RadarClinicalAnswer? unsupportedAnswer;
+
+  RadarClinicalDestination get destination {
+    return switch (status) {
+      RadarClinicalStatus.question => RadarClinicalDestination.question,
+      RadarClinicalStatus.decision => RadarClinicalDestination.summary,
+      RadarClinicalStatus.hardStop => RadarClinicalDestination.hardStop,
+      RadarClinicalStatus.unsupportedAnswer =>
+        RadarClinicalDestination.unsupportedAnswer,
+    };
+  }
 }

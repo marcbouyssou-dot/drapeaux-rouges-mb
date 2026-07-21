@@ -66,6 +66,57 @@ void main() {
     _expectPdfBytes(bytes);
   });
 
+  test('BDK PDF smoke supports Radar prefilled clinical data', () async {
+    final bytes = await BdkPdfService.buildBdkPdfBytes(
+      title: 'BDK Lombalgie',
+      patient: null,
+      motif: 'Évaluation de sécurité clinique - Lombaires',
+      contexte:
+          'Région évaluée : Lombaires\nÉvaluation de sécurité clinique réalisée avant le bilan.',
+      antecedents: '',
+      evaluation:
+          'Aucun drapeau rouge identifié parmi les éléments évalués.\nÉléments non retrouvés utiles :\n- Troubles urinaires ou fécaux nouveaux',
+      tests: '',
+      limitations: '',
+      diagnostic: 'Diagnostic modifié par le kinésithérapeute.',
+      vigilance:
+          'Réévaluer en cas d’évolution défavorable ou d’apparition de nouveaux signes.',
+      objectifs: '',
+      planTraitement: '',
+      criteresReevaluation: '',
+      syntheseClinique:
+          'Conclusion Radar : Prise en charge possible\nSynthèse vérifiée par le kinésithérapeute.',
+      practitioner: null,
+    );
+
+    _expectPdfBytes(bytes);
+    expect(bytes.length, greaterThan(1800));
+  });
+
+  test(
+    'BDK PDF source exports Radar prefill fields and excludes internals',
+    () {
+      final source = File(
+        'lib/services/bdk_pdf_service.dart',
+      ).readAsStringSync();
+
+      expect(source, contains("_section('Motif', motif)"));
+      expect(source, contains("_section('Contexte', contexte)"));
+      expect(source, contains("_section('Évaluation clinique', evaluation)"));
+      expect(source, contains("_section('Points de vigilance', vigilance)"));
+      expect(
+        source,
+        contains("_section('Synthèse clinique', syntheseClinique)"),
+      );
+      expect(source, isNot(contains('engineVersion')));
+      expect(source, isNot(contains('matrixVersion')));
+      expect(source, isNot(contains('RadarClinicalStatus')));
+      expect(source, isNot(contains('hardStopId')));
+      expect(source, isNot(contains('anonymousId')));
+      expect(source, isNot(contains('Identifiant')));
+    },
+  );
+
   test('evaluation PDF smoke supports clinical reasoning', () async {
     final bytes = await PdfService.buildPdfBytes(
       categories: {

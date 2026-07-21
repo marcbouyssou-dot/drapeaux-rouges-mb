@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../theme/radar_colors.dart';
+import '../theme/radar_radius.dart';
+import '../theme/radar_text_styles.dart';
 
 class RadarSecondaryAction extends StatelessWidget {
   const RadarSecondaryAction({
@@ -26,8 +28,12 @@ class RadarSecondaryAction extends StatelessWidget {
         style: OutlinedButton.styleFrom(
           foregroundColor: RadarColors.primaryDark,
           side: const BorderSide(color: RadarColors.border),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-          textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(RadarRadius.small),
+          ),
+          textStyle: RadarTextStyles.secondary.copyWith(
+            fontWeight: FontWeight.w700,
+          ),
         ),
       ),
     );

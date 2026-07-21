@@ -7,6 +7,25 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('RadarClinicalViewState', () {
+    test('derives navigation destination from clinical status', () {
+      expect(
+        _stateWithStatus(RadarClinicalStatus.question).destination,
+        RadarClinicalDestination.question,
+      );
+      expect(
+        _stateWithStatus(RadarClinicalStatus.decision).destination,
+        RadarClinicalDestination.summary,
+      );
+      expect(
+        _stateWithStatus(RadarClinicalStatus.hardStop).destination,
+        RadarClinicalDestination.hardStop,
+      );
+      expect(
+        _stateWithStatus(RadarClinicalStatus.unsupportedAnswer).destination,
+        RadarClinicalDestination.unsupportedAnswer,
+      );
+    });
+
     test('stores answered question ids as an immutable set', () {
       final state = RadarClinicalViewState(
         sessionId: 'session-test',
@@ -77,4 +96,15 @@ void main() {
       );
     });
   });
+}
+
+RadarClinicalViewState _stateWithStatus(RadarClinicalStatus status) {
+  return RadarClinicalViewState(
+    sessionId: 'session-test',
+    region: RadarClinicalRegion.lumbar,
+    status: status,
+    question: null,
+    decision: null,
+    answeredQuestionIds: const {},
+  );
 }

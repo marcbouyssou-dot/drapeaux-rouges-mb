@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:drapeaux_rouges_mb/features/radar/application/radar_clinical_engine_adapter.dart';
 import 'package:drapeaux_rouges_mb/features/radar/application/radar_clinical_answer.dart';
 import 'package:drapeaux_rouges_mb/features/radar/application/radar_clinical_pathway_definition.dart';
@@ -13,11 +15,39 @@ import 'package:drapeaux_rouges_mb/models/clinical_screening/clinical_adaptive_s
 import 'package:drapeaux_rouges_mb/models/clinical_screening/clinical_adaptive_view_state_v5.dart';
 import 'package:drapeaux_rouges_mb/models/clinical_screening/clinical_probability_update_v5.dart';
 import 'package:drapeaux_rouges_mb/models/clinical_screening/clinical_screening_models.dart';
+import 'package:drapeaux_rouges_mb/screens/bdk/bdk_detail_screen.dart';
+import 'package:drapeaux_rouges_mb/screens/bdk/bdk_type_screen.dart';
+import 'package:drapeaux_rouges_mb/services/bdk_pdf_service.dart';
+import 'package:drapeaux_rouges_mb/services/bdk_session_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:hive/hive.dart';
 
 void main() {
   group('Radar clinical connected flow', () {
+    late Directory tempDir;
+
+    setUpAll(() async {
+      TestWidgetsFlutterBinding.ensureInitialized();
+
+      tempDir = await Directory.systemTemp.createTemp('radar_bdk_test_');
+      Hive.init(tempDir.path);
+
+      await Hive.openBox('patients_box');
+      await Hive.openBox('settings_box');
+    });
+
+    setUp(() async {
+      BDKSessionService.clear();
+      await Hive.box('patients_box').clear();
+      await Hive.box('settings_box').clear();
+    });
+
+    tearDownAll(() async {
+      await Hive.close();
+      await tempDir.delete(recursive: true);
+    });
+
     testWidgets('tapping Lombaires opens the first real runtime question', (
       tester,
     ) async {
@@ -38,7 +68,7 @@ void main() {
         findsOneWidget,
       );
       expect(find.text('Évaluation clinique'), findsOneWidget);
-      expect(find.text('Lombaires • Étape 1 / 8'), findsOneWidget);
+      expect(find.text('Lombaires • Étape 1'), findsOneWidget);
       expect(find.text('Retour'), findsOneWidget);
       expect(find.byIcon(Icons.arrow_back_ios_new), findsOneWidget);
       expect(tester.takeException(), isNull);
@@ -170,7 +200,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Évaluation clinique'), findsOneWidget);
-      expect(find.text('Épaule • Étape 1 / 8'), findsOneWidget);
+      expect(find.text('Épaule • Étape 1'), findsOneWidget);
       expect(find.text('Oui'), findsOneWidget);
       expect(find.text('Non'), findsOneWidget);
       expect(tester.takeException(), isNull);
@@ -294,9 +324,16 @@ void main() {
       expect(find.textContaining('0.1-experimental'), findsOneWidget);
     });
 
-    testWidgets('summary primary action is unique and gives sober feedback', (
+    testWidgets('summary primary action opens the existing BDK flow', (
       tester,
     ) async {
+      BDKSessionService.motif = 'ancien motif';
+      BDKSessionService.contexte = 'ancien contexte';
+      BDKSessionService.evaluation = 'ancienne évaluation';
+      BDKSessionService.riskLevel = 'ancien risque';
+      BDKSessionService.riskScore = 42;
+      BDKSessionService.redFlags = ['ancien drapeau'];
+
       await _pumpStartScreen(tester);
       await tester.tap(find.text('Lombaires'));
       await tester.pumpAndSettle();
@@ -304,11 +341,108 @@ void main() {
       await _answerUntilSummary(tester, defaultAnswer: 'Non');
 
       expect(find.byType(RadarDecisionCard), findsOneWidget);
+      final decisionCard = tester.widget<RadarDecisionCard>(
+        find.byType(RadarDecisionCard),
+      );
+      expect(decisionCard.primaryActionLabel, 'Créer ou compléter le BDK');
       expect(find.text('Créer ou compléter le BDK'), findsOneWidget);
       await tester.tap(find.text('Créer ou compléter le BDK'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Fonction disponible prochainement'), findsNothing);
+      expect(find.byType(BDKTypeScreen), findsOneWidget);
+      expect(find.text('BDK Lombalgie'), findsOneWidget);
+      expect(BDKSessionService.motif, contains('Lombaires'));
+      expect(
+        BDKSessionService.contexte,
+        contains('Évaluation de sécurité clinique réalisée avant le bilan.'),
+      );
+      expect(
+        BDKSessionService.evaluation,
+        contains('Aucun drapeau rouge identifié'),
+      );
+      expect(BDKSessionService.vigilance, contains('Réévaluer'));
+      expect(
+        BDKSessionService.syntheseClinique,
+        contains('Conclusion Radar : Prise en charge possible'),
+      );
+      expect(BDKSessionService.riskLevel, isEmpty);
+      expect(BDKSessionService.riskScore, 0);
+      expect(BDKSessionService.redFlags, isEmpty);
+
+      final bdkText = [
+        BDKSessionService.motif,
+        BDKSessionService.contexte,
+        BDKSessionService.evaluation,
+        BDKSessionService.vigilance,
+        BDKSessionService.syntheseClinique,
+      ].join('\n');
+      expect(bdkText, isNot(contains('ClinicalAdaptiveQuestionEngineV5')));
+      expect(bdkText, isNot(contains('RadarClinicalStatus')));
+      expect(bdkText, isNot(contains('v5_hard_stop')));
+      expect(bdkText, isNot(contains('session id')));
+      expect(bdkText, isNot(contains('runtime')));
+      expect(bdkText, isNot(contains('engine')));
+
+      await tester.tap(find.text('BDK Lombalgie'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(BDKDetailScreen), findsOneWidget);
+      expect(find.text('Patient non renseigné'), findsWidgets);
+      expect(
+        find.textContaining('Évaluation de sécurité clinique'),
+        findsWidgets,
+      );
+      expect(find.textContaining('Région évaluée : Lombaires'), findsOneWidget);
+      expect(find.textContaining('ancien'), findsNothing);
+      expect(
+        find.textContaining('ClinicalAdaptiveQuestionEngineV5'),
+        findsNothing,
+      );
+      expect(find.textContaining('RadarClinicalStatus'), findsNothing);
+      expect(find.textContaining('v5_hard_stop'), findsNothing);
+      expect(find.text('Exporter PDF'), findsOneWidget);
+
+      await tester.enterText(
+        find.byType(TextField).first,
+        'Motif vérifié et modifié par le kinésithérapeute',
+      );
       await tester.pump();
 
-      expect(find.text('Fonction disponible prochainement'), findsOneWidget);
+      expect(
+        BDKSessionService.motif,
+        'Motif vérifié et modifié par le kinésithérapeute',
+      );
+
+      final pdfBytes = await BdkPdfService.buildBdkPdfBytes(
+        title: 'BDK Lombalgie',
+        patient: null,
+        motif: BDKSessionService.motif,
+        contexte: BDKSessionService.contexte,
+        antecedents: BDKSessionService.antecedents,
+        evaluation: BDKSessionService.evaluation,
+        tests: BDKSessionService.tests,
+        limitations: BDKSessionService.limitations,
+        diagnostic: BDKSessionService.diagnostic,
+        vigilance: BDKSessionService.vigilance,
+        objectifs: BDKSessionService.objectifs,
+        planTraitement: BDKSessionService.planTraitement,
+        criteresReevaluation: BDKSessionService.criteresReevaluation,
+        syntheseClinique: BDKSessionService.syntheseClinique,
+      );
+      expect(String.fromCharCodes(pdfBytes.take(4)), '%PDF');
+      expect(pdfBytes.length, greaterThan(1500));
+
+      Navigator.of(tester.element(find.byType(BDKDetailScreen))).pop();
+      await tester.pumpAndSettle();
+      expect(find.byType(BDKTypeScreen), findsOneWidget);
+
+      await tester.tap(find.byTooltip('Retour'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(BDKTypeScreen), findsNothing);
+      expect(find.text('Synthèse clinique'), findsOneWidget);
+      expect(find.text('Créer ou compléter le BDK'), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
 
@@ -380,6 +514,9 @@ void main() {
       expect(find.textContaining('Statut : confirmé'), findsOneWidget);
       expect(find.textContaining('Région : Lombaires'), findsNothing);
       expect(find.text('Poursuivre la consultation'), findsNothing);
+      expect(find.text('Créer ou compléter le BDK'), findsNothing);
+      expect(BDKSessionService.motif, isEmpty);
+      expect(BDKSessionService.syntheseClinique, isEmpty);
     });
 
     testWidgets('old hard stop static data is gone', (tester) async {
@@ -489,7 +626,7 @@ void main() {
       expect(find.textContaining('Niveau fourni : emergency'), findsOneWidget);
       expect(
         find.textContaining('v5_hard_stop_cardiorespiratoire'),
-        findsOneWidget,
+        findsNothing,
       );
       expect(
         find.textContaining('ClinicalAdaptiveQuestionEngineV5'),
@@ -559,7 +696,7 @@ void main() {
         );
         expect(
           find.textContaining('v5_hard_stop_vasculaire_tvp'),
-          findsOneWidget,
+          findsNothing,
         );
         expect(find.textContaining('0.1-experimental'), findsOneWidget);
         expect(find.textContaining('NON VALIDÉE'), findsOneWidget);

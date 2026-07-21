@@ -1,12 +1,15 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../../application/radar_clinical_region.dart';
 import '../../application/radar_clinical_summary_view_state.dart';
 import '../../application/radar_clinical_view_state.dart';
+import '../../../../screens/bdk/bdk_type_screen.dart';
+import '../../../../services/bdk_session_service.dart';
 import '../theme/radar_colors.dart';
 import '../theme/radar_spacing.dart';
 import '../theme/radar_text_styles.dart';
-import '../widgets/radar_context_bar.dart';
+import '../widgets/radar_patient_context.dart';
 import '../widgets/radar_decision_card.dart';
 
 class RadarClinicalSummaryScreen extends StatelessWidget {
@@ -18,10 +21,31 @@ class RadarClinicalSummaryScreen extends StatelessWidget {
     Navigator.of(context).popUntil((route) => route.isFirst);
   }
 
-  void _showBdkFeedback(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Fonction disponible prochainement')),
+  void _openBdk(BuildContext context) {
+    final summary = finalState?.summary;
+    final decision = summary?.decision ?? finalState?.decision;
+
+    BDKSessionService.clear();
+    BDKSessionService.loadFromClinicalSummary(
+      BDKClinicalPrefill(
+        regionLabel: _regionLabel(finalState?.region),
+        decisionTitle: decision?.title ?? '',
+        decisionSummary: decision?.summary ?? '',
+        vigilanceMessage: decision?.vigilanceMessage ?? '',
+        clinicalExplanation: summary?.shortExplanation ?? '',
+        positiveFindings: [
+          for (final answer in summary?.positiveAnswers ?? const [])
+            answer.text,
+        ],
+        negativeFindings: [
+          for (final answer in summary?.negativeAnswers ?? const [])
+            answer.text,
+        ],
+      ),
     );
+    Navigator.of(
+      context,
+    ).push(CupertinoPageRoute<void>(builder: (_) => const BDKTypeScreen()));
   }
 
   @override
@@ -43,10 +67,7 @@ class RadarClinicalSummaryScreen extends StatelessWidget {
                 RadarSpacing.xxl,
               ),
               children: [
-                RadarContextBar(
-                  patientName: 'Consultation en cours',
-                  status: 'Patient non associé',
-                ),
+                const RadarPatientContextBar(),
                 const SizedBox(height: RadarSpacing.cardGap),
                 const Text(
                   'Synthèse clinique',
@@ -63,7 +84,7 @@ class RadarClinicalSummaryScreen extends StatelessWidget {
                   decisionLevel:
                       summary?.decisionLevel ?? decision?.decisionLevel,
                   primaryActionLabel: 'Créer ou compléter le BDK',
-                  onPrimaryAction: () => _showBdkFeedback(context),
+                  onPrimaryAction: () => _openBdk(context),
                   secondaryActionLabel: 'Poursuivre la consultation',
                   onSecondaryAction: () => _closeSummary(context),
                   details: _SummaryDetails(summary: summary),
@@ -85,6 +106,21 @@ class RadarClinicalSummaryScreen extends StatelessWidget {
         summary.primaryHypothesisTitle ??
         'Synthèse établie à partir des éléments recueillis';
   }
+}
+
+String _regionLabel(RadarClinicalRegion? region) {
+  return switch (region) {
+    RadarClinicalRegion.lumbar => 'Lombaires',
+    RadarClinicalRegion.cervical => 'Cou',
+    RadarClinicalRegion.thoracic => 'Thorax / dos',
+    RadarClinicalRegion.shoulderUpperLimbProximal => 'Épaule / bras',
+    RadarClinicalRegion.upperLimbDistal => 'Coude / main',
+    RadarClinicalRegion.hipLowerLimbProximal => 'Bassin / hanche',
+    RadarClinicalRegion.kneeLeg => 'Genou / jambe',
+    RadarClinicalRegion.ankleFoot => 'Cheville / pied',
+    RadarClinicalRegion.diffuse => 'Douleur diffuse',
+    null => '',
+  };
 }
 
 class _SummaryDetails extends StatelessWidget {
@@ -149,20 +185,6 @@ class _SummaryDetails extends StatelessWidget {
         ),
       ],
     );
-  }
-
-  String _regionLabel(RadarClinicalRegion region) {
-    return switch (region) {
-      RadarClinicalRegion.lumbar => 'Lombaires',
-      RadarClinicalRegion.cervical => 'Cou',
-      RadarClinicalRegion.thoracic => 'Thorax / dos',
-      RadarClinicalRegion.shoulderUpperLimbProximal => 'Épaule / bras',
-      RadarClinicalRegion.upperLimbDistal => 'Coude / main',
-      RadarClinicalRegion.hipLowerLimbProximal => 'Bassin / hanche',
-      RadarClinicalRegion.kneeLeg => 'Genou / jambe',
-      RadarClinicalRegion.ankleFoot => 'Cheville / pied',
-      RadarClinicalRegion.diffuse => 'Douleur diffuse',
-    };
   }
 }
 

@@ -3,6 +3,7 @@ import 'package:drapeaux_rouges_mb/features/radar/presentation/screens/radar_cli
 import 'package:drapeaux_rouges_mb/features/radar/presentation/screens/radar_cockpit_screen.dart';
 import 'package:drapeaux_rouges_mb/features/radar/presentation/theme/radar_colors.dart';
 import 'package:drapeaux_rouges_mb/features/radar/presentation/widgets/radar_context_bar.dart';
+import 'package:drapeaux_rouges_mb/features/radar/presentation/widgets/radar_patient_context.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -18,7 +19,8 @@ void main() {
         find.text('Assistant clinique du kinésithérapeute'),
         findsOneWidget,
       );
-      expect(find.text('Aucun patient sélectionné'), findsOneWidget);
+      expect(find.text('Consultation en cours'), findsOneWidget);
+      expect(find.text('Patient non associé'), findsOneWidget);
       expect(find.text('Évaluation clinique'), findsOneWidget);
       expect(find.text('Détecter les situations à risque'), findsOneWidget);
       expect(find.text('Compatible accès direct'), findsOneWidget);
@@ -38,6 +40,7 @@ void main() {
 
       final contextBar = find.byType(RadarContextBar);
       expect(contextBar, findsOneWidget);
+      expect(find.byType(RadarPatientContextBar), findsOneWidget);
       expect(
         find.descendant(
           of: contextBar,

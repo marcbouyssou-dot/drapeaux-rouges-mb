@@ -6,7 +6,7 @@ import '../theme/radar_spacing.dart';
 import '../theme/radar_text_styles.dart';
 import '../widgets/radar_action_card.dart';
 import '../widgets/radar_bottom_navigation_bar.dart';
-import '../widgets/radar_context_bar.dart';
+import '../widgets/radar_patient_context.dart';
 import 'radar_clinical_start_screen.dart';
 
 class RadarCockpitScreen extends StatelessWidget {
@@ -54,10 +54,7 @@ class RadarCockpitScreen extends StatelessWidget {
                                 children: [
                                   const _RadarCockpitHeader(),
                                   const SizedBox(height: RadarSpacing.xxl),
-                                  const RadarContextBar(
-                                    patientName: 'Aucun patient sélectionné',
-                                    status: 'Contexte patient neutre',
-                                  ),
+                                  const RadarPatientContextBar(),
                                   const SizedBox(height: RadarSpacing.xxl),
                                   RadarActionCard(
                                     title: 'Évaluation clinique',

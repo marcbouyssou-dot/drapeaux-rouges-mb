@@ -3,14 +3,13 @@ import 'package:flutter/material.dart';
 import '../../application/radar_clinical_answer.dart';
 import '../../application/radar_clinical_region.dart';
 import '../../application/radar_clinical_session_controller.dart';
-import '../../application/radar_clinical_status.dart';
 import '../../application/radar_clinical_view_state.dart';
 import '../theme/radar_colors.dart';
 import '../theme/radar_radius.dart';
 import '../theme/radar_shadows.dart';
 import '../theme/radar_spacing.dart';
 import '../theme/radar_text_styles.dart';
-import '../widgets/radar_context_bar.dart';
+import '../widgets/radar_patient_context.dart';
 import 'radar_clinical_hard_stop_screen.dart';
 import 'radar_clinical_summary_screen.dart';
 
@@ -42,19 +41,19 @@ class _RadarClinicalQuestionScreenState
   void _answer(RadarClinicalAnswer answer) {
     final nextState = widget.controller.answer(answer);
 
-    switch (nextState.status) {
-      case RadarClinicalStatus.question:
-      case RadarClinicalStatus.unsupportedAnswer:
+    switch (nextState.destination) {
+      case RadarClinicalDestination.question:
+      case RadarClinicalDestination.unsupportedAnswer:
         setState(() {
           _state = nextState;
         });
-      case RadarClinicalStatus.decision:
+      case RadarClinicalDestination.summary:
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(
             builder: (_) => RadarClinicalSummaryScreen(finalState: nextState),
           ),
         );
-      case RadarClinicalStatus.hardStop:
+      case RadarClinicalDestination.hardStop:
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(
             builder: (_) => RadarClinicalHardStopScreen(finalState: nextState),
@@ -90,10 +89,7 @@ class _RadarClinicalQuestionScreenState
   Widget build(BuildContext context) {
     final question = _state.question;
     final currentStep = _state.answeredQuestionIds.length + 1;
-    // UI provisoire RC1 : le total n'est pas exposé par le ViewState.
-    const provisionalStepTotal = 8;
-    final stepLabel =
-        '${_regionLabel(_state.region)} • Étape $currentStep / $provisionalStepTotal';
+    final stepLabel = '${_regionLabel(_state.region)} • Étape $currentStep';
 
     return Scaffold(
       backgroundColor: RadarColors.background,
@@ -109,10 +105,7 @@ class _RadarClinicalQuestionScreenState
                 RadarSpacing.xxl,
               ),
               children: [
-                const RadarContextBar(
-                  patientName: 'Marie Dupont',
-                  status: 'Consultation en cours',
-                ),
+                const RadarPatientContextBar(),
                 const SizedBox(height: RadarSpacing.xl),
                 const Text(
                   'Évaluation clinique',

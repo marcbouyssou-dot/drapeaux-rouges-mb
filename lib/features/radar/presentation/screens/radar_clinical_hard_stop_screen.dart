@@ -8,7 +8,7 @@ import '../theme/radar_radius.dart';
 import '../theme/radar_shadows.dart';
 import '../theme/radar_spacing.dart';
 import '../theme/radar_text_styles.dart';
-import '../widgets/radar_context_bar.dart';
+import '../widgets/radar_patient_context.dart';
 import '../widgets/radar_primary_button.dart';
 
 class RadarClinicalHardStopScreen extends StatelessWidget {
@@ -38,10 +38,7 @@ class RadarClinicalHardStopScreen extends StatelessWidget {
                 RadarSpacing.xxl,
               ),
               children: [
-                RadarContextBar(
-                  patientName: 'Consultation en cours',
-                  status: 'Patient non associé',
-                ),
+                const RadarPatientContextBar(),
                 const SizedBox(height: RadarSpacing.cardGap),
                 _HardStopDecisionCard(
                   title:
@@ -77,8 +74,6 @@ class RadarClinicalHardStopScreen extends StatelessWidget {
                     title: 'Traçabilité technique avancée',
                     lines: [
                       'Session : ${hardStop.sessionId}',
-                      if (hardStop.hardStopId != null)
-                        'Identifiant : ${hardStop.hardStopId}',
                       'Raison d’arrêt : ${hardStop.stopReason}',
                       if (hardStop.triggeringQuestionId != null)
                         'Question déclenchante : ${hardStop.triggeringQuestionId}',

@@ -89,8 +89,6 @@ class BdkPdfService {
             pw.Text(
               'Patient : ${RgpdLocalService.patientDisplayName(patient)}',
             ),
-            if (patient != null)
-              pw.Text('Identifiant : ${patient.anonymousId}'),
             pw.SizedBox(height: 24),
             _section('Motif', motif),
             _section('Contexte', contexte),

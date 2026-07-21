@@ -8,7 +8,7 @@ import '../theme/radar_colors.dart';
 import '../theme/radar_radius.dart';
 import '../theme/radar_spacing.dart';
 import '../theme/radar_text_styles.dart';
-import '../widgets/radar_context_bar.dart';
+import '../widgets/radar_patient_context.dart';
 import '../widgets/radar_region_action.dart';
 import 'radar_clinical_question_screen.dart';
 
@@ -76,10 +76,7 @@ class RadarClinicalStartScreen extends StatelessWidget {
                 RadarSpacing.xl,
               ),
               children: [
-                const RadarContextBar(
-                  patientName: 'Marie Dupont',
-                  status: 'Consultation en cours',
-                ),
+                const RadarPatientContextBar(),
                 const SizedBox(height: RadarSpacing.lg),
                 const Text(
                   'Où se situe le problème ?',

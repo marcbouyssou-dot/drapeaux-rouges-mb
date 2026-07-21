@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../theme/radar_colors.dart';
+import '../theme/radar_radius.dart';
 import '../theme/radar_spacing.dart';
 import '../theme/radar_text_styles.dart';
 import '../widgets/radar_action_card.dart';
@@ -40,7 +41,7 @@ class RadarHomeScreen extends StatelessWidget {
                         'Consultation en cours',
                         style: RadarTextStyles.muted,
                       ),
-                      const SizedBox(height: 26),
+                      const SizedBox(height: RadarSpacing.xl),
                       const RadarContextBar(
                         patientName: 'Marie Dupont',
                         status: 'Consultation en cours',
@@ -49,14 +50,14 @@ class RadarHomeScreen extends StatelessWidget {
                       _ResumeConsultationButton(
                         onPressed: () => _openClinicalStart(context),
                       ),
-                      const SizedBox(height: 26),
+                      const SizedBox(height: RadarSpacing.xl),
                       RadarActionCard(
                         title: 'Évaluation clinique',
                         subtitle: 'Compatible accès direct',
                         icon: Icons.health_and_safety_outlined,
                         onTap: () => _openClinicalStart(context),
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: RadarSpacing.md),
                       RadarActionCard(
                         title: 'Bilan',
                         subtitle: 'BDK',
@@ -64,7 +65,7 @@ class RadarHomeScreen extends StatelessWidget {
                         icon: Icons.assignment_outlined,
                         onTap: () {},
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: RadarSpacing.md),
                       RadarActionCard(
                         title: 'Documents',
                         subtitle: 'Consulter ou créer un document',
@@ -102,8 +103,12 @@ class _ResumeConsultationButton extends StatelessWidget {
           backgroundColor: RadarColors.surface,
           foregroundColor: RadarColors.primary,
           side: const BorderSide(color: RadarColors.border),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-          textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(RadarRadius.small),
+          ),
+          textStyle: RadarTextStyles.secondary.copyWith(
+            fontWeight: FontWeight.w700,
+          ),
         ),
       ),
     );

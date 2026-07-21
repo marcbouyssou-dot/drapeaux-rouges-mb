@@ -1,10 +1,11 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-import '../../theme/app_colors.dart';
-import '../../theme/app_radius.dart';
-import '../../theme/app_shadows.dart';
-import '../../theme/app_spacing.dart';
+import '../../features/radar/presentation/theme/radar_colors.dart';
+import '../../features/radar/presentation/theme/radar_radius.dart';
+import '../../features/radar/presentation/theme/radar_shadows.dart';
+import '../../features/radar/presentation/theme/radar_spacing.dart';
+import '../../features/radar/presentation/theme/radar_text_styles.dart';
 import 'bdk_detail_screen.dart';
 
 class BDKTypeScreen extends StatelessWidget {
@@ -13,17 +14,17 @@ class BDKTypeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: RadarColors.background,
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 720),
             child: ListView(
               padding: const EdgeInsets.fromLTRB(
-                AppSpacing.md,
-                AppSpacing.sm,
-                AppSpacing.md,
-                AppSpacing.md,
+                RadarSpacing.lg,
+                RadarSpacing.sm,
+                RadarSpacing.lg,
+                RadarSpacing.lg,
               ),
               children: [
                 Align(
@@ -33,18 +34,18 @@ class BDKTypeScreen extends StatelessWidget {
                     onPressed: () => Navigator.pop(context),
                     icon: const Icon(Icons.arrow_back_ios_new_rounded),
                     style: IconButton.styleFrom(
-                      backgroundColor: AppColors.surface,
-                      foregroundColor: AppColors.primary,
+                      backgroundColor: RadarColors.surface,
+                      foregroundColor: RadarColors.primary,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(AppRadius.lg),
+                        borderRadius: BorderRadius.circular(RadarRadius.small),
                       ),
                     ),
                   ),
                 ),
-                const SizedBox(height: AppSpacing.sm),
+                const SizedBox(height: RadarSpacing.lg),
                 ...bdkTypeOptions.map(
                   (item) => Padding(
-                    padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+                    padding: const EdgeInsets.only(bottom: RadarSpacing.md),
                     child: _BDKTypeCard(
                       item: item,
                       onTap: () => _openBdk(context, item),
@@ -116,37 +117,37 @@ const bdkTypeOptions = [
     id: 'lombalgie',
     title: 'BDK Lombalgie',
     icon: Icons.back_hand_outlined,
-    color: Color(0xFF2563EB),
+    color: RadarColors.primary,
   ),
   BDKTypeOption(
     id: 'cervicalgie',
     title: 'BDK Cervicalgie',
     icon: Icons.accessibility_new_outlined,
-    color: Color(0xFFDB2777),
+    color: RadarColors.indigo,
   ),
   BDKTypeOption(
     id: 'cheville',
     title: 'BDK Cheville',
     icon: Icons.directions_walk_outlined,
-    color: Color(0xFF16A34A),
+    color: RadarColors.clinicalSuccess,
   ),
   BDKTypeOption(
     id: 'respiratoire',
     title: 'BDK Respiratoire',
     icon: Icons.air_outlined,
-    color: Color(0xFF7C3AED),
+    color: RadarColors.indigo,
   ),
   BDKTypeOption(
     id: 'personne_agee',
     title: 'BDK Personne âgée',
     icon: Icons.elderly_outlined,
-    color: Color(0xFFF97316),
+    color: RadarColors.clinicalWarning,
   ),
   BDKTypeOption(
     id: 'autres',
     title: 'BDK Autres',
     icon: Icons.more_horiz_rounded,
-    color: Color(0xFF0F766E),
+    color: RadarColors.slate,
     requiresCustomLabel: true,
   ),
 ];
@@ -160,18 +161,17 @@ class _BDKTypeCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: Colors.transparent,
-      borderRadius: BorderRadius.circular(AppRadius.xl),
+      color: RadarColors.surface.withValues(alpha: 0),
+      borderRadius: BorderRadius.circular(RadarRadius.card),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(AppRadius.xl),
+        borderRadius: BorderRadius.circular(RadarRadius.card),
         child: Container(
-          padding: const EdgeInsets.all(12),
+          padding: const EdgeInsets.all(RadarSpacing.lg),
           decoration: BoxDecoration(
-            color: AppColors.surface,
-            borderRadius: BorderRadius.circular(AppRadius.xl),
-            border: Border.all(color: AppColors.border),
-            boxShadow: AppShadows.soft,
+            color: RadarColors.surface,
+            borderRadius: BorderRadius.circular(RadarRadius.card),
+            boxShadow: RadarShadows.card,
           ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -181,28 +181,24 @@ class _BDKTypeCard extends StatelessWidget {
                 width: 48,
                 decoration: BoxDecoration(
                   color: item.color.withValues(alpha: 0.10),
-                  borderRadius: BorderRadius.circular(AppRadius.lg),
+                  borderRadius: BorderRadius.circular(RadarRadius.small),
                   border: Border.all(color: item.color.withValues(alpha: 0.18)),
                 ),
                 child: Icon(item.icon, color: item.color, size: 26),
               ),
-              const SizedBox(width: AppSpacing.sm),
+              const SizedBox(width: RadarSpacing.md),
               Expanded(
                 child: Text(
                   item.title,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: item.color,
-                    fontSize: 18,
-                    fontWeight: FontWeight.w900,
-                  ),
+                  style: RadarTextStyles.question.copyWith(color: item.color),
                 ),
               ),
-              const SizedBox(width: AppSpacing.sm),
+              const SizedBox(width: RadarSpacing.md),
               const Icon(
                 Icons.chevron_right_rounded,
-                color: AppColors.textMuted,
+                color: RadarColors.textMuted,
                 size: 28,
               ),
             ],
@@ -242,17 +238,17 @@ class _BDKCustomLabelDialogState extends State<_BDKCustomLabelDialog> {
         decoration: InputDecoration(
           hintText: 'Ex : épaule, genou, neurologie, post-opératoire...',
           filled: true,
-          fillColor: AppColors.background,
+          fillColor: RadarColors.background,
           border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(AppRadius.lg),
-            borderSide: const BorderSide(color: AppColors.border),
+            borderRadius: BorderRadius.circular(RadarRadius.small),
+            borderSide: const BorderSide(color: RadarColors.border),
           ),
           enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(AppRadius.lg),
-            borderSide: const BorderSide(color: AppColors.border),
+            borderRadius: BorderRadius.circular(RadarRadius.small),
+            borderSide: const BorderSide(color: RadarColors.border),
           ),
           focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(AppRadius.lg),
+            borderRadius: BorderRadius.circular(RadarRadius.small),
             borderSide: BorderSide(color: widget.item.color, width: 1.5),
           ),
         ),
@@ -267,8 +263,9 @@ class _BDKCustomLabelDialogState extends State<_BDKCustomLabelDialog> {
           onPressed: () => Navigator.pop(context, controller.text),
           style: FilledButton.styleFrom(
             backgroundColor: widget.item.color,
+            foregroundColor: RadarColors.surface,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(AppRadius.md),
+              borderRadius: BorderRadius.circular(RadarRadius.small),
             ),
           ),
           child: const Text('Continuer'),
