@@ -1,24 +1,17 @@
 [build]
-command = """
-git clone https://github.com/flutter/flutter.git --branch stable --depth 1
-export PATH="$PATH:$(pwd)/flutter/bin"
-flutter config --enable-web
-flutter build web
-dart run scripts/generate_pwa_service_worker.dart
-"""
-
+command = "flutter build web --release --target lib/main_radar.dart"
 publish = "build/web"
+
+[[redirects]]
+from = "/*"
+to = "/index.html"
+status = 200
 
 [[headers]]
 for = "/manifest.json"
 [headers.values]
 Content-Type = "application/manifest+json; charset=utf-8"
 Cache-Control = "no-cache"
-
-[[headers]]
-for = "/pwa_service_worker.js"
-[headers.values]
-Cache-Control = "no-cache, no-store, must-revalidate"
 
 [[headers]]
 for = "/index.html"

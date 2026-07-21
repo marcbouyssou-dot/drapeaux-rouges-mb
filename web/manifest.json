@@ -1,12 +1,13 @@
 {
-  "name": "Accès Direct MK",
-  "short_name": "AccèsDirectMK",
+  "name": "Radar",
+  "short_name": "Radar",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "background_color": "#032052",
-  "theme_color": "#032052",
-  "description": "Application clinique de repérage des drapeaux rouges.",
+  "orientation": "portrait-primary",
+  "background_color": "#F8FAFC",
+  "theme_color": "#3B82F6",
+  "description": "Assistant clinique du kinésithérapeute.",
   "prefer_related_applications": false,
   "icons": [
     {
