@@ -1,13 +1,15 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+import '../../features/radar/presentation/theme/radar_colors.dart';
+import '../../features/radar/presentation/theme/radar_radius.dart';
+import '../../features/radar/presentation/theme/radar_shadows.dart';
+import '../../features/radar/presentation/theme/radar_spacing.dart';
+import '../../features/radar/presentation/theme/radar_text_styles.dart';
+import '../../features/radar/presentation/theme/radar_theme.dart';
 import '../../models/attestation/attestation_history_item.dart';
 import '../../models/attestation/attestation_template.dart';
 import '../../services/attestation_history_service.dart';
-import '../../theme/app_colors.dart';
-import '../../theme/app_radius.dart';
-import '../../theme/app_shadows.dart';
-import '../../theme/app_spacing.dart';
 import 'attestation_history_detail_screen.dart';
 
 class AttestationHistoryScreen extends StatefulWidget {
@@ -51,50 +53,64 @@ class _AttestationHistoryScreenState extends State<AttestationHistoryScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: SafeArea(
-        child: RefreshIndicator(
-          onRefresh: loadHistory,
-          child: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 720),
-              child: ListView(
-                padding: const EdgeInsets.fromLTRB(
-                  AppSpacing.md,
-                  AppSpacing.sm,
-                  AppSpacing.md,
-                  AppSpacing.lg,
-                ),
-                children: [
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: IconButton.filledTonal(
-                      tooltip: 'Retour',
-                      onPressed: () => Navigator.pop(context),
-                      icon: const Icon(Icons.arrow_back_ios_new_rounded),
-                      style: IconButton.styleFrom(
-                        backgroundColor: AppColors.surface,
-                        foregroundColor: AppColors.primary,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(AppRadius.lg),
+    return Theme(
+      data: RadarTheme.lightTheme,
+      child: Scaffold(
+        backgroundColor: RadarColors.background,
+        body: SafeArea(
+          child: RefreshIndicator(
+            onRefresh: loadHistory,
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 560),
+                child: ListView(
+                  padding: const EdgeInsets.fromLTRB(
+                    RadarSpacing.xl,
+                    RadarSpacing.xl,
+                    RadarSpacing.xl,
+                    RadarSpacing.xxl,
+                  ),
+                  children: [
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: IconButton.filledTonal(
+                        tooltip: 'Retour',
+                        onPressed: () => Navigator.pop(context),
+                        icon: const Icon(Icons.arrow_back_ios_new_rounded),
+                        style: IconButton.styleFrom(
+                          backgroundColor: RadarColors.surface,
+                          foregroundColor: RadarColors.primary,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(
+                              RadarRadius.small,
+                            ),
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: AppSpacing.sm),
-                  if (loading)
-                    const Center(
-                      child: Padding(
-                        padding: EdgeInsets.all(AppSpacing.xl),
-                        child: CircularProgressIndicator(),
+                    const SizedBox(height: RadarSpacing.xl),
+                    const Text(
+                      'Historique des attestations',
+                      style: RadarTextStyles.screenTitle,
+                    ),
+                    const SizedBox(height: RadarSpacing.sm),
+                    const Text(
+                      'Retrouver les attestations générées et réexporter un PDF.',
+                      style: RadarTextStyles.secondary,
+                    ),
+                    const SizedBox(height: RadarSpacing.xxl),
+                    if (loading)
+                      const Center(
+                        child: Padding(
+                          padding: EdgeInsets.all(RadarSpacing.xl),
+                          child: CircularProgressIndicator(),
+                        ),
                       ),
-                    )
-                  else if (attestations.isEmpty)
-                    buildEmptyState()
-                  else
-                    ...attestations.map(buildAttestationCard),
-                ],
+                    if (!loading && attestations.isEmpty) buildEmptyState(),
+                    if (!loading && attestations.isNotEmpty)
+                      ...attestations.map(buildAttestationCard),
+                  ],
+                ),
               ),
             ),
           ),
@@ -105,25 +121,24 @@ class _AttestationHistoryScreenState extends State<AttestationHistoryScreen> {
 
   Widget buildEmptyState() {
     return Container(
-      padding: const EdgeInsets.all(AppSpacing.lg),
+      padding: const EdgeInsets.all(RadarSpacing.xl),
       decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppRadius.xl),
-        border: Border.all(color: AppColors.border),
-        boxShadow: AppShadows.soft,
+        color: RadarColors.surface,
+        borderRadius: BorderRadius.circular(RadarRadius.card),
+        boxShadow: RadarShadows.card,
       ),
       child: const Column(
         children: [
-          Icon(Icons.history_edu_outlined, color: AppColors.primary, size: 44),
-          SizedBox(height: AppSpacing.sm),
+          Icon(
+            Icons.history_edu_outlined,
+            color: RadarColors.primary,
+            size: 44,
+          ),
+          SizedBox(height: RadarSpacing.md),
           Text(
             'Aucune attestation générée pour le moment.',
             textAlign: TextAlign.center,
-            style: TextStyle(
-              color: AppColors.textPrimary,
-              fontSize: 16,
-              fontWeight: FontWeight.w900,
-            ),
+            style: RadarTextStyles.body,
           ),
         ],
       ),
@@ -133,97 +148,98 @@ class _AttestationHistoryScreenState extends State<AttestationHistoryScreen> {
   Widget buildAttestationCard(AttestationHistoryItem item) {
     final template = attestationTemplateByTypeId(item.typeId);
 
-    return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          CupertinoPageRoute(
-            builder: (_) => AttestationHistoryDetailScreen(attestation: item),
-          ),
-        );
-      },
-      child: Container(
-        margin: const EdgeInsets.only(bottom: AppSpacing.sm),
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.circular(AppRadius.xl),
-          border: Border.all(color: AppColors.border),
-          boxShadow: AppShadows.soft,
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
+    return Padding(
+      padding: const EdgeInsets.only(bottom: RadarSpacing.lg),
+      child: Material(
+        color: RadarColors.surface.withValues(alpha: 0),
+        borderRadius: BorderRadius.circular(RadarRadius.card),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(RadarRadius.card),
+          onTap: () {
+            Navigator.push(
+              context,
+              CupertinoPageRoute(
+                builder: (_) =>
+                    AttestationHistoryDetailScreen(attestation: item),
+              ),
+            );
+          },
+          child: Container(
+            padding: const EdgeInsets.all(RadarSpacing.lg),
+            decoration: BoxDecoration(
+              color: RadarColors.surface,
+              borderRadius: BorderRadius.circular(RadarRadius.card),
+              boxShadow: RadarShadows.card,
+            ),
+            child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(
-                  height: 50,
-                  width: 50,
-                  decoration: BoxDecoration(
-                    color: template.color.withValues(alpha: 0.10),
-                    borderRadius: BorderRadius.circular(AppRadius.lg),
-                    border: Border.all(
-                      color: template.color.withValues(alpha: 0.18),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      height: 50,
+                      width: 50,
+                      decoration: BoxDecoration(
+                        color: template.color.withValues(alpha: 0.10),
+                        borderRadius: BorderRadius.circular(RadarRadius.card),
+                      ),
+                      child: Icon(
+                        template.icon,
+                        color: template.color,
+                        size: 25,
+                      ),
                     ),
-                  ),
-                  child: Icon(template.icon, color: template.color, size: 25),
-                ),
-                const SizedBox(width: AppSpacing.sm),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        item.title,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: AppColors.textPrimary,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w900,
-                          height: 1.15,
-                        ),
+                    const SizedBox(width: RadarSpacing.md),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            item.title,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: RadarTextStyles.body.copyWith(
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(height: RadarSpacing.xs),
+                          Text(
+                            item.displayPatient,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: RadarTextStyles.secondary,
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 5),
-                      Text(
-                        item.displayPatient,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: AppColors.textSecondary,
-                          fontWeight: FontWeight.w800,
-                          fontSize: 13,
-                        ),
-                      ),
-                    ],
-                  ),
+                    ),
+                    const Icon(
+                      Icons.chevron_right_rounded,
+                      color: RadarColors.textMuted,
+                    ),
+                  ],
                 ),
-                const Icon(
-                  Icons.chevron_right_rounded,
-                  color: AppColors.textMuted,
+                const SizedBox(height: RadarSpacing.md),
+                Wrap(
+                  spacing: RadarSpacing.sm,
+                  runSpacing: RadarSpacing.sm,
+                  children: [
+                    buildSmallBadge(
+                      icon: Icons.event_outlined,
+                      text: formatDate(item.generatedAt),
+                    ),
+                    buildSmallBadge(
+                      icon: item.hasSignature
+                          ? Icons.draw_outlined
+                          : Icons.edit_off_outlined,
+                      text: item.signatureStatus,
+                    ),
+                    buildStatusBadge(template),
+                  ],
                 ),
               ],
             ),
-            const SizedBox(height: 10),
-            Wrap(
-              spacing: AppSpacing.sm,
-              runSpacing: AppSpacing.sm,
-              children: [
-                buildSmallBadge(
-                  icon: Icons.event_outlined,
-                  text: formatDate(item.generatedAt),
-                ),
-                buildSmallBadge(
-                  icon: item.hasSignature
-                      ? Icons.draw_outlined
-                      : Icons.edit_off_outlined,
-                  text: item.signatureStatus,
-                ),
-                buildStatusBadge(template),
-              ],
-            ),
-          ],
+          ),
         ),
       ),
     );
@@ -231,23 +247,26 @@ class _AttestationHistoryScreenState extends State<AttestationHistoryScreen> {
 
   Widget buildSmallBadge({required IconData icon, required String text}) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      padding: const EdgeInsets.symmetric(
+        horizontal: RadarSpacing.md,
+        vertical: RadarSpacing.sm,
+      ),
       decoration: BoxDecoration(
-        color: AppColors.background,
-        borderRadius: BorderRadius.circular(AppRadius.pill),
-        border: Border.all(color: AppColors.border),
+        color: RadarColors.background,
+        borderRadius: BorderRadius.circular(RadarRadius.pill),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, color: AppColors.textSecondary, size: 13),
-          const SizedBox(width: AppSpacing.xs),
-          Text(
-            text,
-            style: const TextStyle(
-              color: AppColors.textSecondary,
-              fontWeight: FontWeight.w800,
-              fontSize: 11,
+          Icon(icon, color: RadarColors.textSecondary, size: 13),
+          const SizedBox(width: RadarSpacing.xs),
+          Flexible(
+            child: Text(
+              text,
+              overflow: TextOverflow.ellipsis,
+              style: RadarTextStyles.caption.copyWith(
+                color: RadarColors.textSecondary,
+              ),
             ),
           ),
         ],
@@ -256,22 +275,22 @@ class _AttestationHistoryScreenState extends State<AttestationHistoryScreen> {
   }
 
   Widget buildStatusBadge(AttestationTemplate template) {
-    final color = template.isActive ? AppColors.successDark : AppColors.warning;
+    final color = template.isActive
+        ? RadarColors.clinicalSuccess
+        : RadarColors.clinicalWarning;
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      padding: const EdgeInsets.symmetric(
+        horizontal: RadarSpacing.md,
+        vertical: RadarSpacing.sm,
+      ),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.10),
-        borderRadius: BorderRadius.circular(AppRadius.pill),
-        border: Border.all(color: color.withValues(alpha: 0.20)),
+        borderRadius: BorderRadius.circular(RadarRadius.pill),
       ),
       child: Text(
         template.statusLabel,
-        style: TextStyle(
-          color: color,
-          fontWeight: FontWeight.w900,
-          fontSize: 11,
-        ),
+        style: RadarTextStyles.caption.copyWith(color: color),
       ),
     );
   }
