@@ -10,10 +10,12 @@ import '../services/patient_record_service.dart';
 import '../services/practitioner_profile_service.dart';
 import '../services/rgpd_local_service.dart';
 import '../services/offline_sync_service.dart';
-import '../theme/app_colors.dart' as ds;
-import '../theme/app_radius.dart';
-import '../theme/app_shadows.dart';
-import '../theme/app_spacing.dart' as spacing;
+import '../features/radar/presentation/theme/radar_colors.dart';
+import '../features/radar/presentation/theme/radar_radius.dart';
+import '../features/radar/presentation/theme/radar_shadows.dart';
+import '../features/radar/presentation/theme/radar_spacing.dart';
+import '../features/radar/presentation/theme/radar_text_styles.dart';
+import '../features/radar/presentation/theme/radar_theme.dart';
 import 'access_direct_settings_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -261,8 +263,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Future<void> showPractitionerSignatureDialog() async {
     final signatureController = SignatureController(
       penStrokeWidth: 3,
-      penColor: Colors.black,
-      exportBackgroundColor: Colors.white,
+      penColor: RadarColors.textPrimary,
+      exportBackgroundColor: RadarColors.surface,
     );
 
     var signaturePreview = practitioner.signatureBase64;
@@ -285,19 +287,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           if (signaturePreview.trim().isNotEmpty) ...[
                             const Text(
                               'Signature enregistrée',
-                              style: TextStyle(fontWeight: FontWeight.w800),
+                              style: RadarTextStyles.contextTitle,
                             ),
-                            const SizedBox(height: 8),
+                            const SizedBox(height: RadarSpacing.sm),
                             _signaturePreview(signaturePreview),
-                            const SizedBox(height: 14),
+                            const SizedBox(height: RadarSpacing.lg),
                           ],
                           const Text(
                             'Nouvelle signature',
-                            style: TextStyle(fontWeight: FontWeight.w800),
+                            style: RadarTextStyles.contextTitle,
                           ),
-                          const SizedBox(height: 8),
+                          const SizedBox(height: RadarSpacing.sm),
                           _signaturePad(signatureController),
-                          const SizedBox(height: 10),
+                          const SizedBox(height: RadarSpacing.md),
                           TextButton.icon(
                             onPressed: signatureController.clear,
                             icon: const Icon(Icons.backspace_outlined),
@@ -388,24 +390,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return Container(
       height: 132,
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: ds.AppColors.border),
+        color: RadarColors.surface,
+        borderRadius: BorderRadius.circular(RadarRadius.card),
+        border: Border.all(color: RadarColors.border),
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(RadarRadius.card),
         child: Stack(
           children: [
-            Signature(controller: controller, backgroundColor: Colors.white),
+            Signature(
+              controller: controller,
+              backgroundColor: RadarColors.surface,
+            ),
             const Center(
               child: IgnorePointer(
-                child: Text(
-                  'Signer ici',
-                  style: TextStyle(
-                    color: Color(0xFF94A3B8),
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
+                child: Text('Signer ici', style: RadarTextStyles.caption),
               ),
             ),
           ],
@@ -429,11 +428,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     return Container(
       height: 92,
-      padding: const EdgeInsets.all(10),
+      padding: const EdgeInsets.all(RadarSpacing.md),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: ds.AppColors.border),
+        color: RadarColors.surface,
+        borderRadius: BorderRadius.circular(RadarRadius.card),
+        border: Border.all(color: RadarColors.border),
       ),
       child: Image.memory(bytes, fit: BoxFit.contain),
     );
@@ -450,8 +449,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
       decoration: InputDecoration(
         labelText: label,
         filled: true,
-        fillColor: const Color(0xFFF8FAFC),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
+        fillColor: RadarColors.background,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(RadarRadius.card),
+        ),
       ),
     );
   }
@@ -478,7 +479,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
             FilledButton(
               style: FilledButton.styleFrom(
-                backgroundColor: const Color(0xFFEF4444),
+                backgroundColor: RadarColors.clinicalDanger,
               ),
               onPressed: () => Navigator.pop(dialogContext, true),
               child: const Text('Réinitialiser'),
@@ -509,131 +510,141 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ].join(' · ')
         : 'Nom, RPPS, ADELI, cabinet.';
 
-    return Scaffold(
-      backgroundColor: ds.AppColors.background,
-      body: SafeArea(
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 720),
-            child: ListView(
-              padding: const EdgeInsets.fromLTRB(
-                spacing.AppSpacing.md,
-                spacing.AppSpacing.sm,
-                spacing.AppSpacing.md,
-                112,
-              ),
-              children: [
-                buildSectionLabel('PROFIL MK'),
-                const SizedBox(height: 6),
-                settingCard(
-                  icon: practitionerComplete
-                      ? Icons.verified_user_outlined
-                      : Icons.badge_outlined,
-                  iconColor: ds.AppColors.primary,
-                  title: 'Informations MK',
-                  subtitle: practitionerSubtitle,
-                  onTap: showPractitionerDialog,
+    return Theme(
+      data: RadarTheme.lightTheme,
+      child: Scaffold(
+        backgroundColor: RadarColors.background,
+        body: SafeArea(
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 560),
+              child: ListView(
+                padding: const EdgeInsets.fromLTRB(
+                  RadarSpacing.xl,
+                  RadarSpacing.xl,
+                  RadarSpacing.xl,
+                  112,
                 ),
-                settingCard(
-                  icon: Icons.draw_outlined,
-                  iconColor: ds.AppColors.primary,
-                  title: 'Signature praticien',
-                  subtitle: practitioner.hasSignature
-                      ? 'Signature enregistrée pour les prescriptions.'
-                      : 'Signature pour prescriptions et PDF.',
-                  onTap: showPractitionerSignatureDialog,
-                ),
-
-                const SizedBox(height: 8),
-                buildSectionLabel('CONFIDENTIALITÉ'),
-                const SizedBox(height: 6),
-                settingCard(
-                  icon: Icons.verified_user_outlined,
-                  iconColor: ds.AppColors.primary,
-                  title: 'Consentement et confidentialité',
-                  subtitle: 'Gestion RGPD et consentement patient.',
-                  onTap: () => showComingSoon(
-                    context,
-                    'Consentement et confidentialité',
+                children: [
+                  const Text('Réglages', style: RadarTextStyles.screenTitle),
+                  const SizedBox(height: RadarSpacing.sm),
+                  const Text(
+                    'Configurer le profil, la confidentialité et les exports.',
+                    style: RadarTextStyles.secondary,
                   ),
-                ),
-                settingCard(
-                  icon: Icons.storage_rounded,
-                  iconColor: ds.AppColors.teal,
-                  title: 'Stockage local sécurisé',
-                  subtitle: 'Aucune transmission automatique.',
-                  onTap: () =>
-                      showComingSoon(context, 'Stockage local sécurisé'),
-                ),
-                settingCard(
-                  icon: Icons.ios_share_outlined,
-                  iconColor: ds.AppColors.raspberryDark,
-                  title: 'Export pseudonymisé',
-                  subtitle: 'Données cliniques sans nom ni prénom.',
-                  onTap: () => showAnonymousRecordsExport(context),
-                ),
+                  const SizedBox(height: RadarSpacing.xxl),
+                  buildSectionLabel('PROFIL MK'),
+                  const SizedBox(height: RadarSpacing.sm),
+                  settingCard(
+                    icon: practitionerComplete
+                        ? Icons.verified_user_outlined
+                        : Icons.badge_outlined,
+                    iconColor: RadarColors.primary,
+                    title: 'Informations MK',
+                    subtitle: practitionerSubtitle,
+                    onTap: showPractitionerDialog,
+                  ),
+                  settingCard(
+                    icon: Icons.draw_outlined,
+                    iconColor: RadarColors.primary,
+                    title: 'Signature praticien',
+                    subtitle: practitioner.hasSignature
+                        ? 'Signature enregistrée pour les prescriptions.'
+                        : 'Signature pour prescriptions et PDF.',
+                    onTap: showPractitionerSignatureDialog,
+                  ),
 
-                const SizedBox(height: 8),
-                buildSectionLabel('EXPORTS'),
-                const SizedBox(height: 6),
-                settingCard(
-                  icon: Icons.picture_as_pdf_outlined,
-                  iconColor: ds.AppColors.dangerDark,
-                  title: 'Préférences PDF',
-                  subtitle: 'Couleur, impression et signature.',
-                  onTap: () => showComingSoon(context, 'Préférences PDF'),
-                ),
-                settingCard(
-                  icon: Icons.table_chart_outlined,
-                  iconColor: ds.AppColors.primary,
-                  title: 'CSV statistiques',
-                  subtitle: 'Exporter les évaluations pseudonymisées.',
-                  onTap: GlobalStatisticsCsvService.exportGlobalStatisticsCsv,
-                ),
-                settingCard(
-                  icon: Icons.sync_rounded,
-                  iconColor: ds.AppColors.teal,
-                  title: 'Synchroniser maintenant',
-                  subtitle: 'Relancer la file locale en attente.',
-                  onTap: () {
-                    synchronizeNow();
-                  },
-                ),
+                  const SizedBox(height: RadarSpacing.lg),
+                  buildSectionLabel('CONFIDENTIALITÉ'),
+                  const SizedBox(height: RadarSpacing.sm),
+                  settingCard(
+                    icon: Icons.verified_user_outlined,
+                    iconColor: RadarColors.primary,
+                    title: 'Consentement et confidentialité',
+                    subtitle: 'Gestion RGPD et consentement patient.',
+                    onTap: () => showComingSoon(
+                      context,
+                      'Consentement et confidentialité',
+                    ),
+                  ),
+                  settingCard(
+                    icon: Icons.storage_rounded,
+                    iconColor: RadarColors.indigo,
+                    title: 'Stockage local sécurisé',
+                    subtitle: 'Aucune transmission automatique.',
+                    onTap: () =>
+                        showComingSoon(context, 'Stockage local sécurisé'),
+                  ),
+                  settingCard(
+                    icon: Icons.ios_share_outlined,
+                    iconColor: RadarColors.slate,
+                    title: 'Export pseudonymisé',
+                    subtitle: 'Données cliniques sans nom ni prénom.',
+                    onTap: () => showAnonymousRecordsExport(context),
+                  ),
 
-                const SizedBox(height: 8),
-                buildSectionLabel('APPLICATION'),
-                const SizedBox(height: 6),
-                settingCard(
-                  icon: Icons.medical_information_outlined,
-                  iconColor: ds.AppColors.warningDark,
-                  title: 'Accès direct',
-                  subtitle: 'Conditions réglementaires et séances.',
-                  onTap: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => const AccessDirectSettingsScreen(),
-                      ),
-                    );
-                  },
-                ),
-                settingCard(
-                  icon: Icons.dark_mode_outlined,
-                  iconColor: ds.AppColors.raspberryDark,
-                  title: 'Apparence',
-                  subtitle: 'Thème, taille de texte et affichage.',
-                  onTap: () => showComingSoon(context, 'Apparence'),
-                ),
-                settingCard(
-                  icon: Icons.restart_alt_rounded,
-                  iconColor: ds.AppColors.danger,
-                  title: 'Réinitialisation locale',
-                  subtitle: 'Effacer les données stockées sur cet appareil.',
-                  onTap: confirmResetLocalData,
-                ),
+                  const SizedBox(height: RadarSpacing.lg),
+                  buildSectionLabel('EXPORTS'),
+                  const SizedBox(height: RadarSpacing.sm),
+                  settingCard(
+                    icon: Icons.picture_as_pdf_outlined,
+                    iconColor: RadarColors.clinicalDanger,
+                    title: 'Préférences PDF',
+                    subtitle: 'Couleur, impression et signature.',
+                    onTap: () => showComingSoon(context, 'Préférences PDF'),
+                  ),
+                  settingCard(
+                    icon: Icons.table_chart_outlined,
+                    iconColor: RadarColors.primary,
+                    title: 'CSV statistiques',
+                    subtitle: 'Exporter les évaluations pseudonymisées.',
+                    onTap: GlobalStatisticsCsvService.exportGlobalStatisticsCsv,
+                  ),
+                  settingCard(
+                    icon: Icons.sync_rounded,
+                    iconColor: RadarColors.indigo,
+                    title: 'Synchroniser maintenant',
+                    subtitle: 'Relancer la file locale en attente.',
+                    onTap: () {
+                      synchronizeNow();
+                    },
+                  ),
 
-                const SizedBox(height: 8),
-                buildVersionCard(),
-              ],
+                  const SizedBox(height: RadarSpacing.lg),
+                  buildSectionLabel('APPLICATION'),
+                  const SizedBox(height: RadarSpacing.sm),
+                  settingCard(
+                    icon: Icons.medical_information_outlined,
+                    iconColor: RadarColors.clinicalWarning,
+                    title: 'Accès direct',
+                    subtitle: 'Conditions réglementaires et séances.',
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => const AccessDirectSettingsScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                  settingCard(
+                    icon: Icons.dark_mode_outlined,
+                    iconColor: RadarColors.slate,
+                    title: 'Apparence',
+                    subtitle: 'Thème, taille de texte et affichage.',
+                    onTap: () => showComingSoon(context, 'Apparence'),
+                  ),
+                  settingCard(
+                    icon: Icons.restart_alt_rounded,
+                    iconColor: RadarColors.clinicalDanger,
+                    title: 'Réinitialisation locale',
+                    subtitle: 'Effacer les données stockées sur cet appareil.',
+                    onTap: confirmResetLocalData,
+                  ),
+
+                  const SizedBox(height: RadarSpacing.lg),
+                  buildVersionCard(),
+                ],
+              ),
             ),
           ),
         ),
@@ -646,12 +657,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       padding: const EdgeInsets.only(left: 4),
       child: Text(
         text,
-        style: const TextStyle(
-          color: Color(0xFF64748B),
-          fontSize: 12,
-          fontWeight: FontWeight.w900,
-          letterSpacing: 0.7,
-        ),
+        style: RadarTextStyles.badge.copyWith(color: RadarColors.textMuted),
       ),
     );
   }
@@ -664,22 +670,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
     required VoidCallback onTap,
   }) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 6),
+      margin: const EdgeInsets.only(bottom: RadarSpacing.md),
       decoration: BoxDecoration(
-        color: ds.AppColors.surface,
-        borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: ds.AppColors.border),
-        boxShadow: AppShadows.soft,
+        color: RadarColors.surface,
+        borderRadius: BorderRadius.circular(RadarRadius.card),
+        boxShadow: RadarShadows.card,
       ),
       child: ListTile(
         onTap: onTap,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 1),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: RadarSpacing.lg,
+          vertical: RadarSpacing.sm,
+        ),
         leading: Container(
-          height: 36,
-          width: 36,
+          height: 40,
+          width: 40,
           decoration: BoxDecoration(
             color: iconColor.withValues(alpha: 0.10),
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(RadarRadius.small),
           ),
           child: Icon(icon, color: iconColor, size: 21),
         ),
@@ -687,11 +695,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           title,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style: const TextStyle(
-            color: Color(0xFF0F172A),
-            fontSize: 15,
-            fontWeight: FontWeight.w900,
-          ),
+          style: RadarTextStyles.contextTitle,
         ),
         subtitle: Padding(
           padding: const EdgeInsets.only(top: 2),
@@ -699,24 +703,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
             subtitle,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              color: Color(0xFF64748B),
-              fontSize: 12.5,
-              height: 1.3,
-              fontWeight: FontWeight.w600,
-            ),
+            style: RadarTextStyles.contextSecondary,
           ),
         ),
         trailing: Container(
           height: 32,
           width: 32,
           decoration: BoxDecoration(
-            color: ds.AppColors.background,
-            borderRadius: BorderRadius.circular(12),
+            color: RadarColors.background,
+            borderRadius: BorderRadius.circular(RadarRadius.small),
           ),
           child: const Icon(
             Icons.chevron_right_rounded,
-            color: Color(0xFF64748B),
+            color: RadarColors.textMuted,
           ),
         ),
       ),
@@ -725,27 +724,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Widget buildVersionCard() {
     return Container(
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.all(RadarSpacing.lg),
       decoration: BoxDecoration(
-        color: ds.AppColors.surfaceAlt,
-        borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: ds.AppColors.borderStrong),
-        boxShadow: AppShadows.soft,
+        color: RadarColors.surfaceMuted,
+        borderRadius: BorderRadius.circular(RadarRadius.card),
+        boxShadow: RadarShadows.card,
       ),
       child: const Row(
         children: [
-          Icon(Icons.verified_rounded, color: Color(0xFF2563EB), size: 28),
-          SizedBox(width: 12),
+          Icon(Icons.verified_rounded, color: RadarColors.primary, size: 28),
+          SizedBox(width: RadarSpacing.md),
           Expanded(
             child: Text(
               'Drapeaux Rouges — Version 1.0.0',
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                color: Color(0xFF0F172A),
-                fontSize: 14.5,
-                fontWeight: FontWeight.w900,
-              ),
+              style: RadarTextStyles.contextTitle,
             ),
           ),
         ],
