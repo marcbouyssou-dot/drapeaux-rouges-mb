@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 
+import '../../features/radar/presentation/theme/radar_colors.dart';
+import '../../features/radar/presentation/theme/radar_radius.dart';
+import '../../features/radar/presentation/theme/radar_shadows.dart';
+import '../../features/radar/presentation/theme/radar_spacing.dart';
+import '../../features/radar/presentation/theme/radar_text_styles.dart';
+import '../../features/radar/presentation/theme/radar_theme.dart';
 import '../../models/attestation/attestation_history_item.dart';
 import '../../services/patient_attestation_pdf_service.dart';
-import '../../theme/app_colors.dart';
-import '../../theme/app_radius.dart';
-import '../../theme/app_shadows.dart';
-import '../../theme/app_spacing.dart';
 
 class AttestationHistoryDetailScreen extends StatelessWidget {
   const AttestationHistoryDetailScreen({super.key, required this.attestation});
@@ -30,72 +32,80 @@ class AttestationHistoryDetailScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final practitioner = attestation.practitioner;
 
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: SafeArea(
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 720),
-            child: ListView(
-              padding: const EdgeInsets.fromLTRB(
-                AppSpacing.md,
-                AppSpacing.md,
-                AppSpacing.md,
-                120,
-              ),
-              children: [
-                buildHeader(context),
-                const SizedBox(height: AppSpacing.md),
-                buildInfoCard(
-                  icon: Icons.person_outline_rounded,
-                  title: 'Patient',
-                  text: attestation.displayPatient,
+    return Theme(
+      data: RadarTheme.lightTheme,
+      child: Scaffold(
+        backgroundColor: RadarColors.background,
+        body: SafeArea(
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 560),
+              child: ListView(
+                padding: const EdgeInsets.fromLTRB(
+                  RadarSpacing.xl,
+                  RadarSpacing.xl,
+                  RadarSpacing.xl,
+                  120,
                 ),
-                buildInfoCard(
-                  icon: Icons.badge_outlined,
-                  title: 'Praticien',
-                  text: practitioner.fullName.isEmpty
-                      ? 'Praticien non renseigné'
-                      : practitioner.fullName,
-                ),
-                buildInfoCard(
-                  icon: Icons.event_outlined,
-                  title: 'Date',
-                  text: formatDate(attestation.generatedAt),
-                ),
-                buildInfoCard(
-                  icon: Icons.location_on_outlined,
-                  title: 'Lieu',
-                  text: attestation.lieu.trim().isEmpty
-                      ? 'Lieu non renseigné'
-                      : attestation.lieu.trim(),
-                ),
-                buildInfoCard(
-                  icon: attestation.hasSignature
-                      ? Icons.draw_outlined
-                      : Icons.edit_off_outlined,
-                  title: 'Signature',
-                  text: attestation.signatureStatus,
-                ),
-                if (attestation.consentConfirmed)
+                children: [
+                  buildHeader(context),
+                  const SizedBox(height: RadarSpacing.xxl),
                   buildInfoCard(
-                    icon: Icons.verified_user_outlined,
-                    title: 'Consentement',
-                    text: 'Information comprise et signature acceptée',
+                    icon: Icons.person_outline_rounded,
+                    title: 'Patient',
+                    text: attestation.displayPatient,
                   ),
-                buildContentCard(),
-              ],
+                  buildInfoCard(
+                    icon: Icons.badge_outlined,
+                    title: 'Praticien',
+                    text: practitioner.fullName.isEmpty
+                        ? 'Praticien non renseigné'
+                        : practitioner.fullName,
+                  ),
+                  buildInfoCard(
+                    icon: Icons.event_outlined,
+                    title: 'Date',
+                    text: formatDate(attestation.generatedAt),
+                  ),
+                  buildInfoCard(
+                    icon: Icons.location_on_outlined,
+                    title: 'Lieu',
+                    text: attestation.lieu.trim().isEmpty
+                        ? 'Lieu non renseigné'
+                        : attestation.lieu.trim(),
+                  ),
+                  buildInfoCard(
+                    icon: attestation.hasSignature
+                        ? Icons.draw_outlined
+                        : Icons.edit_off_outlined,
+                    title: 'Signature',
+                    text: attestation.signatureStatus,
+                  ),
+                  if (attestation.consentConfirmed)
+                    buildInfoCard(
+                      icon: Icons.verified_user_outlined,
+                      title: 'Consentement',
+                      text: 'Information comprise et signature acceptée',
+                    ),
+                  buildContentCard(),
+                ],
+              ),
             ),
           ),
         ),
-      ),
-      bottomNavigationBar: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(18, 8, 18, 18),
-          child: FilledButton.icon(
-            onPressed: regeneratePdf,
-            icon: const Icon(Icons.picture_as_pdf_outlined),
-            label: const Text('Régénérer le PDF'),
+        bottomNavigationBar: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(
+              RadarSpacing.xl,
+              RadarSpacing.sm,
+              RadarSpacing.xl,
+              RadarSpacing.xl,
+            ),
+            child: FilledButton.icon(
+              onPressed: regeneratePdf,
+              icon: const Icon(Icons.picture_as_pdf_outlined),
+              label: const Text('Régénérer le PDF'),
+            ),
           ),
         ),
       ),
@@ -104,34 +114,33 @@ class AttestationHistoryDetailScreen extends StatelessWidget {
 
   Widget buildHeader(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(AppSpacing.lg),
+      padding: const EdgeInsets.all(RadarSpacing.xl),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [AppColors.medicalBlue, AppColors.primary],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(AppRadius.xl),
-        boxShadow: AppShadows.elevated,
+        color: RadarColors.surface,
+        borderRadius: BorderRadius.circular(RadarRadius.card),
+        boxShadow: RadarShadows.card,
       ),
       child: Row(
         children: [
-          IconButton(
+          IconButton.filledTonal(
+            tooltip: 'Retour',
             onPressed: () => Navigator.pop(context),
             icon: const Icon(Icons.arrow_back_ios_new_rounded),
-            color: AppColors.textOnDark,
+            style: IconButton.styleFrom(
+              backgroundColor: RadarColors.surfaceMuted,
+              foregroundColor: RadarColors.primary,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(RadarRadius.small),
+              ),
+            ),
           ),
-          const SizedBox(width: AppSpacing.sm),
+          const SizedBox(width: RadarSpacing.lg),
           Expanded(
             child: Text(
               attestation.title,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                color: AppColors.textOnDark,
-                fontSize: 22,
-                fontWeight: FontWeight.w900,
-              ),
+              style: RadarTextStyles.question,
             ),
           ),
         ],
@@ -145,37 +154,35 @@ class AttestationHistoryDetailScreen extends StatelessWidget {
     required String text,
   }) {
     return Container(
-      margin: const EdgeInsets.only(bottom: AppSpacing.sm),
-      padding: const EdgeInsets.all(AppSpacing.md),
+      margin: const EdgeInsets.only(bottom: RadarSpacing.lg),
+      padding: const EdgeInsets.all(RadarSpacing.lg),
       decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppRadius.xl),
-        border: Border.all(color: AppColors.border),
-        boxShadow: AppShadows.soft,
+        color: RadarColors.surface,
+        borderRadius: BorderRadius.circular(RadarRadius.card),
+        boxShadow: RadarShadows.card,
       ),
       child: Row(
         children: [
-          Icon(icon, color: AppColors.primary),
-          const SizedBox(width: AppSpacing.sm),
+          Container(
+            width: 38,
+            height: 38,
+            decoration: BoxDecoration(
+              color: RadarColors.primary.withValues(alpha: 0.10),
+              borderRadius: BorderRadius.circular(RadarRadius.small),
+            ),
+            child: Icon(icon, color: RadarColors.primary, size: 20),
+          ),
+          const SizedBox(width: RadarSpacing.md),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    color: AppColors.textSecondary,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-                const SizedBox(height: 3),
+                Text(title, style: RadarTextStyles.caption),
+                const SizedBox(height: RadarSpacing.xs),
                 Text(
                   text,
-                  style: const TextStyle(
-                    color: AppColors.textPrimary,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w900,
+                  style: RadarTextStyles.body.copyWith(
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ],
@@ -188,36 +195,28 @@ class AttestationHistoryDetailScreen extends StatelessWidget {
 
   Widget buildContentCard() {
     return Container(
-      margin: const EdgeInsets.only(bottom: AppSpacing.sm),
-      padding: const EdgeInsets.all(AppSpacing.md),
+      margin: const EdgeInsets.only(bottom: RadarSpacing.lg),
+      padding: const EdgeInsets.all(RadarSpacing.xl),
       decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppRadius.xl),
-        border: Border.all(color: AppColors.border),
-        boxShadow: AppShadows.soft,
+        color: RadarColors.surface,
+        borderRadius: BorderRadius.circular(RadarRadius.card),
+        boxShadow: RadarShadows.card,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             attestation.pdfTitle,
-            style: const TextStyle(
-              color: AppColors.textPrimary,
-              fontSize: 16,
-              fontWeight: FontWeight.w900,
-            ),
+            style: RadarTextStyles.body.copyWith(fontWeight: FontWeight.w600),
           ),
-          const SizedBox(height: AppSpacing.sm),
+          const SizedBox(height: RadarSpacing.md),
           ...attestation.displayBodyParagraphs.map(
             (paragraph) => Padding(
-              padding: const EdgeInsets.only(bottom: 8),
+              padding: const EdgeInsets.only(bottom: RadarSpacing.sm),
               child: Text(
                 paragraph,
-                style: const TextStyle(
-                  color: AppColors.textPrimary,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                  height: 1.4,
+                style: RadarTextStyles.secondary.copyWith(
+                  color: RadarColors.textPrimary,
                 ),
               ),
             ),

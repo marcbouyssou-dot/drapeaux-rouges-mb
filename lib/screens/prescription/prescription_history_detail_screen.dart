@@ -3,12 +3,14 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 
+import '../../features/radar/presentation/theme/radar_colors.dart';
+import '../../features/radar/presentation/theme/radar_radius.dart';
+import '../../features/radar/presentation/theme/radar_shadows.dart';
+import '../../features/radar/presentation/theme/radar_spacing.dart';
+import '../../features/radar/presentation/theme/radar_text_styles.dart';
+import '../../features/radar/presentation/theme/radar_theme.dart';
 import '../../models/prescription_model.dart';
 import '../../services/prescription_pdf_service.dart';
-import '../../theme/app_colors.dart';
-import '../../theme/app_radius.dart';
-import '../../theme/app_shadows.dart';
-import '../../theme/app_spacing.dart';
 
 class PrescriptionHistoryDetailScreen extends StatelessWidget {
   const PrescriptionHistoryDetailScreen({
@@ -53,59 +55,67 @@ class PrescriptionHistoryDetailScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final hasJustificatif = justificatifImageBytes != null;
 
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: SafeArea(
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 720),
-            child: ListView(
-              padding: const EdgeInsets.fromLTRB(
-                AppSpacing.md,
-                AppSpacing.md,
-                AppSpacing.md,
-                120,
+    return Theme(
+      data: RadarTheme.lightTheme,
+      child: Scaffold(
+        backgroundColor: RadarColors.background,
+        body: SafeArea(
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 560),
+              child: ListView(
+                padding: const EdgeInsets.fromLTRB(
+                  RadarSpacing.xl,
+                  RadarSpacing.xl,
+                  RadarSpacing.xl,
+                  120,
+                ),
+                children: [
+                  buildHeader(context),
+                  const SizedBox(height: RadarSpacing.xxl),
+                  buildInfoCard(
+                    icon: Icons.person_outline_rounded,
+                    title: 'Patient',
+                    text: prescription.displayPatient,
+                  ),
+                  buildInfoCard(
+                    icon: Icons.medical_services_outlined,
+                    title: 'Type',
+                    text: prescription.displayType,
+                  ),
+                  buildInfoCard(
+                    icon: Icons.event_outlined,
+                    title: 'Date',
+                    text: formatDate(prescription.createdAt),
+                  ),
+                  buildContentCard(),
+                  buildInfoCard(
+                    icon: hasJustificatif
+                        ? Icons.attach_file_rounded
+                        : Icons.attachment_outlined,
+                    title: 'Justificatif joint',
+                    text: hasJustificatif
+                        ? 'Justificatif disponible pour réexport PDF.'
+                        : 'Aucun justificatif joint à cette prescription.',
+                  ),
+                ],
               ),
-              children: [
-                buildHeader(context),
-                const SizedBox(height: AppSpacing.md),
-                buildInfoCard(
-                  icon: Icons.person_outline_rounded,
-                  title: 'Patient',
-                  text: prescription.displayPatient,
-                ),
-                buildInfoCard(
-                  icon: Icons.medical_services_outlined,
-                  title: 'Type',
-                  text: prescription.displayType,
-                ),
-                buildInfoCard(
-                  icon: Icons.event_outlined,
-                  title: 'Date',
-                  text: formatDate(prescription.createdAt),
-                ),
-                buildContentCard(),
-                buildInfoCard(
-                  icon: hasJustificatif
-                      ? Icons.attach_file_rounded
-                      : Icons.attachment_outlined,
-                  title: 'Justificatif joint',
-                  text: hasJustificatif
-                      ? 'Justificatif disponible pour réexport PDF.'
-                      : 'Aucun justificatif joint à cette prescription.',
-                ),
-              ],
             ),
           ),
         ),
-      ),
-      bottomNavigationBar: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(18, 8, 18, 18),
-          child: FilledButton.icon(
-            onPressed: exportPdf,
-            icon: const Icon(Icons.picture_as_pdf_outlined),
-            label: const Text('Exporter le PDF'),
+        bottomNavigationBar: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(
+              RadarSpacing.xl,
+              RadarSpacing.sm,
+              RadarSpacing.xl,
+              RadarSpacing.xl,
+            ),
+            child: FilledButton.icon(
+              onPressed: exportPdf,
+              icon: const Icon(Icons.picture_as_pdf_outlined),
+              label: const Text('Exporter le PDF'),
+            ),
           ),
         ),
       ),
@@ -114,32 +124,31 @@ class PrescriptionHistoryDetailScreen extends StatelessWidget {
 
   Widget buildHeader(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(AppSpacing.lg),
+      padding: const EdgeInsets.all(RadarSpacing.xl),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [AppColors.medicalBlue, AppColors.primary],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(AppRadius.xl),
-        boxShadow: AppShadows.elevated,
+        color: RadarColors.surface,
+        borderRadius: BorderRadius.circular(RadarRadius.card),
+        boxShadow: RadarShadows.card,
       ),
       child: Row(
         children: [
-          IconButton(
+          IconButton.filledTonal(
+            tooltip: 'Retour',
             onPressed: () => Navigator.pop(context),
             icon: const Icon(Icons.arrow_back_ios_new_rounded),
-            color: AppColors.textOnDark,
+            style: IconButton.styleFrom(
+              backgroundColor: RadarColors.surfaceMuted,
+              foregroundColor: RadarColors.primary,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(RadarRadius.small),
+              ),
+            ),
           ),
-          const SizedBox(width: AppSpacing.sm),
+          const SizedBox(width: RadarSpacing.lg),
           const Expanded(
             child: Text(
               'Prescription historisée',
-              style: TextStyle(
-                color: AppColors.textOnDark,
-                fontSize: 22,
-                fontWeight: FontWeight.w900,
-              ),
+              style: RadarTextStyles.question,
             ),
           ),
         ],
@@ -153,37 +162,35 @@ class PrescriptionHistoryDetailScreen extends StatelessWidget {
     required String text,
   }) {
     return Container(
-      margin: const EdgeInsets.only(bottom: AppSpacing.sm),
-      padding: const EdgeInsets.all(AppSpacing.md),
+      margin: const EdgeInsets.only(bottom: RadarSpacing.lg),
+      padding: const EdgeInsets.all(RadarSpacing.lg),
       decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppRadius.xl),
-        border: Border.all(color: AppColors.border),
-        boxShadow: AppShadows.soft,
+        color: RadarColors.surface,
+        borderRadius: BorderRadius.circular(RadarRadius.card),
+        boxShadow: RadarShadows.card,
       ),
       child: Row(
         children: [
-          Icon(icon, color: AppColors.primary),
-          const SizedBox(width: AppSpacing.sm),
+          Container(
+            width: 38,
+            height: 38,
+            decoration: BoxDecoration(
+              color: RadarColors.primary.withValues(alpha: 0.10),
+              borderRadius: BorderRadius.circular(RadarRadius.small),
+            ),
+            child: Icon(icon, color: RadarColors.primary, size: 20),
+          ),
+          const SizedBox(width: RadarSpacing.md),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    color: AppColors.textSecondary,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-                const SizedBox(height: 3),
+                Text(title, style: RadarTextStyles.caption),
+                const SizedBox(height: RadarSpacing.xs),
                 Text(
                   text,
-                  style: const TextStyle(
-                    color: AppColors.textPrimary,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w900,
+                  style: RadarTextStyles.body.copyWith(
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ],
@@ -196,35 +203,24 @@ class PrescriptionHistoryDetailScreen extends StatelessWidget {
 
   Widget buildContentCard() {
     return Container(
-      margin: const EdgeInsets.only(bottom: AppSpacing.sm),
-      padding: const EdgeInsets.all(AppSpacing.md),
+      margin: const EdgeInsets.only(bottom: RadarSpacing.lg),
+      padding: const EdgeInsets.all(RadarSpacing.xl),
       decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppRadius.xl),
-        border: Border.all(color: AppColors.border),
-        boxShadow: AppShadows.soft,
+        color: RadarColors.surface,
+        borderRadius: BorderRadius.circular(RadarRadius.card),
+        boxShadow: RadarShadows.card,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Contenu',
-            style: TextStyle(
-              color: AppColors.textSecondary,
-              fontSize: 12,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-          const SizedBox(height: AppSpacing.sm),
+          const Text('Contenu', style: RadarTextStyles.caption),
+          const SizedBox(height: RadarSpacing.md),
           Text(
             prescription.prescription.trim().isEmpty
                 ? 'Contenu non renseigné'
                 : prescription.prescription.trim(),
-            style: const TextStyle(
-              color: AppColors.textPrimary,
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
-              height: 1.4,
+            style: RadarTextStyles.secondary.copyWith(
+              color: RadarColors.textPrimary,
             ),
           ),
         ],
