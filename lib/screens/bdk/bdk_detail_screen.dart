@@ -11,11 +11,7 @@ import '../../features/radar/presentation/theme/radar_radius.dart';
 import '../../features/radar/presentation/theme/radar_shadows.dart';
 import '../../features/radar/presentation/theme/radar_spacing.dart';
 import '../../features/radar/presentation/theme/radar_text_styles.dart';
-import '../../widgets/design_system/clinical_auto_summary_card.dart';
-import '../../widgets/design_system/clinical_bottom_action_bar.dart';
-import '../../widgets/design_system/clinical_primary_button.dart';
-import '../../widgets/design_system/clinical_text_field.dart';
-import '../../widgets/design_system/expandable_clinical_section.dart';
+import '../../features/radar/presentation/theme/radar_theme.dart';
 
 class BDKDetailScreen extends StatefulWidget {
   const BDKDetailScreen({super.key, required this.title, this.customContext});
@@ -535,167 +531,444 @@ Une prise en charge kinésithérapique adaptée semble indiquée avec surveillan
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: RadarColors.background,
-      bottomNavigationBar: ClinicalBottomActionBar(
-        secondaryLabel: 'Réinitialiser',
-        secondaryIcon: Icons.restart_alt_rounded,
-        onSecondaryPressed: _resetBDK,
-        primaryLabel: 'Exporter PDF',
-        primaryIcon: Icons.picture_as_pdf_outlined,
-        onPrimaryPressed: _exportPdf,
-      ),
-      body: Column(
-        children: [
-          buildBdkHeader(context),
-          Expanded(
-            child: Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 960),
-                child: ListView(
-                  padding: const EdgeInsets.fromLTRB(
-                    RadarSpacing.lg,
-                    0,
-                    RadarSpacing.lg,
-                    RadarSpacing.xxxl + RadarSpacing.xxl + RadarSpacing.lg,
+    return Theme(
+      data: RadarTheme.lightTheme,
+      child: Scaffold(
+        backgroundColor: RadarColors.background,
+        bottomNavigationBar: _BdkBottomActionBar(
+          secondaryLabel: 'Réinitialiser',
+          secondaryIcon: Icons.restart_alt_rounded,
+          onSecondaryPressed: _resetBDK,
+          primaryLabel: 'Exporter PDF',
+          primaryIcon: Icons.picture_as_pdf_outlined,
+          onPrimaryPressed: _exportPdf,
+        ),
+        body: Column(
+          children: [
+            buildBdkHeader(context),
+            Expanded(
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 720),
+                  child: ListView(
+                    padding: const EdgeInsets.fromLTRB(
+                      RadarSpacing.xl,
+                      0,
+                      RadarSpacing.xl,
+                      RadarSpacing.xxxl + RadarSpacing.xxl + RadarSpacing.lg,
+                    ),
+                    children: [
+                      buildPatientSummaryCard(),
+                      buildImportedEvaluationBanner(),
+                      _BdkExpandableSection(
+                        title: 'Motif et contexte',
+                        subtitle: 'Données patient et raison de consultation',
+                        icon: Icons.edit_note_rounded,
+                        color: RadarColors.primary,
+                        initiallyExpanded: true,
+                        children: [
+                          _BdkTextField(
+                            label: 'Motif de consultation',
+                            hint:
+                                'Ex : douleur lombaire aiguë, gêne fonctionnelle...',
+                            maxLines: 3,
+                            controller: motifController,
+                          ),
+                          const SizedBox(height: RadarSpacing.md),
+                          _BdkTextField(
+                            label: 'Contexte',
+                            hint:
+                                'Contexte d’apparition, évolution, facteurs aggravants...',
+                            maxLines: 3,
+                            controller: contexteController,
+                          ),
+                          const SizedBox(height: RadarSpacing.md),
+                          _BdkTextField(
+                            label: 'Antécédents utiles',
+                            hint:
+                                'Antécédents médicaux, chirurgicaux, traitements...',
+                            maxLines: 3,
+                            controller: antecedentsController,
+                          ),
+                        ],
+                      ),
+                      _BdkExpandableSection(
+                        title: 'Évaluation clinique',
+                        subtitle: 'Tests, signes fonctionnels et drapeaux',
+                        icon: Icons.monitor_heart_outlined,
+                        color: RadarColors.clinicalSuccess,
+                        children: [
+                          _BdkTextField(
+                            label: 'Données issues de l’évaluation',
+                            hint:
+                                'Auto-remplissage depuis l’onglet Évaluation.',
+                            maxLines: 4,
+                            controller: evaluationController,
+                          ),
+                          const SizedBox(height: RadarSpacing.md),
+                          _BdkTextField(
+                            label: 'Tests cliniques',
+                            hint:
+                                'Ex : mobilité, force, douleur, tests spécifiques...',
+                            maxLines: 4,
+                            controller: testsController,
+                          ),
+                          const SizedBox(height: RadarSpacing.md),
+                          _BdkTextField(
+                            label: 'Limitations fonctionnelles',
+                            hint:
+                                'Marche, transferts, activités quotidiennes, travail...',
+                            maxLines: 3,
+                            controller: limitationsController,
+                          ),
+                        ],
+                      ),
+                      _BdkExpandableSection(
+                        title: 'Diagnostic MK',
+                        subtitle: 'Synthèse clinique et hypothèses',
+                        icon: Icons.psychology_alt_outlined,
+                        color: RadarColors.clinicalWarning,
+                        children: [
+                          _BdkAutoSummaryCard(
+                            title: 'Synthèse clinique automatique',
+                            text: BDKSessionService.syntheseClinique,
+                            emptyText:
+                                'La synthèse automatique apparaîtra ici après génération.',
+                          ),
+                          const SizedBox(height: RadarSpacing.md),
+                          _BdkPrimaryButton(
+                            label: 'Générer la synthèse clinique',
+                            icon: Icons.auto_awesome,
+                            onPressed: _generateClinicalSummary,
+                          ),
+                          const SizedBox(height: RadarSpacing.md),
+                          _BdkTextField(
+                            label: 'Diagnostic kinésithérapique',
+                            hint:
+                                'Synthèse clinique, hypothèses principales, facteurs contributifs...',
+                            maxLines: 5,
+                            controller: diagnosticController,
+                          ),
+                          const SizedBox(height: RadarSpacing.md),
+                          _BdkTextField(
+                            label: 'Points de vigilance',
+                            hint:
+                                'Drapeaux rouges, limites de prise en charge, orientation médicale...',
+                            maxLines: 3,
+                            controller: vigilanceController,
+                          ),
+                        ],
+                      ),
+                      _BdkExpandableSection(
+                        title: 'Objectifs et plan de soin',
+                        subtitle: 'Objectifs, fréquence, progression',
+                        icon: Icons.route_outlined,
+                        color: RadarColors.indigo,
+                        children: [
+                          _BdkTextField(
+                            label: 'Objectifs thérapeutiques',
+                            hint: 'Objectifs à court, moyen et long terme...',
+                            maxLines: 4,
+                            controller: objectifsController,
+                          ),
+                          const SizedBox(height: RadarSpacing.md),
+                          _BdkTextField(
+                            label: 'Plan de traitement',
+                            hint:
+                                'Fréquence, techniques, exercices, progression...',
+                            maxLines: 4,
+                            controller: planTraitementController,
+                          ),
+                          const SizedBox(height: RadarSpacing.md),
+                          _BdkTextField(
+                            label: 'Critères de réévaluation',
+                            hint:
+                                'Douleur, fonction, autonomie, tests de suivi...',
+                            maxLines: 3,
+                            controller: criteresReevaluationController,
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
-                  children: [
-                    buildPatientSummaryCard(),
-                    buildImportedEvaluationBanner(),
-                    ExpandableClinicalSection(
-                      title: 'Motif et contexte',
-                      subtitle: 'Données patient et raison de consultation',
-                      icon: Icons.edit_note_rounded,
-                      color: RadarColors.primary,
-                      initiallyExpanded: true,
-                      children: [
-                        ClinicalTextField(
-                          label: 'Motif de consultation',
-                          hint:
-                              'Ex : douleur lombaire aiguë, gêne fonctionnelle...',
-                          maxLines: 3,
-                          controller: motifController,
-                        ),
-                        const SizedBox(height: RadarSpacing.md),
-                        ClinicalTextField(
-                          label: 'Contexte',
-                          hint:
-                              'Contexte d’apparition, évolution, facteurs aggravants...',
-                          maxLines: 3,
-                          controller: contexteController,
-                        ),
-                        const SizedBox(height: RadarSpacing.md),
-                        ClinicalTextField(
-                          label: 'Antécédents utiles',
-                          hint:
-                              'Antécédents médicaux, chirurgicaux, traitements...',
-                          maxLines: 3,
-                          controller: antecedentsController,
-                        ),
-                      ],
-                    ),
-                    ExpandableClinicalSection(
-                      title: 'Évaluation clinique',
-                      subtitle: 'Tests, signes fonctionnels et drapeaux',
-                      icon: Icons.monitor_heart_outlined,
-                      color: RadarColors.clinicalSuccess,
-                      children: [
-                        ClinicalTextField(
-                          label: 'Données issues de l’évaluation',
-                          hint: 'Auto-remplissage depuis l’onglet Évaluation.',
-                          maxLines: 4,
-                          controller: evaluationController,
-                        ),
-                        const SizedBox(height: RadarSpacing.md),
-                        ClinicalTextField(
-                          label: 'Tests cliniques',
-                          hint:
-                              'Ex : mobilité, force, douleur, tests spécifiques...',
-                          maxLines: 4,
-                          controller: testsController,
-                        ),
-                        const SizedBox(height: RadarSpacing.md),
-                        ClinicalTextField(
-                          label: 'Limitations fonctionnelles',
-                          hint:
-                              'Marche, transferts, activités quotidiennes, travail...',
-                          maxLines: 3,
-                          controller: limitationsController,
-                        ),
-                      ],
-                    ),
-                    ExpandableClinicalSection(
-                      title: 'Diagnostic MK',
-                      subtitle: 'Synthèse clinique et hypothèses',
-                      icon: Icons.psychology_alt_outlined,
-                      color: RadarColors.clinicalWarning,
-                      children: [
-                        ClinicalAutoSummaryCard(
-                          title: 'Synthèse clinique automatique',
-                          text: BDKSessionService.syntheseClinique,
-                          emptyText:
-                              'La synthèse automatique apparaîtra ici après génération.',
-                        ),
-                        const SizedBox(height: RadarSpacing.md),
-                        ClinicalPrimaryButton(
-                          label: 'Générer la synthèse clinique',
-                          icon: Icons.auto_awesome,
-                          onPressed: _generateClinicalSummary,
-                        ),
-                        const SizedBox(height: RadarSpacing.md),
-                        ClinicalTextField(
-                          label: 'Diagnostic kinésithérapique',
-                          hint:
-                              'Synthèse clinique, hypothèses principales, facteurs contributifs...',
-                          maxLines: 5,
-                          controller: diagnosticController,
-                        ),
-                        const SizedBox(height: RadarSpacing.md),
-                        ClinicalTextField(
-                          label: 'Points de vigilance',
-                          hint:
-                              'Drapeaux rouges, limites de prise en charge, orientation médicale...',
-                          maxLines: 3,
-                          controller: vigilanceController,
-                        ),
-                      ],
-                    ),
-                    ExpandableClinicalSection(
-                      title: 'Objectifs et plan de soin',
-                      subtitle: 'Objectifs, fréquence, progression',
-                      icon: Icons.route_outlined,
-                      color: RadarColors.indigo,
-                      children: [
-                        ClinicalTextField(
-                          label: 'Objectifs thérapeutiques',
-                          hint: 'Objectifs à court, moyen et long terme...',
-                          maxLines: 4,
-                          controller: objectifsController,
-                        ),
-                        const SizedBox(height: RadarSpacing.md),
-                        ClinicalTextField(
-                          label: 'Plan de traitement',
-                          hint:
-                              'Fréquence, techniques, exercices, progression...',
-                          maxLines: 4,
-                          controller: planTraitementController,
-                        ),
-                        const SizedBox(height: RadarSpacing.md),
-                        ClinicalTextField(
-                          label: 'Critères de réévaluation',
-                          hint:
-                              'Douleur, fonction, autonomie, tests de suivi...',
-                          maxLines: 3,
-                          controller: criteresReevaluationController,
-                        ),
-                      ],
-                    ),
-                  ],
                 ),
               ),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _BdkExpandableSection extends StatelessWidget {
+  const _BdkExpandableSection({
+    required this.title,
+    required this.subtitle,
+    required this.icon,
+    required this.color,
+    required this.children,
+    this.initiallyExpanded = false,
+  });
+
+  final String title;
+  final String subtitle;
+  final IconData icon;
+  final Color color;
+  final List<Widget> children;
+  final bool initiallyExpanded;
+
+  @override
+  Widget build(BuildContext context) {
+    final compact = MediaQuery.sizeOf(context).width < 430;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: RadarSpacing.lg),
+      decoration: BoxDecoration(
+        color: RadarColors.surface,
+        borderRadius: BorderRadius.circular(RadarRadius.card),
+        boxShadow: RadarShadows.card,
+      ),
+      child: Theme(
+        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+        child: ExpansionTile(
+          initiallyExpanded: initiallyExpanded,
+          tilePadding: EdgeInsets.symmetric(
+            horizontal: compact ? RadarSpacing.lg : RadarSpacing.xl,
+            vertical: RadarSpacing.sm,
           ),
+          childrenPadding: EdgeInsets.fromLTRB(
+            compact ? RadarSpacing.lg : RadarSpacing.xl,
+            0,
+            compact ? RadarSpacing.lg : RadarSpacing.xl,
+            compact ? RadarSpacing.lg : RadarSpacing.xl,
+          ),
+          leading: Container(
+            width: compact ? 40 : 44,
+            height: compact ? 40 : 44,
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.10),
+              borderRadius: BorderRadius.circular(RadarRadius.small),
+            ),
+            child: Icon(icon, color: color, size: compact ? 22 : 24),
+          ),
+          title: Text(title, style: RadarTextStyles.contextTitle),
+          subtitle: compact
+              ? null
+              : Text(subtitle, style: RadarTextStyles.caption),
+          children: children,
+        ),
+      ),
+    );
+  }
+}
+
+class _BdkTextField extends StatelessWidget {
+  const _BdkTextField({
+    required this.label,
+    this.hint,
+    this.controller,
+    this.maxLines = 1,
+  });
+
+  final String label;
+  final String? hint;
+  final TextEditingController? controller;
+  final int maxLines;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: RadarTextStyles.badge),
+        const SizedBox(height: RadarSpacing.sm),
+        TextField(
+          controller: controller,
+          maxLines: maxLines,
+          style: RadarTextStyles.body.copyWith(fontSize: 15),
+          decoration: InputDecoration(
+            hintText: hint,
+            hintStyle: RadarTextStyles.secondary.copyWith(
+              color: RadarColors.textMuted,
+            ),
+            filled: true,
+            fillColor: RadarColors.background,
+            contentPadding: const EdgeInsets.all(RadarSpacing.lg),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(RadarRadius.card),
+              borderSide: const BorderSide(color: RadarColors.border),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(RadarRadius.card),
+              borderSide: const BorderSide(color: RadarColors.border),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(RadarRadius.card),
+              borderSide: const BorderSide(
+                color: RadarColors.primary,
+                width: 1.5,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _BdkPrimaryButton extends StatelessWidget {
+  const _BdkPrimaryButton({
+    required this.label,
+    required this.icon,
+    required this.onPressed,
+  });
+
+  final String label;
+  final IconData icon;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      height: 52,
+      child: FilledButton.icon(
+        onPressed: onPressed,
+        icon: Icon(icon),
+        label: Text(label),
+        style: FilledButton.styleFrom(
+          backgroundColor: RadarColors.primary,
+          foregroundColor: RadarColors.surface,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(RadarRadius.card),
+          ),
+          textStyle: RadarTextStyles.badge,
+        ),
+      ),
+    );
+  }
+}
+
+class _BdkAutoSummaryCard extends StatelessWidget {
+  const _BdkAutoSummaryCard({
+    required this.title,
+    required this.text,
+    required this.emptyText,
+  });
+
+  final String title;
+  final String text;
+  final String emptyText;
+
+  @override
+  Widget build(BuildContext context) {
+    final isEmpty = text.trim().isEmpty;
+
+    return Container(
+      padding: const EdgeInsets.all(RadarSpacing.lg),
+      decoration: BoxDecoration(
+        color: RadarColors.surfaceMuted,
+        borderRadius: BorderRadius.circular(RadarRadius.card),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.auto_awesome, color: RadarColors.primary),
+              const SizedBox(width: RadarSpacing.sm),
+              Expanded(
+                child: Text(
+                  title,
+                  style: RadarTextStyles.contextTitle.copyWith(
+                    color: RadarColors.primary,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: RadarSpacing.md),
+          Text(isEmpty ? emptyText : text, style: RadarTextStyles.body),
         ],
+      ),
+    );
+  }
+}
+
+class _BdkBottomActionBar extends StatelessWidget {
+  const _BdkBottomActionBar({
+    required this.primaryLabel,
+    required this.primaryIcon,
+    required this.onPrimaryPressed,
+    this.secondaryLabel,
+    this.secondaryIcon,
+    this.onSecondaryPressed,
+  });
+
+  final String primaryLabel;
+  final IconData primaryIcon;
+  final VoidCallback onPrimaryPressed;
+  final String? secondaryLabel;
+  final IconData? secondaryIcon;
+  final VoidCallback? onSecondaryPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(
+          RadarSpacing.xl,
+          RadarSpacing.md,
+          RadarSpacing.xl,
+          RadarSpacing.lg,
+        ),
+        decoration: BoxDecoration(
+          color: RadarColors.surface.withValues(alpha: 0.98),
+          border: const Border(top: BorderSide(color: RadarColors.border)),
+          boxShadow: RadarShadows.navigation,
+        ),
+        child: Row(
+          children: [
+            if (secondaryLabel != null &&
+                secondaryIcon != null &&
+                onSecondaryPressed != null) ...[
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: onSecondaryPressed,
+                  icon: Icon(secondaryIcon),
+                  label: Text(secondaryLabel!),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: RadarColors.textPrimary,
+                    side: const BorderSide(color: RadarColors.border),
+                    minimumSize: const Size.fromHeight(52),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(RadarRadius.card),
+                    ),
+                    textStyle: RadarTextStyles.badge,
+                  ),
+                ),
+              ),
+              const SizedBox(width: RadarSpacing.md),
+            ],
+            Expanded(
+              child: FilledButton.icon(
+                onPressed: onPrimaryPressed,
+                icon: Icon(primaryIcon),
+                label: Text(primaryLabel),
+                style: FilledButton.styleFrom(
+                  backgroundColor: RadarColors.primary,
+                  foregroundColor: RadarColors.surface,
+                  minimumSize: const Size.fromHeight(52),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(RadarRadius.card),
+                  ),
+                  textStyle: RadarTextStyles.badge,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

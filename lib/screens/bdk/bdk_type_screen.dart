@@ -6,6 +6,7 @@ import '../../features/radar/presentation/theme/radar_radius.dart';
 import '../../features/radar/presentation/theme/radar_shadows.dart';
 import '../../features/radar/presentation/theme/radar_spacing.dart';
 import '../../features/radar/presentation/theme/radar_text_styles.dart';
+import '../../features/radar/presentation/theme/radar_theme.dart';
 import 'bdk_detail_screen.dart';
 
 class BDKTypeScreen extends StatelessWidget {
@@ -13,46 +14,58 @@ class BDKTypeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: RadarColors.background,
-      body: SafeArea(
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 720),
-            child: ListView(
-              padding: const EdgeInsets.fromLTRB(
-                RadarSpacing.lg,
-                RadarSpacing.sm,
-                RadarSpacing.lg,
-                RadarSpacing.lg,
-              ),
-              children: [
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: IconButton.filledTonal(
-                    tooltip: 'Retour',
-                    onPressed: () => Navigator.pop(context),
-                    icon: const Icon(Icons.arrow_back_ios_new_rounded),
-                    style: IconButton.styleFrom(
-                      backgroundColor: RadarColors.surface,
-                      foregroundColor: RadarColors.primary,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(RadarRadius.small),
+    return Theme(
+      data: RadarTheme.lightTheme,
+      child: Scaffold(
+        backgroundColor: RadarColors.background,
+        body: SafeArea(
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 520),
+              child: ListView(
+                padding: const EdgeInsets.fromLTRB(
+                  RadarSpacing.xl,
+                  RadarSpacing.xl,
+                  RadarSpacing.xl,
+                  RadarSpacing.xxl,
+                ),
+                children: [
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: IconButton.filledTonal(
+                      tooltip: 'Retour',
+                      onPressed: () => Navigator.pop(context),
+                      icon: const Icon(Icons.arrow_back_ios_new_rounded),
+                      style: IconButton.styleFrom(
+                        backgroundColor: RadarColors.surface,
+                        foregroundColor: RadarColors.primary,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(
+                            RadarRadius.small,
+                          ),
+                        ),
                       ),
                     ),
                   ),
-                ),
-                const SizedBox(height: RadarSpacing.lg),
-                ...bdkTypeOptions.map(
-                  (item) => Padding(
-                    padding: const EdgeInsets.only(bottom: RadarSpacing.md),
-                    child: _BDKTypeCard(
-                      item: item,
-                      onTap: () => _openBdk(context, item),
+                  const SizedBox(height: RadarSpacing.xl),
+                  const Text('Bilan', style: RadarTextStyles.screenTitle),
+                  const SizedBox(height: RadarSpacing.sm),
+                  const Text(
+                    'Créer ou compléter un bilan diagnostique kinésithérapique.',
+                    style: RadarTextStyles.secondary,
+                  ),
+                  const SizedBox(height: RadarSpacing.xxl),
+                  ...bdkTypeOptions.map(
+                    (item) => Padding(
+                      padding: const EdgeInsets.only(bottom: RadarSpacing.lg),
+                      child: _BDKTypeCard(
+                        item: item,
+                        onTap: () => _openBdk(context, item),
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
