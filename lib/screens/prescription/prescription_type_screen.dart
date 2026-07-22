@@ -1,10 +1,12 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-import '../../theme/app_colors.dart';
-import '../../theme/app_radius.dart';
-import '../../theme/app_shadows.dart';
-import '../../theme/app_spacing.dart';
+import '../../features/radar/presentation/theme/radar_colors.dart';
+import '../../features/radar/presentation/theme/radar_radius.dart';
+import '../../features/radar/presentation/theme/radar_shadows.dart';
+import '../../features/radar/presentation/theme/radar_spacing.dart';
+import '../../features/radar/presentation/theme/radar_text_styles.dart';
+import '../../features/radar/presentation/theme/radar_theme.dart';
 import '../attestation/attestation_type_screen.dart';
 import '../medical_letter/medical_letter_type_screen.dart';
 import '../prescription_screen.dart';
@@ -39,46 +41,93 @@ class PrescriptionTypeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: SafeArea(
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 720),
-            child: ListView(
-              padding: const EdgeInsets.fromLTRB(
-                AppSpacing.md,
-                AppSpacing.sm,
-                AppSpacing.md,
-                AppSpacing.md,
-              ),
-              children: [
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: IconButton.filledTonal(
-                    tooltip: 'Retour',
-                    onPressed: () => Navigator.pop(context),
-                    icon: const Icon(Icons.arrow_back_ios_new_rounded),
-                    style: IconButton.styleFrom(
-                      backgroundColor: AppColors.surface,
-                      foregroundColor: AppColors.primary,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(AppRadius.lg),
+    return Theme(
+      data: RadarTheme.lightTheme,
+      child: Scaffold(
+        backgroundColor: RadarColors.background,
+        body: SafeArea(
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 560),
+              child: ListView(
+                padding: const EdgeInsets.fromLTRB(
+                  RadarSpacing.xl,
+                  RadarSpacing.xl,
+                  RadarSpacing.xl,
+                  RadarSpacing.xxl,
+                ),
+                children: [
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: IconButton.filledTonal(
+                      tooltip: 'Retour',
+                      onPressed: () => Navigator.pop(context),
+                      icon: const Icon(Icons.arrow_back_ios_new_rounded),
+                      style: IconButton.styleFrom(
+                        backgroundColor: RadarColors.surface,
+                        foregroundColor: RadarColors.primary,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(
+                            RadarRadius.small,
+                          ),
+                        ),
                       ),
                     ),
                   ),
-                ),
-                const SizedBox(height: AppSpacing.sm),
-                ...prescriptionTypeOptions.map(
-                  (item) => Padding(
-                    padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-                    child: _PrescriptionTypeCard(
-                      item: item,
-                      onTap: () => openPrescriptionScreen(context, item.title),
-                    ),
+                  const SizedBox(height: RadarSpacing.xl),
+                  const Text('Documents', style: RadarTextStyles.screenTitle),
+                  const SizedBox(height: RadarSpacing.sm),
+                  const Text(
+                    'Créer un document clinique et préparer un export PDF.',
+                    style: RadarTextStyles.secondary,
                   ),
-                ),
-              ],
+                  const SizedBox(height: RadarSpacing.xxl),
+                  LayoutBuilder(
+                    builder: (context, constraints) {
+                      if (constraints.maxWidth >= 480) {
+                        return GridView.count(
+                          crossAxisCount: 2,
+                          crossAxisSpacing: RadarSpacing.lg,
+                          mainAxisSpacing: RadarSpacing.lg,
+                          childAspectRatio: 2.6,
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          children: prescriptionTypeOptions
+                              .map(
+                                (item) => _PrescriptionTypeCard(
+                                  item: item,
+                                  onTap: () => openPrescriptionScreen(
+                                    context,
+                                    item.title,
+                                  ),
+                                ),
+                              )
+                              .toList(),
+                        );
+                      }
+
+                      return Column(
+                        children: prescriptionTypeOptions
+                            .map(
+                              (item) => Padding(
+                                padding: const EdgeInsets.only(
+                                  bottom: RadarSpacing.lg,
+                                ),
+                                child: _PrescriptionTypeCard(
+                                  item: item,
+                                  onTap: () => openPrescriptionScreen(
+                                    context,
+                                    item.title,
+                                  ),
+                                ),
+                              ),
+                            )
+                            .toList(),
+                      );
+                    },
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -106,43 +155,43 @@ const prescriptionTypeOptions = [
     id: 'reeducation',
     title: 'Rééducation',
     icon: Icons.accessibility_new_rounded,
-    color: Color(0xFF2563EB),
+    color: RadarColors.primary,
   ),
   PrescriptionTypeOption(
     id: 'materiel',
     title: 'Matériel',
     icon: Icons.medical_services_outlined,
-    color: Color(0xFF7C3AED),
+    color: RadarColors.indigo,
   ),
   PrescriptionTypeOption(
     id: 'examens',
     title: 'Examens',
     icon: Icons.biotech_outlined,
-    color: Color(0xFFF97316),
+    color: RadarColors.clinicalWarning,
   ),
   PrescriptionTypeOption(
     id: 'conseils',
     title: 'Conseils',
     icon: Icons.chat_bubble_outline_rounded,
-    color: Color(0xFF0F766E),
+    color: RadarColors.clinicalSuccess,
   ),
   PrescriptionTypeOption(
     id: 'attestations',
     title: 'Attestations',
     icon: Icons.assignment_turned_in_outlined,
-    color: Color(0xFFE11D48),
+    color: RadarColors.clinicalAction,
   ),
   PrescriptionTypeOption(
     id: 'courriers_medicaux',
     title: 'Courriers médicaux',
     icon: Icons.mark_email_read_outlined,
-    color: Color(0xFF0F766E),
+    color: RadarColors.slate,
   ),
   PrescriptionTypeOption(
     id: 'autres',
     title: 'Autres',
     icon: Icons.more_horiz_rounded,
-    color: Color(0xFF64748B),
+    color: RadarColors.neutralGrey,
   ),
 ];
 
@@ -158,17 +207,16 @@ class _PrescriptionTypeCard extends StatelessWidget {
 
     return Material(
       color: Colors.transparent,
-      borderRadius: BorderRadius.circular(AppRadius.xl),
+      borderRadius: BorderRadius.circular(RadarRadius.card),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(AppRadius.xl),
+        borderRadius: BorderRadius.circular(RadarRadius.card),
         child: Container(
-          padding: const EdgeInsets.all(12),
+          padding: const EdgeInsets.all(RadarSpacing.lg),
           decoration: BoxDecoration(
-            color: AppColors.surface,
-            borderRadius: BorderRadius.circular(AppRadius.xl),
-            border: Border.all(color: AppColors.border),
-            boxShadow: AppShadows.soft,
+            color: RadarColors.surface,
+            borderRadius: BorderRadius.circular(RadarRadius.card),
+            boxShadow: RadarShadows.card,
           ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -178,8 +226,7 @@ class _PrescriptionTypeCard extends StatelessWidget {
                 width: compact ? 44 : 50,
                 decoration: BoxDecoration(
                   color: item.color.withValues(alpha: 0.10),
-                  borderRadius: BorderRadius.circular(AppRadius.lg),
-                  border: Border.all(color: item.color.withValues(alpha: 0.18)),
+                  borderRadius: BorderRadius.circular(RadarRadius.small),
                 ),
                 child: Icon(
                   item.icon,
@@ -187,24 +234,23 @@ class _PrescriptionTypeCard extends StatelessWidget {
                   size: compact ? 23 : 26,
                 ),
               ),
-              const SizedBox(width: AppSpacing.sm),
+              const SizedBox(width: RadarSpacing.md),
               Expanded(
                 child: Text(
                   item.title,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
+                  style: RadarTextStyles.question.copyWith(
                     color: item.color,
                     fontSize: compact ? 16 : 18,
-                    fontWeight: FontWeight.w900,
                   ),
                 ),
               ),
-              const SizedBox(width: AppSpacing.sm),
+              const SizedBox(width: RadarSpacing.xs),
               const Icon(
                 Icons.chevron_right_rounded,
-                color: AppColors.textMuted,
-                size: 28,
+                color: RadarColors.textMuted,
+                size: 24,
               ),
             ],
           ),

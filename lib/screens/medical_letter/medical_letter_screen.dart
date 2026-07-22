@@ -11,11 +11,12 @@ import '../../services/medical_letter_history_service.dart';
 import '../../services/medical_letter_pdf_service.dart';
 import '../../services/practitioner_profile_service.dart';
 import '../../services/rgpd_local_service.dart';
-import '../../theme/app_colors.dart';
-import '../../theme/app_radius.dart';
-import '../../theme/app_shadows.dart';
-import '../../theme/app_spacing.dart';
-import '../../widgets/design_system/clinical_bottom_action_bar.dart';
+import '../../features/radar/presentation/theme/radar_colors.dart';
+import '../../features/radar/presentation/theme/radar_radius.dart';
+import '../../features/radar/presentation/theme/radar_shadows.dart';
+import '../../features/radar/presentation/theme/radar_spacing.dart';
+import '../../features/radar/presentation/theme/radar_text_styles.dart';
+import '../../features/radar/presentation/theme/radar_theme.dart';
 
 class MedicalLetterScreen extends StatefulWidget {
   const MedicalLetterScreen({super.key, required this.template});
@@ -136,88 +137,91 @@ class _MedicalLetterScreenState extends State<MedicalLetterScreen> {
   Widget build(BuildContext context) {
     final compact = MediaQuery.sizeOf(context).width < 430;
 
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      bottomNavigationBar: ClinicalBottomActionBar(
-        secondaryLabel: 'Retour',
-        secondaryIcon: Icons.arrow_back_ios_new_rounded,
-        onSecondaryPressed: () => Navigator.pop(context),
-        primaryLabel: exporting ? 'Génération...' : 'Générer le PDF',
-        primaryIcon: Icons.picture_as_pdf_outlined,
-        onPrimaryPressed: () {
-          if (!exporting) {
-            exportPdf();
-          }
-        },
-      ),
-      body: SafeArea(
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 760),
-            child: loading
-                ? const Center(child: CircularProgressIndicator())
-                : ListView(
-                    padding: EdgeInsets.fromLTRB(
-                      compact ? 12 : AppSpacing.md,
-                      AppSpacing.sm,
-                      compact ? 12 : AppSpacing.md,
-                      112,
-                    ),
-                    children: [
-                      _HeaderCard(template: widget.template),
-                      const SizedBox(height: AppSpacing.sm),
-                      _ContextCard(
-                        title: 'Patient utilisé',
-                        icon: Icons.person_outline_rounded,
-                        color: AppColors.primary,
-                        lines: [
-                          _patientName,
-                          'Naissance : ${_patientBirthDate.isEmpty ? 'Non renseignée' : _patientBirthDate}',
-                          if (_treatingDoctorName.isNotEmpty)
-                            'Médecin traitant : $_treatingDoctorName',
-                        ],
+    return Theme(
+      data: RadarTheme.lightTheme,
+      child: Scaffold(
+        backgroundColor: RadarColors.background,
+        bottomNavigationBar: _LetterBottomActionBar(
+          secondaryLabel: 'Retour',
+          secondaryIcon: Icons.arrow_back_ios_new_rounded,
+          onSecondaryPressed: () => Navigator.pop(context),
+          primaryLabel: exporting ? 'Génération...' : 'Générer le PDF',
+          primaryIcon: Icons.picture_as_pdf_outlined,
+          onPrimaryPressed: () {
+            if (!exporting) {
+              exportPdf();
+            }
+          },
+        ),
+        body: SafeArea(
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 720),
+              child: loading
+                  ? const Center(child: CircularProgressIndicator())
+                  : ListView(
+                      padding: EdgeInsets.fromLTRB(
+                        compact ? RadarSpacing.lg : RadarSpacing.xl,
+                        RadarSpacing.xl,
+                        compact ? RadarSpacing.lg : RadarSpacing.xl,
+                        112,
                       ),
-                      const SizedBox(height: AppSpacing.sm),
-                      _ContextCard(
-                        title: 'Praticien utilisé',
-                        icon: Icons.badge_outlined,
-                        color: AppColors.teal,
-                        lines: [
-                          practitioner.professionLabel,
-                          practitioner.fullName.isEmpty
-                              ? 'Nom non renseigné'
-                              : practitioner.fullName,
-                          practitioner.hasSignature
-                              ? 'Signature praticien disponible'
-                              : 'Signature praticien absente',
-                        ],
-                      ),
-                      const SizedBox(height: AppSpacing.sm),
-                      _ContextCard(
-                        title: 'Évaluation liée',
-                        icon: Icons.assignment_turned_in_outlined,
-                        color: AppColors.warningDark,
-                        lines: [
-                          if (evaluation == null)
-                            'Aucune évaluation liée'
-                          else ...[
-                            evaluation!.motif,
-                            '${evaluation!.riskLevel} · Score ${evaluation!.score}',
-                            evaluation!.clinicalReasoning == null
-                                ? 'Raisonnement clinique sauvegardé absent'
-                                : 'Raisonnement clinique sauvegardé disponible',
+                      children: [
+                        _HeaderCard(template: widget.template),
+                        const SizedBox(height: RadarSpacing.lg),
+                        _ContextCard(
+                          title: 'Patient utilisé',
+                          icon: Icons.person_outline_rounded,
+                          color: RadarColors.primary,
+                          lines: [
+                            _patientName,
+                            'Naissance : ${_patientBirthDate.isEmpty ? 'Non renseignée' : _patientBirthDate}',
+                            if (_treatingDoctorName.isNotEmpty)
+                              'Médecin traitant : $_treatingDoctorName',
                           ],
-                        ],
-                      ),
-                      const SizedBox(height: AppSpacing.sm),
-                      _FormCard(
-                        lieuController: lieuController,
-                        subjectController: subjectController,
-                      ),
-                      const SizedBox(height: AppSpacing.sm),
-                      _PreviewCard(letter: buildLetter()),
-                    ],
-                  ),
+                        ),
+                        const SizedBox(height: RadarSpacing.lg),
+                        _ContextCard(
+                          title: 'Praticien utilisé',
+                          icon: Icons.badge_outlined,
+                          color: RadarColors.indigo,
+                          lines: [
+                            practitioner.professionLabel,
+                            practitioner.fullName.isEmpty
+                                ? 'Nom non renseigné'
+                                : practitioner.fullName,
+                            practitioner.hasSignature
+                                ? 'Signature praticien disponible'
+                                : 'Signature praticien absente',
+                          ],
+                        ),
+                        const SizedBox(height: RadarSpacing.lg),
+                        _ContextCard(
+                          title: 'Évaluation liée',
+                          icon: Icons.assignment_turned_in_outlined,
+                          color: RadarColors.clinicalWarning,
+                          lines: [
+                            if (evaluation == null)
+                              'Aucune évaluation liée'
+                            else ...[
+                              evaluation!.motif,
+                              '${evaluation!.riskLevel} · Score ${evaluation!.score}',
+                              evaluation!.clinicalReasoning == null
+                                  ? 'Raisonnement clinique sauvegardé absent'
+                                  : 'Raisonnement clinique sauvegardé disponible',
+                            ],
+                          ],
+                        ),
+                        const SizedBox(height: RadarSpacing.lg),
+                        _FormCard(
+                          lieuController: lieuController,
+                          subjectController: subjectController,
+                        ),
+                        const SizedBox(height: RadarSpacing.lg),
+                        _PreviewCard(letter: buildLetter()),
+                      ],
+                    ),
+            ),
           ),
         ),
       ),
@@ -245,11 +249,11 @@ class _HeaderCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(AppSpacing.md),
+      padding: const EdgeInsets.all(RadarSpacing.xl),
       decoration: BoxDecoration(
-        color: template.color.withValues(alpha: 0.09),
-        borderRadius: BorderRadius.circular(AppRadius.xl),
-        border: Border.all(color: template.color.withValues(alpha: 0.16)),
+        color: RadarColors.surface,
+        borderRadius: BorderRadius.circular(RadarRadius.card),
+        boxShadow: RadarShadows.card,
       ),
       child: Row(
         children: [
@@ -257,13 +261,12 @@ class _HeaderCard extends StatelessWidget {
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: BorderRadius.circular(AppRadius.lg),
-              border: Border.all(color: AppColors.border),
+              color: RadarColors.background,
+              borderRadius: BorderRadius.circular(RadarRadius.small),
             ),
             child: Icon(template.icon, color: template.color, size: 26),
           ),
-          const SizedBox(width: AppSpacing.sm),
+          const SizedBox(width: RadarSpacing.lg),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -273,19 +276,15 @@ class _HeaderCard extends StatelessWidget {
                   style: TextStyle(
                     color: template.color,
                     fontSize: 13,
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
-                const SizedBox(height: 3),
+                const SizedBox(height: RadarSpacing.xs),
                 Text(
                   template.title,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: AppColors.textPrimary,
-                    fontSize: 18,
-                    fontWeight: FontWeight.w900,
-                  ),
+                  style: RadarTextStyles.question,
                 ),
               ],
             ),
@@ -312,41 +311,30 @@ class _ContextCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(AppSpacing.md),
+      padding: const EdgeInsets.all(RadarSpacing.xl),
       decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppRadius.xl),
-        border: Border.all(color: AppColors.border),
-        boxShadow: AppShadows.soft,
+        color: RadarColors.surface,
+        borderRadius: BorderRadius.circular(RadarRadius.card),
+        boxShadow: RadarShadows.card,
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Icon(icon, color: color, size: 22),
-          const SizedBox(width: AppSpacing.sm),
+          const SizedBox(width: RadarSpacing.lg),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    color: AppColors.textSecondary,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
-                const SizedBox(height: 5),
+                Text(title, style: RadarTextStyles.caption),
+                const SizedBox(height: RadarSpacing.sm),
                 ...lines.map(
                   (line) => Padding(
                     padding: const EdgeInsets.only(bottom: 3),
                     child: Text(
                       line,
-                      style: const TextStyle(
-                        color: AppColors.textPrimary,
-                        fontSize: 13.5,
-                        fontWeight: FontWeight.w700,
-                        height: 1.25,
+                      style: RadarTextStyles.secondary.copyWith(
+                        color: RadarColors.textPrimary,
                       ),
                     ),
                   ),
@@ -372,12 +360,11 @@ class _FormCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(AppSpacing.md),
+      padding: const EdgeInsets.all(RadarSpacing.xl),
       decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppRadius.xl),
-        border: Border.all(color: AppColors.border),
-        boxShadow: AppShadows.soft,
+        color: RadarColors.surface,
+        borderRadius: BorderRadius.circular(RadarRadius.card),
+        boxShadow: RadarShadows.card,
       ),
       child: Column(
         children: [
@@ -389,7 +376,7 @@ class _FormCard extends StatelessWidget {
               icon: Icons.location_on_outlined,
             ),
           ),
-          const SizedBox(height: AppSpacing.sm),
+          const SizedBox(height: RadarSpacing.lg),
           TextField(
             controller: subjectController,
             decoration: _inputDecoration(
@@ -413,19 +400,19 @@ class _FormCard extends StatelessWidget {
       hintText: hint,
       prefixIcon: Icon(icon),
       filled: true,
-      fillColor: AppColors.background,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      fillColor: RadarColors.background,
+      contentPadding: const EdgeInsets.all(RadarSpacing.lg),
       border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(AppRadius.lg),
-        borderSide: const BorderSide(color: AppColors.border),
+        borderRadius: BorderRadius.circular(RadarRadius.card),
+        borderSide: const BorderSide(color: RadarColors.border),
       ),
       enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(AppRadius.lg),
-        borderSide: const BorderSide(color: AppColors.border),
+        borderRadius: BorderRadius.circular(RadarRadius.card),
+        borderSide: const BorderSide(color: RadarColors.border),
       ),
       focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(AppRadius.lg),
-        borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+        borderRadius: BorderRadius.circular(RadarRadius.card),
+        borderSide: const BorderSide(color: RadarColors.primary, width: 1.5),
       ),
     );
   }
@@ -439,12 +426,11 @@ class _PreviewCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(AppSpacing.md),
+      padding: const EdgeInsets.all(RadarSpacing.xl),
       decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppRadius.xl),
-        border: Border.all(color: AppColors.border),
-        boxShadow: AppShadows.soft,
+        color: RadarColors.surface,
+        borderRadius: BorderRadius.circular(RadarRadius.card),
+        boxShadow: RadarShadows.card,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -452,36 +438,92 @@ class _PreviewCard extends StatelessWidget {
           const Text(
             'Prévisualisation',
             style: TextStyle(
-              color: AppColors.textPrimary,
+              color: RadarColors.textPrimary,
               fontSize: 16,
-              fontWeight: FontWeight.w900,
+              fontWeight: FontWeight.w600,
             ),
           ),
-          const SizedBox(height: AppSpacing.sm),
+          const SizedBox(height: RadarSpacing.md),
           Text(
             'Objet : ${letter.effectiveSubject}',
             style: const TextStyle(
-              color: AppColors.textPrimary,
+              color: RadarColors.textPrimary,
               fontSize: 14,
-              fontWeight: FontWeight.w900,
+              fontWeight: FontWeight.w600,
             ),
           ),
-          const SizedBox(height: AppSpacing.sm),
+          const SizedBox(height: RadarSpacing.md),
           ...letter.bodyParagraphs.map(
             (paragraph) => Padding(
               padding: const EdgeInsets.only(bottom: 8),
               child: Text(
                 paragraph,
                 style: const TextStyle(
-                  color: AppColors.textSecondary,
+                  color: RadarColors.textSecondary,
                   fontSize: 13.5,
-                  fontWeight: FontWeight.w700,
+                  fontWeight: FontWeight.w400,
                   height: 1.35,
                 ),
               ),
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _LetterBottomActionBar extends StatelessWidget {
+  const _LetterBottomActionBar({
+    required this.primaryLabel,
+    required this.primaryIcon,
+    required this.onPrimaryPressed,
+    required this.secondaryLabel,
+    required this.secondaryIcon,
+    required this.onSecondaryPressed,
+  });
+
+  final String primaryLabel;
+  final IconData primaryIcon;
+  final VoidCallback onPrimaryPressed;
+  final String secondaryLabel;
+  final IconData secondaryIcon;
+  final VoidCallback onSecondaryPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(
+          RadarSpacing.xl,
+          RadarSpacing.md,
+          RadarSpacing.xl,
+          RadarSpacing.lg,
+        ),
+        decoration: BoxDecoration(
+          color: RadarColors.surface.withValues(alpha: 0.98),
+          border: const Border(top: BorderSide(color: RadarColors.border)),
+          boxShadow: RadarShadows.navigation,
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: OutlinedButton.icon(
+                onPressed: onSecondaryPressed,
+                icon: Icon(secondaryIcon),
+                label: Text(secondaryLabel),
+              ),
+            ),
+            const SizedBox(width: RadarSpacing.md),
+            Expanded(
+              child: FilledButton.icon(
+                onPressed: onPrimaryPressed,
+                icon: Icon(primaryIcon),
+                label: Text(primaryLabel),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

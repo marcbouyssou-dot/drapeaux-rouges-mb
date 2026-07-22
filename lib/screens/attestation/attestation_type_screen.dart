@@ -1,11 +1,13 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+import '../../features/radar/presentation/theme/radar_colors.dart';
+import '../../features/radar/presentation/theme/radar_radius.dart';
+import '../../features/radar/presentation/theme/radar_shadows.dart';
+import '../../features/radar/presentation/theme/radar_spacing.dart';
+import '../../features/radar/presentation/theme/radar_text_styles.dart';
+import '../../features/radar/presentation/theme/radar_theme.dart';
 import '../../models/attestation/attestation_template.dart';
-import '../../theme/app_colors.dart';
-import '../../theme/app_radius.dart';
-import '../../theme/app_shadows.dart';
-import '../../theme/app_spacing.dart';
 import 'attestation_history_screen.dart';
 import 'patient_attestation_screen.dart';
 
@@ -30,60 +32,82 @@ class AttestationTypeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: SafeArea(
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 720),
-            child: ListView(
-              padding: const EdgeInsets.fromLTRB(
-                AppSpacing.md,
-                AppSpacing.sm,
-                AppSpacing.md,
-                AppSpacing.lg,
-              ),
-              children: [
-                Row(
-                  children: [
-                    IconButton.filledTonal(
-                      tooltip: 'Retour',
-                      onPressed: () => Navigator.pop(context),
-                      icon: const Icon(Icons.arrow_back_ios_new_rounded),
-                      style: IconButton.styleFrom(
-                        backgroundColor: AppColors.surface,
-                        foregroundColor: AppColors.primary,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(AppRadius.lg),
-                        ),
-                      ),
-                    ),
-                    const Spacer(),
-                    OutlinedButton.icon(
-                      onPressed: () => openHistory(context),
-                      icon: const Icon(Icons.history_edu_outlined, size: 18),
-                      label: const Text('Historique'),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: AppColors.primary,
-                        side: const BorderSide(color: AppColors.borderStrong),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(AppRadius.lg),
-                        ),
-                      ),
-                    ),
-                  ],
+    return Theme(
+      data: RadarTheme.lightTheme,
+      child: Scaffold(
+        backgroundColor: RadarColors.background,
+        body: SafeArea(
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 560),
+              child: ListView(
+                padding: const EdgeInsets.fromLTRB(
+                  RadarSpacing.xl,
+                  RadarSpacing.xl,
+                  RadarSpacing.xl,
+                  RadarSpacing.xxl,
                 ),
-                const SizedBox(height: AppSpacing.sm),
-                ...attestationTemplates.map(
-                  (template) => Padding(
-                    padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-                    child: _AttestationTypeCard(
-                      template: template,
-                      onTap: () => openAttestation(context, template),
+                children: [
+                  Row(
+                    children: [
+                      IconButton.filledTonal(
+                        tooltip: 'Retour',
+                        onPressed: () => Navigator.pop(context),
+                        icon: const Icon(Icons.arrow_back_ios_new_rounded),
+                        style: IconButton.styleFrom(
+                          backgroundColor: RadarColors.surface,
+                          foregroundColor: RadarColors.primary,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(
+                              RadarRadius.small,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const Spacer(),
+                      IntrinsicWidth(
+                        child: OutlinedButton.icon(
+                          onPressed: () => openHistory(context),
+                          icon: const Icon(
+                            Icons.history_edu_outlined,
+                            size: 18,
+                          ),
+                          label: const Text('Historique'),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: RadarColors.primary,
+                            side: const BorderSide(color: RadarColors.border),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(
+                                RadarRadius.small,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: RadarSpacing.xl),
+                  const Text(
+                    'Attestations',
+                    style: RadarTextStyles.screenTitle,
+                  ),
+                  const SizedBox(height: RadarSpacing.sm),
+                  const Text(
+                    'Préparer une attestation patient et générer le PDF.',
+                    style: RadarTextStyles.secondary,
+                  ),
+                  const SizedBox(height: RadarSpacing.xxl),
+                  ...attestationTemplates.map(
+                    (template) => Padding(
+                      padding: const EdgeInsets.only(bottom: RadarSpacing.lg),
+                      child: _AttestationTypeCard(
+                        template: template,
+                        onTap: () => openAttestation(context, template),
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
@@ -104,17 +128,16 @@ class _AttestationTypeCard extends StatelessWidget {
 
     return Material(
       color: Colors.transparent,
-      borderRadius: BorderRadius.circular(AppRadius.xl),
+      borderRadius: BorderRadius.circular(RadarRadius.card),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(AppRadius.xl),
+        borderRadius: BorderRadius.circular(RadarRadius.card),
         child: Container(
-          padding: const EdgeInsets.all(12),
+          padding: const EdgeInsets.all(RadarSpacing.xl),
           decoration: BoxDecoration(
-            color: AppColors.surface,
-            borderRadius: BorderRadius.circular(AppRadius.xl),
-            border: Border.all(color: AppColors.border),
-            boxShadow: AppShadows.soft,
+            color: RadarColors.surface,
+            borderRadius: BorderRadius.circular(RadarRadius.card),
+            boxShadow: RadarShadows.card,
           ),
           child: Row(
             children: [
@@ -123,10 +146,7 @@ class _AttestationTypeCard extends StatelessWidget {
                 width: compact ? 44 : 50,
                 decoration: BoxDecoration(
                   color: template.color.withValues(alpha: 0.10),
-                  borderRadius: BorderRadius.circular(AppRadius.lg),
-                  border: Border.all(
-                    color: template.color.withValues(alpha: 0.18),
-                  ),
+                  borderRadius: BorderRadius.circular(RadarRadius.small),
                 ),
                 child: Icon(
                   template.icon,
@@ -134,26 +154,25 @@ class _AttestationTypeCard extends StatelessWidget {
                   size: compact ? 23 : 26,
                 ),
               ),
-              const SizedBox(width: AppSpacing.sm),
+              const SizedBox(width: RadarSpacing.lg),
               Expanded(
                 child: Text(
                   template.title,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
+                  style: RadarTextStyles.question.copyWith(
                     color: template.color,
                     fontSize: compact ? 15.5 : 18,
-                    fontWeight: FontWeight.w900,
                   ),
                 ),
               ),
-              const SizedBox(width: AppSpacing.sm),
+              const SizedBox(width: RadarSpacing.sm),
               _StatusBadge(template: template),
-              const SizedBox(width: AppSpacing.xs),
+              const SizedBox(width: RadarSpacing.xs),
               const Icon(
                 Icons.chevron_right_rounded,
-                color: AppColors.textMuted,
-                size: 28,
+                color: RadarColors.textMuted,
+                size: 24,
               ),
             ],
           ),
@@ -170,22 +189,19 @@ class _StatusBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = template.isActive ? AppColors.successDark : AppColors.warning;
+    final color = template.isActive
+        ? RadarColors.clinicalSuccess
+        : RadarColors.clinicalWarning;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.10),
-        borderRadius: BorderRadius.circular(AppRadius.pill),
-        border: Border.all(color: color.withValues(alpha: 0.18)),
+        borderRadius: BorderRadius.circular(RadarRadius.pill),
       ),
       child: Text(
         template.statusLabel,
-        style: TextStyle(
-          color: color,
-          fontSize: 10.5,
-          fontWeight: FontWeight.w900,
-        ),
+        style: RadarTextStyles.caption.copyWith(color: color),
       ),
     );
   }

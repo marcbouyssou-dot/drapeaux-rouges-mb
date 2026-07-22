@@ -12,10 +12,12 @@ import '../services/practitioner_profile_service.dart';
 import '../services/prescription_pdf_service.dart';
 import '../services/prescription_service.dart';
 import '../services/rgpd_local_service.dart';
-import '../theme/app_design_system.dart';
-import '../widgets/design_system/clinical_bottom_action_bar.dart';
-import '../widgets/design_system/clinical_info_banner.dart';
-import '../widgets/design_system/clinical_text_field.dart';
+import '../features/radar/presentation/theme/radar_colors.dart';
+import '../features/radar/presentation/theme/radar_radius.dart';
+import '../features/radar/presentation/theme/radar_shadows.dart';
+import '../features/radar/presentation/theme/radar_spacing.dart';
+import '../features/radar/presentation/theme/radar_text_styles.dart';
+import '../features/radar/presentation/theme/radar_theme.dart';
 
 class PrescriptionScreen extends StatefulWidget {
   const PrescriptionScreen({
@@ -417,8 +419,10 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
       decoration: InputDecoration(
         labelText: label,
         filled: true,
-        fillColor: AppColors.background,
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
+        fillColor: RadarColors.background,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(RadarRadius.card),
+        ),
       ),
     );
   }
@@ -437,65 +441,79 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      bottomNavigationBar: ClinicalBottomActionBar(
-        secondaryLabel: 'Réinitialiser',
-        secondaryIcon: Icons.refresh_rounded,
-        onSecondaryPressed: resetForm,
-        primaryLabel: 'Exporter PDF',
-        primaryIcon: Icons.picture_as_pdf_outlined,
-        onPrimaryPressed: exportPdf,
-      ),
-      body: Column(
-        children: [
-          buildPrescriptionHeader(context),
-          Expanded(
-            child: Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 960),
-                child: ListView(
-                  padding: EdgeInsets.fromLTRB(14, 0, 14, 100),
-                  children: [
-                    buildReadinessSummary(),
-                    const SizedBox(height: 8),
-                    buildPatientCard(),
-                    const SizedBox(height: 8),
-                    buildPractitionerCard(),
-                    const SizedBox(height: 8),
-                    buildAccessDirectPrescriptionCard(),
-                    const SizedBox(height: 8),
-                    buildPrescriptionCard(),
-                    const SizedBox(height: 8),
-                    ExpansionTile(
-                      tilePadding: EdgeInsets.zero,
-                      title: const Text(
-                        'Notes réglementaires',
-                        style: TextStyle(fontWeight: FontWeight.w900),
-                      ),
-                      children: const [
-                        ClinicalInfoBanner(
-                          text:
-                              'Les prescriptions et recommandations doivent rester conformes aux compétences, droits de prescription et conditions réglementaires du masseur-kinésithérapeute.',
-                          icon: Icons.gavel_rounded,
-                          color: AppColors.warningOrange,
-                          backgroundColor: AppColors.softOrange,
-                        ),
-                        SizedBox(height: 10),
-                        ClinicalInfoBanner(
-                          text: 'PDF sobre, lisible et économique à imprimer.',
-                          icon: Icons.print_outlined,
-                          color: AppColors.textSecondary,
-                          backgroundColor: AppColors.card,
-                        ),
-                      ],
+    return Theme(
+      data: RadarTheme.lightTheme,
+      child: Scaffold(
+        backgroundColor: RadarColors.background,
+        bottomNavigationBar: _DocumentBottomActionBar(
+          secondaryLabel: 'Réinitialiser',
+          secondaryIcon: Icons.refresh_rounded,
+          onSecondaryPressed: resetForm,
+          primaryLabel: 'Exporter PDF',
+          primaryIcon: Icons.picture_as_pdf_outlined,
+          onPrimaryPressed: exportPdf,
+        ),
+        body: Column(
+          children: [
+            buildPrescriptionHeader(context),
+            Expanded(
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 720),
+                  child: ListView(
+                    padding: const EdgeInsets.fromLTRB(
+                      RadarSpacing.xl,
+                      0,
+                      RadarSpacing.xl,
+                      112,
                     ),
-                  ],
+                    children: [
+                      buildReadinessSummary(),
+                      const SizedBox(height: RadarSpacing.lg),
+                      buildPatientCard(),
+                      const SizedBox(height: RadarSpacing.lg),
+                      buildPractitionerCard(),
+                      const SizedBox(height: RadarSpacing.lg),
+                      buildAccessDirectPrescriptionCard(),
+                      const SizedBox(height: RadarSpacing.lg),
+                      buildPrescriptionCard(),
+                      const SizedBox(height: RadarSpacing.lg),
+                      Theme(
+                        data: Theme.of(
+                          context,
+                        ).copyWith(dividerColor: Colors.transparent),
+                        child: ExpansionTile(
+                          tilePadding: EdgeInsets.zero,
+                          title: Text(
+                            'Notes réglementaires',
+                            style: RadarTextStyles.contextTitle,
+                          ),
+                          children: const [
+                            _DocumentInfoBanner(
+                              text:
+                                  'Les prescriptions et recommandations doivent rester conformes aux compétences, droits de prescription et conditions réglementaires du masseur-kinésithérapeute.',
+                              icon: Icons.gavel_rounded,
+                              color: RadarColors.clinicalWarning,
+                              backgroundColor: RadarColors.warningSoft,
+                            ),
+                            SizedBox(height: RadarSpacing.md),
+                            _DocumentInfoBanner(
+                              text:
+                                  'PDF sobre, lisible et économique à imprimer.',
+                              icon: Icons.print_outlined,
+                              color: RadarColors.textSecondary,
+                              backgroundColor: RadarColors.surface,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -504,20 +522,17 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
     final compact = MediaQuery.sizeOf(context).width < 430;
 
     return Container(
-      margin: EdgeInsets.all(compact ? 8 : 14),
-      padding: EdgeInsets.all(compact ? 10 : 14),
+      margin: EdgeInsets.fromLTRB(
+        compact ? RadarSpacing.md : RadarSpacing.xl,
+        compact ? RadarSpacing.md : RadarSpacing.xl,
+        compact ? RadarSpacing.md : RadarSpacing.xl,
+        RadarSpacing.lg,
+      ),
+      padding: const EdgeInsets.all(RadarSpacing.xl),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [
-            AppColors.primaryBlue,
-            AppColors.warningOrange,
-            AppColors.primaryBlue,
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(28),
-        boxShadow: AppShadows.softShadow,
+        color: RadarColors.surface,
+        borderRadius: BorderRadius.circular(RadarRadius.card),
+        boxShadow: RadarShadows.card,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -526,40 +541,37 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               InkWell(
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(RadarRadius.small),
                 onTap: () => Navigator.pop(context),
                 child: Container(
                   width: 44,
                   height: 44,
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.16),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.20),
-                    ),
+                    color: RadarColors.background,
+                    borderRadius: BorderRadius.circular(RadarRadius.small),
                   ),
                   child: const Icon(
                     Icons.arrow_back_ios_new_rounded,
-                    color: Colors.white,
+                    color: RadarColors.primary,
                   ),
                 ),
               ),
               if (!compact) ...[
-                const SizedBox(width: 12),
+                const SizedBox(width: RadarSpacing.md),
                 Container(
                   width: 44,
                   height: 44,
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.16),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.20),
-                    ),
+                    color: RadarColors.primary.withValues(alpha: 0.10),
+                    borderRadius: BorderRadius.circular(RadarRadius.small),
                   ),
-                  child: const Icon(Icons.edit_document, color: Colors.white),
+                  child: const Icon(
+                    Icons.edit_document,
+                    color: RadarColors.primary,
+                  ),
                 ),
               ],
-              const SizedBox(width: 12),
+              const SizedBox(width: RadarSpacing.md),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -568,23 +580,17 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
                       selectedPrescriptionType,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: AppTextStyles.screenTitle.copyWith(
-                        color: Colors.white,
+                      style: RadarTextStyles.screenTitle.copyWith(
                         fontSize: compact ? 20 : 25,
                       ),
                     ),
                     if (!compact) ...[
-                      const SizedBox(height: 6),
-                      Text(
+                      const SizedBox(height: RadarSpacing.sm),
+                      const Text(
                         'Prescription clinique · document thérapeutique · PDF',
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.84),
-                          fontSize: 13,
-                          height: 1.35,
-                          fontWeight: FontWeight.w700,
-                        ),
+                        style: RadarTextStyles.secondary,
                       ),
                     ],
                   ],
@@ -593,10 +599,10 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
             ],
           ),
           if (!compact) ...[
-            const SizedBox(height: 12),
+            const SizedBox(height: RadarSpacing.lg),
             Wrap(
-              spacing: 8,
-              runSpacing: 8,
+              spacing: RadarSpacing.sm,
+              runSpacing: RadarSpacing.sm,
               children: [
                 buildHeaderChip(Icons.person_outline_rounded, patientName),
                 buildHeaderChip(
@@ -620,24 +626,21 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.14),
-        borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.20)),
+        color: RadarColors.background,
+        borderRadius: BorderRadius.circular(RadarRadius.pill),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, color: Colors.white, size: 14),
-          const SizedBox(width: 4),
+          Icon(icon, color: RadarColors.primary, size: 14),
+          const SizedBox(width: RadarSpacing.xs),
           Flexible(
             child: Text(
               label,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 11,
-                fontWeight: FontWeight.w900,
+              style: RadarTextStyles.caption.copyWith(
+                color: RadarColors.textSecondary,
               ),
             ),
           ),
@@ -657,8 +660,8 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
             label: 'Patient',
             value: currentPatient == null ? 'À sélectionner' : 'Actif',
             color: currentPatient == null
-                ? AppColors.warningOrange
-                : AppColors.successGreen,
+                ? RadarColors.clinicalWarning
+                : RadarColors.clinicalSuccess,
           ),
           _ReadinessItem(
             icon: practitioner.isComplete
@@ -667,14 +670,14 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
             label: 'Professionnel',
             value: practitioner.isComplete ? 'Prêt' : 'À compléter',
             color: practitioner.isComplete
-                ? AppColors.successGreen
-                : AppColors.warningOrange,
+                ? RadarColors.clinicalSuccess
+                : RadarColors.clinicalWarning,
           ),
           _ReadinessItem(
             icon: Icons.library_books_outlined,
             label: 'Type',
             value: selectedPrescriptionType,
-            color: AppColors.primaryBlue,
+            color: RadarColors.primary,
           ),
         ];
 
@@ -699,7 +702,9 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
           children: items
               .map(
                 (item) => Padding(
-                  padding: EdgeInsets.only(bottom: item == items.last ? 0 : 8),
+                  padding: EdgeInsets.only(
+                    bottom: item == items.last ? 0 : RadarSpacing.sm,
+                  ),
                   child: item,
                 ),
               )
@@ -713,14 +718,11 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
     final hasPatient = currentPatient != null;
 
     return Container(
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.all(RadarSpacing.xl),
       decoration: BoxDecoration(
-        color: hasPatient ? AppColors.card : AppColors.softOrange,
-        borderRadius: BorderRadius.circular(26),
-        border: Border.all(
-          color: hasPatient ? AppColors.border : const Color(0xFFFED7AA),
-        ),
-        boxShadow: AppShadows.softShadow,
+        color: hasPatient ? RadarColors.surface : RadarColors.warningSoft,
+        borderRadius: BorderRadius.circular(RadarRadius.card),
+        boxShadow: RadarShadows.card,
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -729,46 +731,47 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
             height: 46,
             width: 46,
             decoration: BoxDecoration(
-              color: hasPatient ? AppColors.softBlue : AppColors.softOrange,
-              borderRadius: BorderRadius.circular(18),
+              color: hasPatient
+                  ? RadarColors.primary.withValues(alpha: 0.10)
+                  : RadarColors.clinicalWarning.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(RadarRadius.small),
             ),
             child: Icon(
               hasPatient ? Icons.person_rounded : Icons.warning_amber_rounded,
               color: hasPatient
-                  ? AppColors.primaryBlue
-                  : AppColors.warningOrange,
-              size: 27,
+                  ? RadarColors.primary
+                  : RadarColors.clinicalWarning,
+              size: 24,
             ),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: RadarSpacing.lg),
           Expanded(
             child: hasPatient
                 ? Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Patient', style: AppTextStyles.cardSubtitle),
-                      const SizedBox(height: 4),
+                      const Text('Patient', style: RadarTextStyles.caption),
+                      const SizedBox(height: RadarSpacing.xs),
                       Text(
                         patientName,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                        style: AppTextStyles.cardTitle,
+                        style: RadarTextStyles.contextTitle,
                       ),
-                      const SizedBox(height: 2),
+                      const SizedBox(height: RadarSpacing.xs),
                       Text(
                         '${currentPatient!.anonymousId} · Né(e) le ${currentPatient!.dateNaissance}',
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                        style: AppTextStyles.cardSubtitle,
+                        style: RadarTextStyles.secondary,
                       ),
                     ],
                   )
                 : Text(
                     'Aucun patient actif. Sélectionnez ou créez un patient dans l’onglet Patient.',
-                    style: TextStyle(
-                      color: AppColors.warningOrange,
-                      fontWeight: FontWeight.w800,
-                      height: 1.35,
+                    style: RadarTextStyles.secondary.copyWith(
+                      color: RadarColors.clinicalWarning,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
           ),
@@ -776,7 +779,7 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
             onPressed: loadInitialData,
             icon: const Icon(Icons.refresh_rounded),
             tooltip: 'Actualiser',
-            color: AppColors.textSecondary,
+            color: RadarColors.textSecondary,
           ),
         ],
       ),
@@ -787,14 +790,11 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
     final complete = practitioner.isComplete;
 
     return Container(
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.all(RadarSpacing.xl),
       decoration: BoxDecoration(
-        color: complete ? AppColors.card : AppColors.softOrange,
-        borderRadius: BorderRadius.circular(26),
-        border: Border.all(
-          color: complete ? AppColors.border : const Color(0xFFFED7AA),
-        ),
-        boxShadow: AppShadows.softShadow,
+        color: complete ? RadarColors.surface : RadarColors.warningSoft,
+        borderRadius: BorderRadius.circular(RadarRadius.card),
+        boxShadow: RadarShadows.card,
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -803,30 +803,37 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
             height: 46,
             width: 46,
             decoration: BoxDecoration(
-              color: complete ? AppColors.softBlue : AppColors.softOrange,
-              borderRadius: BorderRadius.circular(18),
+              color: complete
+                  ? RadarColors.primary.withValues(alpha: 0.10)
+                  : RadarColors.clinicalWarning.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(RadarRadius.small),
             ),
             child: Icon(
               complete ? Icons.badge_rounded : Icons.edit_note_rounded,
-              color: complete ? AppColors.primaryBlue : AppColors.warningOrange,
-              size: 27,
+              color: complete
+                  ? RadarColors.primary
+                  : RadarColors.clinicalWarning,
+              size: 24,
             ),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: RadarSpacing.lg),
           Expanded(
             child: complete
                 ? Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Professionnel', style: AppTextStyles.cardSubtitle),
-                      const SizedBox(height: 4),
+                      const Text(
+                        'Professionnel',
+                        style: RadarTextStyles.caption,
+                      ),
+                      const SizedBox(height: RadarSpacing.xs),
                       Text(
                         practitioner.fullName,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                        style: AppTextStyles.cardTitle,
+                        style: RadarTextStyles.contextTitle,
                       ),
-                      const SizedBox(height: 2),
+                      const SizedBox(height: RadarSpacing.xs),
                       Text(
                         [
                           if (practitioner.adeli.trim().isNotEmpty)
@@ -836,16 +843,15 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
                         ].join(' • '),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                        style: AppTextStyles.cardSubtitle,
+                        style: RadarTextStyles.secondary,
                       ),
                     ],
                   )
                 : Text(
                     'Renseignez une seule fois vos informations professionnelles pour les PDF.',
-                    style: TextStyle(
-                      color: AppColors.warningOrange,
-                      fontWeight: FontWeight.w800,
-                      height: 1.35,
+                    style: RadarTextStyles.secondary.copyWith(
+                      color: RadarColors.clinicalWarning,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
           ),
@@ -853,7 +859,7 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
             onPressed: showPractitionerDialog,
             icon: const Icon(Icons.edit_rounded),
             tooltip: 'Modifier',
-            color: AppColors.textSecondary,
+            color: RadarColors.textSecondary,
           ),
         ],
       ),
@@ -865,35 +871,42 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
 
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.card,
-        borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
-        border: Border.all(color: AppColors.border),
-        boxShadow: AppShadows.softShadow,
+        color: RadarColors.surface,
+        borderRadius: BorderRadius.circular(RadarRadius.card),
+        boxShadow: RadarShadows.card,
       ),
       child: Theme(
         data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
         child: ExpansionTile(
-          tilePadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-          childrenPadding: const EdgeInsets.fromLTRB(14, 0, 14, 14),
+          tilePadding: const EdgeInsets.symmetric(
+            horizontal: RadarSpacing.xl,
+            vertical: RadarSpacing.sm,
+          ),
+          childrenPadding: const EdgeInsets.fromLTRB(
+            RadarSpacing.xl,
+            0,
+            RadarSpacing.xl,
+            RadarSpacing.xl,
+          ),
           leading: Container(
             height: 44,
             width: 44,
             decoration: BoxDecoration(
-              color: AppColors.softBlue,
-              borderRadius: BorderRadius.circular(17),
+              color: RadarColors.primary.withValues(alpha: 0.10),
+              borderRadius: BorderRadius.circular(RadarRadius.small),
             ),
             child: const Icon(
               Icons.verified_user_outlined,
-              color: AppColors.primaryBlue,
+              color: RadarColors.primary,
             ),
           ),
           title: Text(
             'Accès direct & cadre réglementaire',
-            style: AppTextStyles.cardTitle.copyWith(fontSize: 16),
+            style: RadarTextStyles.contextTitle,
           ),
           subtitle: Text(
             'Conditions d’exercice, diagnostic préalable, justificatif.',
-            style: AppTextStyles.cardSubtitle,
+            style: RadarTextStyles.secondary,
           ),
           children: [
             const _MiniRegulatoryLine(
@@ -902,13 +915,13 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
               subtitle:
                   'MSP, CPTS ou structure coordonnée selon le cadre applicable.',
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: RadarSpacing.sm),
             const _MiniRegulatoryLine(
               icon: Icons.medical_information_outlined,
               title: 'Diagnostic médical préalable',
               subtitle: 'Si diagnostic déjà posé : justificatif recommandé.',
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: RadarSpacing.lg),
             SizedBox(
               width: double.infinity,
               child: OutlinedButton.icon(
@@ -923,22 +936,24 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
                 ),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: hasImage
-                      ? AppColors.successGreen
-                      : AppColors.primaryBlue,
+                      ? RadarColors.clinicalSuccess
+                      : RadarColors.primary,
                   backgroundColor: hasImage
-                      ? AppColors.softGreen
-                      : AppColors.softBlue,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
+                      ? RadarColors.successSoft
+                      : RadarColors.surfaceMuted,
+                  padding: const EdgeInsets.symmetric(
+                    vertical: RadarSpacing.lg,
+                  ),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(18),
+                    borderRadius: BorderRadius.circular(RadarRadius.card),
                   ),
                 ),
               ),
             ),
             if (hasImage) ...[
-              const SizedBox(height: 12),
+              const SizedBox(height: RadarSpacing.lg),
               ClipRRect(
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(RadarRadius.card),
                 child: Image.file(
                   justificatifImage!,
                   height: 160,
@@ -955,12 +970,11 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
 
   Widget buildPrescriptionCard() {
     return Container(
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.all(RadarSpacing.xl),
       decoration: BoxDecoration(
-        color: AppColors.card,
-        borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
-        border: Border.all(color: AppColors.border),
-        boxShadow: AppShadows.softShadow,
+        color: RadarColors.surface,
+        borderRadius: BorderRadius.circular(RadarRadius.card),
+        boxShadow: RadarShadows.card,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -972,15 +986,15 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
                 width: 44,
                 height: 44,
                 decoration: BoxDecoration(
-                  color: AppColors.softBlue,
-                  borderRadius: BorderRadius.circular(18),
+                  color: RadarColors.primary.withValues(alpha: 0.10),
+                  borderRadius: BorderRadius.circular(RadarRadius.small),
                 ),
                 child: const Icon(
                   Icons.edit_note_rounded,
-                  color: AppColors.primaryBlue,
+                  color: RadarColors.primary,
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: RadarSpacing.lg),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -989,19 +1003,19 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
                       activeTitle,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: AppTextStyles.sectionTitle,
+                      style: RadarTextStyles.sectionTitle,
                     ),
-                    const SizedBox(height: 4),
-                    Text(
+                    const SizedBox(height: RadarSpacing.xs),
+                    const Text(
                       'Complétez les champs utiles au PDF de prescription.',
-                      style: AppTextStyles.cardSubtitle,
+                      style: RadarTextStyles.secondary,
                     ),
                   ],
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: RadarSpacing.lg),
           ...buildPrescriptionFields(),
           buildTemplatesSection(),
         ],
@@ -1013,7 +1027,7 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
     switch (selectedPrescriptionType) {
       case 'Rééducation':
         return [
-          ClinicalTextField(
+          _DocumentTextField(
             label: 'Pathologie / motif',
             hint:
                 'Exemple : lombalgie aiguë, entorse de cheville, rééducation respiratoire...',
@@ -1021,7 +1035,7 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
             controller: pathologieController,
           ),
           const SizedBox(height: 12),
-          ClinicalTextField(
+          _DocumentTextField(
             label: 'Objectifs de rééducation',
             hint:
                 'Exemple : diminution de la douleur, récupération fonctionnelle...',
@@ -1029,7 +1043,7 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
             controller: reeducationObjectifsController,
           ),
           const SizedBox(height: 12),
-          ClinicalTextField(
+          _DocumentTextField(
             label: 'Fréquence / durée',
             hint: 'Exemple : 2 séances par semaine pendant 6 semaines...',
             maxLines: 2,
@@ -1039,7 +1053,7 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
 
       case 'Matériel':
         return [
-          ClinicalTextField(
+          _DocumentTextField(
             label: 'Matériel demandé',
             hint:
                 'Exemple : attelle de cheville, cannes anglaises, bas de contention...',
@@ -1047,7 +1061,7 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
             controller: materielController,
           ),
           const SizedBox(height: 12),
-          ClinicalTextField(
+          _DocumentTextField(
             label: 'Justification clinique',
             hint: 'Exemple : instabilité, douleur, limitation d’appui...',
             maxLines: 3,
@@ -1057,7 +1071,7 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
 
       case 'Examens':
         return [
-          ClinicalTextField(
+          _DocumentTextField(
             label: 'Examen / avis demandé',
             hint:
                 'Exemple : avis médical, imagerie à envisager, doppler si suspicion TVP...',
@@ -1065,7 +1079,7 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
             controller: examensController,
           ),
           const SizedBox(height: 12),
-          ClinicalTextField(
+          _DocumentTextField(
             label: 'Motif clinique',
             hint: 'Exemple : douleur persistante, suspicion de complication...',
             maxLines: 3,
@@ -1075,14 +1089,14 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
 
       case 'Conseils':
         return [
-          ClinicalTextField(
+          _DocumentTextField(
             label: 'Conseils au patient',
             hint: 'Exemple : glaçage, compression, auto-exercices...',
             maxLines: 3,
             controller: conseilsController,
           ),
           const SizedBox(height: 12),
-          ClinicalTextField(
+          _DocumentTextField(
             label: 'Points de surveillance',
             hint:
                 'Exemple : aggravation douleur, fièvre, déficit neurologique...',
@@ -1093,7 +1107,7 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
 
       case 'Attestations':
         return [
-          ClinicalTextField(
+          _DocumentTextField(
             label: 'Contenu de l’attestation',
             hint:
                 'Exemple : attestation de présence, suivi kinésithérapique, situation clinique...',
@@ -1105,7 +1119,7 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
       case 'Autres':
       default:
         return [
-          ClinicalTextField(
+          _DocumentTextField(
             label: 'Document libre',
             hint: 'Exemple : autre recommandation ou document personnalisé...',
             maxLines: 4,
@@ -1120,26 +1134,21 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
 
     if (templates.isEmpty) {
       return Container(
-        margin: const EdgeInsets.only(top: 14),
-        padding: const EdgeInsets.all(12),
+        margin: const EdgeInsets.only(top: RadarSpacing.lg),
+        padding: const EdgeInsets.all(RadarSpacing.lg),
         decoration: BoxDecoration(
-          color: AppColors.background,
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: AppColors.border),
+          color: RadarColors.background,
+          borderRadius: BorderRadius.circular(RadarRadius.card),
         ),
         child: const Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(Icons.info_outline_rounded, color: AppColors.textSecondary),
-            SizedBox(width: 10),
+            Icon(Icons.info_outline_rounded, color: RadarColors.textSecondary),
+            SizedBox(width: RadarSpacing.md),
             Expanded(
               child: Text(
                 'Aucun modèle rapide pour ce type. Renseignez librement le contenu.',
-                style: TextStyle(
-                  color: AppColors.textSecondary,
-                  fontWeight: FontWeight.w700,
-                  height: 1.35,
-                ),
+                style: RadarTextStyles.secondary,
               ),
             ),
           ],
@@ -1150,13 +1159,12 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const SizedBox(height: 14),
+        const SizedBox(height: RadarSpacing.lg),
         Container(
-          padding: const EdgeInsets.all(12),
+          padding: const EdgeInsets.all(RadarSpacing.lg),
           decoration: BoxDecoration(
-            color: AppColors.background,
-            borderRadius: BorderRadius.circular(18),
-            border: Border.all(color: AppColors.border),
+            color: RadarColors.background,
+            borderRadius: BorderRadius.circular(RadarRadius.card),
           ),
           child: Row(
             children: [
@@ -1164,32 +1172,28 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
                 width: 38,
                 height: 38,
                 decoration: BoxDecoration(
-                  color: AppColors.softBlue,
-                  borderRadius: BorderRadius.circular(14),
+                  color: RadarColors.primary.withValues(alpha: 0.10),
+                  borderRadius: BorderRadius.circular(RadarRadius.small),
                 ),
                 child: const Icon(
                   Icons.library_books_outlined,
-                  color: AppColors.primaryBlue,
+                  color: RadarColors.primary,
                   size: 21,
                 ),
               ),
-              const SizedBox(width: 10),
+              const SizedBox(width: RadarSpacing.md),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
+                    const Text(
                       'Modèles rapides',
-                      style: TextStyle(
-                        color: AppColors.textPrimary,
-                        fontSize: 15,
-                        fontWeight: FontWeight.w900,
-                      ),
+                      style: RadarTextStyles.contextTitle,
                     ),
-                    const SizedBox(height: 2),
-                    Text(
+                    const SizedBox(height: RadarSpacing.xs),
+                    const Text(
                       'Ajoutent du texte dans le champ principal.',
-                      style: AppTextStyles.cardSubtitle.copyWith(fontSize: 12),
+                      style: RadarTextStyles.caption,
                     ),
                   ],
                 ),
@@ -1197,18 +1201,17 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
             ],
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: RadarSpacing.md),
         Wrap(
-          spacing: 10,
-          runSpacing: 10,
+          spacing: RadarSpacing.sm,
+          runSpacing: RadarSpacing.sm,
           children: templates.map((template) {
             return ActionChip(
               label: Text(template),
-              backgroundColor: AppColors.background,
-              side: BorderSide(color: AppColors.border),
-              labelStyle: TextStyle(
-                color: AppColors.textPrimary,
-                fontWeight: FontWeight.w700,
+              backgroundColor: RadarColors.background,
+              side: const BorderSide(color: RadarColors.border),
+              labelStyle: RadarTextStyles.badge.copyWith(
+                color: RadarColors.textPrimary,
               ),
               onPressed: () {
                 final currentText = activeController.text.trim();
@@ -1246,18 +1249,15 @@ class _MiniRegulatoryLine extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(icon, color: AppColors.primaryBlue, size: 22),
-        const SizedBox(width: 12),
+        Icon(icon, color: RadarColors.primary, size: 22),
+        const SizedBox(width: RadarSpacing.md),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                title,
-                style: AppTextStyles.cardTitle.copyWith(fontSize: 15),
-              ),
-              const SizedBox(height: 2),
-              Text(subtitle, style: AppTextStyles.cardSubtitle),
+              Text(title, style: RadarTextStyles.contextTitle),
+              const SizedBox(height: RadarSpacing.xs),
+              Text(subtitle, style: RadarTextStyles.secondary),
             ],
           ),
         ),
@@ -1283,12 +1283,11 @@ class _ReadinessItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.all(RadarSpacing.lg),
       decoration: BoxDecoration(
-        color: AppColors.card,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.border),
-        boxShadow: AppShadows.softShadow,
+        color: RadarColors.surface,
+        borderRadius: BorderRadius.circular(RadarRadius.card),
+        boxShadow: RadarShadows.card,
       ),
       child: Row(
         children: [
@@ -1297,11 +1296,11 @@ class _ReadinessItem extends StatelessWidget {
             height: 38,
             decoration: BoxDecoration(
               color: color.withValues(alpha: 0.10),
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: BorderRadius.circular(RadarRadius.small),
             ),
             child: Icon(icon, color: color, size: 20),
           ),
-          const SizedBox(width: 10),
+          const SizedBox(width: RadarSpacing.md),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -1310,23 +1309,165 @@ class _ReadinessItem extends StatelessWidget {
                   label,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: AppColors.textSecondary,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w900,
+                  style: RadarTextStyles.caption.copyWith(
+                    color: RadarColors.textSecondary,
                   ),
                 ),
-                const SizedBox(height: 2),
+                const SizedBox(height: RadarSpacing.xs),
                 Text(
                   value,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: AppTextStyles.cardTitle.copyWith(fontSize: 15),
+                  style: RadarTextStyles.contextTitle,
                 ),
               ],
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _DocumentTextField extends StatelessWidget {
+  const _DocumentTextField({
+    required this.label,
+    required this.hint,
+    required this.controller,
+    this.maxLines = 1,
+  });
+
+  final String label;
+  final String hint;
+  final TextEditingController controller;
+  final int maxLines;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: RadarTextStyles.badge),
+        const SizedBox(height: RadarSpacing.sm),
+        TextField(
+          controller: controller,
+          maxLines: maxLines,
+          style: RadarTextStyles.body.copyWith(fontSize: 15),
+          decoration: InputDecoration(
+            hintText: hint,
+            hintStyle: RadarTextStyles.secondary.copyWith(
+              color: RadarColors.textMuted,
+            ),
+            filled: true,
+            fillColor: RadarColors.background,
+            contentPadding: const EdgeInsets.all(RadarSpacing.lg),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(RadarRadius.card),
+              borderSide: const BorderSide(color: RadarColors.border),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(RadarRadius.card),
+              borderSide: const BorderSide(color: RadarColors.border),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(RadarRadius.card),
+              borderSide: const BorderSide(
+                color: RadarColors.primary,
+                width: 1.5,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _DocumentInfoBanner extends StatelessWidget {
+  const _DocumentInfoBanner({
+    required this.text,
+    required this.icon,
+    required this.color,
+    required this.backgroundColor,
+  });
+
+  final String text;
+  final IconData icon;
+  final Color color;
+  final Color backgroundColor;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(RadarSpacing.lg),
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(RadarRadius.card),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, color: color, size: 22),
+          const SizedBox(width: RadarSpacing.md),
+          Expanded(child: Text(text, style: RadarTextStyles.secondary)),
+        ],
+      ),
+    );
+  }
+}
+
+class _DocumentBottomActionBar extends StatelessWidget {
+  const _DocumentBottomActionBar({
+    required this.primaryLabel,
+    required this.primaryIcon,
+    required this.onPrimaryPressed,
+    required this.secondaryLabel,
+    required this.secondaryIcon,
+    required this.onSecondaryPressed,
+  });
+
+  final String primaryLabel;
+  final IconData primaryIcon;
+  final VoidCallback onPrimaryPressed;
+  final String secondaryLabel;
+  final IconData secondaryIcon;
+  final VoidCallback onSecondaryPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(
+          RadarSpacing.xl,
+          RadarSpacing.md,
+          RadarSpacing.xl,
+          RadarSpacing.lg,
+        ),
+        decoration: BoxDecoration(
+          color: RadarColors.surface.withValues(alpha: 0.98),
+          border: const Border(top: BorderSide(color: RadarColors.border)),
+          boxShadow: RadarShadows.navigation,
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: OutlinedButton.icon(
+                onPressed: onSecondaryPressed,
+                icon: Icon(secondaryIcon),
+                label: Text(secondaryLabel),
+              ),
+            ),
+            const SizedBox(width: RadarSpacing.md),
+            Expanded(
+              child: FilledButton.icon(
+                onPressed: onPrimaryPressed,
+                icon: Icon(primaryIcon),
+                label: Text(primaryLabel),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
