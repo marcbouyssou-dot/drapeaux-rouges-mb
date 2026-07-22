@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 
 import 'features/radar/presentation/radar_demo_shell.dart';
+import 'services/secure_hive_service.dart';
 
-void main() {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await SecureHiveService.initFlutter();
   runApp(const RadarPreviewApp());
 }
 

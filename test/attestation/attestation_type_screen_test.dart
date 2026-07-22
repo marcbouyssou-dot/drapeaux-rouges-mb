@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:drapeaux_rouges_mb/screens/attestation/attestation_type_screen.dart';
 import 'package:drapeaux_rouges_mb/screens/attestation/attestation_history_screen.dart';
+import 'package:drapeaux_rouges_mb/screens/attestation/patient_attestation_screen.dart';
 import 'package:drapeaux_rouges_mb/screens/prescription/prescription_type_screen.dart';
 import 'package:drapeaux_rouges_mb/services/attestation_history_service.dart';
 import 'package:flutter/material.dart';
@@ -18,6 +19,8 @@ void main() {
     );
     Hive.init(tempDir.path);
     await Hive.openBox(AttestationHistoryService.boxName);
+    await Hive.openBox('settings_box');
+    await Hive.openBox('patients_box');
   });
 
   tearDown(() async {
@@ -28,7 +31,7 @@ void main() {
   testWidgets('shows attestation template library', (tester) async {
     await tester.pumpWidget(const MaterialApp(home: AttestationTypeScreen()));
 
-    expect(find.text('MK le plus proche disponible'), findsOneWidget);
+    expect(find.text('Attestation de proximité'), findsOneWidget);
     expect(find.text('Refus d’orientation médicale proposée'), findsOneWidget);
     expect(find.text('Consentement éclairé renforcé'), findsOneWidget);
     expect(find.text('Prise en charge en accès direct'), findsOneWidget);
@@ -46,7 +49,7 @@ void main() {
     await tester.pump(const Duration(milliseconds: 400));
 
     expect(find.byType(AttestationTypeScreen), findsOneWidget);
-    expect(find.text('MK le plus proche disponible'), findsOneWidget);
+    expect(find.text('Attestation de proximité'), findsOneWidget);
   });
 
   testWidgets('opens attestation history from library', (tester) async {
@@ -61,5 +64,17 @@ void main() {
       find.text('Aucune attestation générée pour le moment.'),
       findsOneWidget,
     );
+  });
+
+  testWidgets('attestation template opens the complete form', (tester) async {
+    await tester.pumpWidget(const MaterialApp(home: AttestationTypeScreen()));
+
+    await tester.tap(find.text('Attestation de proximité'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
+
+    expect(find.byType(PatientAttestationScreen), findsOneWidget);
+    expect(find.byType(CircularProgressIndicator), findsNothing);
+    expect(find.text('Générer le PDF'), findsOneWidget);
   });
 }
