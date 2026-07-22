@@ -8,7 +8,7 @@ void main() {
     expect(
       attestationTemplates.map((template) => template.title),
       containsAll([
-        'MK le plus proche disponible',
+        'Attestation de proximité',
         'Refus d’orientation médicale proposée',
         'Consentement éclairé renforcé',
         'Prise en charge en accès direct',
@@ -23,6 +23,8 @@ void main() {
 
     expect(template.isActive, isTrue);
     expect(template.statusLabel, 'Actif');
+    expect(template.title, 'Attestation de proximité');
+    expect(template.pdfTitle, 'ATTESTATION DE PROXIMITÉ');
   });
 
   test('future attestation templates are prepared', () {

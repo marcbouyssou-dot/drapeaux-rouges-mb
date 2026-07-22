@@ -37,8 +37,8 @@ class AttestationTemplate {
 const attestationTemplates = [
   AttestationTemplate(
     type: AttestationType.nearestAvailableMk,
-    title: 'MK le plus proche disponible',
-    pdfTitle: 'ATTESTATION SUR L’HONNEUR',
+    title: 'Attestation de proximité',
+    pdfTitle: 'ATTESTATION DE PROXIMITÉ',
     status: AttestationTemplateStatus.active,
     icon: Icons.assignment_turned_in_outlined,
     color: AppColors.primary,

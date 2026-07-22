@@ -6,6 +6,7 @@ import 'package:signature/signature.dart';
 
 import '../../models/attestation/attestation_template.dart';
 import '../../models/attestation/attestation_history_item.dart';
+import '../../models/attestation/attestation_type.dart';
 import '../../models/attestation/patient_attestation.dart';
 import '../../models/patient_local.dart';
 import '../../models/practitioner_profile.dart';
@@ -31,6 +32,35 @@ class PatientAttestationScreen extends StatefulWidget {
 
 class _PatientAttestationScreenState extends State<PatientAttestationScreen> {
   final lieuController = TextEditingController();
+  final patientNomController = TextEditingController();
+  final patientPrenomController = TextEditingController();
+  final patientBirthDateController = TextEditingController();
+  final patientAddressController = TextEditingController();
+  final patientPostalCodeController = TextEditingController();
+  final patientCityController = TextEditingController();
+  final practitionerNomController = TextEditingController();
+  final practitionerPrenomController = TextEditingController();
+  final practitionerIdentifierController = TextEditingController();
+  final practitionerAddressController = TextEditingController();
+  final distanceController = TextEditingController();
+  final prescriberController = TextEditingController();
+  final prescriptionDateController = TextEditingController();
+  final cabinetNameControllers = List.generate(
+    3,
+    (_) => TextEditingController(),
+  );
+  final cabinetCityControllers = List.generate(
+    3,
+    (_) => TextEditingController(),
+  );
+  final cabinetDateControllers = List.generate(
+    3,
+    (_) => TextEditingController(),
+  );
+  final cabinetOtherControllers = List.generate(
+    3,
+    (_) => TextEditingController(),
+  );
   final SignatureController signatureController = SignatureController(
     penStrokeWidth: 3,
     penColor: Colors.black,
@@ -43,18 +73,78 @@ class _PatientAttestationScreenState extends State<PatientAttestationScreen> {
   bool loading = true;
   bool exporting = false;
   bool consentConfirmed = false;
+  bool transmissionAuthorized = false;
   bool isSigning = false;
   String? patientSignatureBase64;
+  final List<ContactedCabinetReason?> cabinetReasons = List.filled(3, null);
+
+  bool get isProximityAttestation {
+    return widget.template.type == AttestationType.nearestAvailableMk;
+  }
 
   @override
   void initState() {
     super.initState();
+    for (final controller in _proximityControllers) {
+      controller.addListener(_refreshPreview);
+    }
     loadInitialData();
+  }
+
+  List<TextEditingController> get _proximityControllers {
+    return [
+      patientNomController,
+      patientPrenomController,
+      patientBirthDateController,
+      patientAddressController,
+      patientPostalCodeController,
+      patientCityController,
+      practitionerNomController,
+      practitionerPrenomController,
+      practitionerIdentifierController,
+      practitionerAddressController,
+      distanceController,
+      prescriberController,
+      prescriptionDateController,
+      ...cabinetNameControllers,
+      ...cabinetCityControllers,
+      ...cabinetDateControllers,
+      ...cabinetOtherControllers,
+    ];
+  }
+
+  void _refreshPreview() {
+    if (!mounted || loading) return;
+    setState(() {});
   }
 
   @override
   void dispose() {
+    for (final controller in _proximityControllers) {
+      controller.removeListener(_refreshPreview);
+    }
     lieuController.dispose();
+    patientNomController.dispose();
+    patientPrenomController.dispose();
+    patientBirthDateController.dispose();
+    patientAddressController.dispose();
+    patientPostalCodeController.dispose();
+    patientCityController.dispose();
+    practitionerNomController.dispose();
+    practitionerPrenomController.dispose();
+    practitionerIdentifierController.dispose();
+    practitionerAddressController.dispose();
+    distanceController.dispose();
+    prescriberController.dispose();
+    prescriptionDateController.dispose();
+    for (final controller in [
+      ...cabinetNameControllers,
+      ...cabinetCityControllers,
+      ...cabinetDateControllers,
+      ...cabinetOtherControllers,
+    ]) {
+      controller.dispose();
+    }
     signatureController.dispose();
     super.dispose();
   }
@@ -68,6 +158,20 @@ class _PatientAttestationScreenState extends State<PatientAttestationScreen> {
     setState(() {
       patient = loadedPatient;
       practitioner = loadedPractitioner;
+      patientNomController.text = loadedPatient?.nom.trim() ?? '';
+      patientPrenomController.text = loadedPatient?.prenom.trim() ?? '';
+      patientBirthDateController.text =
+          loadedPatient?.dateNaissance.trim() ?? '';
+      patientAddressController.text = loadedPatient?.adresse.trim() ?? '';
+      patientPostalCodeController.text = loadedPatient?.codePostal.trim() ?? '';
+      patientCityController.text = loadedPatient?.ville.trim() ?? '';
+      practitionerNomController.text = loadedPractitioner.nom.trim();
+      practitionerPrenomController.text = loadedPractitioner.prenom.trim();
+      practitionerIdentifierController.text = _identifierFromProfile(
+        loadedPractitioner,
+      );
+      practitionerAddressController.text = loadedPractitioner.adresse.trim();
+      prescriberController.text = loadedPatient?.medecinNom.trim() ?? '';
       loading = false;
     });
   }
@@ -80,11 +184,40 @@ class _PatientAttestationScreenState extends State<PatientAttestationScreen> {
       date: date,
       lieu: lieuController.text.trim(),
       consentConfirmed: consentConfirmed,
+      transmissionAuthorized: transmissionAuthorized,
       patientSignatureBase64: patientSignatureBase64,
+      patientNom: patientNomController.text.trim(),
+      patientPrenom: patientPrenomController.text.trim(),
+      patientDateNaissance: patientBirthDateController.text.trim(),
+      patientAdresse: patientAddressController.text.trim(),
+      patientCodePostal: patientPostalCodeController.text.trim(),
+      patientVille: patientCityController.text.trim(),
+      practitionerNom: practitionerNomController.text.trim(),
+      practitionerPrenom: practitionerPrenomController.text.trim(),
+      practitionerIdentifierOverride: practitionerIdentifierController.text
+          .trim(),
+      practitionerAddressOverride: practitionerAddressController.text.trim(),
+      distanceHomeOffice: distanceController.text.trim(),
+      prescriberName: prescriberController.text.trim(),
+      prescriptionDate: prescriptionDateController.text.trim(),
+      contactedCabinets: List.generate(
+        3,
+        (index) => ContactedCabinet(
+          name: cabinetNameControllers[index].text.trim(),
+          city: cabinetCityControllers[index].text.trim(),
+          contactDate: cabinetDateControllers[index].text.trim(),
+          reason: cabinetReasons[index],
+          otherReason: cabinetOtherControllers[index].text.trim(),
+        ),
+      ),
     );
   }
 
   Future<void> exportPdf() async {
+    if (isProximityAttestation && !_validateProximityForm()) {
+      return;
+    }
+
     if (!consentConfirmed) {
       showMessage(
         'Merci de confirmer l’information et l’accord du patient avant génération.',
@@ -122,6 +255,28 @@ class _PatientAttestationScreenState extends State<PatientAttestationScreen> {
         });
       }
     }
+  }
+
+  bool _validateProximityForm() {
+    if (patientNomController.text.trim().isEmpty ||
+        patientPrenomController.text.trim().isEmpty ||
+        patientBirthDateController.text.trim().isEmpty) {
+      showMessage('Merci de renseigner l’identité du patient.');
+      return false;
+    }
+
+    if (practitionerNomController.text.trim().isEmpty ||
+        practitionerPrenomController.text.trim().isEmpty) {
+      showMessage('Merci de renseigner l’identité du MK.');
+      return false;
+    }
+
+    if (lieuController.text.trim().isEmpty) {
+      showMessage('Merci de renseigner le lieu de signature.');
+      return false;
+    }
+
+    return true;
   }
 
   void showMessage(String message) {
@@ -169,32 +324,62 @@ class _PatientAttestationScreenState extends State<PatientAttestationScreen> {
                     children: [
                       _HeaderCard(template: widget.template),
                       const SizedBox(height: AppSpacing.sm),
-                      _ContextCard(
-                        title: 'Patient utilisé',
-                        icon: Icons.person_outline_rounded,
-                        color: AppColors.primary,
-                        lines: [
-                          _patientName,
-                          'Naissance : ${_patientBirthDate.isEmpty ? 'Non renseignée' : _patientBirthDate}',
-                          _signatureStatus,
-                        ],
-                      ),
-                      const SizedBox(height: AppSpacing.sm),
-                      _ContextCard(
-                        title: 'Praticien utilisé',
-                        icon: Icons.badge_outlined,
-                        color: AppColors.teal,
-                        lines: [
-                          practitioner.professionLabel,
-                          practitioner.fullName.isEmpty
-                              ? 'Nom non renseigné'
-                              : practitioner.fullName,
-                          if (practitioner.adresse.trim().isNotEmpty)
-                            practitioner.adresse.trim(),
-                          if (_practitionerIdentifier.isNotEmpty)
-                            _practitionerIdentifier,
-                        ],
-                      ),
+                      if (isProximityAttestation)
+                        _ProximityForm(
+                          patientNomController: patientNomController,
+                          patientPrenomController: patientPrenomController,
+                          patientBirthDateController:
+                              patientBirthDateController,
+                          patientAddressController: patientAddressController,
+                          patientPostalCodeController:
+                              patientPostalCodeController,
+                          patientCityController: patientCityController,
+                          practitionerNomController: practitionerNomController,
+                          practitionerPrenomController:
+                              practitionerPrenomController,
+                          practitionerIdentifierController:
+                              practitionerIdentifierController,
+                          practitionerAddressController:
+                              practitionerAddressController,
+                          distanceController: distanceController,
+                          prescriberController: prescriberController,
+                          prescriptionDateController:
+                              prescriptionDateController,
+                          cabinetNameControllers: cabinetNameControllers,
+                          cabinetCityControllers: cabinetCityControllers,
+                          cabinetDateControllers: cabinetDateControllers,
+                          cabinetOtherControllers: cabinetOtherControllers,
+                          cabinetReasons: cabinetReasons,
+                          onChanged: () => setState(() {}),
+                        )
+                      else ...[
+                        _ContextCard(
+                          title: 'Patient utilisé',
+                          icon: Icons.person_outline_rounded,
+                          color: AppColors.primary,
+                          lines: [
+                            _patientName,
+                            'Naissance : ${_patientBirthDate.isEmpty ? 'Non renseignée' : _patientBirthDate}',
+                            _signatureStatus,
+                          ],
+                        ),
+                        const SizedBox(height: AppSpacing.sm),
+                        _ContextCard(
+                          title: 'Praticien utilisé',
+                          icon: Icons.badge_outlined,
+                          color: AppColors.teal,
+                          lines: [
+                            practitioner.professionLabel,
+                            practitioner.fullName.isEmpty
+                                ? 'Nom non renseigné'
+                                : practitioner.fullName,
+                            if (practitioner.adresse.trim().isNotEmpty)
+                              practitioner.adresse.trim(),
+                            if (_practitionerIdentifier.isNotEmpty)
+                              _practitionerIdentifier,
+                          ],
+                        ),
+                      ],
                       const SizedBox(height: AppSpacing.sm),
                       _DatePlaceCard(
                         date: _formattedDate,
@@ -203,10 +388,17 @@ class _PatientAttestationScreenState extends State<PatientAttestationScreen> {
                       const SizedBox(height: AppSpacing.sm),
                       _ConsentSignatureCard(
                         consentConfirmed: consentConfirmed,
+                        transmissionAuthorized: transmissionAuthorized,
+                        showTransmissionConsent: isProximityAttestation,
                         signatureController: signatureController,
                         onConsentChanged: (value) {
                           setState(() {
                             consentConfirmed = value;
+                          });
+                        },
+                        onTransmissionChanged: (value) {
+                          setState(() {
+                            transmissionAuthorized = value;
                           });
                         },
                         onClearSignature: () {
@@ -240,6 +432,19 @@ class _PatientAttestationScreenState extends State<PatientAttestationScreen> {
   }
 
   String get _patientBirthDate => patient?.dateNaissance.trim() ?? '';
+
+  String _identifierFromProfile(PractitionerProfile profile) {
+    final rpps = profile.rpps.trim();
+    final adeli = profile.adeli.trim();
+
+    if (rpps.isNotEmpty && adeli.isNotEmpty) {
+      return 'RPPS : $rpps · ADELI : $adeli';
+    }
+    if (rpps.isNotEmpty) return 'RPPS : $rpps';
+    if (adeli.isNotEmpty) return 'ADELI : $adeli';
+
+    return '';
+  }
 
   String get _signatureStatus {
     final hasSignature =
@@ -402,6 +607,306 @@ class _ContextCard extends StatelessWidget {
   }
 }
 
+class _ProximityForm extends StatelessWidget {
+  const _ProximityForm({
+    required this.patientNomController,
+    required this.patientPrenomController,
+    required this.patientBirthDateController,
+    required this.patientAddressController,
+    required this.patientPostalCodeController,
+    required this.patientCityController,
+    required this.practitionerNomController,
+    required this.practitionerPrenomController,
+    required this.practitionerIdentifierController,
+    required this.practitionerAddressController,
+    required this.distanceController,
+    required this.prescriberController,
+    required this.prescriptionDateController,
+    required this.cabinetNameControllers,
+    required this.cabinetCityControllers,
+    required this.cabinetDateControllers,
+    required this.cabinetOtherControllers,
+    required this.cabinetReasons,
+    required this.onChanged,
+  });
+
+  final TextEditingController patientNomController;
+  final TextEditingController patientPrenomController;
+  final TextEditingController patientBirthDateController;
+  final TextEditingController patientAddressController;
+  final TextEditingController patientPostalCodeController;
+  final TextEditingController patientCityController;
+  final TextEditingController practitionerNomController;
+  final TextEditingController practitionerPrenomController;
+  final TextEditingController practitionerIdentifierController;
+  final TextEditingController practitionerAddressController;
+  final TextEditingController distanceController;
+  final TextEditingController prescriberController;
+  final TextEditingController prescriptionDateController;
+  final List<TextEditingController> cabinetNameControllers;
+  final List<TextEditingController> cabinetCityControllers;
+  final List<TextEditingController> cabinetDateControllers;
+  final List<TextEditingController> cabinetOtherControllers;
+  final List<ContactedCabinetReason?> cabinetReasons;
+  final VoidCallback onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        _FormSectionCard(
+          title: 'Patient',
+          children: [
+            _FormField(controller: patientNomController, label: 'Nom'),
+            _FormField(controller: patientPrenomController, label: 'Prénom'),
+            _FormField(
+              controller: patientBirthDateController,
+              label: 'Date de naissance',
+            ),
+            _FormField(controller: patientAddressController, label: 'Adresse'),
+            Row(
+              children: [
+                Expanded(
+                  child: _FormField(
+                    controller: patientPostalCodeController,
+                    label: 'Code postal',
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.sm),
+                Expanded(
+                  child: _FormField(
+                    controller: patientCityController,
+                    label: 'Ville',
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        _FormSectionCard(
+          title: 'Masseur-kinésithérapeute',
+          children: [
+            _FormField(controller: practitionerNomController, label: 'Nom'),
+            _FormField(
+              controller: practitionerPrenomController,
+              label: 'Prénom',
+            ),
+            _FormField(
+              controller: practitionerIdentifierController,
+              label: 'RPPS ou ADELI',
+            ),
+            _FormField(
+              controller: practitionerAddressController,
+              label: 'Adresse cabinet',
+            ),
+            _FormField(
+              controller: distanceController,
+              label: 'Distance domicile / cabinet',
+              hint: 'Ex : 3,5 km',
+            ),
+          ],
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        _FormSectionCard(
+          title: 'Prescription',
+          children: [
+            _FormField(
+              controller: prescriberController,
+              label: 'Médecin prescripteur',
+            ),
+            _FormField(
+              controller: prescriptionDateController,
+              label: 'Date ordonnance',
+            ),
+          ],
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        _FormSectionCard(
+          title: 'Cabinets contactés',
+          children: List.generate(
+            3,
+            (index) => _CabinetFields(
+              index: index,
+              nameController: cabinetNameControllers[index],
+              cityController: cabinetCityControllers[index],
+              dateController: cabinetDateControllers[index],
+              otherController: cabinetOtherControllers[index],
+              reason: cabinetReasons[index],
+              onReasonChanged: (reason) {
+                cabinetReasons[index] = reason;
+                onChanged();
+              },
+              onChanged: onChanged,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _FormSectionCard extends StatelessWidget {
+  const _FormSectionCard({required this.title, required this.children});
+
+  final String title;
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) {
+    return _CardShell(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: const TextStyle(
+              color: AppColors.textPrimary,
+              fontSize: 15,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          ...children,
+        ],
+      ),
+    );
+  }
+}
+
+class _FormField extends StatelessWidget {
+  const _FormField({
+    required this.controller,
+    required this.label,
+    this.hint,
+    this.onChanged,
+  });
+
+  final TextEditingController controller;
+  final String label;
+  final String? hint;
+  final VoidCallback? onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+      child: TextField(
+        controller: controller,
+        textInputAction: TextInputAction.next,
+        onChanged: (_) => onChanged?.call(),
+        decoration: InputDecoration(
+          labelText: label,
+          hintText: hint,
+          filled: true,
+          fillColor: AppColors.background,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(AppRadius.lg),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(AppRadius.lg),
+            borderSide: const BorderSide(color: AppColors.border),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _CabinetFields extends StatelessWidget {
+  const _CabinetFields({
+    required this.index,
+    required this.nameController,
+    required this.cityController,
+    required this.dateController,
+    required this.otherController,
+    required this.reason,
+    required this.onReasonChanged,
+    required this.onChanged,
+  });
+
+  final int index;
+  final TextEditingController nameController;
+  final TextEditingController cityController;
+  final TextEditingController dateController;
+  final TextEditingController otherController;
+  final ContactedCabinetReason? reason;
+  final ValueChanged<ContactedCabinetReason?> onReasonChanged;
+  final VoidCallback onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: EdgeInsets.only(bottom: index == 2 ? 0 : AppSpacing.md),
+      padding: const EdgeInsets.all(AppSpacing.sm),
+      decoration: BoxDecoration(
+        color: AppColors.background,
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Cabinet ${index + 1}',
+            style: const TextStyle(
+              color: AppColors.textPrimary,
+              fontSize: 13,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          _FormField(
+            controller: nameController,
+            label: 'Nom du cabinet',
+            onChanged: onChanged,
+          ),
+          _FormField(
+            controller: cityController,
+            label: 'Ville',
+            onChanged: onChanged,
+          ),
+          _FormField(
+            controller: dateController,
+            label: 'Date contact',
+            onChanged: onChanged,
+          ),
+          DropdownButtonFormField<ContactedCabinetReason>(
+            initialValue: reason,
+            items: ContactedCabinetReason.values
+                .map(
+                  (item) =>
+                      DropdownMenuItem(value: item, child: Text(item.label)),
+                )
+                .toList(),
+            onChanged: onReasonChanged,
+            decoration: InputDecoration(
+              labelText: 'Motif',
+              filled: true,
+              fillColor: AppColors.surface,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AppRadius.lg),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AppRadius.lg),
+                borderSide: const BorderSide(color: AppColors.border),
+              ),
+            ),
+          ),
+          if (reason == ContactedCabinetReason.other) ...[
+            const SizedBox(height: AppSpacing.sm),
+            _FormField(
+              controller: otherController,
+              label: 'Précision autre motif',
+              onChanged: onChanged,
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
 class _DatePlaceCard extends StatelessWidget {
   const _DatePlaceCard({required this.date, required this.controller});
 
@@ -459,15 +964,21 @@ class _DatePlaceCard extends StatelessWidget {
 class _ConsentSignatureCard extends StatelessWidget {
   const _ConsentSignatureCard({
     required this.consentConfirmed,
+    required this.transmissionAuthorized,
+    required this.showTransmissionConsent,
     required this.signatureController,
     required this.onConsentChanged,
+    required this.onTransmissionChanged,
     required this.onClearSignature,
     required this.onSigningChanged,
   });
 
   final bool consentConfirmed;
+  final bool transmissionAuthorized;
+  final bool showTransmissionConsent;
   final SignatureController signatureController;
   final ValueChanged<bool> onConsentChanged;
+  final ValueChanged<bool> onTransmissionChanged;
   final VoidCallback onClearSignature;
   final ValueChanged<bool> onSigningChanged;
 
@@ -516,6 +1027,41 @@ class _ConsentSignatureCard extends StatelessWidget {
               ),
             ),
           ),
+          if (showTransmissionConsent) ...[
+            const SizedBox(height: AppSpacing.sm),
+            Container(
+              decoration: BoxDecoration(
+                color: transmissionAuthorized
+                    ? AppColors.surfaceBlue
+                    : AppColors.surface,
+                borderRadius: BorderRadius.circular(AppRadius.lg),
+                border: Border.all(
+                  color: transmissionAuthorized
+                      ? AppColors.primary.withValues(alpha: 0.35)
+                      : AppColors.border,
+                ),
+              ),
+              child: Material(
+                color: Colors.transparent,
+                child: CheckboxListTile(
+                  value: transmissionAuthorized,
+                  onChanged: (value) => onTransmissionChanged(value ?? false),
+                  activeColor: AppColors.primary,
+                  controlAffinity: ListTileControlAffinity.leading,
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 10),
+                  title: const Text(
+                    'J’autorise la transmission au service médical.',
+                    style: TextStyle(
+                      color: AppColors.textPrimary,
+                      fontSize: 13,
+                      height: 1.3,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
           const SizedBox(height: AppSpacing.sm),
           Listener(
             onPointerDown: (_) => onSigningChanged(true),

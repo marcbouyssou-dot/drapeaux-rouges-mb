@@ -10,10 +10,14 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   test('generates PDF with complete patient', () async {
-    final bytes = await PatientAttestationPdfService.buildPdfBytes(
-      _attestation(patient: _patient(signatureBase64: _transparentPngBase64)),
+    final attestation = _attestation(
+      patient: _patient(signatureBase64: _transparentPngBase64),
     );
+    final bytes = await PatientAttestationPdfService.buildPdfBytes(attestation);
 
+    expect(attestation.template.title, 'Attestation de proximité');
+    expect(attestation.bodyParagraphs.single, contains('Cabinet Nord'));
+    expect(attestation.bodyParagraphs.single, contains('4 km'));
     expect(bytes, isNotEmpty);
     expect(String.fromCharCodes(bytes.take(4)), '%PDF');
   });
@@ -55,8 +59,61 @@ void main() {
     expect(String.fromCharCodes(bytes.take(4)), '%PDF');
   });
 
+  test(
+    'generates dynamic proximity PDF with cabinets and consent choices',
+    () async {
+      final attestation = _attestation(
+        patient: _patient(),
+        consentConfirmed: true,
+        transmissionAuthorized: true,
+        patientSignatureBase64: _transparentPngBase64,
+      );
+
+      final bytes = await PatientAttestationPdfService.buildPdfBytes(
+        attestation,
+      );
+
+      expect(attestation.patientAddress, '10 rue Patient, 33000 Bordeaux');
+      expect(attestation.prescriberName, 'Dr Bernard');
+      expect(attestation.transmissionAuthorized, isTrue);
+      expect(attestation.filledContactedCabinets, hasLength(1));
+      expect(bytes, isNotEmpty);
+      expect(String.fromCharCodes(bytes.take(4)), '%PDF');
+    },
+  );
+
+  test('proximity attestation fields remain editable values', () {
+    final attestation = _attestation(
+      patient: _patient(),
+      patientNom: 'Durand',
+      patientPrenom: 'Louise',
+      distanceHomeOffice: '8 km',
+      contactedCabinets: const [
+        ContactedCabinet(
+          name: 'Cabinet Sud',
+          city: 'Talence',
+          reason: ContactedCabinetReason.other,
+          otherReason: 'organisation incompatible',
+        ),
+      ],
+    );
+
+    expect(attestation.patientFullName, 'DURAND Louise');
+    expect(attestation.distanceHomeOffice, '8 km');
+    expect(
+      attestation.filledContactedCabinets.single.reasonLabel,
+      'organisation incompatible',
+    );
+  });
+
   test('generates PDF with incomplete practitioner profile', () async {
-    final attestation = _attestation(practitioner: PractitionerProfile.empty());
+    final attestation = _attestation(
+      practitioner: PractitionerProfile.empty(),
+      practitionerNom: '',
+      practitionerPrenom: '',
+      practitionerIdentifierOverride: '',
+      practitionerAddressOverride: '',
+    );
     final bytes = await PatientAttestationPdfService.buildPdfBytes(attestation);
 
     expect(
@@ -106,7 +163,23 @@ PatientAttestation _attestation({
   PatientLocal? patient,
   PractitionerProfile? practitioner,
   bool consentConfirmed = false,
+  bool transmissionAuthorized = false,
   String? patientSignatureBase64,
+  String patientNom = '',
+  String patientPrenom = '',
+  String practitionerNom = 'Martin',
+  String practitionerPrenom = 'Claire',
+  String practitionerIdentifierOverride = 'RPPS : 10101010101',
+  String practitionerAddressOverride = '12 rue de la Santé, 33000 Bordeaux',
+  String distanceHomeOffice = '4 km',
+  List<ContactedCabinet> contactedCabinets = const [
+    ContactedCabinet(
+      name: 'Cabinet Nord',
+      city: 'Bordeaux',
+      contactDate: '13/06/2026',
+      reason: ContactedCabinetReason.overloaded,
+    ),
+  ],
 }) {
   return PatientAttestation(
     template: attestationTemplates.singleWhere(
@@ -128,7 +201,24 @@ PatientAttestation _attestation({
     date: DateTime(2026, 6, 14),
     lieu: 'Bordeaux',
     consentConfirmed: consentConfirmed,
+    transmissionAuthorized: transmissionAuthorized,
     patientSignatureBase64: patientSignatureBase64,
+    patientNom: patientNom.isEmpty ? patient?.nom ?? '' : patientNom,
+    patientPrenom: patientPrenom.isEmpty
+        ? patient?.prenom ?? ''
+        : patientPrenom,
+    patientDateNaissance: patient?.dateNaissance ?? '',
+    patientAdresse: patient?.adresse ?? '',
+    patientCodePostal: patient?.codePostal ?? '',
+    patientVille: patient?.ville ?? '',
+    practitionerNom: practitionerNom,
+    practitionerPrenom: practitionerPrenom,
+    practitionerIdentifierOverride: practitionerIdentifierOverride,
+    practitionerAddressOverride: practitionerAddressOverride,
+    distanceHomeOffice: distanceHomeOffice,
+    prescriberName: 'Dr Bernard',
+    prescriptionDate: '12/06/2026',
+    contactedCabinets: contactedCabinets,
   );
 }
 
@@ -141,6 +231,10 @@ PatientLocal _patient({String? signatureBase64}) {
     dateNaissance: '01/01/1980',
     consentementValide: true,
     dateConsentement: DateTime(2026, 1, 1),
+    adresse: '10 rue Patient',
+    codePostal: '33000',
+    ville: 'Bordeaux',
+    medecinNom: 'Dr Bernard',
     signatureBase64: signatureBase64,
   );
 }

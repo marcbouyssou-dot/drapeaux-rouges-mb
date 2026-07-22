@@ -3,6 +3,108 @@ import '../practitioner_profile.dart';
 import 'attestation_template.dart';
 import 'attestation_type.dart';
 
+enum ContactedCabinetReason {
+  noResponse,
+  overloaded,
+  noHomeCare,
+  delayTooLong,
+  other,
+}
+
+extension ContactedCabinetReasonLabel on ContactedCabinetReason {
+  String get label {
+    switch (this) {
+      case ContactedCabinetReason.noResponse:
+        return 'pas de réponse';
+      case ContactedCabinetReason.overloaded:
+        return 'surcharge';
+      case ContactedCabinetReason.noHomeCare:
+        return 'ne réalise pas les soins à domicile';
+      case ContactedCabinetReason.delayTooLong:
+        return 'délai trop important';
+      case ContactedCabinetReason.other:
+        return 'autre';
+    }
+  }
+
+  String get id {
+    switch (this) {
+      case ContactedCabinetReason.noResponse:
+        return 'noResponse';
+      case ContactedCabinetReason.overloaded:
+        return 'overloaded';
+      case ContactedCabinetReason.noHomeCare:
+        return 'noHomeCare';
+      case ContactedCabinetReason.delayTooLong:
+        return 'delayTooLong';
+      case ContactedCabinetReason.other:
+        return 'other';
+    }
+  }
+}
+
+ContactedCabinetReason contactedCabinetReasonById(String id) {
+  return ContactedCabinetReason.values.firstWhere(
+    (reason) => reason.id == id,
+    orElse: () => ContactedCabinetReason.noResponse,
+  );
+}
+
+class ContactedCabinet {
+  const ContactedCabinet({
+    this.name = '',
+    this.city = '',
+    this.contactDate = '',
+    this.reason,
+    this.otherReason = '',
+  });
+
+  final String name;
+  final String city;
+  final String contactDate;
+  final ContactedCabinetReason? reason;
+  final String otherReason;
+
+  bool get hasData {
+    return name.trim().isNotEmpty ||
+        city.trim().isNotEmpty ||
+        contactDate.trim().isNotEmpty ||
+        reason != null ||
+        otherReason.trim().isNotEmpty;
+  }
+
+  String get reasonLabel {
+    if (reason == ContactedCabinetReason.other) {
+      final value = otherReason.trim();
+      return value.isEmpty ? ContactedCabinetReason.other.label : value;
+    }
+
+    return reason?.label ?? '';
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'name': name,
+      'city': city,
+      'contactDate': contactDate,
+      'reason': reason?.id,
+      'otherReason': otherReason,
+    };
+  }
+
+  factory ContactedCabinet.fromJson(Map<String, dynamic> json) {
+    final reasonId = json['reason']?.toString() ?? '';
+
+    return ContactedCabinet(
+      name: json['name']?.toString() ?? '',
+      city: json['city']?.toString() ?? '',
+      contactDate: json['contactDate']?.toString() ?? '',
+      reason: reasonId.isEmpty ? null : contactedCabinetReasonById(reasonId),
+      otherReason: json['otherReason']?.toString() ?? '',
+    );
+  }
+}
+
 class PatientAttestation {
   const PatientAttestation({
     required this.template,
@@ -12,7 +114,22 @@ class PatientAttestation {
     required this.lieu,
     this.bodyParagraphsOverride = const [],
     this.consentConfirmed = false,
+    this.transmissionAuthorized = false,
     this.patientSignatureBase64,
+    this.patientNom = '',
+    this.patientPrenom = '',
+    this.patientDateNaissance = '',
+    this.patientAdresse = '',
+    this.patientCodePostal = '',
+    this.patientVille = '',
+    this.practitionerNom = '',
+    this.practitionerPrenom = '',
+    this.practitionerIdentifierOverride = '',
+    this.practitionerAddressOverride = '',
+    this.distanceHomeOffice = '',
+    this.prescriberName = '',
+    this.prescriptionDate = '',
+    this.contactedCabinets = const [],
   });
 
   final AttestationTemplate template;
@@ -22,9 +139,27 @@ class PatientAttestation {
   final String lieu;
   final List<String> bodyParagraphsOverride;
   final bool consentConfirmed;
+  final bool transmissionAuthorized;
   final String? patientSignatureBase64;
+  final String patientNom;
+  final String patientPrenom;
+  final String patientDateNaissance;
+  final String patientAdresse;
+  final String patientCodePostal;
+  final String patientVille;
+  final String practitionerNom;
+  final String practitionerPrenom;
+  final String practitionerIdentifierOverride;
+  final String practitionerAddressOverride;
+  final String distanceHomeOffice;
+  final String prescriberName;
+  final String prescriptionDate;
+  final List<ContactedCabinet> contactedCabinets;
 
   String get patientFullName {
+    final override =
+        '${patientNom.trim().toUpperCase()} ${patientPrenom.trim()}'.trim();
+    if (override.isNotEmpty) return override;
     if (patient == null) return 'Patient non identifié';
 
     final nom = patient!.nom.trim().toUpperCase();
@@ -35,18 +170,49 @@ class PatientAttestation {
   }
 
   String get patientBirthDate {
-    final value = patient?.dateNaissance.trim() ?? '';
+    final value = patientDateNaissance.trim().isNotEmpty
+        ? patientDateNaissance.trim()
+        : patient?.dateNaissance.trim() ?? '';
     return value.isEmpty ? '' : value;
   }
 
+  String get patientAddress {
+    final parts = [
+      patientAdresse.trim().isNotEmpty
+          ? patientAdresse.trim()
+          : patient?.adresse.trim() ?? '',
+      [
+        patientCodePostal.trim().isNotEmpty
+            ? patientCodePostal.trim()
+            : patient?.codePostal.trim() ?? '',
+        patientVille.trim().isNotEmpty
+            ? patientVille.trim()
+            : patient?.ville.trim() ?? '',
+      ].where((part) => part.isNotEmpty).join(' '),
+    ].where((part) => part.isNotEmpty).toList();
+
+    return parts.join(', ');
+  }
+
   String get practitionerFullName {
+    final override =
+        '${practitionerPrenom.trim()} ${practitionerNom.trim().toUpperCase()}'
+            .trim();
+    if (override.isNotEmpty) return override;
+
     final value = practitioner.fullName.trim();
     return value.isEmpty ? 'Masseur-kinésithérapeute non renseigné' : value;
   }
 
-  String get practitionerAddress => practitioner.adresse.trim();
+  String get practitionerAddress {
+    final value = practitionerAddressOverride.trim();
+    return value.isNotEmpty ? value : practitioner.adresse.trim();
+  }
 
   String get practitionerIdentifier {
+    final override = practitionerIdentifierOverride.trim();
+    if (override.isNotEmpty) return override;
+
     final rpps = practitioner.rpps.trim();
     final adeli = practitioner.adeli.trim();
 
@@ -86,16 +252,7 @@ class PatientAttestation {
 
     switch (template.type) {
       case AttestationType.nearestAvailableMk:
-        return [
-          'Je soussigné(e), $patientFullName,',
-          'né(e) le $patientBirthDate,',
-          'certifie avoir sollicité pour ma prise en charge à domicile :',
-          practitionerFullName,
-          if (practitionerAddress.isNotEmpty) practitionerAddress,
-          if (practitionerIdentifier.isNotEmpty) practitionerIdentifier,
-          'J’atteste que ce professionnel de santé est, à ma connaissance, le masseur-kinésithérapeute disponible le plus proche de mon domicile pour assurer les soins prescrits.',
-          'Je reconnais avoir demandé cette prise en charge de ma propre initiative et certifie l’exactitude des informations communiquées.',
-        ];
+        return [proximityDeclaration];
 
       case AttestationType.refusedMedicalOrientation:
         return [
@@ -125,5 +282,56 @@ class PatientAttestation {
           'Je reconnais avoir été informé(e) que cette prise en charge ne remplace pas un avis médical lorsque celui-ci est nécessaire.',
         ];
     }
+  }
+
+  List<ContactedCabinet> get filledContactedCabinets {
+    return contactedCabinets.where((cabinet) => cabinet.hasData).toList();
+  }
+
+  String get proximityDeclaration {
+    final cabinets = filledContactedCabinets;
+    final contactsText = cabinets.isEmpty
+        ? 'Les cabinets contactés ne sont pas renseignés.'
+        : cabinets
+              .map((cabinet) {
+                final parts = [
+                  cabinet.name.trim(),
+                  cabinet.city.trim(),
+                  if (cabinet.contactDate.trim().isNotEmpty)
+                    'contacté le ${cabinet.contactDate.trim()}',
+                  if (cabinet.reasonLabel.trim().isNotEmpty)
+                    'motif : ${cabinet.reasonLabel.trim()}',
+                ].where((part) => part.isNotEmpty).join(', ');
+                return parts;
+              })
+              .join(' ; ');
+
+    return 'Je soussigné(e), $patientFullName, né(e) le ${patientBirthDate.isEmpty ? 'Non renseigné' : patientBirthDate}, domicilié(e) ${patientAddress.isEmpty ? 'à une adresse non renseignée' : patientAddress}, atteste avoir sollicité une prise en charge à domicile auprès de $practitionerFullName${practitionerAddress.isEmpty ? '' : ', $practitionerAddress'}${practitionerIdentifier.isEmpty ? '' : ' ($practitionerIdentifier)'}. '
+        '${distanceHomeOffice.trim().isEmpty ? '' : 'La distance domicile / cabinet déclarée est de ${distanceHomeOffice.trim()}. '}'
+        '${prescriberName.trim().isEmpty && prescriptionDate.trim().isEmpty ? '' : 'La prescription est renseignée par ${prescriberName.trim().isEmpty ? 'un prescripteur non renseigné' : prescriberName.trim()}${prescriptionDate.trim().isEmpty ? '' : ', ordonnance du ${prescriptionDate.trim()}'}. '}'
+        'Cabinets contactés : $contactsText. '
+        'Cette attestation est établie pour documenter la recherche d’un masseur-kinésithérapeute disponible pour des soins à domicile, dans le respect de l’information du patient, du secret professionnel et des dispositions applicables du Code de la santé publique, notamment les articles L.1111-2 et L.1110-4.';
+  }
+
+  Map<String, dynamic> proximityDataToJson() {
+    return {
+      'patientNom': patientNom,
+      'patientPrenom': patientPrenom,
+      'patientDateNaissance': patientDateNaissance,
+      'patientAdresse': patientAdresse,
+      'patientCodePostal': patientCodePostal,
+      'patientVille': patientVille,
+      'practitionerNom': practitionerNom,
+      'practitionerPrenom': practitionerPrenom,
+      'practitionerIdentifierOverride': practitionerIdentifierOverride,
+      'practitionerAddressOverride': practitionerAddressOverride,
+      'distanceHomeOffice': distanceHomeOffice,
+      'prescriberName': prescriberName,
+      'prescriptionDate': prescriptionDate,
+      'transmissionAuthorized': transmissionAuthorized,
+      'contactedCabinets': contactedCabinets
+          .map((cabinet) => cabinet.toJson())
+          .toList(),
+    };
   }
 }

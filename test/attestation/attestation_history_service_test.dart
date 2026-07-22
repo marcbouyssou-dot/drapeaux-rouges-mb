@@ -43,7 +43,7 @@ void main() {
     final saved = await AttestationHistoryService.getAttestations();
 
     expect(saved, hasLength(1));
-    expect(saved.single.title, 'MK le plus proche disponible');
+    expect(saved.single.title, 'Attestation de proximité');
     expect(saved.single.displayPatient, 'DUPONT Alice');
     expect(saved.single.hasSignature, isFalse);
     expect(saved.single.bodyParagraphs, isNotEmpty);
@@ -108,6 +108,26 @@ void main() {
 
     expect(restored.toAttestation().bodyParagraphs, ['Texte historisé final.']);
   });
+
+  test('stores and restores proximity attestation fields', () {
+    final item = AttestationHistoryItem.fromAttestation(
+      _attestationWithPatient(
+        _patient(),
+        patientSignatureBase64: _transparentPngBase64,
+      ),
+    );
+
+    final restored = AttestationHistoryItem.fromMap(
+      item.toMap(),
+    ).toAttestation();
+
+    expect(restored.transmissionAuthorized, isTrue);
+    expect(restored.patientAddress, '10 rue Patient, 33000 Bordeaux');
+    expect(restored.practitionerIdentifier, 'RPPS : 10101010101');
+    expect(restored.distanceHomeOffice, '4 km');
+    expect(restored.prescriberName, 'Dr Test');
+    expect(restored.contactedCabinets.single.reasonLabel, 'surcharge');
+  });
 }
 
 PatientAttestation _attestationWithPatient(
@@ -129,7 +149,29 @@ PatientAttestation _attestationWithPatient(
     date: DateTime(2026, 6, 14),
     lieu: 'Bordeaux',
     consentConfirmed: patientSignatureBase64 != null,
+    transmissionAuthorized: true,
     patientSignatureBase64: patientSignatureBase64,
+    patientNom: patient?.nom ?? '',
+    patientPrenom: patient?.prenom ?? '',
+    patientDateNaissance: patient?.dateNaissance ?? '',
+    patientAdresse: patient?.adresse ?? '',
+    patientCodePostal: patient?.codePostal ?? '',
+    patientVille: patient?.ville ?? '',
+    practitionerNom: 'Martin',
+    practitionerPrenom: 'Claire',
+    practitionerIdentifierOverride: 'RPPS : 10101010101',
+    practitionerAddressOverride: '12 rue de la Santé, 33000 Bordeaux',
+    distanceHomeOffice: '4 km',
+    prescriberName: 'Dr Test',
+    prescriptionDate: '10/06/2026',
+    contactedCabinets: const [
+      ContactedCabinet(
+        name: 'Cabinet Nord',
+        city: 'Bordeaux',
+        contactDate: '11/06/2026',
+        reason: ContactedCabinetReason.overloaded,
+      ),
+    ],
   );
 }
 
@@ -152,6 +194,9 @@ PatientLocal _patient() {
     dateNaissance: '01/01/1980',
     consentementValide: true,
     dateConsentement: DateTime(2026, 1, 1),
+    adresse: '10 rue Patient',
+    codePostal: '33000',
+    ville: 'Bordeaux',
   );
 }
 

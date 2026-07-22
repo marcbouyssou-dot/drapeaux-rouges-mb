@@ -5,6 +5,7 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 
+import '../models/attestation/attestation_type.dart';
 import '../models/attestation/patient_attestation.dart';
 import 'pdf_font_helper.dart';
 
@@ -55,9 +56,13 @@ class PatientAttestationPdfService {
               ),
             ),
             pw.SizedBox(height: 26),
-            _identityBlock(attestation),
-            pw.SizedBox(height: 24),
-            ...attestation.bodyParagraphs.map(_paragraph),
+            if (attestation.template.type == AttestationType.nearestAvailableMk)
+              ..._proximityContent(attestation)
+            else ...[
+              _identityBlock(attestation),
+              pw.SizedBox(height: 24),
+              ...attestation.bodyParagraphs.map(_paragraph),
+            ],
             pw.SizedBox(height: 28),
             _placeAndDate(attestation),
             if (attestation.consentConfirmed) ...[
@@ -142,6 +147,132 @@ class PatientAttestationPdfService {
           ),
           _line('Modèle : ${attestation.template.title}'),
         ],
+      ),
+    );
+  }
+
+  static List<pw.Widget> _proximityContent(PatientAttestation attestation) {
+    return [
+      _sectionTitle('Patient'),
+      _boxedLines([
+        'Nom : ${attestation.patientNom.trim().isEmpty ? 'Non renseigné' : attestation.patientNom.trim().toUpperCase()}',
+        'Prénom : ${attestation.patientPrenom.trim().isEmpty ? 'Non renseigné' : attestation.patientPrenom.trim()}',
+        'Date de naissance : ${attestation.patientBirthDate.isEmpty ? 'Non renseignée' : attestation.patientBirthDate}',
+        'Adresse : ${attestation.patientAddress.isEmpty ? 'Non renseignée' : attestation.patientAddress}',
+      ]),
+      pw.SizedBox(height: 14),
+      _sectionTitle('Masseur-kinésithérapeute'),
+      _boxedLines([
+        'Nom / prénom : ${attestation.practitionerFullName}',
+        'RPPS ou ADELI : ${attestation.practitionerIdentifier.isEmpty ? 'Non renseigné' : attestation.practitionerIdentifier}',
+        'Adresse cabinet : ${attestation.practitionerAddress.isEmpty ? 'Non renseignée' : attestation.practitionerAddress}',
+        'Distance domicile / cabinet : ${attestation.distanceHomeOffice.trim().isEmpty ? 'Non renseignée' : attestation.distanceHomeOffice.trim()}',
+      ]),
+      pw.SizedBox(height: 14),
+      _sectionTitle('Prescription'),
+      _boxedLines([
+        'Médecin prescripteur : ${attestation.prescriberName.trim().isEmpty ? 'Non renseigné' : attestation.prescriberName.trim()}',
+        'Date ordonnance : ${attestation.prescriptionDate.trim().isEmpty ? 'Non renseignée' : attestation.prescriptionDate.trim()}',
+      ]),
+      pw.SizedBox(height: 14),
+      _sectionTitle('Cabinets contactés'),
+      _cabinetTable(attestation),
+      pw.SizedBox(height: 14),
+      _sectionTitle('Déclaration'),
+      _paragraph(attestation.proximityDeclaration),
+      pw.SizedBox(height: 14),
+      _sectionTitle('Consentements'),
+      _boxedLines([
+        attestation.consentConfirmed
+            ? '[x] J’ai reçu l’information et j’accepte de signer.'
+            : '[ ] J’ai reçu l’information et j’accepte de signer.',
+        attestation.transmissionAuthorized
+            ? '[x] J’autorise la transmission au service médical.'
+            : '[ ] J’autorise la transmission au service médical.',
+      ]),
+    ];
+  }
+
+  static pw.Widget _sectionTitle(String text) {
+    return pw.Padding(
+      padding: const pw.EdgeInsets.only(bottom: 6),
+      child: pw.Text(
+        text,
+        style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold),
+      ),
+    );
+  }
+
+  static pw.Widget _boxedLines(List<String> lines) {
+    return pw.Container(
+      width: double.infinity,
+      padding: const pw.EdgeInsets.all(10),
+      decoration: pw.BoxDecoration(
+        border: pw.Border.all(color: PdfColors.grey400, width: 0.6),
+      ),
+      child: pw.Column(
+        crossAxisAlignment: pw.CrossAxisAlignment.start,
+        children: lines.map(_line).toList(),
+      ),
+    );
+  }
+
+  static pw.Widget _cabinetTable(PatientAttestation attestation) {
+    final cabinets = List<ContactedCabinet>.generate(3, (index) {
+      if (index < attestation.contactedCabinets.length) {
+        return attestation.contactedCabinets[index];
+      }
+      return const ContactedCabinet();
+    });
+
+    return pw.Table(
+      border: pw.TableBorder.all(color: PdfColors.grey400, width: 0.6),
+      columnWidths: const {
+        0: pw.FlexColumnWidth(1.4),
+        1: pw.FlexColumnWidth(1),
+        2: pw.FlexColumnWidth(1),
+        3: pw.FlexColumnWidth(1.7),
+      },
+      children: [
+        pw.TableRow(
+          decoration: const pw.BoxDecoration(color: PdfColors.grey100),
+          children: [
+            'Cabinet',
+            'Ville',
+            'Date contact',
+            'Motif',
+          ].map(_tableHeader).toList(),
+        ),
+        ...cabinets.map(
+          (cabinet) => pw.TableRow(
+            children: [
+              _tableCell(cabinet.name),
+              _tableCell(cabinet.city),
+              _tableCell(cabinet.contactDate),
+              _tableCell(cabinet.reasonLabel),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  static pw.Widget _tableHeader(String text) {
+    return pw.Padding(
+      padding: const pw.EdgeInsets.all(6),
+      child: pw.Text(
+        text,
+        style: pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold),
+      ),
+    );
+  }
+
+  static pw.Widget _tableCell(String text) {
+    return pw.Padding(
+      padding: const pw.EdgeInsets.all(6),
+      child: pw.Text(
+        text.trim().isEmpty ? ' ' : text.trim(),
+        style: const pw.TextStyle(fontSize: 9),
       ),
     );
   }

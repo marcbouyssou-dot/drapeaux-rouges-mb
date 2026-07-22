@@ -22,6 +22,7 @@ class AttestationHistoryItem {
     required this.signatureBase64,
     required this.consentConfirmed,
     required this.bodyParagraphs,
+    this.proximityData = const {},
   });
 
   final String id;
@@ -40,6 +41,7 @@ class AttestationHistoryItem {
   final String signatureBase64;
   final bool consentConfirmed;
   final List<String> bodyParagraphs;
+  final Map<String, dynamic> proximityData;
 
   factory AttestationHistoryItem.fromAttestation(
     PatientAttestation attestation,
@@ -64,6 +66,7 @@ class AttestationHistoryItem {
       signatureBase64: attestation.signatureBase64,
       consentConfirmed: attestation.consentConfirmed,
       bodyParagraphs: attestation.bodyParagraphs,
+      proximityData: attestation.proximityDataToJson(),
     );
   }
 
@@ -93,6 +96,9 @@ class AttestationHistoryItem {
                 .map((item) => item.toString())
                 .toList()
           : const [],
+      proximityData: map['proximityData'] is Map
+          ? Map<String, dynamic>.from(map['proximityData'])
+          : const {},
     );
   }
 
@@ -114,10 +120,13 @@ class AttestationHistoryItem {
       'signatureBase64': signatureBase64,
       'consentConfirmed': consentConfirmed,
       'bodyParagraphs': bodyParagraphs,
+      'proximityData': proximityData,
     };
   }
 
   PatientAttestation toAttestation() {
+    final rawCabinets = proximityData['contactedCabinets'];
+
     return PatientAttestation(
       template: attestationTemplateByTypeId(typeId),
       patient: patientLocal,
@@ -126,9 +135,36 @@ class AttestationHistoryItem {
       lieu: lieu,
       bodyParagraphsOverride: bodyParagraphs,
       consentConfirmed: consentConfirmed,
+      transmissionAuthorized: proximityData['transmissionAuthorized'] == true,
       patientSignatureBase64: signatureBase64.trim().isEmpty
           ? null
           : signatureBase64,
+      patientNom: proximityData['patientNom']?.toString() ?? '',
+      patientPrenom: proximityData['patientPrenom']?.toString() ?? '',
+      patientDateNaissance:
+          proximityData['patientDateNaissance']?.toString() ?? '',
+      patientAdresse: proximityData['patientAdresse']?.toString() ?? '',
+      patientCodePostal: proximityData['patientCodePostal']?.toString() ?? '',
+      patientVille: proximityData['patientVille']?.toString() ?? '',
+      practitionerNom: proximityData['practitionerNom']?.toString() ?? '',
+      practitionerPrenom: proximityData['practitionerPrenom']?.toString() ?? '',
+      practitionerIdentifierOverride:
+          proximityData['practitionerIdentifierOverride']?.toString() ?? '',
+      practitionerAddressOverride:
+          proximityData['practitionerAddressOverride']?.toString() ?? '',
+      distanceHomeOffice: proximityData['distanceHomeOffice']?.toString() ?? '',
+      prescriberName: proximityData['prescriberName']?.toString() ?? '',
+      prescriptionDate: proximityData['prescriptionDate']?.toString() ?? '',
+      contactedCabinets: rawCabinets is List
+          ? rawCabinets
+                .whereType<Map>()
+                .map(
+                  (cabinet) => ContactedCabinet.fromJson(
+                    Map<String, dynamic>.from(cabinet),
+                  ),
+                )
+                .toList()
+          : const [],
     );
   }
 
@@ -156,6 +192,9 @@ class AttestationHistoryItem {
       consentementValide: true,
       dateConsentement: generatedAt,
       signatureBase64: signatureBase64.trim().isEmpty ? null : signatureBase64,
+      adresse: proximityData['patientAdresse']?.toString() ?? '',
+      codePostal: proximityData['patientCodePostal']?.toString() ?? '',
+      ville: proximityData['patientVille']?.toString() ?? '',
     );
   }
 
