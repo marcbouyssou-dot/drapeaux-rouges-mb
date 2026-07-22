@@ -1,14 +1,43 @@
+import 'dart:io';
+
 import 'package:drapeaux_rouges_mb/features/radar/presentation/radar_demo_shell.dart';
 import 'package:drapeaux_rouges_mb/features/radar/presentation/screens/radar_clinical_start_screen.dart';
 import 'package:drapeaux_rouges_mb/features/radar/presentation/screens/radar_cockpit_screen.dart';
 import 'package:drapeaux_rouges_mb/features/radar/presentation/theme/radar_colors.dart';
 import 'package:drapeaux_rouges_mb/features/radar/presentation/widgets/radar_context_bar.dart';
 import 'package:drapeaux_rouges_mb/features/radar/presentation/widgets/radar_patient_context.dart';
+import 'package:drapeaux_rouges_mb/screens/bdk/bdk_type_screen.dart';
+import 'package:drapeaux_rouges_mb/screens/history_screen.dart';
+import 'package:drapeaux_rouges_mb/screens/patient_consent_screen.dart';
+import 'package:drapeaux_rouges_mb/screens/prescription/prescription_type_screen.dart';
+import 'package:drapeaux_rouges_mb/screens/settings_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:hive/hive.dart';
 
 void main() {
   group('Radar cockpit screen', () {
+    late Directory tempDir;
+
+    setUp(() async {
+      tempDir = await Directory.systemTemp.createTemp(
+        'radar_cockpit_patient_test_',
+      );
+      Hive.init(tempDir.path);
+      await Hive.openBox('patients_box');
+      await Hive.openBox('evaluations_box');
+      await Hive.openBox('settings_box');
+      await Hive.openBox('access_direct_box');
+      await Hive.openBox('prescriptions_box');
+      await Hive.openBox('attestations_box');
+      await Hive.openBox('medical_letters_box');
+    });
+
+    tearDown(() async {
+      await Hive.close();
+      await tempDir.delete(recursive: true);
+    });
+
     testWidgets('displays the three activities and bottom navigation', (
       tester,
     ) async {
@@ -118,30 +147,68 @@ void main() {
       expect(find.text('Où se situe le problème ?'), findsOneWidget);
     });
 
-    testWidgets('Bilan is clickable and shows a sober feedback', (
+    testWidgets('opens the historical patient workflow from patient context', (
       tester,
     ) async {
       await _pumpCockpit(tester);
 
-      await tester.ensureVisible(find.text('Bilan'));
-      await tester.tap(find.text('Bilan'));
-      await tester.pump();
+      await tester.tap(find.byType(RadarPatientContextBar));
+      await tester.pumpAndSettle();
 
+      expect(find.byType(PatientConsentScreen), findsOneWidget);
       expect(tester.takeException(), isNull);
-      expect(find.text('Fonction disponible prochainement'), findsOneWidget);
     });
 
-    testWidgets('Documents is clickable and shows a sober feedback', (
+    testWidgets('Bilan opens the historical BDK workflow', (tester) async {
+      await _pumpCockpit(tester);
+
+      await tester.ensureVisible(find.text('Bilan'));
+      await tester.tap(find.text('Bilan'));
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull);
+      expect(find.byType(BDKTypeScreen), findsOneWidget);
+      expect(find.text('BDK Lombalgie'), findsOneWidget);
+    });
+
+    testWidgets('Documents opens the historical document workflow', (
       tester,
     ) async {
       await _pumpCockpit(tester);
 
       await tester.ensureVisible(find.text('Documents'));
       await tester.tap(find.text('Documents'));
-      await tester.pump();
+      await tester.pumpAndSettle();
 
       expect(tester.takeException(), isNull);
-      expect(find.text('Fonction disponible prochainement'), findsOneWidget);
+      expect(find.byType(PrescriptionTypeScreen), findsOneWidget);
+      expect(find.text('Rééducation'), findsOneWidget);
+    });
+
+    testWidgets('Historique opens the historical history workflow', (
+      tester,
+    ) async {
+      await _pumpCockpit(tester);
+
+      await tester.tap(find.text('Historique'));
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull);
+      expect(find.byType(HistoryScreen), findsOneWidget);
+      expect(find.text('Bilans'), findsWidgets);
+    });
+
+    testWidgets('Réglages opens the historical settings workflow', (
+      tester,
+    ) async {
+      await _pumpCockpit(tester);
+
+      await tester.tap(find.text('Réglages'));
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull);
+      expect(find.byType(SettingsScreen), findsOneWidget);
+      expect(find.text('Informations MK'), findsOneWidget);
     });
   });
 }

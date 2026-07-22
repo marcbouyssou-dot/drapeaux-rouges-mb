@@ -11,47 +11,59 @@ class RadarContextBar extends StatelessWidget {
     super.key,
     required this.patientName,
     required this.status,
+    this.onTap,
   });
 
   final String patientName;
   final String status;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
     final borderRadius = BorderRadius.circular(RadarRadius.card);
 
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: RadarColors.surfaceMuted,
-        borderRadius: borderRadius,
-        boxShadow: RadarShadows.card,
+    final content = Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: RadarSpacing.xl,
+        vertical: RadarSpacing.lg,
       ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: RadarSpacing.xl,
-          vertical: RadarSpacing.lg,
-        ),
-        child: Row(
-          children: [
-            const _RadarNeutralAvatar(),
-            const SizedBox(width: RadarSpacing.lg),
-            Expanded(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(patientName, style: RadarTextStyles.contextTitle),
-                  const SizedBox(height: RadarSpacing.xs),
-                  Text(status, style: RadarTextStyles.contextSecondary),
-                ],
-              ),
+      child: Row(
+        children: [
+          const _RadarNeutralAvatar(),
+          const SizedBox(width: RadarSpacing.lg),
+          Expanded(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(patientName, style: RadarTextStyles.contextTitle),
+                const SizedBox(height: RadarSpacing.xs),
+                Text(status, style: RadarTextStyles.contextSecondary),
+              ],
             ),
-            const Icon(
-              Icons.chevron_right,
-              color: RadarColors.blueGrey,
-              size: 24,
-            ),
-          ],
+          ),
+          const Icon(
+            Icons.chevron_right,
+            color: RadarColors.blueGrey,
+            size: 24,
+          ),
+        ],
+      ),
+    );
+
+    return Material(
+      color: Colors.transparent,
+      borderRadius: borderRadius,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: borderRadius,
+        child: Ink(
+          decoration: BoxDecoration(
+            color: RadarColors.surfaceMuted,
+            borderRadius: borderRadius,
+            boxShadow: RadarShadows.card,
+          ),
+          child: content,
         ),
       ),
     );

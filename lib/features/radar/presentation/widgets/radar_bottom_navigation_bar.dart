@@ -7,9 +7,14 @@ import '../theme/radar_spacing.dart';
 import '../theme/radar_text_styles.dart';
 
 class RadarBottomNavigationBar extends StatelessWidget {
-  const RadarBottomNavigationBar({super.key, this.currentIndex = 0});
+  const RadarBottomNavigationBar({
+    super.key,
+    this.currentIndex = 0,
+    this.onDestinationSelected,
+  });
 
   final int currentIndex;
+  final ValueChanged<int>? onDestinationSelected;
 
   @override
   Widget build(BuildContext context) {
@@ -32,6 +37,7 @@ class RadarBottomNavigationBar extends StatelessWidget {
                 selectedIcon: Icons.home,
                 label: 'Accueil',
                 selected: currentIndex == 0,
+                onTap: () => onDestinationSelected?.call(0),
               ),
             ),
             Expanded(
@@ -40,6 +46,7 @@ class RadarBottomNavigationBar extends StatelessWidget {
                 selectedIcon: Icons.history,
                 label: 'Historique',
                 selected: currentIndex == 1,
+                onTap: () => onDestinationSelected?.call(1),
               ),
             ),
             Expanded(
@@ -48,6 +55,7 @@ class RadarBottomNavigationBar extends StatelessWidget {
                 selectedIcon: Icons.settings,
                 label: 'Réglages',
                 selected: currentIndex == 2,
+                onTap: () => onDestinationSelected?.call(2),
               ),
             ),
           ],
@@ -63,12 +71,14 @@ class _RadarNavigationItem extends StatelessWidget {
     required this.selectedIcon,
     required this.label,
     required this.selected,
+    this.onTap,
   });
 
   final IconData icon;
   final IconData selectedIcon;
   final String label;
   final bool selected;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -81,30 +91,34 @@ class _RadarNavigationItem extends StatelessWidget {
     return Semantics(
       selected: selected,
       button: true,
-      child: SizedBox(
-        height: 56,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            DecoratedBox(
-              decoration: BoxDecoration(
-                color: selected
-                    ? RadarColors.primary.withValues(alpha: 0.1)
-                    : RadarColors.surface,
-                borderRadius: BorderRadius.circular(RadarRadius.small),
-              ),
-              child: SizedBox.square(
-                dimension: 32,
-                child: Icon(
-                  selected ? selectedIcon : icon,
-                  color: color,
-                  size: 20,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(RadarRadius.small),
+        child: SizedBox(
+          height: 56,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              DecoratedBox(
+                decoration: BoxDecoration(
+                  color: selected
+                      ? RadarColors.primary.withValues(alpha: 0.1)
+                      : RadarColors.surface,
+                  borderRadius: BorderRadius.circular(RadarRadius.small),
+                ),
+                child: SizedBox.square(
+                  dimension: 32,
+                  child: Icon(
+                    selected ? selectedIcon : icon,
+                    color: color,
+                    size: 20,
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: RadarSpacing.xs),
-            Text(label, style: labelStyle, maxLines: 1),
-          ],
+              const SizedBox(height: RadarSpacing.xs),
+              Text(label, style: labelStyle, maxLines: 1),
+            ],
+          ),
         ),
       ),
     );

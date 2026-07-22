@@ -1,5 +1,11 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+import '../../../../screens/bdk/bdk_type_screen.dart';
+import '../../../../screens/history_screen.dart';
+import '../../../../screens/patient_consent_screen.dart';
+import '../../../../screens/prescription/prescription_type_screen.dart';
+import '../../../../screens/settings_screen.dart';
 import '../theme/radar_colors.dart';
 import '../theme/radar_radius.dart';
 import '../theme/radar_spacing.dart';
@@ -9,8 +15,15 @@ import '../widgets/radar_bottom_navigation_bar.dart';
 import '../widgets/radar_patient_context.dart';
 import 'radar_clinical_start_screen.dart';
 
-class RadarCockpitScreen extends StatelessWidget {
+class RadarCockpitScreen extends StatefulWidget {
   const RadarCockpitScreen({super.key});
+
+  @override
+  State<RadarCockpitScreen> createState() => _RadarCockpitScreenState();
+}
+
+class _RadarCockpitScreenState extends State<RadarCockpitScreen> {
+  int _patientContextVersion = 0;
 
   void _openClinicalStart(BuildContext context) {
     Navigator.of(
@@ -18,10 +31,51 @@ class RadarCockpitScreen extends StatelessWidget {
     ).push(MaterialPageRoute(builder: (_) => const RadarClinicalStartScreen()));
   }
 
-  void _showComingSoon(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Fonction disponible prochainement')),
-    );
+  Future<void> _openPatientScreen(BuildContext context) async {
+    await Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => const PatientConsentScreen()));
+
+    if (!mounted) return;
+
+    setState(() {
+      _patientContextVersion++;
+    });
+  }
+
+  void _openBdkTypeScreen(BuildContext context) {
+    Navigator.of(
+      context,
+    ).push(CupertinoPageRoute(builder: (_) => const BDKTypeScreen()));
+  }
+
+  void _openPrescriptionTypeScreen(BuildContext context) {
+    Navigator.of(
+      context,
+    ).push(CupertinoPageRoute(builder: (_) => const PrescriptionTypeScreen()));
+  }
+
+  void _openHistoryScreen(BuildContext context) {
+    Navigator.of(
+      context,
+    ).push(CupertinoPageRoute(builder: (_) => const HistoryScreen()));
+  }
+
+  void _openSettingsScreen(BuildContext context) {
+    Navigator.of(
+      context,
+    ).push(CupertinoPageRoute(builder: (_) => const SettingsScreen()));
+  }
+
+  void _onBottomNavigationSelected(BuildContext context, int index) {
+    if (index == 1) {
+      _openHistoryScreen(context);
+      return;
+    }
+
+    if (index == 2) {
+      _openSettingsScreen(context);
+    }
   }
 
   @override
@@ -54,7 +108,10 @@ class RadarCockpitScreen extends StatelessWidget {
                                 children: [
                                   const _RadarCockpitHeader(),
                                   const SizedBox(height: RadarSpacing.xxl),
-                                  const RadarPatientContextBar(),
+                                  RadarPatientContextBar(
+                                    key: ValueKey(_patientContextVersion),
+                                    onTap: () => _openPatientScreen(context),
+                                  ),
                                   const SizedBox(height: RadarSpacing.xxl),
                                   RadarActionCard(
                                     title: 'Évaluation clinique',
@@ -72,7 +129,7 @@ class RadarCockpitScreen extends StatelessWidget {
                                     description: 'Créer ou compléter un bilan',
                                     icon: Icons.assignment_outlined,
                                     accentColor: RadarColors.indigo,
-                                    onTap: () => _showComingSoon(context),
+                                    onTap: () => _openBdkTypeScreen(context),
                                   ),
                                   const SizedBox(height: RadarSpacing.lg),
                                   RadarActionCard(
@@ -80,7 +137,8 @@ class RadarCockpitScreen extends StatelessWidget {
                                     subtitle: 'Créer un document clinique',
                                     icon: Icons.folder_open_outlined,
                                     accentColor: RadarColors.slate,
-                                    onTap: () => _showComingSoon(context),
+                                    onTap: () =>
+                                        _openPrescriptionTypeScreen(context),
                                   ),
                                 ],
                               ),
@@ -90,9 +148,13 @@ class RadarCockpitScreen extends StatelessWidget {
                       },
                     ),
                   ),
-                  const Padding(
-                    padding: EdgeInsets.only(bottom: RadarSpacing.xl),
-                    child: RadarBottomNavigationBar(currentIndex: 0),
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: RadarSpacing.xl),
+                    child: RadarBottomNavigationBar(
+                      currentIndex: 0,
+                      onDestinationSelected: (index) =>
+                          _onBottomNavigationSelected(context, index),
+                    ),
                   ),
                 ],
               ),

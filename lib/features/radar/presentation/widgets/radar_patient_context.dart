@@ -36,7 +36,9 @@ class RadarPatientContext {
 }
 
 class RadarPatientContextBar extends StatefulWidget {
-  const RadarPatientContextBar({super.key});
+  const RadarPatientContextBar({super.key, this.onTap});
+
+  final VoidCallback? onTap;
 
   @override
   State<RadarPatientContextBar> createState() => _RadarPatientContextBarState();
@@ -57,6 +59,7 @@ class _RadarPatientContextBarState extends State<RadarPatientContextBar> {
     return RadarContextBar(
       patientName: _patientContext.primaryLabel,
       status: _patientContext.secondaryLabel,
+      onTap: widget.onTap,
     );
   }
 
