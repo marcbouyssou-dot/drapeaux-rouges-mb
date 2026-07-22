@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 
-import '../../theme/app_colors.dart';
-import '../../theme/app_radius.dart';
-import '../../theme/app_shadows.dart';
-import '../../theme/app_spacing.dart';
-import '../../theme/app_typography.dart';
+import '../../features/radar/presentation/theme/radar_colors.dart';
+import '../../features/radar/presentation/theme/radar_radius.dart';
+import '../../features/radar/presentation/theme/radar_shadows.dart';
+import '../../features/radar/presentation/theme/radar_spacing.dart';
+import '../../features/radar/presentation/theme/radar_text_styles.dart';
+import '../../features/radar/presentation/theme/radar_theme.dart';
 import 'prescription_type_screen.dart';
 
 class PrescriptionEntryScreen extends StatelessWidget {
@@ -12,28 +13,31 @@ class PrescriptionEntryScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: SafeArea(
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 720),
-            child: ListView(
-              padding: const EdgeInsets.fromLTRB(
-                AppSpacing.md,
-                AppSpacing.md,
-                AppSpacing.md,
-                120,
+    return Theme(
+      data: RadarTheme.lightTheme,
+      child: Scaffold(
+        backgroundColor: RadarColors.background,
+        body: SafeArea(
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 560),
+              child: ListView(
+                padding: const EdgeInsets.fromLTRB(
+                  RadarSpacing.xl,
+                  RadarSpacing.xl,
+                  RadarSpacing.xl,
+                  RadarSpacing.xxl,
+                ),
+                children: [
+                  _premiumHeader(),
+                  const SizedBox(height: RadarSpacing.xxl),
+                  _startCard(context),
+                  const SizedBox(height: RadarSpacing.xl),
+                  _workflowCards(),
+                  const SizedBox(height: RadarSpacing.xl),
+                  _infoCard(),
+                ],
               ),
-              children: [
-                _premiumHeader(),
-                const SizedBox(height: AppSpacing.md),
-                _startCard(context),
-                const SizedBox(height: AppSpacing.md),
-                _workflowCards(),
-                const SizedBox(height: AppSpacing.md),
-                _infoCard(),
-              ],
             ),
           ),
         ),
@@ -42,76 +46,39 @@ class PrescriptionEntryScreen extends StatelessWidget {
   }
 
   Widget _premiumHeader() {
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.lg),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [
-            AppColors.raspberry,
-            AppColors.raspberryDark,
-            AppColors.primaryDark,
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          width: 52,
+          height: 52,
+          decoration: BoxDecoration(
+            color: RadarColors.slate.withValues(alpha: 0.10),
+            borderRadius: BorderRadius.circular(RadarRadius.card),
+          ),
+          child: const Icon(
+            Icons.description_rounded,
+            color: RadarColors.slate,
+            size: 28,
+          ),
         ),
-        borderRadius: BorderRadius.circular(AppRadius.xl),
-        boxShadow: AppShadows.elevated,
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: 52,
-            height: 52,
-            decoration: BoxDecoration(
-              color: AppColors.textOnDark.withValues(alpha: 0.14),
-              borderRadius: BorderRadius.circular(AppRadius.lg),
-              border: Border.all(
-                color: AppColors.textOnDark.withValues(alpha: 0.20),
-              ),
-            ),
-            child: const Icon(
-              Icons.description_rounded,
-              color: AppColors.textOnDark,
-              size: 29,
-            ),
-          ),
-          const SizedBox(width: AppSpacing.md),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Prescription',
-                  style: AppTypography.title.copyWith(
-                    color: AppColors.textOnDark,
-                    fontSize: 27,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.xs),
-                Text(
-                  'Documents cliniques personnalisés, patient lié et export PDF.',
-                  style: TextStyle(
-                    color: AppColors.textOnDark.withValues(alpha: 0.84),
-                    fontSize: 13,
-                    height: 1.35,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
+        const SizedBox(height: RadarSpacing.lg),
+        const Text('Prescription', style: RadarTextStyles.screenTitle),
+        const SizedBox(height: RadarSpacing.sm),
+        const Text(
+          'Documents cliniques personnalisés, patient lié et export PDF.',
+          style: RadarTextStyles.secondary,
+        ),
+      ],
     );
   }
 
   Widget _startCard(BuildContext context) {
     return Material(
-      color: Colors.transparent,
+      color: RadarColors.surface.withValues(alpha: 0),
+      borderRadius: BorderRadius.circular(RadarRadius.card),
       child: InkWell(
-        borderRadius: BorderRadius.circular(AppRadius.xl),
+        borderRadius: BorderRadius.circular(RadarRadius.card),
         onTap: () {
           Navigator.push(
             context,
@@ -120,89 +87,70 @@ class PrescriptionEntryScreen extends StatelessWidget {
         },
         child: Container(
           width: double.infinity,
-          padding: const EdgeInsets.all(AppSpacing.lg),
+          padding: const EdgeInsets.all(RadarSpacing.xl),
           decoration: BoxDecoration(
-            color: AppColors.raspberry.withValues(alpha: 0.07),
-            borderRadius: BorderRadius.circular(AppRadius.xl),
-            border: Border.all(
-              color: AppColors.raspberry.withValues(alpha: 0.18),
-            ),
-            boxShadow: AppShadows.soft,
+            color: RadarColors.surface,
+            borderRadius: BorderRadius.circular(RadarRadius.card),
+            boxShadow: RadarShadows.card,
           ),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                width: 104,
-                height: 104,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: const LinearGradient(
-                    colors: [AppColors.raspberry, AppColors.raspberryDark],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.raspberry.withValues(alpha: 0.22),
-                      blurRadius: 28,
-                      offset: const Offset(0, 14),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: 52,
+                    height: 52,
+                    decoration: BoxDecoration(
+                      color: RadarColors.indigo.withValues(alpha: 0.10),
+                      borderRadius: BorderRadius.circular(RadarRadius.card),
                     ),
-                  ],
-                ),
-                child: const Icon(
-                  Icons.edit_document,
-                  color: Colors.white,
-                  size: 52,
-                ),
+                    child: const Icon(
+                      Icons.edit_document,
+                      color: RadarColors.indigo,
+                      size: 28,
+                    ),
+                  ),
+                  const Spacer(),
+                  const Icon(
+                    Icons.arrow_forward_rounded,
+                    color: RadarColors.textMuted,
+                    size: 24,
+                  ),
+                ],
               ),
-              const SizedBox(height: AppSpacing.lg),
-              Text(
+              const SizedBox(height: RadarSpacing.cardGap),
+              const Text(
                 'Créer une prescription',
-                textAlign: TextAlign.center,
-                style: AppTypography.title.copyWith(
-                  color: AppColors.raspberryDark,
-                  fontSize: 25,
-                  fontWeight: FontWeight.w900,
-                ),
+                style: RadarTextStyles.question,
               ),
-              const SizedBox(height: AppSpacing.sm),
-              Text(
+              const SizedBox(height: RadarSpacing.sm),
+              const Text(
                 'Choisissez un type, renseignez le contenu clinique puis exportez un PDF lisible.',
-                textAlign: TextAlign.center,
-                style: AppTypography.body.copyWith(
-                  color: AppColors.textPrimary,
-                  height: 1.4,
-                  fontWeight: FontWeight.w700,
-                ),
+                style: RadarTextStyles.body,
               ),
-              const SizedBox(height: AppSpacing.lg),
+              const SizedBox(height: RadarSpacing.cardGap),
               Container(
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 12,
+                  horizontal: RadarSpacing.lg,
+                  vertical: RadarSpacing.md,
                 ),
                 decoration: BoxDecoration(
-                  color: AppColors.surface,
-                  borderRadius: BorderRadius.circular(AppRadius.lg),
-                  border: Border.all(
-                    color: AppColors.raspberry.withValues(alpha: 0.18),
-                  ),
+                  color: RadarColors.indigo.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(RadarRadius.pill),
                 ),
                 child: const Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
                       'Appuyer pour choisir le type',
-                      style: TextStyle(
-                        color: AppColors.raspberryDark,
-                        fontWeight: FontWeight.w900,
-                        fontSize: 13,
-                      ),
+                      style: RadarTextStyles.action,
                     ),
-                    SizedBox(width: AppSpacing.xs),
+                    SizedBox(width: RadarSpacing.xs),
                     Icon(
                       Icons.arrow_forward_rounded,
-                      color: AppColors.raspberryDark,
+                      color: RadarColors.primary,
                       size: 18,
                     ),
                   ],
@@ -223,19 +171,19 @@ class PrescriptionEntryScreen extends StatelessWidget {
             icon: Icons.person_outline_rounded,
             title: 'Patient',
             text: 'Le document PDF est lié au patient actif.',
-            color: AppColors.primary,
+            color: RadarColors.primary,
           ),
           _WorkflowCard(
             icon: Icons.library_books_outlined,
             title: 'Modèles',
             text: 'Templates rapides adaptés au type choisi.',
-            color: AppColors.warningDark,
+            color: RadarColors.indigo,
           ),
           _WorkflowCard(
             icon: Icons.picture_as_pdf_outlined,
             title: 'PDF',
             text: 'Export sobre, clair et prêt à imprimer.',
-            color: AppColors.raspberryDark,
+            color: RadarColors.slate,
           ),
         ];
 
@@ -246,7 +194,7 @@ class PrescriptionEntryScreen extends StatelessWidget {
                   (card) => Expanded(
                     child: Padding(
                       padding: EdgeInsets.only(
-                        right: card == cards.last ? 0 : AppSpacing.sm,
+                        right: card == cards.last ? 0 : RadarSpacing.lg,
                       ),
                       child: card,
                     ),
@@ -261,7 +209,7 @@ class PrescriptionEntryScreen extends StatelessWidget {
               .map(
                 (card) => Padding(
                   padding: EdgeInsets.only(
-                    bottom: card == cards.last ? 0 : AppSpacing.sm,
+                    bottom: card == cards.last ? 0 : RadarSpacing.lg,
                   ),
                   child: card,
                 ),
@@ -275,31 +223,25 @@ class PrescriptionEntryScreen extends StatelessWidget {
   Widget _infoCard() {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(AppSpacing.md),
+      padding: const EdgeInsets.all(RadarSpacing.xl),
       decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: AppColors.border),
-        boxShadow: AppShadows.soft,
+        color: RadarColors.surface,
+        borderRadius: BorderRadius.circular(RadarRadius.card),
+        boxShadow: RadarShadows.card,
       ),
       child: const Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Icon(
             Icons.medical_information_outlined,
-            color: AppColors.raspberryDark,
+            color: RadarColors.slate,
             size: 22,
           ),
-          SizedBox(width: AppSpacing.sm),
+          SizedBox(width: RadarSpacing.md),
           Expanded(
             child: Text(
               'La prescription vérifie le patient actif, les informations professionnelles et le contenu avant export.',
-              style: TextStyle(
-                fontSize: 13,
-                height: 1.45,
-                color: AppColors.textSecondary,
-                fontWeight: FontWeight.w700,
-              ),
+              style: RadarTextStyles.secondary,
             ),
           ),
         ],
@@ -325,12 +267,11 @@ class _WorkflowCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(AppSpacing.md),
+      padding: const EdgeInsets.all(RadarSpacing.lg),
       decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: AppColors.border),
-        boxShadow: AppShadows.soft,
+        color: RadarColors.surface,
+        borderRadius: BorderRadius.circular(RadarRadius.card),
+        boxShadow: RadarShadows.card,
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -340,12 +281,11 @@ class _WorkflowCard extends StatelessWidget {
             height: 38,
             decoration: BoxDecoration(
               color: color.withValues(alpha: 0.10),
-              borderRadius: BorderRadius.circular(AppRadius.md),
-              border: Border.all(color: color.withValues(alpha: 0.18)),
+              borderRadius: BorderRadius.circular(RadarRadius.small),
             ),
             child: Icon(icon, color: color, size: 20),
           ),
-          const SizedBox(width: AppSpacing.sm),
+          const SizedBox(width: RadarSpacing.md),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -354,21 +294,16 @@ class _WorkflowCard extends StatelessWidget {
                   title,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: AppTypography.body.copyWith(
-                    color: AppColors.textPrimary,
-                    fontWeight: FontWeight.w900,
+                  style: RadarTextStyles.body.copyWith(
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
-                const SizedBox(height: 3),
+                const SizedBox(height: RadarSpacing.xs),
                 Text(
                   text,
                   maxLines: 3,
                   overflow: TextOverflow.ellipsis,
-                  style: AppTypography.caption.copyWith(
-                    color: AppColors.textSecondary,
-                    height: 1.3,
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: RadarTextStyles.caption,
                 ),
               ],
             ),
