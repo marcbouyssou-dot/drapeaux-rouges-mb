@@ -14,10 +14,12 @@ import '../../services/attestation_history_service.dart';
 import '../../services/patient_attestation_pdf_service.dart';
 import '../../services/practitioner_profile_service.dart';
 import '../../services/rgpd_local_service.dart';
-import '../../theme/app_colors.dart';
-import '../../theme/app_radius.dart';
-import '../../theme/app_shadows.dart';
-import '../../theme/app_spacing.dart';
+import '../../features/radar/presentation/theme/radar_colors.dart';
+import '../../features/radar/presentation/theme/radar_radius.dart';
+import '../../features/radar/presentation/theme/radar_shadows.dart';
+import '../../features/radar/presentation/theme/radar_spacing.dart';
+import '../../features/radar/presentation/theme/radar_text_styles.dart';
+import '../../features/radar/presentation/theme/radar_theme.dart';
 import '../../widgets/design_system/clinical_bottom_action_bar.dart';
 
 class PatientAttestationScreen extends StatefulWidget {
@@ -63,8 +65,8 @@ class _PatientAttestationScreenState extends State<PatientAttestationScreen> {
   );
   final SignatureController signatureController = SignatureController(
     penStrokeWidth: 3,
-    penColor: Colors.black,
-    exportBackgroundColor: Colors.white,
+    penColor: RadarColors.textPrimary,
+    exportBackgroundColor: RadarColors.surface,
   );
 
   PatientLocal? patient;
@@ -291,132 +293,136 @@ class _PatientAttestationScreenState extends State<PatientAttestationScreen> {
   Widget build(BuildContext context) {
     final compact = MediaQuery.sizeOf(context).width < 430;
 
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      bottomNavigationBar: ClinicalBottomActionBar(
-        secondaryLabel: 'Retour',
-        secondaryIcon: Icons.arrow_back_ios_new_rounded,
-        onSecondaryPressed: () => Navigator.pop(context),
-        primaryLabel: exporting ? 'Génération...' : 'Générer le PDF',
-        primaryIcon: Icons.picture_as_pdf_outlined,
-        onPrimaryPressed: () {
-          if (!exporting) {
-            exportPdf();
-          }
-        },
-      ),
-      body: SafeArea(
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 760),
-            child: loading
-                ? const Center(child: CircularProgressIndicator())
-                : ListView(
-                    physics: isSigning
-                        ? const NeverScrollableScrollPhysics()
-                        : const AlwaysScrollableScrollPhysics(),
-                    padding: EdgeInsets.fromLTRB(
-                      compact ? 12 : AppSpacing.md,
-                      AppSpacing.sm,
-                      compact ? 12 : AppSpacing.md,
-                      112,
-                    ),
-                    children: [
-                      _HeaderCard(template: widget.template),
-                      const SizedBox(height: AppSpacing.sm),
-                      if (isProximityAttestation)
-                        _ProximityForm(
-                          patientNomController: patientNomController,
-                          patientPrenomController: patientPrenomController,
-                          patientBirthDateController:
-                              patientBirthDateController,
-                          patientAddressController: patientAddressController,
-                          patientPostalCodeController:
-                              patientPostalCodeController,
-                          patientCityController: patientCityController,
-                          practitionerNomController: practitionerNomController,
-                          practitionerPrenomController:
-                              practitionerPrenomController,
-                          practitionerIdentifierController:
-                              practitionerIdentifierController,
-                          practitionerAddressController:
-                              practitionerAddressController,
-                          distanceController: distanceController,
-                          prescriberController: prescriberController,
-                          prescriptionDateController:
-                              prescriptionDateController,
-                          cabinetNameControllers: cabinetNameControllers,
-                          cabinetCityControllers: cabinetCityControllers,
-                          cabinetDateControllers: cabinetDateControllers,
-                          cabinetOtherControllers: cabinetOtherControllers,
-                          cabinetReasons: cabinetReasons,
-                          onChanged: () => setState(() {}),
-                        )
-                      else ...[
-                        _ContextCard(
-                          title: 'Patient utilisé',
-                          icon: Icons.person_outline_rounded,
-                          color: AppColors.primary,
-                          lines: [
-                            _patientName,
-                            'Naissance : ${_patientBirthDate.isEmpty ? 'Non renseignée' : _patientBirthDate}',
-                            _signatureStatus,
-                          ],
+    return Theme(
+      data: RadarTheme.lightTheme,
+      child: Scaffold(
+        backgroundColor: RadarColors.background,
+        bottomNavigationBar: ClinicalBottomActionBar(
+          secondaryLabel: 'Retour',
+          secondaryIcon: Icons.arrow_back_ios_new_rounded,
+          onSecondaryPressed: () => Navigator.pop(context),
+          primaryLabel: exporting ? 'Génération...' : 'Générer le PDF',
+          primaryIcon: Icons.picture_as_pdf_outlined,
+          onPrimaryPressed: () {
+            if (!exporting) {
+              exportPdf();
+            }
+          },
+        ),
+        body: SafeArea(
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 760),
+              child: loading
+                  ? const Center(child: CircularProgressIndicator())
+                  : ListView(
+                      physics: isSigning
+                          ? const NeverScrollableScrollPhysics()
+                          : const AlwaysScrollableScrollPhysics(),
+                      padding: EdgeInsets.fromLTRB(
+                        compact ? RadarSpacing.lg : RadarSpacing.xl,
+                        RadarSpacing.xl,
+                        compact ? RadarSpacing.lg : RadarSpacing.xl,
+                        112,
+                      ),
+                      children: [
+                        _HeaderCard(template: widget.template),
+                        const SizedBox(height: RadarSpacing.lg),
+                        if (isProximityAttestation)
+                          _ProximityForm(
+                            patientNomController: patientNomController,
+                            patientPrenomController: patientPrenomController,
+                            patientBirthDateController:
+                                patientBirthDateController,
+                            patientAddressController: patientAddressController,
+                            patientPostalCodeController:
+                                patientPostalCodeController,
+                            patientCityController: patientCityController,
+                            practitionerNomController:
+                                practitionerNomController,
+                            practitionerPrenomController:
+                                practitionerPrenomController,
+                            practitionerIdentifierController:
+                                practitionerIdentifierController,
+                            practitionerAddressController:
+                                practitionerAddressController,
+                            distanceController: distanceController,
+                            prescriberController: prescriberController,
+                            prescriptionDateController:
+                                prescriptionDateController,
+                            cabinetNameControllers: cabinetNameControllers,
+                            cabinetCityControllers: cabinetCityControllers,
+                            cabinetDateControllers: cabinetDateControllers,
+                            cabinetOtherControllers: cabinetOtherControllers,
+                            cabinetReasons: cabinetReasons,
+                            onChanged: () => setState(() {}),
+                          )
+                        else ...[
+                          _ContextCard(
+                            title: 'Patient utilisé',
+                            icon: Icons.person_outline_rounded,
+                            color: RadarColors.primary,
+                            lines: [
+                              _patientName,
+                              'Naissance : ${_patientBirthDate.isEmpty ? 'Non renseignée' : _patientBirthDate}',
+                              _signatureStatus,
+                            ],
+                          ),
+                          const SizedBox(height: RadarSpacing.lg),
+                          _ContextCard(
+                            title: 'Praticien utilisé',
+                            icon: Icons.badge_outlined,
+                            color: RadarColors.indigo,
+                            lines: [
+                              practitioner.professionLabel,
+                              practitioner.fullName.isEmpty
+                                  ? 'Nom non renseigné'
+                                  : practitioner.fullName,
+                              if (practitioner.adresse.trim().isNotEmpty)
+                                practitioner.adresse.trim(),
+                              if (_practitionerIdentifier.isNotEmpty)
+                                _practitionerIdentifier,
+                            ],
+                          ),
+                        ],
+                        const SizedBox(height: RadarSpacing.lg),
+                        _DatePlaceCard(
+                          date: _formattedDate,
+                          controller: lieuController,
                         ),
-                        const SizedBox(height: AppSpacing.sm),
-                        _ContextCard(
-                          title: 'Praticien utilisé',
-                          icon: Icons.badge_outlined,
-                          color: AppColors.teal,
-                          lines: [
-                            practitioner.professionLabel,
-                            practitioner.fullName.isEmpty
-                                ? 'Nom non renseigné'
-                                : practitioner.fullName,
-                            if (practitioner.adresse.trim().isNotEmpty)
-                              practitioner.adresse.trim(),
-                            if (_practitionerIdentifier.isNotEmpty)
-                              _practitionerIdentifier,
-                          ],
+                        const SizedBox(height: RadarSpacing.lg),
+                        _ConsentSignatureCard(
+                          consentConfirmed: consentConfirmed,
+                          transmissionAuthorized: transmissionAuthorized,
+                          showTransmissionConsent: isProximityAttestation,
+                          signatureController: signatureController,
+                          onConsentChanged: (value) {
+                            setState(() {
+                              consentConfirmed = value;
+                            });
+                          },
+                          onTransmissionChanged: (value) {
+                            setState(() {
+                              transmissionAuthorized = value;
+                            });
+                          },
+                          onClearSignature: () {
+                            signatureController.clear();
+                            setState(() {
+                              patientSignatureBase64 = null;
+                            });
+                          },
+                          onSigningChanged: (value) {
+                            setState(() {
+                              isSigning = value;
+                            });
+                          },
                         ),
+                        const SizedBox(height: RadarSpacing.lg),
+                        _PreviewCard(attestation: buildAttestation()),
                       ],
-                      const SizedBox(height: AppSpacing.sm),
-                      _DatePlaceCard(
-                        date: _formattedDate,
-                        controller: lieuController,
-                      ),
-                      const SizedBox(height: AppSpacing.sm),
-                      _ConsentSignatureCard(
-                        consentConfirmed: consentConfirmed,
-                        transmissionAuthorized: transmissionAuthorized,
-                        showTransmissionConsent: isProximityAttestation,
-                        signatureController: signatureController,
-                        onConsentChanged: (value) {
-                          setState(() {
-                            consentConfirmed = value;
-                          });
-                        },
-                        onTransmissionChanged: (value) {
-                          setState(() {
-                            transmissionAuthorized = value;
-                          });
-                        },
-                        onClearSignature: () {
-                          signatureController.clear();
-                          setState(() {
-                            patientSignatureBase64 = null;
-                          });
-                        },
-                        onSigningChanged: (value) {
-                          setState(() {
-                            isSigning = value;
-                          });
-                        },
-                      ),
-                      const SizedBox(height: AppSpacing.sm),
-                      _PreviewCard(attestation: buildAttestation()),
-                    ],
-                  ),
+                    ),
+            ),
           ),
         ),
       ),
@@ -484,12 +490,11 @@ class _HeaderCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(AppSpacing.md),
+      padding: const EdgeInsets.all(RadarSpacing.xl),
       decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppRadius.xl),
-        border: Border.all(color: AppColors.border),
-        boxShadow: AppShadows.soft,
+        color: RadarColors.surface,
+        borderRadius: BorderRadius.circular(RadarRadius.card),
+        boxShadow: RadarShadows.card,
       ),
       child: Row(
         children: [
@@ -498,14 +503,14 @@ class _HeaderCard extends StatelessWidget {
             onPressed: () => Navigator.pop(context),
             icon: const Icon(Icons.arrow_back_ios_new_rounded),
             style: IconButton.styleFrom(
-              backgroundColor: AppColors.surfaceBlue,
-              foregroundColor: AppColors.primary,
+              backgroundColor: RadarColors.surfaceMuted,
+              foregroundColor: RadarColors.primary,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(AppRadius.lg),
+                borderRadius: BorderRadius.circular(RadarRadius.small),
               ),
             ),
           ),
-          const SizedBox(width: AppSpacing.sm),
+          const SizedBox(width: RadarSpacing.lg),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -514,21 +519,15 @@ class _HeaderCard extends StatelessWidget {
                   template.title,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: AppColors.textPrimary,
-                    fontSize: 20,
-                    fontWeight: FontWeight.w900,
-                  ),
+                  style: RadarTextStyles.question,
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: RadarSpacing.xs),
                 Text(
                   template.statusLabel,
-                  style: TextStyle(
+                  style: RadarTextStyles.badge.copyWith(
                     color: template.isActive
-                        ? AppColors.successDark
-                        : AppColors.warning,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w800,
+                        ? RadarColors.clinicalSuccess
+                        : RadarColors.clinicalWarning,
                   ),
                 ),
               ],
@@ -564,38 +563,28 @@ class _ContextCard extends StatelessWidget {
             height: 38,
             decoration: BoxDecoration(
               color: color.withValues(alpha: 0.10),
-              borderRadius: BorderRadius.circular(AppRadius.md),
+              borderRadius: BorderRadius.circular(RadarRadius.small),
             ),
             child: Icon(icon, color: color, size: 21),
           ),
-          const SizedBox(width: AppSpacing.sm),
+          const SizedBox(width: RadarSpacing.md),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   title,
-                  style: const TextStyle(
-                    color: AppColors.textPrimary,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w900,
+                  style: RadarTextStyles.body.copyWith(
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
-                const SizedBox(height: 6),
+                const SizedBox(height: RadarSpacing.xs),
                 ...lines
                     .where((line) => line.trim().isNotEmpty)
                     .map(
                       (line) => Padding(
-                        padding: const EdgeInsets.only(bottom: 3),
-                        child: Text(
-                          line,
-                          style: const TextStyle(
-                            color: AppColors.textSecondary,
-                            fontSize: 12.5,
-                            height: 1.25,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
+                        padding: const EdgeInsets.only(bottom: RadarSpacing.xs),
+                        child: Text(line, style: RadarTextStyles.secondary),
                       ),
                     ),
               ],
@@ -672,7 +661,7 @@ class _ProximityForm extends StatelessWidget {
                     label: 'Code postal',
                   ),
                 ),
-                const SizedBox(width: AppSpacing.sm),
+                const SizedBox(width: RadarSpacing.sm),
                 Expanded(
                   child: _FormField(
                     controller: patientCityController,
@@ -683,7 +672,7 @@ class _ProximityForm extends StatelessWidget {
             ),
           ],
         ),
-        const SizedBox(height: AppSpacing.sm),
+        const SizedBox(height: RadarSpacing.lg),
         _FormSectionCard(
           title: 'Masseur-kinésithérapeute',
           children: [
@@ -707,7 +696,7 @@ class _ProximityForm extends StatelessWidget {
             ),
           ],
         ),
-        const SizedBox(height: AppSpacing.sm),
+        const SizedBox(height: RadarSpacing.lg),
         _FormSectionCard(
           title: 'Prescription',
           children: [
@@ -721,7 +710,7 @@ class _ProximityForm extends StatelessWidget {
             ),
           ],
         ),
-        const SizedBox(height: AppSpacing.sm),
+        const SizedBox(height: RadarSpacing.lg),
         _FormSectionCard(
           title: 'Cabinets contactés',
           children: List.generate(
@@ -760,13 +749,9 @@ class _FormSectionCard extends StatelessWidget {
         children: [
           Text(
             title,
-            style: const TextStyle(
-              color: AppColors.textPrimary,
-              fontSize: 15,
-              fontWeight: FontWeight.w900,
-            ),
+            style: RadarTextStyles.body.copyWith(fontWeight: FontWeight.w600),
           ),
-          const SizedBox(height: AppSpacing.sm),
+          const SizedBox(height: RadarSpacing.md),
           ...children,
         ],
       ),
@@ -790,7 +775,7 @@ class _FormField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+      padding: const EdgeInsets.only(bottom: RadarSpacing.md),
       child: TextField(
         controller: controller,
         textInputAction: TextInputAction.next,
@@ -799,13 +784,13 @@ class _FormField extends StatelessWidget {
           labelText: label,
           hintText: hint,
           filled: true,
-          fillColor: AppColors.background,
+          fillColor: RadarColors.background,
           border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(AppRadius.lg),
+            borderRadius: BorderRadius.circular(RadarRadius.small),
           ),
           enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(AppRadius.lg),
-            borderSide: const BorderSide(color: AppColors.border),
+            borderRadius: BorderRadius.circular(RadarRadius.small),
+            borderSide: const BorderSide(color: RadarColors.border),
           ),
         ),
       ),
@@ -837,25 +822,23 @@ class _CabinetFields extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: EdgeInsets.only(bottom: index == 2 ? 0 : AppSpacing.md),
-      padding: const EdgeInsets.all(AppSpacing.sm),
+      margin: EdgeInsets.only(bottom: index == 2 ? 0 : RadarSpacing.md),
+      padding: const EdgeInsets.all(RadarSpacing.md),
       decoration: BoxDecoration(
-        color: AppColors.background,
-        borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: AppColors.border),
+        color: RadarColors.background,
+        borderRadius: BorderRadius.circular(RadarRadius.card),
+        border: Border.all(color: RadarColors.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             'Cabinet ${index + 1}',
-            style: const TextStyle(
-              color: AppColors.textPrimary,
-              fontSize: 13,
-              fontWeight: FontWeight.w900,
+            style: RadarTextStyles.caption.copyWith(
+              color: RadarColors.textPrimary,
             ),
           ),
-          const SizedBox(height: AppSpacing.sm),
+          const SizedBox(height: RadarSpacing.sm),
           _FormField(
             controller: nameController,
             label: 'Nom du cabinet',
@@ -872,29 +855,32 @@ class _CabinetFields extends StatelessWidget {
             onChanged: onChanged,
           ),
           DropdownButtonFormField<ContactedCabinetReason>(
+            isExpanded: true,
             initialValue: reason,
             items: ContactedCabinetReason.values
                 .map(
-                  (item) =>
-                      DropdownMenuItem(value: item, child: Text(item.label)),
+                  (item) => DropdownMenuItem(
+                    value: item,
+                    child: Text(item.label, overflow: TextOverflow.ellipsis),
+                  ),
                 )
                 .toList(),
             onChanged: onReasonChanged,
             decoration: InputDecoration(
               labelText: 'Motif',
               filled: true,
-              fillColor: AppColors.surface,
+              fillColor: RadarColors.surface,
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(AppRadius.lg),
+                borderRadius: BorderRadius.circular(RadarRadius.small),
               ),
               enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(AppRadius.lg),
-                borderSide: const BorderSide(color: AppColors.border),
+                borderRadius: BorderRadius.circular(RadarRadius.small),
+                borderSide: const BorderSide(color: RadarColors.border),
               ),
             ),
           ),
           if (reason == ContactedCabinetReason.other) ...[
-            const SizedBox(height: AppSpacing.sm),
+            const SizedBox(height: RadarSpacing.sm),
             _FormField(
               controller: otherController,
               label: 'Précision autre motif',
@@ -919,15 +905,11 @@ class _DatePlaceCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Lieu et date',
-            style: TextStyle(
-              color: AppColors.textPrimary,
-              fontSize: 15,
-              fontWeight: FontWeight.w900,
-            ),
+            style: RadarTextStyles.body.copyWith(fontWeight: FontWeight.w600),
           ),
-          const SizedBox(height: AppSpacing.sm),
+          const SizedBox(height: RadarSpacing.md),
           TextField(
             controller: controller,
             textInputAction: TextInputAction.done,
@@ -935,26 +917,19 @@ class _DatePlaceCard extends StatelessWidget {
               labelText: 'Ville',
               hintText: 'Ex : Bordeaux',
               filled: true,
-              fillColor: AppColors.background,
+              fillColor: RadarColors.background,
               prefixIcon: const Icon(Icons.location_on_outlined),
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(AppRadius.lg),
+                borderRadius: BorderRadius.circular(RadarRadius.small),
               ),
               enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(AppRadius.lg),
-                borderSide: const BorderSide(color: AppColors.border),
+                borderRadius: BorderRadius.circular(RadarRadius.small),
+                borderSide: const BorderSide(color: RadarColors.border),
               ),
             ),
           ),
-          const SizedBox(height: AppSpacing.sm),
-          Text(
-            'Date : $date',
-            style: const TextStyle(
-              color: AppColors.textSecondary,
-              fontSize: 12.5,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
+          const SizedBox(height: RadarSpacing.sm),
+          Text('Date : $date', style: RadarTextStyles.caption),
         ],
       ),
     );
@@ -988,81 +963,77 @@ class _ConsentSignatureCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Consentement et signature',
-            style: TextStyle(
-              color: AppColors.textPrimary,
-              fontSize: 15,
-              fontWeight: FontWeight.w900,
-            ),
+            style: RadarTextStyles.body.copyWith(fontWeight: FontWeight.w600),
           ),
-          const SizedBox(height: AppSpacing.sm),
+          const SizedBox(height: RadarSpacing.md),
           Container(
             decoration: BoxDecoration(
               color: consentConfirmed
-                  ? AppColors.surfaceSuccess
-                  : AppColors.surface,
-              borderRadius: BorderRadius.circular(AppRadius.lg),
+                  ? RadarColors.successSoft
+                  : RadarColors.surface,
+              borderRadius: BorderRadius.circular(RadarRadius.card),
               border: Border.all(
-                color: consentConfirmed ? AppColors.success : AppColors.border,
+                color: consentConfirmed
+                    ? RadarColors.clinicalSuccess
+                    : RadarColors.border,
               ),
             ),
             child: Material(
-              color: Colors.transparent,
+              color: RadarColors.surface.withValues(alpha: 0),
               child: CheckboxListTile(
                 value: consentConfirmed,
                 onChanged: (value) => onConsentChanged(value ?? false),
-                activeColor: AppColors.success,
+                activeColor: RadarColors.clinicalSuccess,
                 controlAffinity: ListTileControlAffinity.leading,
-                contentPadding: const EdgeInsets.symmetric(horizontal: 10),
-                title: const Text(
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: RadarSpacing.md,
+                ),
+                title: Text(
                   'Le patient confirme avoir reçu l’information, l’avoir comprise et accepte de signer cette attestation.',
-                  style: TextStyle(
-                    color: AppColors.textPrimary,
-                    fontSize: 13,
-                    height: 1.3,
-                    fontWeight: FontWeight.w800,
+                  style: RadarTextStyles.secondary.copyWith(
+                    color: RadarColors.textPrimary,
                   ),
                 ),
               ),
             ),
           ),
           if (showTransmissionConsent) ...[
-            const SizedBox(height: AppSpacing.sm),
+            const SizedBox(height: RadarSpacing.sm),
             Container(
               decoration: BoxDecoration(
                 color: transmissionAuthorized
-                    ? AppColors.surfaceBlue
-                    : AppColors.surface,
-                borderRadius: BorderRadius.circular(AppRadius.lg),
+                    ? RadarColors.surfaceMuted
+                    : RadarColors.surface,
+                borderRadius: BorderRadius.circular(RadarRadius.card),
                 border: Border.all(
                   color: transmissionAuthorized
-                      ? AppColors.primary.withValues(alpha: 0.35)
-                      : AppColors.border,
+                      ? RadarColors.primary.withValues(alpha: 0.35)
+                      : RadarColors.border,
                 ),
               ),
               child: Material(
-                color: Colors.transparent,
+                color: RadarColors.surface.withValues(alpha: 0),
                 child: CheckboxListTile(
                   value: transmissionAuthorized,
                   onChanged: (value) => onTransmissionChanged(value ?? false),
-                  activeColor: AppColors.primary,
+                  activeColor: RadarColors.primary,
                   controlAffinity: ListTileControlAffinity.leading,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 10),
-                  title: const Text(
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: RadarSpacing.md,
+                  ),
+                  title: Text(
                     'J’autorise la transmission au service médical.',
-                    style: TextStyle(
-                      color: AppColors.textPrimary,
-                      fontSize: 13,
-                      height: 1.3,
-                      fontWeight: FontWeight.w800,
+                    style: RadarTextStyles.secondary.copyWith(
+                      color: RadarColors.textPrimary,
                     ),
                   ),
                 ),
               ),
             ),
           ],
-          const SizedBox(height: AppSpacing.sm),
+          const SizedBox(height: RadarSpacing.md),
           Listener(
             onPointerDown: (_) => onSigningChanged(true),
             onPointerUp: (_) => onSigningChanged(false),
@@ -1070,26 +1041,23 @@ class _ConsentSignatureCard extends StatelessWidget {
             child: Container(
               height: 132,
               decoration: BoxDecoration(
-                color: AppColors.surface,
-                borderRadius: BorderRadius.circular(AppRadius.lg),
-                border: Border.all(color: AppColors.border),
+                color: RadarColors.surface,
+                borderRadius: BorderRadius.circular(RadarRadius.card),
+                border: Border.all(color: RadarColors.border),
               ),
               child: ClipRRect(
-                borderRadius: BorderRadius.circular(AppRadius.lg),
+                borderRadius: BorderRadius.circular(RadarRadius.card),
                 child: Stack(
                   children: [
                     Signature(
                       controller: signatureController,
-                      backgroundColor: Colors.white,
+                      backgroundColor: RadarColors.surface,
                     ),
                     const Center(
                       child: IgnorePointer(
                         child: Text(
                           'Signature patient',
-                          style: TextStyle(
-                            color: AppColors.textMuted,
-                            fontWeight: FontWeight.w800,
-                          ),
+                          style: RadarTextStyles.caption,
                         ),
                       ),
                     ),
@@ -1098,24 +1066,24 @@ class _ConsentSignatureCard extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(height: AppSpacing.sm),
+          const SizedBox(height: RadarSpacing.md),
           Align(
             alignment: Alignment.center,
             child: OutlinedButton(
               onPressed: onClearSignature,
               style: OutlinedButton.styleFrom(
-                foregroundColor: AppColors.primary,
+                foregroundColor: RadarColors.primary,
                 side: BorderSide(
-                  color: AppColors.primary.withValues(alpha: 0.28),
+                  color: RadarColors.primary.withValues(alpha: 0.28),
                 ),
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 22,
-                  vertical: 11,
+                  horizontal: RadarSpacing.xl,
+                  vertical: RadarSpacing.md,
                 ),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(AppRadius.lg),
+                  borderRadius: BorderRadius.circular(RadarRadius.small),
                 ),
-                textStyle: const TextStyle(fontWeight: FontWeight.w900),
+                textStyle: RadarTextStyles.action,
               ),
               child: const Text('Effacer', textAlign: TextAlign.center),
             ),
@@ -1139,25 +1107,13 @@ class _PreviewCard extends StatelessWidget {
         children: [
           Text(
             attestation.template.pdfTitle,
-            style: const TextStyle(
-              color: AppColors.textPrimary,
-              fontSize: 16,
-              fontWeight: FontWeight.w900,
-            ),
+            style: RadarTextStyles.body.copyWith(fontWeight: FontWeight.w600),
           ),
-          const SizedBox(height: AppSpacing.sm),
+          const SizedBox(height: RadarSpacing.md),
           ...attestation.bodyParagraphs.map(
             (paragraph) => Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              child: Text(
-                paragraph,
-                style: const TextStyle(
-                  color: AppColors.textSecondary,
-                  fontSize: 13,
-                  height: 1.35,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
+              padding: const EdgeInsets.only(bottom: RadarSpacing.sm),
+              child: Text(paragraph, style: RadarTextStyles.secondary),
             ),
           ),
         ],
@@ -1175,12 +1131,11 @@ class _CardShell extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(AppSpacing.md),
+      padding: const EdgeInsets.all(RadarSpacing.xl),
       decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppRadius.xl),
-        border: Border.all(color: AppColors.border),
-        boxShadow: AppShadows.card,
+        color: RadarColors.surface,
+        borderRadius: BorderRadius.circular(RadarRadius.card),
+        boxShadow: RadarShadows.card,
       ),
       child: child,
     );
