@@ -11,10 +11,12 @@ import '../services/history_service.dart';
 import '../services/medical_letter_history_service.dart';
 import '../services/offline_sync_service.dart';
 import '../services/prescription_service.dart';
-import '../theme/app_colors.dart';
-import '../theme/app_radius.dart';
-import '../theme/app_shadows.dart';
-import '../theme/app_spacing.dart';
+import '../features/radar/presentation/theme/radar_colors.dart';
+import '../features/radar/presentation/theme/radar_radius.dart';
+import '../features/radar/presentation/theme/radar_shadows.dart';
+import '../features/radar/presentation/theme/radar_spacing.dart';
+import '../features/radar/presentation/theme/radar_text_styles.dart';
+import '../features/radar/presentation/theme/radar_theme.dart';
 import 'evaluation/evaluation_detail_screen.dart';
 import 'attestation/attestation_history_detail_screen.dart';
 import 'medical_letter/medical_letter_history_detail_screen.dart';
@@ -224,7 +226,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
             ),
             FilledButton(
               style: FilledButton.styleFrom(
-                backgroundColor: const Color(0xFFEF4444),
+                backgroundColor: RadarColors.clinicalDanger,
               ),
               onPressed: () => Navigator.pop(dialogContext, true),
               child: const Text('Supprimer'),
@@ -261,15 +263,15 @@ class _HistoryScreenState extends State<HistoryScreen> {
   Color riskColor(String risk) {
     final riskLower = risk.toLowerCase();
 
-    if (riskLower.contains('critique')) return const Color(0xFFDC2626);
+    if (riskLower.contains('critique')) return RadarColors.clinicalDanger;
     if (riskLower.contains('élevé') || riskLower.contains('eleve')) {
-      return const Color(0xFFF97316);
+      return RadarColors.clinicalWarning;
     }
     if (riskLower.contains('modéré') || riskLower.contains('modere')) {
-      return const Color(0xFFF59E0B);
+      return RadarColors.clinicalWarning;
     }
 
-    return const Color(0xFF22C55E);
+    return RadarColors.clinicalSuccess;
   }
 
   IconData motifIcon(String motif) {
@@ -343,62 +345,77 @@ class _HistoryScreenState extends State<HistoryScreen> {
     final showAttestations = selectedView == HistoryView.attestations;
     final showMedicalLetters = selectedView == HistoryView.medicalLetters;
 
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: SafeArea(
-        child: RefreshIndicator(
-          onRefresh: loadHistory,
-          child: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 960),
-              child: ListView(
-                padding: const EdgeInsets.fromLTRB(
-                  AppSpacing.md,
-                  AppSpacing.sm,
-                  AppSpacing.md,
-                  112,
-                ),
-                children: [
-                  buildStatsRow(),
-                  const SizedBox(height: AppSpacing.sm),
-                  buildSearchBar(),
-                  const SizedBox(height: AppSpacing.sm),
-                  buildHistoryViewSwitch(),
-                  if (showEvaluations) ...[
-                    const SizedBox(height: AppSpacing.sm),
-                    buildFilterChips(),
-                    if (history.isNotEmpty) ...[
-                      const SizedBox(height: AppSpacing.sm),
-                      buildDeleteHistoryButton(),
+    return Theme(
+      data: RadarTheme.lightTheme,
+      child: Scaffold(
+        backgroundColor: RadarColors.background,
+        body: SafeArea(
+          child: RefreshIndicator(
+            onRefresh: loadHistory,
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 840),
+                child: ListView(
+                  padding: const EdgeInsets.fromLTRB(
+                    RadarSpacing.xl,
+                    RadarSpacing.xl,
+                    RadarSpacing.xl,
+                    112,
+                  ),
+                  children: [
+                    const Text(
+                      'Historique',
+                      style: RadarTextStyles.screenTitle,
+                    ),
+                    const SizedBox(height: RadarSpacing.sm),
+                    const Text(
+                      'Retrouver les évaluations et documents générés.',
+                      style: RadarTextStyles.secondary,
+                    ),
+                    const SizedBox(height: RadarSpacing.xxl),
+                    buildStatsRow(),
+                    const SizedBox(height: RadarSpacing.lg),
+                    buildSearchBar(),
+                    const SizedBox(height: RadarSpacing.lg),
+                    buildHistoryViewSwitch(),
+                    if (showEvaluations) ...[
+                      const SizedBox(height: RadarSpacing.lg),
+                      buildFilterChips(),
+                      if (history.isNotEmpty) ...[
+                        const SizedBox(height: RadarSpacing.lg),
+                        buildDeleteHistoryButton(),
+                      ],
+                    ],
+                    const SizedBox(height: RadarSpacing.lg),
+                    if (showEvaluations) ...[
+                      if (history.isEmpty) buildEmptyState(),
+                      if (history.isNotEmpty && results.isEmpty)
+                        buildNoResultState(),
+                      if (results.isNotEmpty) ...results.map(buildHistoryCard),
+                    ] else if (showPrescriptions) ...[
+                      if (prescriptions.isEmpty) buildPrescriptionEmptyState(),
+                      if (prescriptions.isNotEmpty &&
+                          prescriptionResults.isEmpty)
+                        buildNoResultState(),
+                      if (prescriptionResults.isNotEmpty)
+                        ...prescriptionResults.map(buildPrescriptionCard),
+                    ] else if (showAttestations) ...[
+                      if (attestations.isEmpty) buildAttestationEmptyState(),
+                      if (attestations.isNotEmpty && attestationResults.isEmpty)
+                        buildNoResultState(),
+                      if (attestationResults.isNotEmpty)
+                        ...attestationResults.map(buildAttestationCard),
+                    ] else if (showMedicalLetters) ...[
+                      if (medicalLetters.isEmpty)
+                        buildMedicalLetterEmptyState(),
+                      if (medicalLetters.isNotEmpty &&
+                          medicalLetterResults.isEmpty)
+                        buildNoResultState(),
+                      if (medicalLetterResults.isNotEmpty)
+                        ...medicalLetterResults.map(buildMedicalLetterCard),
                     ],
                   ],
-                  const SizedBox(height: AppSpacing.sm),
-                  if (showEvaluations) ...[
-                    if (history.isEmpty) buildEmptyState(),
-                    if (history.isNotEmpty && results.isEmpty)
-                      buildNoResultState(),
-                    if (results.isNotEmpty) ...results.map(buildHistoryCard),
-                  ] else if (showPrescriptions) ...[
-                    if (prescriptions.isEmpty) buildPrescriptionEmptyState(),
-                    if (prescriptions.isNotEmpty && prescriptionResults.isEmpty)
-                      buildNoResultState(),
-                    if (prescriptionResults.isNotEmpty)
-                      ...prescriptionResults.map(buildPrescriptionCard),
-                  ] else if (showAttestations) ...[
-                    if (attestations.isEmpty) buildAttestationEmptyState(),
-                    if (attestations.isNotEmpty && attestationResults.isEmpty)
-                      buildNoResultState(),
-                    if (attestationResults.isNotEmpty)
-                      ...attestationResults.map(buildAttestationCard),
-                  ] else if (showMedicalLetters) ...[
-                    if (medicalLetters.isEmpty) buildMedicalLetterEmptyState(),
-                    if (medicalLetters.isNotEmpty &&
-                        medicalLetterResults.isEmpty)
-                      buildNoResultState(),
-                    if (medicalLetterResults.isNotEmpty)
-                      ...medicalLetterResults.map(buildMedicalLetterCard),
-                  ],
-                ],
+                ),
               ),
             ),
           ),
@@ -416,37 +433,37 @@ class _HistoryScreenState extends State<HistoryScreen> {
             label: 'Bilans',
             value: '$totalEvaluations',
             icon: Icons.assignment_turned_in_outlined,
-            color: AppColors.primary,
+            color: RadarColors.primary,
           ),
           buildStatCard(
             label: 'Risques élevés',
             value: '$highRiskCount',
             icon: Icons.warning_amber_rounded,
-            color: AppColors.warningDark,
+            color: RadarColors.clinicalWarning,
           ),
           buildStatCard(
             label: 'Drapeaux',
             value: '$totalFlags',
             icon: Icons.flag_rounded,
-            color: AppColors.danger,
+            color: RadarColors.clinicalDanger,
           ),
           buildStatCard(
             label: 'Prescriptions',
             value: '$totalPrescriptions',
             icon: Icons.description_outlined,
-            color: AppColors.primaryDark,
+            color: RadarColors.clinicalAction,
           ),
           buildStatCard(
             label: 'Attestations',
             value: '$totalAttestations',
             icon: Icons.history_edu_outlined,
-            color: AppColors.teal,
+            color: RadarColors.indigo,
           ),
           buildStatCard(
             label: 'Courriers',
             value: '$totalMedicalLetters',
             icon: Icons.mark_email_read_outlined,
-            color: AppColors.successDark,
+            color: RadarColors.slate,
           ),
         ];
 
@@ -457,7 +474,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   (card) => Expanded(
                     child: Padding(
                       padding: EdgeInsets.only(
-                        right: card == cards.last ? 0 : AppSpacing.sm,
+                        right: card == cards.last ? 0 : RadarSpacing.sm,
                       ),
                       child: card,
                     ),
@@ -473,7 +490,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                 (card) => Expanded(
                   child: Padding(
                     padding: EdgeInsets.only(
-                      right: card == cards.last ? 0 : AppSpacing.sm,
+                      right: card == cards.last ? 0 : RadarSpacing.sm,
                     ),
                     child: card,
                   ),
@@ -492,36 +509,32 @@ class _HistoryScreenState extends State<HistoryScreen> {
     required Color color,
   }) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(8, 9, 8, 9),
+      padding: const EdgeInsets.fromLTRB(
+        RadarSpacing.sm,
+        RadarSpacing.md,
+        RadarSpacing.sm,
+        RadarSpacing.md,
+      ),
       decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: AppColors.border),
-        boxShadow: AppShadows.soft,
+        color: RadarColors.surface,
+        borderRadius: BorderRadius.circular(RadarRadius.card),
+        boxShadow: RadarShadows.card,
       ),
       child: Column(
         children: [
           Icon(icon, color: color, size: 19),
-          const SizedBox(height: 4),
+          const SizedBox(height: RadarSpacing.xs),
           Text(
             value,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              color: AppColors.textPrimary,
-              fontSize: 18,
-              fontWeight: FontWeight.w900,
-            ),
+            style: RadarTextStyles.contextTitle.copyWith(fontSize: 18),
           ),
           Text(
             label,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              color: AppColors.textSecondary,
-              fontSize: 10.5,
-              fontWeight: FontWeight.w800,
-            ),
+            style: RadarTextStyles.caption.copyWith(fontSize: 10.5),
           ),
         ],
       ),
@@ -530,12 +543,11 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
   Widget buildSearchBar() {
     return Container(
-      padding: const EdgeInsets.all(AppSpacing.sm),
+      padding: const EdgeInsets.all(RadarSpacing.sm),
       decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppRadius.xl),
-        border: Border.all(color: AppColors.border),
-        boxShadow: AppShadows.soft,
+        color: RadarColors.surface,
+        borderRadius: BorderRadius.circular(RadarRadius.card),
+        boxShadow: RadarShadows.card,
       ),
       child: TextField(
         controller: searchController,
@@ -560,22 +572,25 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   icon: const Icon(Icons.close_rounded),
                 ),
           filled: true,
-          fillColor: AppColors.background,
+          fillColor: RadarColors.background,
           contentPadding: const EdgeInsets.symmetric(
-            horizontal: 14,
-            vertical: 12,
+            horizontal: RadarSpacing.lg,
+            vertical: RadarSpacing.md,
           ),
           border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(AppRadius.lg),
-            borderSide: const BorderSide(color: AppColors.border),
+            borderRadius: BorderRadius.circular(RadarRadius.small),
+            borderSide: const BorderSide(color: RadarColors.border),
           ),
           enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(AppRadius.lg),
-            borderSide: const BorderSide(color: AppColors.border),
+            borderRadius: BorderRadius.circular(RadarRadius.small),
+            borderSide: const BorderSide(color: RadarColors.border),
           ),
           focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(AppRadius.lg),
-            borderSide: const BorderSide(color: AppColors.primary, width: 1.6),
+            borderRadius: BorderRadius.circular(RadarRadius.small),
+            borderSide: const BorderSide(
+              color: RadarColors.primary,
+              width: 1.6,
+            ),
           ),
         ),
       ),
@@ -622,9 +637,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
     return Container(
       padding: const EdgeInsets.all(5),
       decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppRadius.pill),
-        border: Border.all(color: AppColors.border),
+        color: RadarColors.surface,
+        borderRadius: BorderRadius.circular(RadarRadius.pill),
+        boxShadow: RadarShadows.card,
       ),
       child: Row(
         children: [
@@ -667,12 +682,12 @@ class _HistoryScreenState extends State<HistoryScreen> {
             selectedView = view;
           });
         },
-        borderRadius: BorderRadius.circular(AppRadius.pill),
+        borderRadius: BorderRadius.circular(RadarRadius.pill),
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 9, horizontal: 8),
           decoration: BoxDecoration(
-            color: selected ? AppColors.surfaceAlt : Colors.transparent,
-            borderRadius: BorderRadius.circular(AppRadius.pill),
+            color: selected ? RadarColors.surfaceMuted : Colors.transparent,
+            borderRadius: BorderRadius.circular(RadarRadius.pill),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -680,7 +695,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
               Icon(
                 icon,
                 size: 16,
-                color: selected ? AppColors.primary : AppColors.textSecondary,
+                color: selected
+                    ? RadarColors.primary
+                    : RadarColors.textSecondary,
               ),
               const SizedBox(width: 6),
               Flexible(
@@ -690,10 +707,10 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     color: selected
-                        ? AppColors.primary
-                        : AppColors.textSecondary,
+                        ? RadarColors.primary
+                        : RadarColors.textSecondary,
                     fontSize: 12,
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ),
@@ -714,7 +731,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
         avatar: Icon(
           icon,
           size: 16,
-          color: selected ? AppColors.primary : AppColors.textSecondary,
+          color: selected ? RadarColors.primary : RadarColors.textSecondary,
         ),
         label: Text(label),
         onSelected: (_) {
@@ -723,17 +740,15 @@ class _HistoryScreenState extends State<HistoryScreen> {
           });
         },
         labelStyle: TextStyle(
-          color: selected ? AppColors.primary : AppColors.textSecondary,
-          fontWeight: FontWeight.w900,
+          color: selected ? RadarColors.primary : RadarColors.textSecondary,
+          fontWeight: FontWeight.w600,
           fontSize: 12,
         ),
-        selectedColor: AppColors.surfaceAlt,
-        backgroundColor: AppColors.surface,
-        side: BorderSide(
-          color: selected ? AppColors.borderStrong : AppColors.border,
-        ),
+        selectedColor: RadarColors.surfaceMuted,
+        backgroundColor: RadarColors.surface,
+        side: const BorderSide(color: RadarColors.border),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppRadius.pill),
+          borderRadius: BorderRadius.circular(RadarRadius.pill),
         ),
       ),
     );
@@ -744,11 +759,10 @@ class _HistoryScreenState extends State<HistoryScreen> {
       alignment: Alignment.center,
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.all(AppSpacing.sm),
+        padding: const EdgeInsets.all(RadarSpacing.sm),
         decoration: BoxDecoration(
-          color: AppColors.danger.withValues(alpha: 0.06),
-          borderRadius: BorderRadius.circular(AppRadius.lg),
-          border: Border.all(color: AppColors.danger.withValues(alpha: 0.16)),
+          color: RadarColors.clinicalDanger.withValues(alpha: 0.06),
+          borderRadius: BorderRadius.circular(RadarRadius.card),
         ),
         child: Align(
           alignment: Alignment.centerRight,
@@ -757,11 +771,13 @@ class _HistoryScreenState extends State<HistoryScreen> {
             icon: const Icon(Icons.delete_outline_rounded, size: 18),
             label: const Text('Supprimer l’historique'),
             style: OutlinedButton.styleFrom(
-              foregroundColor: AppColors.danger,
-              side: BorderSide(color: AppColors.danger.withValues(alpha: 0.35)),
+              foregroundColor: RadarColors.clinicalDanger,
+              side: BorderSide(
+                color: RadarColors.clinicalDanger.withValues(alpha: 0.35),
+              ),
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(AppRadius.lg),
+                borderRadius: BorderRadius.circular(RadarRadius.small),
               ),
             ),
           ),
@@ -820,13 +836,12 @@ class _HistoryScreenState extends State<HistoryScreen> {
     required String text,
   }) {
     return Container(
-      margin: const EdgeInsets.only(top: AppSpacing.xs),
-      padding: const EdgeInsets.all(AppSpacing.md),
+      margin: const EdgeInsets.only(top: RadarSpacing.xs),
+      padding: const EdgeInsets.all(RadarSpacing.xl),
       decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppRadius.xl),
-        border: Border.all(color: AppColors.border),
-        boxShadow: AppShadows.soft,
+        color: RadarColors.surface,
+        borderRadius: BorderRadius.circular(RadarRadius.card),
+        boxShadow: RadarShadows.card,
       ),
       child: Column(
         children: [
@@ -834,30 +849,21 @@ class _HistoryScreenState extends State<HistoryScreen> {
             width: 50,
             height: 50,
             decoration: BoxDecoration(
-              color: AppColors.surfaceAlt,
-              borderRadius: BorderRadius.circular(AppRadius.lg),
+              color: RadarColors.surfaceMuted,
+              borderRadius: BorderRadius.circular(RadarRadius.small),
             ),
-            child: Icon(icon, size: 31, color: AppColors.primary),
+            child: Icon(icon, size: 31, color: RadarColors.primary),
           ),
-          const SizedBox(height: AppSpacing.sm),
+          const SizedBox(height: RadarSpacing.lg),
           Text(
             title,
-            style: const TextStyle(
-              fontSize: 16,
-              color: AppColors.textPrimary,
-              fontWeight: FontWeight.w900,
-            ),
+            style: RadarTextStyles.contextTitle.copyWith(fontSize: 16),
           ),
-          const SizedBox(height: 5),
+          const SizedBox(height: RadarSpacing.sm),
           Text(
             text,
             textAlign: TextAlign.center,
-            style: const TextStyle(
-              color: AppColors.textSecondary,
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              height: 1.35,
-            ),
+            style: RadarTextStyles.secondary,
           ),
         ],
       ),
@@ -886,13 +892,12 @@ class _HistoryScreenState extends State<HistoryScreen> {
         }
       },
       child: Container(
-        margin: const EdgeInsets.only(bottom: AppSpacing.sm),
-        padding: const EdgeInsets.all(12),
+        margin: const EdgeInsets.only(bottom: RadarSpacing.lg),
+        padding: const EdgeInsets.all(RadarSpacing.lg),
         decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.circular(AppRadius.xl),
-          border: Border.all(color: AppColors.border),
-          boxShadow: AppShadows.soft,
+          color: RadarColors.surface,
+          borderRadius: BorderRadius.circular(RadarRadius.card),
+          boxShadow: RadarShadows.card,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -905,10 +910,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   width: 50,
                   decoration: BoxDecoration(
                     color: riskColor(risk).withValues(alpha: 0.10),
-                    borderRadius: BorderRadius.circular(AppRadius.lg),
-                    border: Border.all(
-                      color: riskColor(risk).withValues(alpha: 0.18),
-                    ),
+                    borderRadius: BorderRadius.circular(RadarRadius.small),
                   ),
                   child: Icon(
                     motifIcon(motif),
@@ -916,7 +918,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                     size: 25,
                   ),
                 ),
-                const SizedBox(width: AppSpacing.sm),
+                const SizedBox(width: RadarSpacing.lg),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -925,21 +927,18 @@ class _HistoryScreenState extends State<HistoryScreen> {
                         patientDisplayName,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: AppColors.textPrimary,
+                        style: RadarTextStyles.contextTitle.copyWith(
                           fontSize: 16,
-                          fontWeight: FontWeight.w900,
                           height: 1.15,
                         ),
                       ),
-                      const SizedBox(height: 5),
+                      const SizedBox(height: RadarSpacing.xs),
                       Text(
                         motif,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: AppColors.textPrimary,
-                          fontWeight: FontWeight.w700,
+                        style: RadarTextStyles.secondary.copyWith(
+                          color: RadarColors.textPrimary,
                           fontSize: 13,
                           height: 1.25,
                         ),
@@ -947,14 +946,14 @@ class _HistoryScreenState extends State<HistoryScreen> {
                     ],
                   ),
                 ),
-                const SizedBox(width: AppSpacing.sm),
+                const SizedBox(width: RadarSpacing.sm),
                 buildScorePill(scoreValue),
               ],
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: RadarSpacing.md),
             Wrap(
-              spacing: AppSpacing.sm,
-              runSpacing: AppSpacing.sm,
+              spacing: RadarSpacing.sm,
+              runSpacing: RadarSpacing.sm,
               children: [
                 buildRiskBadge(risk),
                 buildSmallBadge(
@@ -989,13 +988,12 @@ class _HistoryScreenState extends State<HistoryScreen> {
         );
       },
       child: Container(
-        margin: const EdgeInsets.only(bottom: AppSpacing.sm),
-        padding: const EdgeInsets.all(12),
+        margin: const EdgeInsets.only(bottom: RadarSpacing.lg),
+        padding: const EdgeInsets.all(RadarSpacing.lg),
         decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.circular(AppRadius.xl),
-          border: Border.all(color: AppColors.border),
-          boxShadow: AppShadows.soft,
+          color: RadarColors.surface,
+          borderRadius: BorderRadius.circular(RadarRadius.card),
+          boxShadow: RadarShadows.card,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -1007,19 +1005,16 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   height: 50,
                   width: 50,
                   decoration: BoxDecoration(
-                    color: AppColors.primary.withValues(alpha: 0.10),
-                    borderRadius: BorderRadius.circular(AppRadius.lg),
-                    border: Border.all(
-                      color: AppColors.primary.withValues(alpha: 0.18),
-                    ),
+                    color: RadarColors.primary.withValues(alpha: 0.10),
+                    borderRadius: BorderRadius.circular(RadarRadius.small),
                   ),
                   child: const Icon(
                     Icons.description_outlined,
-                    color: AppColors.primary,
+                    color: RadarColors.primary,
                     size: 25,
                   ),
                 ),
-                const SizedBox(width: AppSpacing.sm),
+                const SizedBox(width: RadarSpacing.lg),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -1028,21 +1023,18 @@ class _HistoryScreenState extends State<HistoryScreen> {
                         item.displayPatient,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: AppColors.textPrimary,
+                        style: RadarTextStyles.contextTitle.copyWith(
                           fontSize: 16,
-                          fontWeight: FontWeight.w900,
                           height: 1.15,
                         ),
                       ),
-                      const SizedBox(height: 5),
+                      const SizedBox(height: RadarSpacing.xs),
                       Text(
                         item.displayType,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: AppColors.textPrimary,
-                          fontWeight: FontWeight.w700,
+                        style: RadarTextStyles.secondary.copyWith(
+                          color: RadarColors.textPrimary,
                           fontSize: 13,
                           height: 1.25,
                         ),
@@ -1052,14 +1044,14 @@ class _HistoryScreenState extends State<HistoryScreen> {
                 ),
                 const Icon(
                   Icons.chevron_right_rounded,
-                  color: AppColors.textMuted,
+                  color: RadarColors.textMuted,
                 ),
               ],
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: RadarSpacing.md),
             Wrap(
-              spacing: AppSpacing.sm,
-              runSpacing: AppSpacing.sm,
+              spacing: RadarSpacing.sm,
+              runSpacing: RadarSpacing.sm,
               children: [
                 buildSmallBadge(
                   icon: Icons.event_outlined,
@@ -1095,13 +1087,12 @@ class _HistoryScreenState extends State<HistoryScreen> {
         );
       },
       child: Container(
-        margin: const EdgeInsets.only(bottom: AppSpacing.sm),
-        padding: const EdgeInsets.all(12),
+        margin: const EdgeInsets.only(bottom: RadarSpacing.lg),
+        padding: const EdgeInsets.all(RadarSpacing.lg),
         decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.circular(AppRadius.xl),
-          border: Border.all(color: AppColors.border),
-          boxShadow: AppShadows.soft,
+          color: RadarColors.surface,
+          borderRadius: BorderRadius.circular(RadarRadius.card),
+          boxShadow: RadarShadows.card,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -1114,14 +1105,11 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   width: 50,
                   decoration: BoxDecoration(
                     color: template.color.withValues(alpha: 0.10),
-                    borderRadius: BorderRadius.circular(AppRadius.lg),
-                    border: Border.all(
-                      color: template.color.withValues(alpha: 0.18),
-                    ),
+                    borderRadius: BorderRadius.circular(RadarRadius.small),
                   ),
                   child: Icon(template.icon, color: template.color, size: 25),
                 ),
-                const SizedBox(width: AppSpacing.sm),
+                const SizedBox(width: RadarSpacing.lg),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -1130,21 +1118,18 @@ class _HistoryScreenState extends State<HistoryScreen> {
                         item.title,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: AppColors.textPrimary,
+                        style: RadarTextStyles.contextTitle.copyWith(
                           fontSize: 16,
-                          fontWeight: FontWeight.w900,
                           height: 1.15,
                         ),
                       ),
-                      const SizedBox(height: 5),
+                      const SizedBox(height: RadarSpacing.xs),
                       Text(
                         item.displayPatient,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: AppColors.textPrimary,
-                          fontWeight: FontWeight.w700,
+                        style: RadarTextStyles.secondary.copyWith(
+                          color: RadarColors.textPrimary,
                           fontSize: 13,
                           height: 1.25,
                         ),
@@ -1154,14 +1139,14 @@ class _HistoryScreenState extends State<HistoryScreen> {
                 ),
                 const Icon(
                   Icons.chevron_right_rounded,
-                  color: AppColors.textMuted,
+                  color: RadarColors.textMuted,
                 ),
               ],
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: RadarSpacing.md),
             Wrap(
-              spacing: AppSpacing.sm,
-              runSpacing: AppSpacing.sm,
+              spacing: RadarSpacing.sm,
+              runSpacing: RadarSpacing.sm,
               children: [
                 buildSmallBadge(
                   icon: Icons.event_outlined,
@@ -1200,13 +1185,12 @@ class _HistoryScreenState extends State<HistoryScreen> {
         );
       },
       child: Container(
-        margin: const EdgeInsets.only(bottom: AppSpacing.sm),
-        padding: const EdgeInsets.all(12),
+        margin: const EdgeInsets.only(bottom: RadarSpacing.lg),
+        padding: const EdgeInsets.all(RadarSpacing.lg),
         decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.circular(AppRadius.xl),
-          border: Border.all(color: AppColors.border),
-          boxShadow: AppShadows.soft,
+          color: RadarColors.surface,
+          borderRadius: BorderRadius.circular(RadarRadius.card),
+          boxShadow: RadarShadows.card,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -1219,14 +1203,11 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   width: 50,
                   decoration: BoxDecoration(
                     color: template.color.withValues(alpha: 0.10),
-                    borderRadius: BorderRadius.circular(AppRadius.lg),
-                    border: Border.all(
-                      color: template.color.withValues(alpha: 0.18),
-                    ),
+                    borderRadius: BorderRadius.circular(RadarRadius.small),
                   ),
                   child: Icon(template.icon, color: template.color, size: 25),
                 ),
-                const SizedBox(width: AppSpacing.sm),
+                const SizedBox(width: RadarSpacing.lg),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -1235,21 +1216,18 @@ class _HistoryScreenState extends State<HistoryScreen> {
                         item.title,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: AppColors.textPrimary,
+                        style: RadarTextStyles.contextTitle.copyWith(
                           fontSize: 16,
-                          fontWeight: FontWeight.w900,
                           height: 1.15,
                         ),
                       ),
-                      const SizedBox(height: 5),
+                      const SizedBox(height: RadarSpacing.xs),
                       Text(
                         item.displayPatient,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: AppColors.textPrimary,
-                          fontWeight: FontWeight.w700,
+                        style: RadarTextStyles.secondary.copyWith(
+                          color: RadarColors.textPrimary,
                           fontSize: 13,
                           height: 1.25,
                         ),
@@ -1259,14 +1237,14 @@ class _HistoryScreenState extends State<HistoryScreen> {
                 ),
                 const Icon(
                   Icons.chevron_right_rounded,
-                  color: AppColors.textMuted,
+                  color: RadarColors.textMuted,
                 ),
               ],
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: RadarSpacing.md),
             Wrap(
-              spacing: AppSpacing.sm,
-              runSpacing: AppSpacing.sm,
+              spacing: RadarSpacing.sm,
+              runSpacing: RadarSpacing.sm,
               children: [
                 buildSmallBadge(
                   icon: Icons.event_outlined,
@@ -1297,29 +1275,17 @@ class _HistoryScreenState extends State<HistoryScreen> {
       width: 58,
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 7),
       decoration: BoxDecoration(
-        color: AppColors.background,
-        borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: AppColors.border),
+        color: RadarColors.background,
+        borderRadius: BorderRadius.circular(RadarRadius.small),
       ),
       child: Column(
         children: [
-          const Text(
-            'Score',
-            style: TextStyle(
-              color: AppColors.textSecondary,
-              fontSize: 10,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
+          Text('Score', style: RadarTextStyles.caption.copyWith(fontSize: 10)),
           Text(
             scoreValue,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              color: AppColors.textPrimary,
-              fontSize: 24,
-              fontWeight: FontWeight.w900,
-            ),
+            style: RadarTextStyles.contextTitle.copyWith(fontSize: 24),
           ),
         ],
       ),
@@ -1331,14 +1297,13 @@ class _HistoryScreenState extends State<HistoryScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
         color: riskColor(risk).withValues(alpha: 0.10),
-        borderRadius: BorderRadius.circular(AppRadius.pill),
-        border: Border.all(color: riskColor(risk).withValues(alpha: 0.35)),
+        borderRadius: BorderRadius.circular(RadarRadius.pill),
       ),
       child: Text(
         risk,
         style: TextStyle(
           color: riskColor(risk),
-          fontWeight: FontWeight.w900,
+          fontWeight: FontWeight.w600,
           fontSize: 11,
         ),
       ),
@@ -1354,20 +1319,20 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
     switch (status) {
       case SyncStatus.synced:
-        color = AppColors.successDark;
+        color = RadarColors.clinicalSuccess;
         icon = Icons.cloud_done_outlined;
         text = 'Synchronisé';
       case SyncStatus.pendingSync:
       case SyncStatus.syncing:
-        color = AppColors.warningDark;
+        color = RadarColors.clinicalWarning;
         icon = Icons.cloud_upload_outlined;
         text = 'En attente';
       case SyncStatus.syncFailed:
-        color = AppColors.dangerDark;
+        color = RadarColors.clinicalDanger;
         icon = Icons.cloud_off_outlined;
         text = 'Échec sync';
       case SyncStatus.localOnly:
-        color = AppColors.textSecondary;
+        color = RadarColors.textSecondary;
         icon = Icons.phone_iphone_rounded;
         text = 'Local';
     }
@@ -1376,20 +1341,19 @@ class _HistoryScreenState extends State<HistoryScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.10),
-        borderRadius: BorderRadius.circular(AppRadius.pill),
-        border: Border.all(color: color.withValues(alpha: 0.22)),
+        borderRadius: BorderRadius.circular(RadarRadius.pill),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(icon, size: 14, color: color),
-          const SizedBox(width: 5),
+          const SizedBox(width: RadarSpacing.xs),
           Text(
             text,
             style: TextStyle(
               color: color,
               fontSize: 11.5,
-              fontWeight: FontWeight.w900,
+              fontWeight: FontWeight.w600,
             ),
           ),
         ],
@@ -1401,20 +1365,18 @@ class _HistoryScreenState extends State<HistoryScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
-        color: AppColors.background,
-        borderRadius: BorderRadius.circular(AppRadius.pill),
-        border: Border.all(color: AppColors.border),
+        color: RadarColors.background,
+        borderRadius: BorderRadius.circular(RadarRadius.pill),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, color: AppColors.textSecondary, size: 13),
-          const SizedBox(width: AppSpacing.xs),
+          Icon(icon, color: RadarColors.textSecondary, size: 13),
+          const SizedBox(width: RadarSpacing.xs),
           Text(
             text,
-            style: const TextStyle(
-              color: AppColors.textSecondary,
-              fontWeight: FontWeight.w800,
+            style: RadarTextStyles.caption.copyWith(
+              color: RadarColors.textSecondary,
               fontSize: 11,
             ),
           ),
@@ -1427,26 +1389,23 @@ class _HistoryScreenState extends State<HistoryScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
-        color: AppColors.warningDark.withValues(alpha: 0.10),
-        borderRadius: BorderRadius.circular(AppRadius.pill),
-        border: Border.all(
-          color: AppColors.warningDark.withValues(alpha: 0.25),
-        ),
+        color: RadarColors.clinicalWarning.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(RadarRadius.pill),
       ),
       child: const Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(
             Icons.no_accounts_outlined,
-            color: AppColors.warningDark,
+            color: RadarColors.clinicalWarning,
             size: 13,
           ),
-          SizedBox(width: AppSpacing.xs),
+          SizedBox(width: RadarSpacing.xs),
           Text(
             'Anonyme',
             style: TextStyle(
-              color: AppColors.warningDark,
-              fontWeight: FontWeight.w900,
+              color: RadarColors.clinicalWarning,
+              fontWeight: FontWeight.w600,
               fontSize: 11,
             ),
           ),
