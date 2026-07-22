@@ -7,13 +7,13 @@ import 'package:signature/signature.dart';
 
 import '../models/access_direct_model.dart';
 import '../models/patient_local.dart';
+import '../features/radar/presentation/theme/radar_colors.dart';
+import '../features/radar/presentation/theme/radar_radius.dart';
+import '../features/radar/presentation/theme/radar_shadows.dart';
+import '../features/radar/presentation/theme/radar_spacing.dart';
+import '../features/radar/presentation/theme/radar_text_styles.dart';
 import '../services/access_direct_local_service.dart';
 import '../services/rgpd_local_service.dart';
-import '../theme/app_colors.dart';
-import '../theme/app_radius.dart';
-import '../theme/app_shadows.dart';
-import '../theme/app_spacing.dart';
-import '../theme/app_typography.dart';
 import '../widgets/design_system/clinical_responsive_info.dart';
 
 class PatientConsentScreen extends StatefulWidget {
@@ -657,7 +657,7 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
             FilledButton(
               onPressed: () => Navigator.pop(dialogContext, true),
               style: FilledButton.styleFrom(
-                backgroundColor: const Color(0xFFEF4444),
+                backgroundColor: RadarColors.clinicalDanger,
               ),
               child: const Text('Supprimer'),
             ),
@@ -693,7 +693,7 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
             FilledButton(
               onPressed: () => Navigator.pop(dialogContext, true),
               style: FilledButton.styleFrom(
-                backgroundColor: const Color(0xFFEF4444),
+                backgroundColor: RadarColors.clinicalDanger,
               ),
               child: const Text('Supprimer'),
             ),
@@ -733,12 +733,11 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
     EdgeInsetsGeometry? padding,
   }) {
     return Container(
-      padding: padding ?? const EdgeInsets.all(12),
+      padding: padding ?? const EdgeInsets.all(RadarSpacing.xl),
       decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppRadius.xl),
-        border: Border.all(color: AppColors.border),
-        boxShadow: AppShadows.soft,
+        color: RadarColors.surface,
+        borderRadius: BorderRadius.circular(RadarRadius.card),
+        boxShadow: RadarShadows.card,
       ),
       child: child,
     );
@@ -751,23 +750,20 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
           width: 34,
           height: 34,
           decoration: BoxDecoration(
-            color: AppColors.surfaceAlt,
-            borderRadius: BorderRadius.circular(AppRadius.md),
+            color: RadarColors.surfaceMuted,
+            borderRadius: BorderRadius.circular(RadarRadius.small),
           ),
           child: const Icon(
             Icons.draw_outlined,
-            color: AppColors.primary,
+            color: RadarColors.primary,
             size: 19,
           ),
         ),
-        const SizedBox(width: AppSpacing.sm),
+        const SizedBox(width: RadarSpacing.md),
         Expanded(
           child: Text(
             'Signature patient',
-            style: AppTypography.body.copyWith(
-              fontWeight: FontWeight.w900,
-              color: AppColors.textPrimary,
-            ),
+            style: RadarTextStyles.body.copyWith(fontWeight: FontWeight.w600),
           ),
         ),
       ],
@@ -779,30 +775,24 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
     required List<Widget> children,
   }) {
     return Container(
-      padding: const EdgeInsets.all(10),
+      padding: const EdgeInsets.all(RadarSpacing.lg),
       decoration: BoxDecoration(
-        color: AppColors.background,
-        borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: AppColors.border),
+        color: RadarColors.background,
+        borderRadius: BorderRadius.circular(RadarRadius.card),
+        border: Border.all(color: RadarColors.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            title,
-            style: AppTypography.body.copyWith(
-              color: AppColors.textPrimary,
-              fontWeight: FontWeight.w900,
-            ),
-          ),
-          const SizedBox(height: 10),
+          Text(title, style: RadarTextStyles.contextTitle),
+          const SizedBox(height: RadarSpacing.md),
           ...children,
         ],
       ),
     );
   }
 
-  Widget buildFieldGap() => const SizedBox(height: 8);
+  Widget buildFieldGap() => const SizedBox(height: RadarSpacing.md);
 
   Widget buildPatientIdentityFields() {
     return buildFormFieldGroup(
@@ -834,9 +824,9 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
   Widget buildAdvancedIdentificationBlock() {
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: AppColors.border),
+        color: RadarColors.surface,
+        borderRadius: BorderRadius.circular(RadarRadius.card),
+        border: Border.all(color: RadarColors.border),
       ),
       child: Material(
         color: Colors.transparent,
@@ -848,21 +838,15 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
           childrenPadding: const EdgeInsets.fromLTRB(10, 0, 10, 10),
           leading: const Icon(
             Icons.manage_accounts_outlined,
-            color: AppColors.primary,
+            color: RadarColors.primary,
           ),
           title: Text(
             'Identification avancée',
-            style: AppTypography.body.copyWith(
-              color: AppColors.textPrimary,
-              fontWeight: FontWeight.w900,
-            ),
+            style: RadarTextStyles.body.copyWith(fontWeight: FontWeight.w600),
           ),
           subtitle: Text(
             'Coordonnées, médecin traitant et documents médicaux',
-            style: AppTypography.caption.copyWith(
-              color: AppColors.textSecondary,
-              fontWeight: FontWeight.w700,
-            ),
+            style: RadarTextStyles.caption,
           ),
           children: [
             buildAdvancedPatientSection(),
@@ -1035,12 +1019,12 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: hasDocument ? AppColors.surfaceSuccess : AppColors.surface,
-        borderRadius: BorderRadius.circular(AppRadius.lg),
+        color: hasDocument ? RadarColors.successSoft : RadarColors.surface,
+        borderRadius: BorderRadius.circular(RadarRadius.card),
         border: Border.all(
           color: hasDocument
-              ? AppColors.success.withValues(alpha: 0.30)
-              : AppColors.border,
+              ? RadarColors.clinicalSuccess.withValues(alpha: 0.22)
+              : RadarColors.border,
         ),
       ),
       child: Row(
@@ -1049,18 +1033,19 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
             hasDocument
                 ? Icons.check_circle_rounded
                 : Icons.description_outlined,
-            color: hasDocument ? AppColors.successDark : AppColors.primary,
+            color: hasDocument
+                ? RadarColors.clinicalSuccess
+                : RadarColors.primary,
           ),
-          const SizedBox(width: AppSpacing.sm),
+          const SizedBox(width: RadarSpacing.md),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   type,
-                  style: AppTypography.caption.copyWith(
-                    color: AppColors.textPrimary,
-                    fontWeight: FontWeight.w900,
+                  style: RadarTextStyles.badge.copyWith(
+                    color: RadarColors.textPrimary,
                   ),
                 ),
                 const SizedBox(height: 3),
@@ -1068,10 +1053,7 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
                   subtitle,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: AppTypography.caption.copyWith(
-                    color: AppColors.textSecondary,
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: RadarTextStyles.caption,
                 ),
               ],
             ),
@@ -1085,7 +1067,7 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
               tooltip: 'Supprimer',
               onPressed: () => removePatientMedicalDocument(type),
               icon: const Icon(Icons.delete_outline_rounded),
-              color: AppColors.danger,
+              color: RadarColors.clinicalDanger,
             ),
         ],
       ),
@@ -1103,13 +1085,10 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
       dense: true,
       contentPadding: EdgeInsets.zero,
       controlAffinity: ListTileControlAffinity.leading,
-      activeColor: AppColors.primary,
+      activeColor: RadarColors.primary,
       title: Text(
         label,
-        style: AppTypography.caption.copyWith(
-          color: AppColors.textPrimary,
-          fontWeight: FontWeight.w800,
-        ),
+        style: RadarTextStyles.caption.copyWith(color: RadarColors.textPrimary),
       ),
     );
   }
@@ -1120,7 +1099,7 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
     final foundPatient = existingPatient;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: RadarColors.background,
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
@@ -1133,7 +1112,7 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
               child: Center(
                 child: ConstrainedBox(
                   constraints: BoxConstraints(
-                    maxWidth: responsive.patientContentMaxWidth,
+                    maxWidth: responsive.isDesktop ? 520 : 500,
                   ),
                   child: ListView(
                     physics: isSigning
@@ -1141,12 +1120,14 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
                         : const AlwaysScrollableScrollPhysics(),
                     padding: responsive.patientPagePadding,
                     children: [
+                      const _PatientRadarHeader(),
+                      const SizedBox(height: RadarSpacing.xxl),
                       buildSearchBar(responsive),
-                      const SizedBox(height: AppSpacing.sm),
+                      const SizedBox(height: RadarSpacing.lg),
                       buildPatientForm(foundPatient, responsive),
-                      const SizedBox(height: AppSpacing.sm),
+                      const SizedBox(height: RadarSpacing.xl),
                       buildPatientsList(visiblePatients),
-                      const SizedBox(height: AppSpacing.sm),
+                      const SizedBox(height: RadarSpacing.lg),
                       buildDeleteAllButton(),
                     ],
                   ),
@@ -1162,7 +1143,7 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
 
   Widget buildSearchBar(ClinicalResponsiveInfo responsive) {
     return buildPageSection(
-      padding: const EdgeInsets.all(AppSpacing.sm),
+      padding: const EdgeInsets.all(RadarSpacing.md),
       child: TextField(
         controller: searchController,
         onChanged: (value) {
@@ -1186,22 +1167,25 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
                   icon: const Icon(Icons.close_rounded),
                 ),
           filled: true,
-          fillColor: AppColors.background,
+          fillColor: RadarColors.background,
           contentPadding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.md,
+            horizontal: RadarSpacing.lg,
             vertical: 14,
           ),
           border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(AppRadius.lg),
-            borderSide: const BorderSide(color: AppColors.border),
+            borderRadius: BorderRadius.circular(RadarRadius.card),
+            borderSide: const BorderSide(color: RadarColors.border),
           ),
           enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(AppRadius.lg),
-            borderSide: const BorderSide(color: AppColors.border),
+            borderRadius: BorderRadius.circular(RadarRadius.card),
+            borderSide: const BorderSide(color: RadarColors.border),
           ),
           focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(AppRadius.lg),
-            borderSide: const BorderSide(color: AppColors.primary, width: 1.6),
+            borderRadius: BorderRadius.circular(RadarRadius.card),
+            borderSide: const BorderSide(
+              color: RadarColors.primary,
+              width: 1.6,
+            ),
           ),
         ),
       ),
@@ -1215,7 +1199,9 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
     final patientExists = foundPatient != null;
 
     return buildPageSection(
-      padding: responsive.patientCardPadding,
+      padding: EdgeInsets.all(
+        responsive.isCompactPhone ? RadarSpacing.lg : RadarSpacing.xl,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1223,26 +1209,26 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
             icon: Icons.person_outline_rounded,
             title: patientExists ? 'Patient déjà connu' : 'Patient identifié',
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: RadarSpacing.lg),
           buildPatientIdentityFields(),
           if (shouldShowAdvancedIdentification) ...[
-            const SizedBox(height: 10),
+            const SizedBox(height: RadarSpacing.lg),
             buildAdvancedIdentificationBlock(),
           ],
           if (patientExists) ...[
-            const SizedBox(height: 10),
+            const SizedBox(height: RadarSpacing.lg),
             buildExistingPatientNotice(foundPatient),
           ],
           if (!patientExists) ...[
-            const SizedBox(height: 10),
+            const SizedBox(height: RadarSpacing.lg),
             buildMedicalDiagnosisCard(),
-            const SizedBox(height: 10),
+            const SizedBox(height: RadarSpacing.lg),
             buildConsentCard(),
-            const SizedBox(height: 10),
+            const SizedBox(height: RadarSpacing.lg),
             buildSignatureHeader(),
-            const SizedBox(height: 8),
+            const SizedBox(height: RadarSpacing.md),
             buildSignatureBox(),
-            const SizedBox(height: 8),
+            const SizedBox(height: RadarSpacing.md),
             buildClearSignatureButton(),
           ],
         ],
@@ -1253,12 +1239,14 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
   Widget buildMedicalDiagnosisCard() {
     return Container(
       decoration: BoxDecoration(
-        color: hasMedicalDiagnosis ? AppColors.surfaceAlt : AppColors.surface,
-        borderRadius: BorderRadius.circular(AppRadius.lg),
+        color: hasMedicalDiagnosis
+            ? RadarColors.surfaceMuted
+            : RadarColors.surface,
+        borderRadius: BorderRadius.circular(RadarRadius.card),
         border: Border.all(
           color: hasMedicalDiagnosis
-              ? AppColors.primary.withValues(alpha: 0.32)
-              : AppColors.border,
+              ? RadarColors.primary.withValues(alpha: 0.22)
+              : RadarColors.border,
         ),
       ),
       child: Column(
@@ -1268,21 +1256,20 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
             child: CheckboxListTile(
               value: hasMedicalDiagnosis,
               onChanged: (value) => updateMedicalDiagnosis(value ?? false),
-              activeColor: AppColors.primary,
+              activeColor: RadarColors.primary,
               controlAffinity: ListTileControlAffinity.leading,
               title: Text(
                 'Diagnostic médical préalable',
-                style: AppTypography.body.copyWith(
-                  fontWeight: FontWeight.w900,
-                  color: AppColors.textPrimary,
+                style: RadarTextStyles.body.copyWith(
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ),
           ),
           if (hasMedicalDiagnosis) ...[
-            const Divider(height: 1, color: AppColors.border),
+            const Divider(height: 1, color: RadarColors.border),
             Padding(
-              padding: const EdgeInsets.all(10),
+              padding: const EdgeInsets.all(RadarSpacing.md),
               child: _DiagnosisDocumentCard(
                 documentPath: diagnosisDocumentPath,
                 documentName: diagnosisDocumentName,
@@ -1308,13 +1295,16 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
           setState(() {});
         },
         style: OutlinedButton.styleFrom(
-          foregroundColor: AppColors.primary,
-          side: BorderSide(color: AppColors.primary.withValues(alpha: 0.28)),
-          padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 11),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppRadius.lg),
+          foregroundColor: RadarColors.primary,
+          side: BorderSide(color: RadarColors.primary.withValues(alpha: 0.24)),
+          padding: const EdgeInsets.symmetric(
+            horizontal: RadarSpacing.xl,
+            vertical: RadarSpacing.md,
           ),
-          textStyle: const TextStyle(fontWeight: FontWeight.w900),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(RadarRadius.card),
+          ),
+          textStyle: RadarTextStyles.badge,
         ),
         child: const Text('Effacer', textAlign: TextAlign.center),
       ),
@@ -1323,22 +1313,26 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
 
   Widget buildExistingPatientNotice(PatientLocal patient) {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(RadarSpacing.lg),
       decoration: BoxDecoration(
-        color: AppColors.surfaceSuccess,
-        borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: AppColors.success.withValues(alpha: 0.30)),
+        color: RadarColors.successSoft,
+        borderRadius: BorderRadius.circular(RadarRadius.card),
+        border: Border.all(
+          color: RadarColors.clinicalSuccess.withValues(alpha: 0.22),
+        ),
       ),
       child: Row(
         children: [
-          const Icon(Icons.person_search_rounded, color: AppColors.successDark),
-          const SizedBox(width: AppSpacing.sm),
+          const Icon(
+            Icons.person_search_rounded,
+            color: RadarColors.clinicalSuccess,
+          ),
+          const SizedBox(width: RadarSpacing.md),
           Expanded(
             child: Text(
               'Patient déjà enregistré : ${patientName(patient)}. Le bouton va le mettre à jour et l’activer.',
-              style: AppTypography.caption.copyWith(
-                color: AppColors.successDark,
-                fontWeight: FontWeight.w800,
+              style: RadarTextStyles.caption.copyWith(
+                color: RadarColors.textPrimary,
                 height: 1.3,
               ),
             ),
@@ -1363,32 +1357,28 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
       textCapitalization: textCapitalization,
       maxLines: maxLines,
       onChanged: (_) => setState(() {}),
-      style: AppTypography.body.copyWith(
-        fontSize: 15,
-        fontWeight: FontWeight.w600,
-        color: AppColors.textPrimary,
-      ),
+      style: RadarTextStyles.body.copyWith(fontSize: 15),
       decoration: InputDecoration(
         labelText: label,
         hintText: hint,
         suffixIcon: suffixIcon == null ? null : Icon(suffixIcon),
         filled: true,
-        fillColor: AppColors.background,
+        fillColor: RadarColors.background,
         contentPadding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.md,
+          horizontal: RadarSpacing.lg,
           vertical: 12,
         ),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppRadius.lg),
-          borderSide: const BorderSide(color: AppColors.border),
+          borderRadius: BorderRadius.circular(RadarRadius.card),
+          borderSide: const BorderSide(color: RadarColors.border),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppRadius.lg),
-          borderSide: const BorderSide(color: AppColors.border),
+          borderRadius: BorderRadius.circular(RadarRadius.card),
+          borderSide: const BorderSide(color: RadarColors.border),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppRadius.lg),
-          borderSide: const BorderSide(color: AppColors.primary, width: 1.6),
+          borderRadius: BorderRadius.circular(RadarRadius.card),
+          borderSide: const BorderSide(color: RadarColors.primary, width: 1.6),
         ),
       ),
     );
@@ -1397,10 +1387,14 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
   Widget buildConsentCard() {
     return Container(
       decoration: BoxDecoration(
-        color: consentementCoche ? AppColors.surfaceSuccess : AppColors.surface,
-        borderRadius: BorderRadius.circular(AppRadius.lg),
+        color: consentementCoche
+            ? RadarColors.successSoft
+            : RadarColors.surface,
+        borderRadius: BorderRadius.circular(RadarRadius.card),
         border: Border.all(
-          color: consentementCoche ? AppColors.success : AppColors.border,
+          color: consentementCoche
+              ? RadarColors.clinicalSuccess
+              : RadarColors.border,
         ),
       ),
       child: Material(
@@ -1412,13 +1406,12 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
               consentementCoche = value ?? false;
             });
           },
-          activeColor: AppColors.success,
+          activeColor: RadarColors.clinicalSuccess,
           controlAffinity: ListTileControlAffinity.leading,
           title: Text(
             'Le patient consent à l’utilisation locale de ses données dans l’application.',
-            style: AppTypography.body.copyWith(
-              fontWeight: FontWeight.w800,
-              color: AppColors.textPrimary,
+            style: RadarTextStyles.body.copyWith(
+              fontWeight: FontWeight.w600,
               height: 1.3,
             ),
           ),
@@ -1447,12 +1440,12 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
       child: Container(
         height: 132,
         decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.circular(AppRadius.lg),
-          border: Border.all(color: AppColors.border),
+          color: RadarColors.surface,
+          borderRadius: BorderRadius.circular(RadarRadius.card),
+          border: Border.all(color: RadarColors.border),
         ),
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(AppRadius.lg),
+          borderRadius: BorderRadius.circular(RadarRadius.card),
           child: Stack(
             children: [
               Signature(
@@ -1485,7 +1478,7 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
           icon: Icons.folder_shared_outlined,
           title: 'Patients enregistrés',
         ),
-        const SizedBox(height: AppSpacing.sm),
+        const SizedBox(height: RadarSpacing.md),
         if (patients.isEmpty)
           buildEmptyCard(
             icon: Icons.folder_open_rounded,
@@ -1508,15 +1501,15 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
     final active = isCurrentPatient(patient);
 
     return Container(
-      margin: const EdgeInsets.only(bottom: AppSpacing.sm),
+      margin: const EdgeInsets.only(bottom: RadarSpacing.md),
       decoration: BoxDecoration(
-        color: active ? AppColors.surfaceSuccess : AppColors.surface,
-        borderRadius: BorderRadius.circular(AppRadius.lg),
-        boxShadow: active ? AppShadows.soft : const [],
+        color: active ? RadarColors.successSoft : RadarColors.surface,
+        borderRadius: BorderRadius.circular(RadarRadius.card),
+        boxShadow: active ? RadarShadows.card : const [],
         border: Border.all(
           color: active
-              ? AppColors.success.withValues(alpha: 0.55)
-              : AppColors.border,
+              ? RadarColors.clinicalSuccess.withValues(alpha: 0.38)
+              : RadarColors.border,
           width: active ? 1.4 : 1,
         ),
       ),
@@ -1532,12 +1525,14 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: active ? AppColors.success : AppColors.surfaceAlt,
-              borderRadius: BorderRadius.circular(AppRadius.lg),
+              color: active
+                  ? RadarColors.clinicalSuccess
+                  : RadarColors.surfaceMuted,
+              borderRadius: BorderRadius.circular(RadarRadius.small),
             ),
             child: Icon(
               active ? Icons.check_rounded : Icons.person_rounded,
-              color: active ? AppColors.textOnDark : AppColors.primary,
+              color: active ? RadarColors.surface : RadarColors.primary,
             ),
           ),
           title: Text(
@@ -1545,8 +1540,8 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: const TextStyle(
-              fontWeight: FontWeight.w900,
-              color: AppColors.textPrimary,
+              fontWeight: FontWeight.w600,
+              color: RadarColors.textPrimary,
             ),
           ),
           subtitle: Text(
@@ -1556,8 +1551,10 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
-              color: active ? AppColors.successDark : AppColors.textSecondary,
-              fontWeight: FontWeight.w600,
+              color: active
+                  ? RadarColors.textPrimary
+                  : RadarColors.textSecondary,
+              fontWeight: FontWeight.w500,
             ),
           ),
           trailing: PopupMenuButton<String>(
@@ -1580,11 +1577,13 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
 
   Widget buildDeleteAllButton() {
     return Container(
-      padding: const EdgeInsets.all(AppSpacing.sm),
+      padding: const EdgeInsets.all(RadarSpacing.lg),
       decoration: BoxDecoration(
-        color: AppColors.danger.withValues(alpha: 0.06),
-        borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: AppColors.danger.withValues(alpha: 0.16)),
+        color: RadarColors.clinicalDanger.withValues(alpha: 0.04),
+        borderRadius: BorderRadius.circular(RadarRadius.card),
+        border: Border.all(
+          color: RadarColors.clinicalDanger.withValues(alpha: 0.14),
+        ),
       ),
       child: Align(
         alignment: Alignment.center,
@@ -1593,8 +1592,8 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
           icon: const Icon(Icons.delete_forever_outlined),
           label: const Text('Supprimer tous les patients locaux'),
           style: TextButton.styleFrom(
-            foregroundColor: AppColors.danger,
-            textStyle: const TextStyle(fontWeight: FontWeight.w900),
+            foregroundColor: RadarColors.clinicalDanger,
+            textStyle: RadarTextStyles.badge,
           ),
         ),
       ),
@@ -1607,16 +1606,16 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
     required String text,
   }) {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(RadarSpacing.lg),
       decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: AppColors.border),
+        color: RadarColors.surface,
+        borderRadius: BorderRadius.circular(RadarRadius.card),
+        border: Border.all(color: RadarColors.border),
       ),
       child: Row(
         children: [
-          Icon(icon, color: AppColors.textMuted, size: 30),
-          const SizedBox(width: AppSpacing.sm),
+          Icon(icon, color: RadarColors.textMuted, size: 30),
+          const SizedBox(width: RadarSpacing.md),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -1624,16 +1623,16 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
                 Text(
                   title,
                   style: const TextStyle(
-                    color: AppColors.textPrimary,
-                    fontWeight: FontWeight.w900,
+                    color: RadarColors.textPrimary,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   text,
                   style: const TextStyle(
-                    color: AppColors.textSecondary,
-                    fontWeight: FontWeight.w600,
+                    color: RadarColors.textSecondary,
+                    fontWeight: FontWeight.w400,
                     height: 1.3,
                   ),
                 ),
@@ -1660,9 +1659,9 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
       child: Container(
         padding: const EdgeInsets.fromLTRB(18, 8, 18, 16),
         decoration: BoxDecoration(
-          color: AppColors.surface.withValues(alpha: 0.96),
-          border: const Border(top: BorderSide(color: AppColors.border)),
-          boxShadow: AppShadows.card,
+          color: RadarColors.surface.withValues(alpha: 0.98),
+          border: const Border(top: BorderSide(color: RadarColors.border)),
+          boxShadow: RadarShadows.navigation,
         ),
         child: SizedBox(
           height: 52,
@@ -1674,14 +1673,37 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
               style: const TextStyle(fontWeight: FontWeight.w900),
             ),
             style: FilledButton.styleFrom(
-              backgroundColor: AppColors.primary,
+              backgroundColor: RadarColors.primary,
+              foregroundColor: RadarColors.surface,
+              minimumSize: const Size.fromHeight(52),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(AppRadius.lg),
+                borderRadius: BorderRadius.circular(RadarRadius.card),
               ),
             ),
           ),
         ),
       ),
+    );
+  }
+}
+
+class _PatientRadarHeader extends StatelessWidget {
+  const _PatientRadarHeader();
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text('Patient', style: RadarTextStyles.screenTitle),
+        const SizedBox(height: RadarSpacing.sm),
+        Text(
+          'Associer un patient à la consultation ou poursuivre anonymement.',
+          style: RadarTextStyles.secondary.copyWith(
+            color: RadarColors.textSecondary,
+          ),
+        ),
+      ],
     );
   }
 }
@@ -1717,12 +1739,12 @@ class _DiagnosisDocumentCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: hasDocument ? AppColors.surfaceSuccess : AppColors.surface,
-        borderRadius: BorderRadius.circular(AppRadius.lg),
+        color: hasDocument ? RadarColors.successSoft : RadarColors.surface,
+        borderRadius: BorderRadius.circular(RadarRadius.card),
         border: Border.all(
           color: hasDocument
-              ? AppColors.success.withValues(alpha: 0.30)
-              : AppColors.border,
+              ? RadarColors.clinicalSuccess.withValues(alpha: 0.22)
+              : RadarColors.border,
         ),
       ),
       child: Column(
@@ -1733,9 +1755,11 @@ class _DiagnosisDocumentCard extends StatelessWidget {
                 hasDocument
                     ? Icons.check_circle_rounded
                     : Icons.add_a_photo_outlined,
-                color: hasDocument ? AppColors.successDark : AppColors.primary,
+                color: hasDocument
+                    ? RadarColors.clinicalSuccess
+                    : RadarColors.primary,
               ),
-              const SizedBox(width: AppSpacing.sm),
+              const SizedBox(width: RadarSpacing.md),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -1744,11 +1768,8 @@ class _DiagnosisDocumentCard extends StatelessWidget {
                       label,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: AppTypography.caption.copyWith(
-                        color: hasDocument
-                            ? AppColors.successDark
-                            : AppColors.textPrimary,
-                        fontWeight: FontWeight.w900,
+                      style: RadarTextStyles.badge.copyWith(
+                        color: RadarColors.textPrimary,
                       ),
                     ),
                     const SizedBox(height: 3),
@@ -1756,9 +1777,8 @@ class _DiagnosisDocumentCard extends StatelessWidget {
                       hasDocument
                           ? 'Stocké localement${addedAt == null ? '' : ' · $addedAt'}'
                           : 'Photo ou galerie',
-                      style: AppTypography.caption.copyWith(
-                        color: AppColors.textSecondary,
-                        fontWeight: FontWeight.w600,
+                      style: RadarTextStyles.caption.copyWith(
+                        color: RadarColors.textSecondary,
                         height: 1.2,
                       ),
                     ),
@@ -1781,11 +1801,11 @@ class _DiagnosisDocumentCard extends StatelessWidget {
                   ),
                   label: Text(hasDocument ? 'Remplacer' : 'Ajouter'),
                   style: OutlinedButton.styleFrom(
-                    foregroundColor: AppColors.primary,
+                    foregroundColor: RadarColors.primary,
                     side: BorderSide(
-                      color: AppColors.primary.withValues(alpha: 0.24),
+                      color: RadarColors.primary.withValues(alpha: 0.24),
                     ),
-                    textStyle: const TextStyle(fontWeight: FontWeight.w900),
+                    textStyle: RadarTextStyles.badge,
                   ),
                 ),
               ),
@@ -1794,8 +1814,8 @@ class _DiagnosisDocumentCard extends StatelessWidget {
                 TextButton(
                   onPressed: onRemove,
                   style: TextButton.styleFrom(
-                    foregroundColor: AppColors.danger,
-                    textStyle: const TextStyle(fontWeight: FontWeight.w900),
+                    foregroundColor: RadarColors.clinicalDanger,
+                    textStyle: RadarTextStyles.badge,
                   ),
                   child: const Text('Supprimer'),
                 ),
@@ -1836,22 +1856,19 @@ class _SectionTitle extends StatelessWidget {
           width: 36,
           height: 36,
           decoration: BoxDecoration(
-            color: AppColors.surfaceAlt,
-            borderRadius: BorderRadius.circular(AppRadius.md),
+            color: RadarColors.surfaceMuted,
+            borderRadius: BorderRadius.circular(RadarRadius.small),
           ),
-          child: Icon(icon, color: AppColors.primary, size: 20),
+          child: Icon(icon, color: RadarColors.primary, size: 20),
         ),
-        const SizedBox(width: AppSpacing.sm),
+        const SizedBox(width: RadarSpacing.md),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 title,
-                style: AppTypography.subtitle.copyWith(
-                  color: AppColors.textPrimary,
-                  fontWeight: FontWeight.w900,
-                ),
+                style: RadarTextStyles.sectionTitle.copyWith(fontSize: 20),
               ),
             ],
           ),
