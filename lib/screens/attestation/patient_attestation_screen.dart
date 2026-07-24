@@ -15,6 +15,7 @@ import '../../services/patient_attestation_pdf_service.dart';
 import '../../services/practitioner_profile_service.dart';
 import '../../services/rgpd_local_service.dart';
 import '../../features/radar/presentation/theme/radar_colors.dart';
+import '../../features/radar/presentation/theme/radar_layout.dart';
 import '../../features/radar/presentation/theme/radar_radius.dart';
 import '../../features/radar/presentation/theme/radar_shadows.dart';
 import '../../features/radar/presentation/theme/radar_spacing.dart';
@@ -312,7 +313,9 @@ class _PatientAttestationScreenState extends State<PatientAttestationScreen> {
         body: SafeArea(
           child: Center(
             child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 760),
+              constraints: const BoxConstraints(
+                maxWidth: RadarLayout.documentFormWidth,
+              ),
               child: loading
                   ? const Center(child: CircularProgressIndicator())
                   : ListView(

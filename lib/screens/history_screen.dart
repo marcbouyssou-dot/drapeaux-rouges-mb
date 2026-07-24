@@ -12,11 +12,13 @@ import '../services/medical_letter_history_service.dart';
 import '../services/offline_sync_service.dart';
 import '../services/prescription_service.dart';
 import '../features/radar/presentation/theme/radar_colors.dart';
+import '../features/radar/presentation/theme/radar_layout.dart';
 import '../features/radar/presentation/theme/radar_radius.dart';
 import '../features/radar/presentation/theme/radar_shadows.dart';
 import '../features/radar/presentation/theme/radar_spacing.dart';
 import '../features/radar/presentation/theme/radar_text_styles.dart';
 import '../features/radar/presentation/theme/radar_theme.dart';
+import '../features/radar/presentation/widgets/radar_page_header.dart';
 import 'evaluation/evaluation_detail_screen.dart';
 import 'attestation/attestation_history_detail_screen.dart';
 import 'medical_letter/medical_letter_history_detail_screen.dart';
@@ -354,7 +356,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
             onRefresh: loadHistory,
             child: Center(
               child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 840),
+                constraints: const BoxConstraints(
+                  maxWidth: RadarLayout.historyWidth,
+                ),
                 child: ListView(
                   padding: const EdgeInsets.fromLTRB(
                     RadarSpacing.xl,
@@ -363,14 +367,10 @@ class _HistoryScreenState extends State<HistoryScreen> {
                     112,
                   ),
                   children: [
-                    const Text(
-                      'Historique',
-                      style: RadarTextStyles.screenTitle,
-                    ),
-                    const SizedBox(height: RadarSpacing.sm),
-                    const Text(
-                      'Retrouver les évaluations et documents générés.',
-                      style: RadarTextStyles.secondary,
+                    const RadarPageHeader(
+                      title: 'Historique',
+                      subtitle:
+                          'Retrouver les évaluations et documents générés.',
                     ),
                     const SizedBox(height: RadarSpacing.xxl),
                     buildStatsRow(),

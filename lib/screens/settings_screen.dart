@@ -11,11 +11,13 @@ import '../services/practitioner_profile_service.dart';
 import '../services/rgpd_local_service.dart';
 import '../services/offline_sync_service.dart';
 import '../features/radar/presentation/theme/radar_colors.dart';
+import '../features/radar/presentation/theme/radar_layout.dart';
 import '../features/radar/presentation/theme/radar_radius.dart';
 import '../features/radar/presentation/theme/radar_shadows.dart';
 import '../features/radar/presentation/theme/radar_spacing.dart';
 import '../features/radar/presentation/theme/radar_text_styles.dart';
 import '../features/radar/presentation/theme/radar_theme.dart';
+import '../features/radar/presentation/widgets/radar_page_header.dart';
 import 'access_direct_settings_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -517,7 +519,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
         body: SafeArea(
           child: Center(
             child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 560),
+              constraints: const BoxConstraints(
+                maxWidth: RadarLayout.workflowWidth,
+              ),
               child: ListView(
                 padding: const EdgeInsets.fromLTRB(
                   RadarSpacing.xl,
@@ -526,11 +530,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   112,
                 ),
                 children: [
-                  const Text('Réglages', style: RadarTextStyles.screenTitle),
-                  const SizedBox(height: RadarSpacing.sm),
-                  const Text(
-                    'Configurer le profil, la confidentialité et les exports.',
-                    style: RadarTextStyles.secondary,
+                  const RadarPageHeader(
+                    title: 'Réglages',
+                    subtitle:
+                        'Configurer le profil, la confidentialité et les exports.',
                   ),
                   const SizedBox(height: RadarSpacing.xxl),
                   buildSectionLabel('PROFIL MK'),

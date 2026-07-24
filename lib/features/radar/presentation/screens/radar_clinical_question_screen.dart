@@ -5,6 +5,7 @@ import '../../application/radar_clinical_region.dart';
 import '../../application/radar_clinical_session_controller.dart';
 import '../../application/radar_clinical_view_state.dart';
 import '../theme/radar_colors.dart';
+import '../theme/radar_layout.dart';
 import '../theme/radar_radius.dart';
 import '../theme/radar_shadows.dart';
 import '../theme/radar_spacing.dart';
@@ -96,7 +97,9 @@ class _RadarClinicalQuestionScreenState
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 440),
+            constraints: const BoxConstraints(
+              maxWidth: RadarLayout.clinicalWidth,
+            ),
             child: ListView(
               padding: const EdgeInsets.fromLTRB(
                 RadarSpacing.xl,

@@ -7,6 +7,7 @@ import '../../../../screens/patient_consent_screen.dart';
 import '../../../../screens/prescription/prescription_type_screen.dart';
 import '../../../../screens/settings_screen.dart';
 import '../theme/radar_colors.dart';
+import '../theme/radar_layout.dart';
 import '../theme/radar_radius.dart';
 import '../theme/radar_spacing.dart';
 import '../theme/radar_text_styles.dart';
@@ -85,7 +86,9 @@ class _RadarCockpitScreenState extends State<RadarCockpitScreen> {
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 440),
+            constraints: const BoxConstraints(
+              maxWidth: RadarLayout.clinicalWidth,
+            ),
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: RadarSpacing.xl),
               child: Column(

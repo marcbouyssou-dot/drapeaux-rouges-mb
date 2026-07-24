@@ -7,6 +7,7 @@ import '../../application/radar_clinical_view_state.dart';
 import '../../../../screens/bdk/bdk_type_screen.dart';
 import '../../../../services/bdk_session_service.dart';
 import '../theme/radar_colors.dart';
+import '../theme/radar_layout.dart';
 import '../theme/radar_spacing.dart';
 import '../theme/radar_text_styles.dart';
 import '../widgets/radar_patient_context.dart';
@@ -58,7 +59,9 @@ class RadarClinicalSummaryScreen extends StatelessWidget {
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 440),
+            constraints: const BoxConstraints(
+              maxWidth: RadarLayout.clinicalWidth,
+            ),
             child: ListView(
               padding: const EdgeInsets.fromLTRB(
                 RadarSpacing.xl,

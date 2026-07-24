@@ -4,6 +4,7 @@ import '../../application/radar_clinical_hard_stop_view_state.dart';
 import '../../application/radar_clinical_region.dart';
 import '../../application/radar_clinical_view_state.dart';
 import '../theme/radar_colors.dart';
+import '../theme/radar_layout.dart';
 import '../theme/radar_radius.dart';
 import '../theme/radar_shadows.dart';
 import '../theme/radar_spacing.dart';
@@ -29,7 +30,9 @@ class RadarClinicalHardStopScreen extends StatelessWidget {
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 440),
+            constraints: const BoxConstraints(
+              maxWidth: RadarLayout.clinicalWidth,
+            ),
             child: ListView(
               padding: const EdgeInsets.fromLTRB(
                 RadarSpacing.xl,

@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../../features/radar/presentation/theme/radar_colors.dart';
+import '../../features/radar/presentation/theme/radar_layout.dart';
 import '../../features/radar/presentation/theme/radar_radius.dart';
 import '../../features/radar/presentation/theme/radar_shadows.dart';
 import '../../features/radar/presentation/theme/radar_spacing.dart';
@@ -62,7 +63,9 @@ class _AttestationHistoryScreenState extends State<AttestationHistoryScreen> {
             onRefresh: loadHistory,
             child: Center(
               child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 560),
+                constraints: const BoxConstraints(
+                  maxWidth: RadarLayout.workflowWidth,
+                ),
                 child: ListView(
                   padding: const EdgeInsets.fromLTRB(
                     RadarSpacing.xl,
