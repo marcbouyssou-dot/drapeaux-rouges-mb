@@ -2,11 +2,13 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../../features/radar/presentation/theme/radar_colors.dart';
+import '../../features/radar/presentation/theme/radar_layout.dart';
 import '../../features/radar/presentation/theme/radar_radius.dart';
 import '../../features/radar/presentation/theme/radar_shadows.dart';
 import '../../features/radar/presentation/theme/radar_spacing.dart';
 import '../../features/radar/presentation/theme/radar_text_styles.dart';
 import '../../features/radar/presentation/theme/radar_theme.dart';
+import '../../features/radar/presentation/widgets/radar_page_header.dart';
 import '../attestation/attestation_type_screen.dart';
 import '../medical_letter/medical_letter_type_screen.dart';
 import '../prescription_screen.dart';
@@ -48,7 +50,9 @@ class PrescriptionTypeScreen extends StatelessWidget {
         body: SafeArea(
           child: Center(
             child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 560),
+              constraints: const BoxConstraints(
+                maxWidth: RadarLayout.workflowWidth,
+              ),
               child: ListView(
                 padding: const EdgeInsets.fromLTRB(
                   RadarSpacing.xl,
@@ -57,29 +61,11 @@ class PrescriptionTypeScreen extends StatelessWidget {
                   RadarSpacing.xxl,
                 ),
                 children: [
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: IconButton.filledTonal(
-                      tooltip: 'Retour',
-                      onPressed: () => Navigator.pop(context),
-                      icon: const Icon(Icons.arrow_back_ios_new_rounded),
-                      style: IconButton.styleFrom(
-                        backgroundColor: RadarColors.surface,
-                        foregroundColor: RadarColors.primary,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(
-                            RadarRadius.small,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: RadarSpacing.xl),
-                  const Text('Documents', style: RadarTextStyles.screenTitle),
-                  const SizedBox(height: RadarSpacing.sm),
-                  const Text(
-                    'Créer un document clinique et préparer un export PDF.',
-                    style: RadarTextStyles.secondary,
+                  RadarPageHeader(
+                    title: 'Documents',
+                    subtitle:
+                        'Créer un document clinique et préparer un export PDF.',
+                    onBack: () => Navigator.pop(context),
                   ),
                   const SizedBox(height: RadarSpacing.xxl),
                   LayoutBuilder(

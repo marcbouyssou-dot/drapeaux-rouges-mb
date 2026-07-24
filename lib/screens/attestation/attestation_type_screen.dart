@@ -2,11 +2,13 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../../features/radar/presentation/theme/radar_colors.dart';
+import '../../features/radar/presentation/theme/radar_layout.dart';
 import '../../features/radar/presentation/theme/radar_radius.dart';
 import '../../features/radar/presentation/theme/radar_shadows.dart';
 import '../../features/radar/presentation/theme/radar_spacing.dart';
 import '../../features/radar/presentation/theme/radar_text_styles.dart';
 import '../../features/radar/presentation/theme/radar_theme.dart';
+import '../../features/radar/presentation/widgets/radar_page_header.dart';
 import '../../models/attestation/attestation_template.dart';
 import 'attestation_history_screen.dart';
 import 'patient_attestation_screen.dart';
@@ -39,7 +41,9 @@ class AttestationTypeScreen extends StatelessWidget {
         body: SafeArea(
           child: Center(
             child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 560),
+              constraints: const BoxConstraints(
+                maxWidth: RadarLayout.workflowWidth,
+              ),
               child: ListView(
                 padding: const EdgeInsets.fromLTRB(
                   RadarSpacing.xl,
@@ -48,15 +52,19 @@ class AttestationTypeScreen extends StatelessWidget {
                   RadarSpacing.xxl,
                 ),
                 children: [
-                  Row(
-                    children: [
-                      IconButton.filledTonal(
-                        tooltip: 'Retour',
-                        onPressed: () => Navigator.pop(context),
-                        icon: const Icon(Icons.arrow_back_ios_new_rounded),
-                        style: IconButton.styleFrom(
-                          backgroundColor: RadarColors.surface,
+                  RadarPageHeader(
+                    title: 'Attestations',
+                    subtitle:
+                        'Préparer une attestation patient et générer le PDF.',
+                    onBack: () => Navigator.pop(context),
+                    trailing: IntrinsicWidth(
+                      child: OutlinedButton.icon(
+                        onPressed: () => openHistory(context),
+                        icon: const Icon(Icons.history_edu_outlined, size: 18),
+                        label: const Text('Historique'),
+                        style: OutlinedButton.styleFrom(
                           foregroundColor: RadarColors.primary,
+                          side: const BorderSide(color: RadarColors.border),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(
                               RadarRadius.small,
@@ -64,37 +72,7 @@ class AttestationTypeScreen extends StatelessWidget {
                           ),
                         ),
                       ),
-                      const Spacer(),
-                      IntrinsicWidth(
-                        child: OutlinedButton.icon(
-                          onPressed: () => openHistory(context),
-                          icon: const Icon(
-                            Icons.history_edu_outlined,
-                            size: 18,
-                          ),
-                          label: const Text('Historique'),
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: RadarColors.primary,
-                            side: const BorderSide(color: RadarColors.border),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(
-                                RadarRadius.small,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: RadarSpacing.xl),
-                  const Text(
-                    'Attestations',
-                    style: RadarTextStyles.screenTitle,
-                  ),
-                  const SizedBox(height: RadarSpacing.sm),
-                  const Text(
-                    'Préparer une attestation patient et générer le PDF.',
-                    style: RadarTextStyles.secondary,
+                    ),
                   ),
                   const SizedBox(height: RadarSpacing.xxl),
                   ...attestationTemplates.map(

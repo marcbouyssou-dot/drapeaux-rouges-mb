@@ -2,11 +2,13 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../../features/radar/presentation/theme/radar_colors.dart';
+import '../../features/radar/presentation/theme/radar_layout.dart';
 import '../../features/radar/presentation/theme/radar_radius.dart';
 import '../../features/radar/presentation/theme/radar_shadows.dart';
 import '../../features/radar/presentation/theme/radar_spacing.dart';
 import '../../features/radar/presentation/theme/radar_text_styles.dart';
 import '../../features/radar/presentation/theme/radar_theme.dart';
+import '../../features/radar/presentation/widgets/radar_page_header.dart';
 import 'bdk_detail_screen.dart';
 
 class BDKTypeScreen extends StatelessWidget {
@@ -21,7 +23,9 @@ class BDKTypeScreen extends StatelessWidget {
         body: SafeArea(
           child: Center(
             child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 520),
+              constraints: const BoxConstraints(
+                maxWidth: RadarLayout.compactWorkflowWidth,
+              ),
               child: ListView(
                 padding: const EdgeInsets.fromLTRB(
                   RadarSpacing.xl,
@@ -30,29 +34,11 @@ class BDKTypeScreen extends StatelessWidget {
                   RadarSpacing.xxl,
                 ),
                 children: [
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: IconButton.filledTonal(
-                      tooltip: 'Retour',
-                      onPressed: () => Navigator.pop(context),
-                      icon: const Icon(Icons.arrow_back_ios_new_rounded),
-                      style: IconButton.styleFrom(
-                        backgroundColor: RadarColors.surface,
-                        foregroundColor: RadarColors.primary,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(
-                            RadarRadius.small,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: RadarSpacing.xl),
-                  const Text('Bilan', style: RadarTextStyles.screenTitle),
-                  const SizedBox(height: RadarSpacing.sm),
-                  const Text(
-                    'Créer ou compléter un bilan diagnostique kinésithérapique.',
-                    style: RadarTextStyles.secondary,
+                  RadarPageHeader(
+                    title: 'Bilan',
+                    subtitle:
+                        'Créer ou compléter un bilan diagnostique kinésithérapique.',
+                    onBack: () => Navigator.pop(context),
                   ),
                   const SizedBox(height: RadarSpacing.xxl),
                   ...bdkTypeOptions.map(

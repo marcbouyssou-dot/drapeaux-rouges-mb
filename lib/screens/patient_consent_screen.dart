@@ -8,6 +8,7 @@ import 'package:signature/signature.dart';
 import '../models/access_direct_model.dart';
 import '../models/patient_local.dart';
 import '../features/radar/presentation/theme/radar_colors.dart';
+import '../features/radar/presentation/theme/radar_layout.dart';
 import '../features/radar/presentation/theme/radar_radius.dart';
 import '../features/radar/presentation/theme/radar_shadows.dart';
 import '../features/radar/presentation/theme/radar_spacing.dart';
@@ -1112,7 +1113,9 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
               child: Center(
                 child: ConstrainedBox(
                   constraints: BoxConstraints(
-                    maxWidth: responsive.isDesktop ? 520 : 500,
+                    maxWidth: responsive.isDesktop
+                        ? RadarLayout.patientDesktopWidth
+                        : RadarLayout.patientWidth,
                   ),
                   child: ListView(
                     physics: isSigning
