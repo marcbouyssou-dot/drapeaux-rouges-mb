@@ -45,7 +45,7 @@ void main() {
           scenario.expectedCanReassure,
           reason: scenario.id,
         );
-      }, skip: scenario.skipReason);
+      });
     }
   });
 }
@@ -466,27 +466,23 @@ class _V7ValidationScenario {
   final String id;
   final String title;
   final Set<String> positiveQuestionIds;
-  final Set<String> negativeQuestionIds;
   final String? expectedScriptId;
   final String? expectedDominantHypothesisId;
   final ClinicalDecisionLevel expectedDecision;
   final ClinicalHardStopStateV5 expectedHardStopState;
   final bool expectedCanReassure;
   final String clinicalComment;
-  final String? skipReason;
 
   const _V7ValidationScenario({
     required this.id,
     required this.title,
     required this.positiveQuestionIds,
-    this.negativeQuestionIds = const {},
     required this.expectedScriptId,
     required this.expectedDominantHypothesisId,
     required this.expectedDecision,
     required this.expectedHardStopState,
     required this.expectedCanReassure,
     required this.clinicalComment,
-    this.skipReason,
   });
 
   String get label => '$id $title';

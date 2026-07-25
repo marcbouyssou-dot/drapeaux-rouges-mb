@@ -177,8 +177,8 @@ class _AuthGateState extends State<AuthGate> {
   }
 
   Widget _buildWithDebugBanner(_AuthGateDecision decision, Widget child) {
-  return child;
-}
+    return child;
+  }
 }
 
 enum _AuthGateDecisionType {
@@ -279,44 +279,6 @@ class _AuthGateDecision {
       case _AuthGateDecisionType.diagnostic:
         return 'diagnostic';
     }
-  }
-}
-
-class _AuthGateDebugBanner extends StatelessWidget {
-  const _AuthGateDebugBanner({required this.decision});
-
-  final _AuthGateDecision decision;
-
-  @override
-  Widget build(BuildContext context) {
-    final topPadding = MediaQuery.paddingOf(context).top;
-    final text = [
-      appBuildMarker,
-      'online=${decision.isOnline?.toString() ?? 'unknown'}',
-      'route=${decision.routeLabel}',
-      'validOffline=${decision.hasValidOfflineSession?.toString() ?? 'unknown'}',
-      'expired=${decision.sessionExpired?.toString() ?? 'unknown'}',
-    ].join(' · ');
-
-    return Material(
-      color: const Color(0xFFE11D48).withValues(alpha: 0.92),
-      child: Padding(
-        padding: EdgeInsets.fromLTRB(8, topPadding + 4, 8, 4),
-        child: Text(
-          text,
-          textAlign: TextAlign.center,
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 10.5,
-            height: 1.2,
-            fontWeight: FontWeight.w900,
-            decoration: TextDecoration.none,
-          ),
-        ),
-      ),
-    );
   }
 }
 
