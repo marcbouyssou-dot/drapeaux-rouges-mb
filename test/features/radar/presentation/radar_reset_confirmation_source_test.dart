@@ -37,7 +37,7 @@ void main() {
     expect(source, contains("title: 'Supprimer le justificatif ?'"));
     expect(
       source,
-      contains('AccessDirectLocalService.saveSettings(currentModel)'),
+      contains('AccessDirectLocalService.saveSettings(updatedModel)'),
     );
     expect(source, contains('showRadarDestructiveConfirmationDialog'));
   });

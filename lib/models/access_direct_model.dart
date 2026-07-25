@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 class AccessDirectModel {
   final bool isCoordinatedExercise;
   final bool isExperimentalDepartment;
@@ -28,9 +30,16 @@ class AccessDirectModel {
   }
 
   bool get hasDiagnosisProof {
-    return hasMedicalDiagnosis &&
-        ((diagnosisDocumentBase64?.trim().isNotEmpty ?? false) ||
-            (diagnosisDocumentPath?.trim().isNotEmpty ?? false));
+    if (!hasMedicalDiagnosis) return false;
+
+    final encodedDocument = diagnosisDocumentBase64?.trim() ?? '';
+    if (encodedDocument.isEmpty) return false;
+
+    try {
+      return base64Decode(encodedDocument).isNotEmpty;
+    } on FormatException {
+      return false;
+    }
   }
 
   int? get maxSessions {

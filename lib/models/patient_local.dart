@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 class PatientMedicalDocument {
   final String type;
   final String? documentPath;
@@ -14,8 +16,14 @@ class PatientMedicalDocument {
   });
 
   bool get hasStoredDocument {
-    return (documentBase64?.trim().isNotEmpty ?? false) ||
-        (documentPath?.trim().isNotEmpty ?? false);
+    final encodedDocument = documentBase64?.trim() ?? '';
+    if (encodedDocument.isEmpty) return false;
+
+    try {
+      return base64Decode(encodedDocument).isNotEmpty;
+    } on FormatException {
+      return false;
+    }
   }
 
   Map<String, dynamic> toJson() {

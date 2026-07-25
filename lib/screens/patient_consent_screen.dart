@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:signature/signature.dart';
 
+import '../core/utils/selected_document_data.dart';
 import '../models/access_direct_model.dart';
 import '../models/patient_local.dart';
 import '../features/radar/presentation/theme/radar_colors.dart';
@@ -185,35 +186,54 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
 
     if (document == null) return;
 
-    final bytes = await document.readAsBytes();
-    final addedAt = DateTime.now().toIso8601String();
-    final existing = await AccessDirectLocalService.loadSettings();
+    SelectedDocumentData? selected;
 
-    setState(() {
-      hasMedicalDiagnosis = true;
-      diagnosisDocumentPath = document.path;
-      diagnosisDocumentName = document.name;
-      diagnosisDocumentBase64 = base64Encode(bytes);
-      diagnosisDocumentAddedAt = addedAt;
-    });
-
-    await AccessDirectLocalService.saveSettings(
-      AccessDirectModel(
+    try {
+      selected = await SelectedDocumentData.read(
+        file: document,
+        source: source,
+      );
+      final addedAt = DateTime.now().toIso8601String();
+      final existing = await AccessDirectLocalService.loadSettings();
+      final updatedModel = AccessDirectModel(
         isCoordinatedExercise: existing.isCoordinatedExercise,
         isExperimentalDepartment: existing.isExperimentalDepartment,
         hasArsDeclaration: existing.hasArsDeclaration,
         hasMedicalDiagnosis: true,
-        diagnosisDocumentPath: diagnosisDocumentPath,
-        diagnosisDocumentName: diagnosisDocumentName,
-        diagnosisDocumentBase64: diagnosisDocumentBase64,
-        diagnosisDocumentAddedAt: diagnosisDocumentAddedAt,
+        diagnosisDocumentPath: null,
+        diagnosisDocumentName: selected.filename,
+        diagnosisDocumentBase64: selected.base64Data,
+        diagnosisDocumentAddedAt: addedAt,
         sessionsDone: existing.sessionsDone,
-      ),
-    );
+      );
 
-    if (!mounted) return;
+      await AccessDirectLocalService.saveSettings(updatedModel);
 
-    showMessage('Justificatif médical ajouté.');
+      if (!mounted) return;
+
+      setState(() {
+        hasMedicalDiagnosis = true;
+        diagnosisDocumentPath = null;
+        diagnosisDocumentName = selected!.filename;
+        diagnosisDocumentBase64 = selected.base64Data;
+        diagnosisDocumentAddedAt = addedAt;
+      });
+
+      showMessage('Justificatif médical ajouté.');
+    } catch (error) {
+      showMessage('Impossible d’ajouter le justificatif : $error');
+    } finally {
+      if (selected != null) {
+        try {
+          await selected.deleteTemporaryCameraFile();
+        } catch (cleanupError, stackTrace) {
+          debugPrint(
+            'Temporary access direct file cleanup failed: '
+            '$cleanupError\n$stackTrace',
+          );
+        }
+      }
+    }
   }
 
   Future<void> removeDiagnosisDocument() async {
@@ -229,28 +249,26 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
 
     final existing = await AccessDirectLocalService.loadSettings();
 
+    final updatedModel = AccessDirectModel(
+      isCoordinatedExercise: existing.isCoordinatedExercise,
+      isExperimentalDepartment: existing.isExperimentalDepartment,
+      hasArsDeclaration: existing.hasArsDeclaration,
+      hasMedicalDiagnosis: hasMedicalDiagnosis,
+      diagnosisDocumentPath: diagnosisDocumentPath,
+      diagnosisDocumentName: null,
+      diagnosisDocumentBase64: null,
+      diagnosisDocumentAddedAt: null,
+      sessionsDone: existing.sessionsDone,
+    );
+    await AccessDirectLocalService.saveSettings(updatedModel);
+
+    if (!mounted) return;
+
     setState(() {
-      diagnosisDocumentPath = null;
       diagnosisDocumentName = null;
       diagnosisDocumentBase64 = null;
       diagnosisDocumentAddedAt = null;
     });
-
-    await AccessDirectLocalService.saveSettings(
-      AccessDirectModel(
-        isCoordinatedExercise: existing.isCoordinatedExercise,
-        isExperimentalDepartment: existing.isExperimentalDepartment,
-        hasArsDeclaration: existing.hasArsDeclaration,
-        hasMedicalDiagnosis: hasMedicalDiagnosis,
-        diagnosisDocumentPath: null,
-        diagnosisDocumentName: null,
-        diagnosisDocumentBase64: null,
-        diagnosisDocumentAddedAt: null,
-        sessionsDone: existing.sessionsDone,
-      ),
-    );
-
-    if (!mounted) return;
 
     showMessage('Justificatif médical supprimé.');
   }
@@ -306,24 +324,46 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
 
     if (document == null) return;
 
-    final bytes = await document.readAsBytes();
-    final nextDocuments = List<PatientMedicalDocument>.from(medicalDocuments)
-      ..removeWhere((item) => item.type == type)
-      ..add(
-        PatientMedicalDocument(
-          type: type,
-          documentPath: document.path,
-          documentName: document.name,
-          documentBase64: base64Encode(bytes),
-          documentAddedAt: DateTime.now().toIso8601String(),
-        ),
+    SelectedDocumentData? selected;
+
+    try {
+      selected = await SelectedDocumentData.read(
+        file: document,
+        source: source,
       );
+      final nextDocuments = List<PatientMedicalDocument>.from(medicalDocuments)
+        ..removeWhere((item) => item.type == type)
+        ..add(
+          PatientMedicalDocument(
+            type: type,
+            documentPath: null,
+            documentName: selected.filename,
+            documentBase64: selected.base64Data,
+            documentAddedAt: DateTime.now().toIso8601String(),
+          ),
+        );
 
-    setState(() {
-      medicalDocuments = nextDocuments;
-    });
+      if (!mounted) return;
 
-    showMessage('$type ajouté.');
+      setState(() {
+        medicalDocuments = nextDocuments;
+      });
+
+      showMessage('$type ajouté.');
+    } catch (error) {
+      showMessage('Impossible d’ajouter le document : $error');
+    } finally {
+      if (selected != null) {
+        try {
+          await selected.deleteTemporaryCameraFile();
+        } catch (cleanupError, stackTrace) {
+          debugPrint(
+            'Temporary patient document cleanup failed: '
+            '$cleanupError\n$stackTrace',
+          );
+        }
+      }
+    }
   }
 
   void removePatientMedicalDocument(String type) {
@@ -1251,7 +1291,6 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
             Padding(
               padding: const EdgeInsets.all(RadarSpacing.md),
               child: _DiagnosisDocumentCard(
-                documentPath: diagnosisDocumentPath,
                 documentName: diagnosisDocumentName,
                 documentAddedAt: diagnosisDocumentAddedAt,
                 hasStoredDocument:
@@ -1690,7 +1729,6 @@ class _PatientRadarHeader extends StatelessWidget {
 
 class _DiagnosisDocumentCard extends StatelessWidget {
   const _DiagnosisDocumentCard({
-    required this.documentPath,
     required this.documentName,
     required this.documentAddedAt,
     required this.hasStoredDocument,
@@ -1698,7 +1736,6 @@ class _DiagnosisDocumentCard extends StatelessWidget {
     required this.onRemove,
   });
 
-  final String? documentPath;
   final String? documentName;
   final String? documentAddedAt;
   final bool hasStoredDocument;
@@ -1707,8 +1744,7 @@ class _DiagnosisDocumentCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final hasDocument =
-        hasStoredDocument || (documentPath?.trim().isNotEmpty ?? false);
+    final hasDocument = hasStoredDocument;
     final label = hasDocument
         ? (documentName?.trim().isNotEmpty ?? false)
               ? documentName!.trim()

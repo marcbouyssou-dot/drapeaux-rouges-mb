@@ -1,8 +1,7 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../core/utils/selected_document_data.dart';
 import '../models/access_direct_model.dart';
 import '../services/access_direct_local_service.dart';
 import '../services/access_direct_service.dart';
@@ -131,23 +130,59 @@ class _AccessDirectSettingsScreenState
 
     if (document == null) return;
 
-    final bytes = await document.readAsBytes();
-    final updatedAt = DateTime.now().toIso8601String();
+    SelectedDocumentData? selected;
 
-    setState(() {
-      diagnosisDocumentPath = document.path;
-      diagnosisDocumentName = document.name;
-      diagnosisDocumentBase64 = base64Encode(bytes);
-      diagnosisDocumentAddedAt = updatedAt;
-    });
+    try {
+      selected = await SelectedDocumentData.read(
+        file: document,
+        source: source,
+      );
+      final updatedAt = DateTime.now().toIso8601String();
+      final updatedModel = AccessDirectModel(
+        isCoordinatedExercise: isCoordinatedExercise,
+        isExperimentalDepartment: isExperimentalDepartment,
+        hasArsDeclaration: hasArsDeclaration,
+        hasMedicalDiagnosis: hasMedicalDiagnosis,
+        diagnosisDocumentPath: null,
+        diagnosisDocumentName: selected.filename,
+        diagnosisDocumentBase64: selected.base64Data,
+        diagnosisDocumentAddedAt: updatedAt,
+        sessionsDone: sessionsDone,
+      );
 
-    await AccessDirectLocalService.saveSettings(currentModel);
+      await AccessDirectLocalService.saveSettings(updatedModel);
 
-    if (!mounted) return;
+      if (!mounted) return;
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Justificatif médical ajouté')),
-    );
+      setState(() {
+        diagnosisDocumentPath = null;
+        diagnosisDocumentName = selected!.filename;
+        diagnosisDocumentBase64 = selected.base64Data;
+        diagnosisDocumentAddedAt = updatedAt;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Justificatif médical ajouté')),
+      );
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Impossible d’ajouter le justificatif : $error'),
+        ),
+      );
+    } finally {
+      if (selected != null) {
+        try {
+          await selected.deleteTemporaryCameraFile();
+        } catch (cleanupError, stackTrace) {
+          debugPrint(
+            'Temporary access direct file cleanup failed: '
+            '$cleanupError\n$stackTrace',
+          );
+        }
+      }
+    }
   }
 
   Future<void> removeDocument() async {
@@ -161,16 +196,26 @@ class _AccessDirectSettingsScreenState
 
     if (!confirm || !mounted) return;
 
+    final updatedModel = AccessDirectModel(
+      isCoordinatedExercise: isCoordinatedExercise,
+      isExperimentalDepartment: isExperimentalDepartment,
+      hasArsDeclaration: hasArsDeclaration,
+      hasMedicalDiagnosis: hasMedicalDiagnosis,
+      diagnosisDocumentPath: diagnosisDocumentPath,
+      diagnosisDocumentName: null,
+      diagnosisDocumentBase64: null,
+      diagnosisDocumentAddedAt: null,
+      sessionsDone: sessionsDone,
+    );
+    await AccessDirectLocalService.saveSettings(updatedModel);
+
+    if (!mounted) return;
+
     setState(() {
-      diagnosisDocumentPath = null;
       diagnosisDocumentName = null;
       diagnosisDocumentBase64 = null;
       diagnosisDocumentAddedAt = null;
     });
-
-    await AccessDirectLocalService.saveSettings(currentModel);
-
-    if (!mounted) return;
 
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Justificatif médical supprimé')),
@@ -246,7 +291,6 @@ class _AccessDirectSettingsScreenState
                   setState(() {
                     hasMedicalDiagnosis = value;
                     if (!value) {
-                      diagnosisDocumentPath = null;
                       diagnosisDocumentName = null;
                       diagnosisDocumentBase64 = null;
                       diagnosisDocumentAddedAt = null;
@@ -257,7 +301,6 @@ class _AccessDirectSettingsScreenState
               if (hasMedicalDiagnosis) ...[
                 const SizedBox(height: RadarSpacing.sm),
                 _DocumentCard(
-                  documentPath: diagnosisDocumentPath,
                   documentName: diagnosisDocumentName,
                   documentAddedAt: diagnosisDocumentAddedAt,
                   hasStoredDocument:
@@ -502,7 +545,6 @@ class _SwitchTile extends StatelessWidget {
 }
 
 class _DocumentCard extends StatelessWidget {
-  final String? documentPath;
   final String? documentName;
   final String? documentAddedAt;
   final bool hasStoredDocument;
@@ -510,7 +552,6 @@ class _DocumentCard extends StatelessWidget {
   final VoidCallback onRemove;
 
   const _DocumentCard({
-    required this.documentPath,
     required this.documentName,
     required this.documentAddedAt,
     required this.hasStoredDocument,
@@ -520,8 +561,7 @@ class _DocumentCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final hasDocument =
-        hasStoredDocument || (documentPath?.trim().isNotEmpty ?? false);
+    final hasDocument = hasStoredDocument;
     final label = hasDocument
         ? (documentName?.trim().isNotEmpty ?? false)
               ? documentName!.trim()

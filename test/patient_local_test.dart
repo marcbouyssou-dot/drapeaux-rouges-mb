@@ -31,7 +31,7 @@ void main() {
         PatientMedicalDocument(
           type: 'Prescription médicale',
           documentName: 'prescription.png',
-          documentBase64: 'base64',
+          documentBase64: 'AQID',
           documentAddedAt: '2026-01-01T10:00:00.000',
         ),
       ],

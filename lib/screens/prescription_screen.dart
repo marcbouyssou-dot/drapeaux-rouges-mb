@@ -1,9 +1,9 @@
-import 'dart:convert';
-import 'dart:io';
+import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../core/utils/selected_document_data.dart';
 import '../data/prescription_templates_data.dart';
 import '../models/patient_local.dart';
 import '../models/practitioner_profile.dart';
@@ -51,7 +51,7 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
   final conseilsSurveillanceController = TextEditingController();
 
   final ImagePicker picker = ImagePicker();
-  File? justificatifImage;
+  SelectedDocumentData? _selectedDocument;
 
   PatientLocal? currentPatient;
   PractitionerProfile practitioner = PractitionerProfile.empty();
@@ -65,6 +65,13 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
 
   @override
   void dispose() {
+    final pendingDocument = _selectedDocument;
+    _selectedDocument = null;
+
+    if (pendingDocument != null) {
+      unawaited(_cleanupTemporaryDocument(pendingDocument));
+    }
+
     pathologieController.dispose();
     materielController.dispose();
     examensController.dispose();
@@ -90,11 +97,32 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
 
     if (image == null) return;
 
-    setState(() {
-      justificatifImage = File(image.path);
-    });
+    SelectedDocumentData? nextDocument;
 
-    showMessage('Justificatif ajouté');
+    try {
+      nextDocument = await SelectedDocumentData.read(
+        file: image,
+        source: ImageSource.camera,
+      );
+      final previousDocument = _selectedDocument;
+      await previousDocument?.deleteTemporaryCameraFile();
+
+      if (!mounted) {
+        await nextDocument.deleteTemporaryCameraFile();
+        return;
+      }
+
+      setState(() {
+        _selectedDocument = nextDocument;
+      });
+
+      showMessage('Justificatif ajouté');
+    } catch (error) {
+      if (nextDocument != null) {
+        await _cleanupTemporaryDocument(nextDocument);
+      }
+      showMessage('Impossible de lire le justificatif : $error');
+    }
   }
 
   Future<void> loadInitialData() async {
@@ -136,10 +164,38 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
 
     setState(() {
       selectedPrescriptionType = widget.initialPrescriptionType;
-      justificatifImage = null;
     });
+    await _clearSelectedDocument();
 
     showMessage('Prescription réinitialisée');
+  }
+
+  Future<void> _clearSelectedDocument() async {
+    final document = _selectedDocument;
+    if (document == null) return;
+
+    if (mounted) {
+      setState(() {
+        if (identical(_selectedDocument, document)) {
+          _selectedDocument = null;
+        }
+      });
+    } else if (identical(_selectedDocument, document)) {
+      _selectedDocument = null;
+    }
+
+    await _cleanupTemporaryDocument(document);
+  }
+
+  Future<void> _cleanupTemporaryDocument(SelectedDocumentData document) async {
+    try {
+      await document.deleteTemporaryCameraFile();
+    } catch (cleanupError, stackTrace) {
+      debugPrint(
+        'Temporary prescription file cleanup failed: '
+        '$cleanupError\n$stackTrace',
+      );
+    }
   }
 
   TextEditingController get activeController {
@@ -269,27 +325,45 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
       return;
     }
 
-    await PrescriptionPdfService.exportPrescriptionPdf(
-      patient: currentPatient!,
-      practitioner: practitioner,
-      prescriptionType: selectedPrescriptionType,
-      prescriptionContent: content,
-      justificatifImage: justificatifImage,
-    );
+    final document = _selectedDocument;
 
-    await PrescriptionService.savePrescription(
-      PrescriptionModel.fromGenerated(
+    try {
+      final prescription = PrescriptionModel.fromGenerated(
         patient: currentPatient!,
         practitioner: practitioner,
         prescriptionType: selectedPrescriptionType,
         prescriptionContent: content,
-        justificatifImageBase64: justificatifImage == null
-            ? null
-            : base64Encode(await justificatifImage!.readAsBytes()),
-      ),
-    );
+        justificatifImageBase64: document?.base64Data,
+      );
 
-    showMessage('Prescription enregistrée dans l’historique.');
+      await PrescriptionPdfService.exportPrescriptionPdf(
+        patient: currentPatient!,
+        practitioner: practitioner,
+        prescriptionType: selectedPrescriptionType,
+        prescriptionContent: content,
+        justificatifImageBytes: document?.bytes,
+      );
+
+      await PrescriptionService.savePrescription(prescription);
+
+      showMessage('Prescription enregistrée dans l’historique.');
+    } catch (error) {
+      rethrow;
+    } finally {
+      if (document != null) {
+        await _cleanupTemporaryDocument(document);
+      }
+
+      if (identical(_selectedDocument, document)) {
+        if (mounted) {
+          setState(() {
+            _selectedDocument = null;
+          });
+        } else {
+          _selectedDocument = null;
+        }
+      }
+    }
   }
 
   bool _samePatientContext(PatientLocal? loaded, PatientLocal? current) {
@@ -906,7 +980,7 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
   }
 
   Widget buildAccessDirectPrescriptionCard() {
-    final hasImage = justificatifImage != null;
+    final hasImage = _selectedDocument != null;
 
     return Container(
       decoration: BoxDecoration(
@@ -993,11 +1067,19 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
               const SizedBox(height: RadarSpacing.lg),
               ClipRRect(
                 borderRadius: BorderRadius.circular(RadarRadius.card),
-                child: Image.file(
-                  justificatifImage!,
+                child: Image.memory(
+                  _selectedDocument!.bytes,
                   height: 160,
                   width: double.infinity,
                   fit: BoxFit.cover,
+                ),
+              ),
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton.icon(
+                  onPressed: _clearSelectedDocument,
+                  icon: const Icon(Icons.delete_outline_rounded),
+                  label: const Text('Retirer le justificatif'),
                 ),
               ),
             ],
