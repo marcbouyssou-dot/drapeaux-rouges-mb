@@ -217,6 +217,16 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
   }
 
   Future<void> removeDiagnosisDocument() async {
+    final confirm = await showRadarDestructiveConfirmationDialog(
+      context,
+      title: 'Supprimer le justificatif ?',
+      message:
+          'Cette action supprimera le justificatif médical enregistré pour le diagnostic préalable.',
+      confirmLabel: 'Supprimer',
+    );
+
+    if (!confirm || !mounted) return;
+
     final existing = await AccessDirectLocalService.loadSettings();
 
     setState(() {

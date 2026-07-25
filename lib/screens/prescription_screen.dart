@@ -19,6 +19,7 @@ import '../features/radar/presentation/theme/radar_spacing.dart';
 import '../features/radar/presentation/theme/radar_text_styles.dart';
 import '../features/radar/presentation/theme/radar_theme.dart';
 import '../features/radar/presentation/widgets/radar_bottom_action_bar.dart';
+import '../features/radar/presentation/widgets/radar_destructive_confirmation_dialog.dart';
 
 class PrescriptionScreen extends StatefulWidget {
   const PrescriptionScreen({
@@ -108,7 +109,17 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
     });
   }
 
-  void resetForm() {
+  Future<void> resetForm() async {
+    final confirm = await showRadarDestructiveConfirmationDialog(
+      context,
+      title: 'Réinitialiser la prescription ?',
+      message:
+          'Cette action effacera les champs de prescription et le justificatif en cours.',
+      confirmLabel: 'Réinitialiser',
+    );
+
+    if (!confirm || !mounted) return;
+
     pathologieController.clear();
     materielController.clear();
     examensController.clear();

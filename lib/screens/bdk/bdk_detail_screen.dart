@@ -14,6 +14,7 @@ import '../../features/radar/presentation/theme/radar_spacing.dart';
 import '../../features/radar/presentation/theme/radar_text_styles.dart';
 import '../../features/radar/presentation/theme/radar_theme.dart';
 import '../../features/radar/presentation/widgets/radar_bottom_action_bar.dart';
+import '../../features/radar/presentation/widgets/radar_destructive_confirmation_dialog.dart';
 
 class BDKDetailScreen extends StatefulWidget {
   const BDKDetailScreen({super.key, required this.title, this.customContext});
@@ -460,7 +461,17 @@ Une prise en charge kinésithérapique adaptée semble indiquée avec surveillan
     });
   }
 
-  void _resetBDK() {
+  Future<void> _resetBDK() async {
+    final confirm = await showRadarDestructiveConfirmationDialog(
+      context,
+      title: 'Réinitialiser le BDK ?',
+      message:
+          'Cette action effacera les champs du bilan et la synthèse clinique en cours.',
+      confirmLabel: 'Réinitialiser',
+    );
+
+    if (!confirm || !mounted) return;
+
     setState(() {
       BDKSessionService.clear();
 
