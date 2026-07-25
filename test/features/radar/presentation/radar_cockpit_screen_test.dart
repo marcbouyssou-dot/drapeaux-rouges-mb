@@ -6,11 +6,13 @@ import 'package:drapeaux_rouges_mb/features/radar/presentation/screens/radar_coc
 import 'package:drapeaux_rouges_mb/features/radar/presentation/theme/radar_colors.dart';
 import 'package:drapeaux_rouges_mb/features/radar/presentation/widgets/radar_context_bar.dart';
 import 'package:drapeaux_rouges_mb/features/radar/presentation/widgets/radar_patient_context.dart';
+import 'package:drapeaux_rouges_mb/models/patient_local.dart';
 import 'package:drapeaux_rouges_mb/screens/bdk/bdk_type_screen.dart';
 import 'package:drapeaux_rouges_mb/screens/history_screen.dart';
 import 'package:drapeaux_rouges_mb/screens/patient_consent_screen.dart';
 import 'package:drapeaux_rouges_mb/screens/prescription/prescription_type_screen.dart';
 import 'package:drapeaux_rouges_mb/screens/settings_screen.dart';
+import 'package:drapeaux_rouges_mb/services/rgpd_local_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive/hive.dart';
@@ -159,6 +161,62 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
+    testWidgets(
+      'refreshes patient context after the patient workflow returns',
+      (tester) async {
+        final patient = PatientLocal(
+          localId: 'patient-alice-dupont',
+          anonymousId: 'DR-alice-dupont',
+          nom: 'Dupont',
+          prenom: 'Alice',
+          dateNaissance: '12/03/1981',
+          consentementValide: true,
+          dateConsentement: DateTime(2026, 1, 12),
+        );
+        await tester.runAsync(() async {
+          await RgpdLocalService.saveOrUpdatePatient(patient);
+          await RgpdLocalService.clearCurrentPatient();
+        });
+        final savedPatients = await tester.runAsync(
+          RgpdLocalService.getPatients,
+        );
+        expect(savedPatients, hasLength(1));
+
+        await _pumpCockpit(tester, settle: false);
+
+        expect(find.text('Consultation en cours'), findsOneWidget);
+        expect(find.text('Patient non associé'), findsOneWidget);
+        expect(find.text('DUPONT Alice'), findsNothing);
+
+        await tester.tap(find.byType(RadarPatientContextBar));
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 500));
+        await tester.pump();
+        await _drainRealAsync(tester);
+
+        expect(find.byType(PatientConsentScreen), findsOneWidget);
+        await tester.runAsync(() async {
+          await RgpdLocalService.setCurrentPatientId(patient.localId);
+        });
+        final selectedPatient = await tester.runAsync(
+          RgpdLocalService.getCurrentPatient,
+        );
+        expect(selectedPatient, isNotNull);
+
+        Navigator.of(tester.element(find.byType(PatientConsentScreen))).pop();
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 500));
+        await tester.pump();
+        await _drainRealAsync(tester);
+
+        expect(find.byType(RadarCockpitScreen), findsOneWidget);
+        expect(find.text('DUPONT Alice'), findsOneWidget);
+        expect(find.text('Consultation en cours'), findsOneWidget);
+        expect(find.text('Patient non associé'), findsNothing);
+        expect(tester.takeException(), isNull);
+      },
+    );
+
     testWidgets('Bilan opens the historical BDK workflow', (tester) async {
       await _pumpCockpit(tester);
 
@@ -213,12 +271,26 @@ void main() {
   });
 }
 
-Future<void> _pumpCockpit(WidgetTester tester) async {
+Future<void> _drainRealAsync(WidgetTester tester) async {
+  await tester.runAsync(() async {
+    await Future<void>.delayed(Duration.zero);
+  });
+  await tester.pump();
+}
+
+Future<void> _pumpCockpit(WidgetTester tester, {bool settle = true}) async {
   await tester.binding.setSurfaceSize(const Size(390, 844));
   addTearDown(() => tester.binding.setSurfaceSize(null));
 
   await tester.pumpWidget(const MaterialApp(home: RadarDemoShell()));
-  await tester.pumpAndSettle();
+  if (settle) {
+    await tester.pumpAndSettle();
+  } else {
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
+    await tester.pump();
+    await _drainRealAsync(tester);
+  }
 
   expect(find.byType(RadarCockpitScreen), findsOneWidget);
 }
