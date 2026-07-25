@@ -9,6 +9,7 @@ import '../../features/radar/presentation/theme/radar_radius.dart';
 import '../../features/radar/presentation/theme/radar_spacing.dart';
 import '../../features/radar/presentation/theme/radar_text_styles.dart';
 import '../../features/radar/presentation/theme/radar_theme.dart';
+import '../../features/radar/presentation/widgets/radar_page_header.dart';
 import '../../features/radar/presentation/widgets/radar_surface_card.dart';
 import '../../models/prescription_model.dart';
 import '../../services/prescription_pdf_service.dart';
@@ -129,18 +130,7 @@ class PrescriptionHistoryDetailScreen extends StatelessWidget {
     return RadarSurfaceCard(
       child: Row(
         children: [
-          IconButton.filledTonal(
-            tooltip: 'Retour',
-            onPressed: () => Navigator.pop(context),
-            icon: const Icon(Icons.arrow_back_ios_new_rounded),
-            style: IconButton.styleFrom(
-              backgroundColor: RadarColors.surfaceMuted,
-              foregroundColor: RadarColors.primary,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(RadarRadius.small),
-              ),
-            ),
-          ),
+          RadarPageBackButton(onPressed: () => Navigator.pop(context)),
           const SizedBox(width: RadarSpacing.lg),
           const Expanded(
             child: Text(
