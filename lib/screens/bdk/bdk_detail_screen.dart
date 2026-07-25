@@ -88,10 +88,16 @@ class _BDKDetailScreenState extends State<BDKDetailScreen> {
   }
 
   Future<void> _loadCurrentPatient() async {
-    final patient = await RgpdLocalService.getCurrentPatient();
+    final patient = await _loadSessionPatient();
     final loadedPractitioner = await PractitionerProfileService.getProfile();
 
     if (!mounted) return;
+
+    BDKSessionService.associatePatient(
+      localId: patient?.localId,
+      anonymousId: patient?.anonymousId,
+      displayName: RgpdLocalService.patientDisplayName(patient),
+    );
 
     setState(() {
       currentPatient = patient;
@@ -99,8 +105,32 @@ class _BDKDetailScreenState extends State<BDKDetailScreen> {
     });
   }
 
-  String get patientDisplayName =>
-      RgpdLocalService.patientDisplayName(currentPatient);
+  Future<PatientLocal?> _loadSessionPatient() async {
+    final associatedLocalId = BDKSessionService.patientLocalId;
+    if (associatedLocalId != null && associatedLocalId.trim().isNotEmpty) {
+      final associatedPatient = await RgpdLocalService.getPatientByLocalId(
+        associatedLocalId,
+      );
+      if (associatedPatient != null) return associatedPatient;
+    }
+
+    if (BDKSessionService.hasPatientAssociation) {
+      return null;
+    }
+
+    return RgpdLocalService.getCurrentPatient();
+  }
+
+  String get patientDisplayName {
+    if (currentPatient != null) {
+      return RgpdLocalService.patientDisplayName(currentPatient);
+    }
+
+    final associatedDisplayName = BDKSessionService.patientDisplayName.trim();
+    if (associatedDisplayName.isNotEmpty) return associatedDisplayName;
+
+    return RgpdLocalService.patientDisplayName(null);
+  }
 
   bool get hasImportedEvaluation {
     return BDKSessionService.riskLevel.isNotEmpty ||

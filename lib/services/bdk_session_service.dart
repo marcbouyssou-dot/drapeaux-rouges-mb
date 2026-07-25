@@ -19,6 +19,10 @@ class BDKClinicalPrefill {
 }
 
 class BDKSessionService {
+  static String? patientLocalId;
+  static String? patientAnonymousId;
+  static String patientDisplayName = '';
+
   static String motif = '';
   static String contexte = '';
   static String antecedents = '';
@@ -40,7 +44,51 @@ class BDKSessionService {
 
   static List<String> redFlags = [];
 
+  static bool get hasPatientAssociation {
+    return (patientLocalId?.trim().isNotEmpty ?? false) ||
+        (patientAnonymousId?.trim().isNotEmpty ?? false) ||
+        patientDisplayName.trim().isNotEmpty;
+  }
+
+  static bool isAssociatedWithPatient({
+    required String? localId,
+    required String? anonymousId,
+  }) {
+    final associatedLocalId = patientLocalId?.trim() ?? '';
+    final associatedAnonymousId = patientAnonymousId?.trim() ?? '';
+    final targetLocalId = localId?.trim() ?? '';
+    final targetAnonymousId = anonymousId?.trim() ?? '';
+
+    if (targetLocalId.isEmpty && targetAnonymousId.isEmpty) {
+      return associatedLocalId.isEmpty && associatedAnonymousId.isEmpty;
+    }
+
+    if (associatedLocalId.isNotEmpty && targetLocalId.isNotEmpty) {
+      return associatedLocalId == targetLocalId;
+    }
+
+    if (associatedAnonymousId.isNotEmpty && targetAnonymousId.isNotEmpty) {
+      return associatedAnonymousId == targetAnonymousId;
+    }
+
+    return false;
+  }
+
+  static void associatePatient({
+    required String? localId,
+    required String? anonymousId,
+    required String displayName,
+  }) {
+    patientLocalId = localId;
+    patientAnonymousId = anonymousId;
+    patientDisplayName = displayName.trim();
+  }
+
   static void clear() {
+    patientLocalId = null;
+    patientAnonymousId = null;
+    patientDisplayName = '';
+
     motif = '';
     contexte = '';
     antecedents = '';

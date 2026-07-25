@@ -80,6 +80,86 @@ void main() {
     expect(exportedText, isNot(contains('v5_hard_stop')));
   });
 
+  test('clear removes patient association from the current BDK session', () {
+    BDKSessionService.associatePatient(
+      localId: 'patient-1',
+      anonymousId: 'DR-patient-1',
+      displayName: 'DUPONT Alice',
+    );
+
+    expect(BDKSessionService.hasPatientAssociation, isTrue);
+
+    BDKSessionService.clear();
+
+    expect(BDKSessionService.patientLocalId, isNull);
+    expect(BDKSessionService.patientAnonymousId, isNull);
+    expect(BDKSessionService.patientDisplayName, isEmpty);
+    expect(BDKSessionService.hasPatientAssociation, isFalse);
+  });
+
+  test('associatePatient replaces the current BDK patient association', () {
+    BDKSessionService.associatePatient(
+      localId: 'patient-1',
+      anonymousId: 'DR-patient-1',
+      displayName: 'DUPONT Alice',
+    );
+
+    BDKSessionService.associatePatient(
+      localId: 'patient-2',
+      anonymousId: 'DR-patient-2',
+      displayName: 'MARTIN Bob',
+    );
+
+    expect(BDKSessionService.patientLocalId, 'patient-2');
+    expect(BDKSessionService.patientAnonymousId, 'DR-patient-2');
+    expect(BDKSessionService.patientDisplayName, 'MARTIN Bob');
+  });
+
+  test('isAssociatedWithPatient detects current BDK owner changes', () {
+    BDKSessionService.associatePatient(
+      localId: 'patient-1',
+      anonymousId: 'DR-patient-1',
+      displayName: 'DUPONT Alice',
+    );
+
+    expect(
+      BDKSessionService.isAssociatedWithPatient(
+        localId: 'patient-1',
+        anonymousId: 'DR-patient-1',
+      ),
+      isTrue,
+    );
+    expect(
+      BDKSessionService.isAssociatedWithPatient(
+        localId: 'patient-2',
+        anonymousId: 'DR-patient-2',
+      ),
+      isFalse,
+    );
+    expect(
+      BDKSessionService.isAssociatedWithPatient(
+        localId: null,
+        anonymousId: null,
+      ),
+      isFalse,
+    );
+
+    BDKSessionService.clear();
+    BDKSessionService.associatePatient(
+      localId: null,
+      anonymousId: null,
+      displayName: 'Patient non renseigné',
+    );
+
+    expect(
+      BDKSessionService.isAssociatedWithPatient(
+        localId: null,
+        anonymousId: null,
+      ),
+      isTrue,
+    );
+  });
+
   test('BDKClinicalPrefill remains free of patient identity', () {
     final source = File(
       'lib/services/bdk_session_service.dart',

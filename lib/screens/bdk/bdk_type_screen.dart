@@ -9,6 +9,8 @@ import '../../features/radar/presentation/theme/radar_spacing.dart';
 import '../../features/radar/presentation/theme/radar_text_styles.dart';
 import '../../features/radar/presentation/theme/radar_theme.dart';
 import '../../features/radar/presentation/widgets/radar_page_header.dart';
+import '../../services/bdk_session_service.dart';
+import '../../services/rgpd_local_service.dart';
 import 'bdk_detail_screen.dart';
 
 class BDKTypeScreen extends StatelessWidget {
@@ -61,7 +63,7 @@ class BDKTypeScreen extends StatelessWidget {
 
   Future<void> _openBdk(BuildContext context, BDKTypeOption item) async {
     if (!item.requiresCustomLabel) {
-      _pushBdkDetail(context, item.title);
+      await _pushBdkDetail(context, item.title);
       return;
     }
 
@@ -77,20 +79,41 @@ class BDKTypeScreen extends StatelessWidget {
         ? item.title
         : '${item.title} — $trimmedLabel';
 
-    _pushBdkDetail(context, title, customContext: trimmedLabel);
+    await _pushBdkDetail(context, title, customContext: trimmedLabel);
   }
 
-  void _pushBdkDetail(
+  Future<void> _pushBdkDetail(
     BuildContext context,
     String title, {
     String? customContext,
-  }) {
+  }) async {
+    await _alignBdkOwnerWithCurrentPatient();
+    if (!context.mounted) return;
+
     Navigator.push(
       context,
       CupertinoPageRoute(
         builder: (_) =>
             BDKDetailScreen(title: title, customContext: customContext),
       ),
+    );
+  }
+
+  Future<void> _alignBdkOwnerWithCurrentPatient() async {
+    final currentPatient = await RgpdLocalService.getCurrentPatient();
+    final isAligned = BDKSessionService.isAssociatedWithPatient(
+      localId: currentPatient?.localId,
+      anonymousId: currentPatient?.anonymousId,
+    );
+
+    if (!isAligned) {
+      BDKSessionService.clear();
+    }
+
+    BDKSessionService.associatePatient(
+      localId: currentPatient?.localId,
+      anonymousId: currentPatient?.anonymousId,
+      displayName: RgpdLocalService.patientDisplayName(currentPatient),
     );
   }
 }
