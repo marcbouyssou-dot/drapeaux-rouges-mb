@@ -17,6 +17,7 @@ import '../features/radar/presentation/theme/radar_shadows.dart';
 import '../features/radar/presentation/theme/radar_spacing.dart';
 import '../features/radar/presentation/theme/radar_text_styles.dart';
 import '../features/radar/presentation/theme/radar_theme.dart';
+import '../features/radar/presentation/widgets/radar_destructive_confirmation_dialog.dart';
 import '../features/radar/presentation/widgets/radar_page_header.dart';
 import 'access_direct_settings_screen.dart';
 
@@ -466,29 +467,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> confirmResetLocalData() async {
-    final confirm = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) {
-        return AlertDialog(
-          title: const Text('Réinitialiser les données locales ?'),
-          content: const Text(
-            'Cette action efface les patients, le patient actif et l’historique des évaluations stockés sur cet appareil.',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(dialogContext, false),
-              child: const Text('Annuler'),
-            ),
-            FilledButton(
-              style: FilledButton.styleFrom(
-                backgroundColor: RadarColors.clinicalDanger,
-              ),
-              onPressed: () => Navigator.pop(dialogContext, true),
-              child: const Text('Réinitialiser'),
-            ),
-          ],
-        );
-      },
+    final confirm = await showRadarDestructiveConfirmationDialog(
+      context,
+      title: 'Réinitialiser les données locales ?',
+      message:
+          'Cette action efface les patients, le patient actif et l’historique des évaluations stockés sur cet appareil.',
+      confirmLabel: 'Réinitialiser',
     );
 
     if (confirm != true) return;

@@ -18,6 +18,7 @@ import '../features/radar/presentation/theme/radar_shadows.dart';
 import '../features/radar/presentation/theme/radar_spacing.dart';
 import '../features/radar/presentation/theme/radar_text_styles.dart';
 import '../features/radar/presentation/theme/radar_theme.dart';
+import '../features/radar/presentation/widgets/radar_destructive_confirmation_dialog.dart';
 import '../features/radar/presentation/widgets/radar_page_header.dart';
 import 'evaluation/evaluation_detail_screen.dart';
 import 'attestation/attestation_history_detail_screen.dart';
@@ -213,29 +214,12 @@ class _HistoryScreenState extends State<HistoryScreen> {
   }
 
   Future<void> clearHistory() async {
-    final confirm = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) {
-        return AlertDialog(
-          title: const Text('Supprimer tout l’historique ?'),
-          content: const Text(
-            'Cette action supprimera toutes les évaluations enregistrées localement.',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(dialogContext, false),
-              child: const Text('Annuler'),
-            ),
-            FilledButton(
-              style: FilledButton.styleFrom(
-                backgroundColor: RadarColors.clinicalDanger,
-              ),
-              onPressed: () => Navigator.pop(dialogContext, true),
-              child: const Text('Supprimer'),
-            ),
-          ],
-        );
-      },
+    final confirm = await showRadarDestructiveConfirmationDialog(
+      context,
+      title: 'Supprimer tout l’historique ?',
+      message:
+          'Cette action supprimera toutes les évaluations enregistrées localement.',
+      confirmLabel: 'Supprimer',
     );
 
     if (confirm != true) return;

@@ -13,6 +13,7 @@ import '../features/radar/presentation/theme/radar_radius.dart';
 import '../features/radar/presentation/theme/radar_shadows.dart';
 import '../features/radar/presentation/theme/radar_spacing.dart';
 import '../features/radar/presentation/theme/radar_text_styles.dart';
+import '../features/radar/presentation/widgets/radar_destructive_confirmation_dialog.dart';
 import '../services/access_direct_local_service.dart';
 import '../services/rgpd_local_service.dart';
 import '../widgets/design_system/clinical_responsive_info.dart';
@@ -642,29 +643,12 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
   }
 
   Future<void> deletePatient(PatientLocal patient) async {
-    final confirm = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) {
-        return AlertDialog(
-          title: const Text('Supprimer ce patient ?'),
-          content: Text(
-            'Cette action supprimera ${patient.nom.toUpperCase()} ${patient.prenom} de cet appareil.',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(dialogContext, false),
-              child: const Text('Annuler'),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.pop(dialogContext, true),
-              style: FilledButton.styleFrom(
-                backgroundColor: RadarColors.clinicalDanger,
-              ),
-              child: const Text('Supprimer'),
-            ),
-          ],
-        );
-      },
+    final confirm = await showRadarDestructiveConfirmationDialog(
+      context,
+      title: 'Supprimer ce patient ?',
+      message:
+          'Cette action supprimera ${patient.nom.toUpperCase()} ${patient.prenom} de cet appareil.',
+      confirmLabel: 'Supprimer',
     );
 
     if (confirm != true) return;
@@ -678,29 +662,12 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
   }
 
   Future<void> confirmDeleteAll() async {
-    final confirm = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) {
-        return AlertDialog(
-          title: const Text('Supprimer tous les patients ?'),
-          content: const Text(
-            'Cette action supprimera tous les patients enregistrés localement sur cet appareil.',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(dialogContext, false),
-              child: const Text('Annuler'),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.pop(dialogContext, true),
-              style: FilledButton.styleFrom(
-                backgroundColor: RadarColors.clinicalDanger,
-              ),
-              child: const Text('Supprimer'),
-            ),
-          ],
-        );
-      },
+    final confirm = await showRadarDestructiveConfirmationDialog(
+      context,
+      title: 'Supprimer tous les patients ?',
+      message:
+          'Cette action supprimera tous les patients enregistrés localement sur cet appareil.',
+      confirmLabel: 'Supprimer',
     );
 
     if (confirm != true) return;
