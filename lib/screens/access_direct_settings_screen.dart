@@ -13,6 +13,7 @@ import '../features/radar/presentation/theme/radar_shadows.dart';
 import '../features/radar/presentation/theme/radar_spacing.dart';
 import '../features/radar/presentation/theme/radar_text_styles.dart';
 import '../features/radar/presentation/theme/radar_theme.dart';
+import '../features/radar/presentation/widgets/radar_page_header.dart';
 
 class AccessDirectSettingsScreen extends StatefulWidget {
   const AccessDirectSettingsScreen({super.key});
@@ -305,21 +306,7 @@ class _AccessDirectSettingsScreenState
       ),
       child: Row(
         children: [
-          Container(
-            height: 44,
-            width: 44,
-            decoration: BoxDecoration(
-              color: RadarColors.surface,
-              borderRadius: BorderRadius.circular(RadarRadius.small),
-              border: Border.all(color: RadarColors.border),
-            ),
-            child: IconButton(
-              onPressed: () => Navigator.pop(context),
-              icon: const Icon(Icons.arrow_back_ios_new_rounded),
-              iconSize: 18,
-              color: RadarColors.primary,
-            ),
-          ),
+          RadarPageBackButton(onPressed: () => Navigator.pop(context)),
           const SizedBox(width: RadarSpacing.md),
           Container(
             width: 48,

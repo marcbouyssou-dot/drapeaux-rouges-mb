@@ -8,6 +8,7 @@ import '../../features/radar/presentation/theme/radar_shadows.dart';
 import '../../features/radar/presentation/theme/radar_spacing.dart';
 import '../../features/radar/presentation/theme/radar_text_styles.dart';
 import '../../features/radar/presentation/theme/radar_theme.dart';
+import '../../features/radar/presentation/widgets/radar_page_header.dart';
 import '../../models/attestation/attestation_history_item.dart';
 import '../../models/attestation/attestation_template.dart';
 import '../../services/attestation_history_service.dart';
@@ -76,19 +77,8 @@ class _AttestationHistoryScreenState extends State<AttestationHistoryScreen> {
                   children: [
                     Align(
                       alignment: Alignment.centerLeft,
-                      child: IconButton.filledTonal(
-                        tooltip: 'Retour',
+                      child: RadarPageBackButton(
                         onPressed: () => Navigator.pop(context),
-                        icon: const Icon(Icons.arrow_back_ios_new_rounded),
-                        style: IconButton.styleFrom(
-                          backgroundColor: RadarColors.surface,
-                          foregroundColor: RadarColors.primary,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(
-                              RadarRadius.small,
-                            ),
-                          ),
-                        ),
                       ),
                     ),
                     const SizedBox(height: RadarSpacing.xl),

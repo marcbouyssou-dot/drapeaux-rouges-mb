@@ -21,6 +21,7 @@ import '../../features/radar/presentation/theme/radar_shadows.dart';
 import '../../features/radar/presentation/theme/radar_spacing.dart';
 import '../../features/radar/presentation/theme/radar_text_styles.dart';
 import '../../features/radar/presentation/theme/radar_theme.dart';
+import '../../features/radar/presentation/widgets/radar_page_header.dart';
 import '../../widgets/design_system/clinical_bottom_action_bar.dart';
 
 class PatientAttestationScreen extends StatefulWidget {
@@ -501,18 +502,7 @@ class _HeaderCard extends StatelessWidget {
       ),
       child: Row(
         children: [
-          IconButton.filledTonal(
-            tooltip: 'Retour',
-            onPressed: () => Navigator.pop(context),
-            icon: const Icon(Icons.arrow_back_ios_new_rounded),
-            style: IconButton.styleFrom(
-              backgroundColor: RadarColors.surfaceMuted,
-              foregroundColor: RadarColors.primary,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(RadarRadius.small),
-              ),
-            ),
-          ),
+          RadarPageBackButton(onPressed: () => Navigator.pop(context)),
           const SizedBox(width: RadarSpacing.lg),
           Expanded(
             child: Column(
