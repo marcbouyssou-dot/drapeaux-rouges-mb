@@ -6,10 +6,10 @@ import 'package:flutter/material.dart';
 import '../../features/radar/presentation/theme/radar_colors.dart';
 import '../../features/radar/presentation/theme/radar_layout.dart';
 import '../../features/radar/presentation/theme/radar_radius.dart';
-import '../../features/radar/presentation/theme/radar_shadows.dart';
 import '../../features/radar/presentation/theme/radar_spacing.dart';
 import '../../features/radar/presentation/theme/radar_text_styles.dart';
 import '../../features/radar/presentation/theme/radar_theme.dart';
+import '../../features/radar/presentation/widgets/radar_surface_card.dart';
 import '../../models/prescription_model.dart';
 import '../../services/prescription_pdf_service.dart';
 
@@ -126,13 +126,7 @@ class PrescriptionHistoryDetailScreen extends StatelessWidget {
   }
 
   Widget buildHeader(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(RadarSpacing.xl),
-      decoration: BoxDecoration(
-        color: RadarColors.surface,
-        borderRadius: BorderRadius.circular(RadarRadius.card),
-        boxShadow: RadarShadows.card,
-      ),
+    return RadarSurfaceCard(
       child: Row(
         children: [
           IconButton.filledTonal(
@@ -164,14 +158,9 @@ class PrescriptionHistoryDetailScreen extends StatelessWidget {
     required String title,
     required String text,
   }) {
-    return Container(
+    return RadarSurfaceCard(
       margin: const EdgeInsets.only(bottom: RadarSpacing.lg),
       padding: const EdgeInsets.all(RadarSpacing.lg),
-      decoration: BoxDecoration(
-        color: RadarColors.surface,
-        borderRadius: BorderRadius.circular(RadarRadius.card),
-        boxShadow: RadarShadows.card,
-      ),
       child: Row(
         children: [
           Container(
@@ -205,14 +194,8 @@ class PrescriptionHistoryDetailScreen extends StatelessWidget {
   }
 
   Widget buildContentCard() {
-    return Container(
+    return RadarSurfaceCard(
       margin: const EdgeInsets.only(bottom: RadarSpacing.lg),
-      padding: const EdgeInsets.all(RadarSpacing.xl),
-      decoration: BoxDecoration(
-        color: RadarColors.surface,
-        borderRadius: BorderRadius.circular(RadarRadius.card),
-        boxShadow: RadarShadows.card,
-      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
