@@ -24,6 +24,8 @@ void main() {
       expect(source, contains('PatientLocal? currentPatient'));
       expect(source, contains('patient: currentPatient'));
       expect(source, contains('BdkPdfService.exportBdkPdf'));
+      expect(source, contains('BdkDraftService.saveActiveDraft('));
+      expect(source, contains('BdkDraftService.clearActiveDraft()'));
       expect(
         source,
         contains('Le PDF n’a pas pu être généré. Veuillez réessayer.'),

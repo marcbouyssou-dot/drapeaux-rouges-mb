@@ -19,6 +19,8 @@ class BDKClinicalPrefill {
 }
 
 class BDKSessionService {
+  static const int draftSchemaVersion = 1;
+
   static String? patientLocalId;
   static String? patientAnonymousId;
   static String patientDisplayName = '';
@@ -109,6 +111,83 @@ class BDKSessionService {
     riskScore = 0;
 
     redFlags.clear();
+  }
+
+  static bool get hasDraftContent {
+    return [
+          motif,
+          contexte,
+          antecedents,
+          evaluation,
+          tests,
+          limitations,
+          diagnostic,
+          vigilance,
+          objectifs,
+          planTraitement,
+          criteresReevaluation,
+          syntheseClinique,
+          riskLevel,
+        ].any((value) => value.trim().isNotEmpty) ||
+        riskScore != 0 ||
+        redFlags.isNotEmpty;
+  }
+
+  static Map<String, dynamic> toDraftMap({
+    required String title,
+    String? customContext,
+    required DateTime updatedAt,
+  }) {
+    return {
+      'schemaVersion': draftSchemaVersion,
+      'title': title.trim(),
+      'customContext': customContext?.trim(),
+      'updatedAt': updatedAt.toIso8601String(),
+      'patientLocalId': patientLocalId,
+      'patientAnonymousId': patientAnonymousId,
+      'patientDisplayName': patientDisplayName,
+      'motif': motif,
+      'contexte': contexte,
+      'antecedents': antecedents,
+      'evaluation': evaluation,
+      'tests': tests,
+      'limitations': limitations,
+      'diagnostic': diagnostic,
+      'vigilance': vigilance,
+      'objectifs': objectifs,
+      'planTraitement': planTraitement,
+      'criteresReevaluation': criteresReevaluation,
+      'syntheseClinique': syntheseClinique,
+      'riskLevel': riskLevel,
+      'riskScore': riskScore,
+      'redFlags': List<String>.from(redFlags),
+    };
+  }
+
+  static void loadFromDraftMap(Map<String, dynamic> draft) {
+    patientLocalId = _nullableString(draft['patientLocalId']);
+    patientAnonymousId = _nullableString(draft['patientAnonymousId']);
+    patientDisplayName = _stringValue(draft['patientDisplayName']);
+
+    motif = _stringValue(draft['motif']);
+    contexte = _stringValue(draft['contexte']);
+    antecedents = _stringValue(draft['antecedents']);
+
+    evaluation = _stringValue(draft['evaluation']);
+    tests = _stringValue(draft['tests']);
+    limitations = _stringValue(draft['limitations']);
+
+    diagnostic = _stringValue(draft['diagnostic']);
+    vigilance = _stringValue(draft['vigilance']);
+
+    objectifs = _stringValue(draft['objectifs']);
+    planTraitement = _stringValue(draft['planTraitement']);
+    criteresReevaluation = _stringValue(draft['criteresReevaluation']);
+    syntheseClinique = _stringValue(draft['syntheseClinique']);
+
+    riskLevel = _stringValue(draft['riskLevel']);
+    riskScore = _intValue(draft['riskScore']);
+    redFlags = _stringList(draft['redFlags']);
   }
 
   static void loadFromEvaluation({
@@ -230,5 +309,24 @@ $aiSummary
         .map((value) => value.trim())
         .where((value) => value.isNotEmpty)
         .join(separator);
+  }
+
+  static String _stringValue(Object? value) {
+    return value?.toString() ?? '';
+  }
+
+  static String? _nullableString(Object? value) {
+    final text = value?.toString().trim() ?? '';
+    return text.isEmpty ? null : text;
+  }
+
+  static int _intValue(Object? value) {
+    if (value is int) return value;
+    return int.tryParse(value?.toString() ?? '') ?? 0;
+  }
+
+  static List<String> _stringList(Object? value) {
+    if (value is! List) return [];
+    return value.map((item) => item.toString()).toList();
   }
 }

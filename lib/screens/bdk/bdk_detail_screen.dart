@@ -1,7 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../../models/patient_local.dart';
 import '../../models/practitioner_profile.dart';
+import '../../services/bdk_draft_service.dart';
 import '../../services/bdk_pdf_service.dart';
 import '../../services/bdk_session_service.dart';
 import '../../services/practitioner_profile_service.dart';
@@ -98,6 +101,7 @@ class _BDKDetailScreenState extends State<BDKDetailScreen> {
       anonymousId: patient?.anonymousId,
       displayName: RgpdLocalService.patientDisplayName(patient),
     );
+    _persistDraft();
 
     setState(() {
       currentPatient = patient;
@@ -140,48 +144,68 @@ class _BDKDetailScreenState extends State<BDKDetailScreen> {
   void _addListeners() {
     motifController.addListener(() {
       BDKSessionService.motif = motifController.text;
+      _persistDraft();
     });
 
     contexteController.addListener(() {
       BDKSessionService.contexte = contexteController.text;
+      _persistDraft();
     });
 
     antecedentsController.addListener(() {
       BDKSessionService.antecedents = antecedentsController.text;
+      _persistDraft();
     });
 
     evaluationController.addListener(() {
       BDKSessionService.evaluation = evaluationController.text;
+      _persistDraft();
     });
 
     testsController.addListener(() {
       BDKSessionService.tests = testsController.text;
+      _persistDraft();
     });
 
     limitationsController.addListener(() {
       BDKSessionService.limitations = limitationsController.text;
+      _persistDraft();
     });
 
     diagnosticController.addListener(() {
       BDKSessionService.diagnostic = diagnosticController.text;
+      _persistDraft();
     });
 
     vigilanceController.addListener(() {
       BDKSessionService.vigilance = vigilanceController.text;
+      _persistDraft();
     });
 
     objectifsController.addListener(() {
       BDKSessionService.objectifs = objectifsController.text;
+      _persistDraft();
     });
 
     planTraitementController.addListener(() {
       BDKSessionService.planTraitement = planTraitementController.text;
+      _persistDraft();
     });
 
     criteresReevaluationController.addListener(() {
       BDKSessionService.criteresReevaluation =
           criteresReevaluationController.text;
+      _persistDraft();
     });
+  }
+
+  void _persistDraft() {
+    unawaited(
+      BdkDraftService.saveActiveDraft(
+        title: widget.title,
+        customContext: widget.customContext,
+      ),
+    );
   }
 
   Widget buildImportedEvaluationBanner() {
@@ -489,6 +513,7 @@ ${evaluationController.text.trim().isEmpty ? 'Évaluation non renseignée.' : ev
 Une prise en charge kinésithérapique adaptée semble indiquée avec surveillance clinique évolutive.
 ''';
     });
+    _persistDraft();
   }
 
   Future<void> _resetBDK() async {
@@ -520,6 +545,7 @@ Une prise en charge kinésithérapique adaptée semble indiquée avec surveillan
       planTraitementController.clear();
       criteresReevaluationController.clear();
     });
+    await BdkDraftService.clearActiveDraft();
   }
 
   Future<void> _exportPdf() async {

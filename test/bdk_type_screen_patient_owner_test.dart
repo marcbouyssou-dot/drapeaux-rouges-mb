@@ -13,8 +13,13 @@ void main() {
     expect(source, contains('BDKSessionService.isAssociatedWithPatient('));
     expect(source, contains('BDKSessionService.clear();'));
     expect(source, contains('BDKSessionService.associatePatient('));
+    expect(source, contains('BdkDraftService.restoreActiveDraft('));
     expect(
       source.indexOf('await _alignBdkOwnerWithCurrentPatient();'),
+      lessThan(source.indexOf('Navigator.push(')),
+    );
+    expect(
+      source.indexOf('BdkDraftService.restoreActiveDraft('),
       lessThan(source.indexOf('Navigator.push(')),
     );
   });

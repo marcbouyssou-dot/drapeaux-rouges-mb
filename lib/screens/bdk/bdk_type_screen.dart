@@ -9,6 +9,7 @@ import '../../features/radar/presentation/theme/radar_spacing.dart';
 import '../../features/radar/presentation/theme/radar_text_styles.dart';
 import '../../features/radar/presentation/theme/radar_theme.dart';
 import '../../features/radar/presentation/widgets/radar_page_header.dart';
+import '../../services/bdk_draft_service.dart';
 import '../../services/bdk_session_service.dart';
 import '../../services/rgpd_local_service.dart';
 import 'bdk_detail_screen.dart';
@@ -88,6 +89,13 @@ class BDKTypeScreen extends StatelessWidget {
     String? customContext,
   }) async {
     await _alignBdkOwnerWithCurrentPatient();
+    if (!BDKSessionService.hasDraftContent) {
+      await BdkDraftService.restoreActiveDraft(
+        patientLocalId: BDKSessionService.patientLocalId,
+        patientAnonymousId: BDKSessionService.patientAnonymousId,
+        title: title,
+      );
+    }
     if (!context.mounted) return;
 
     Navigator.push(
