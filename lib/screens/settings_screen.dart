@@ -723,7 +723,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           SizedBox(width: RadarSpacing.md),
           Expanded(
             child: Text(
-              'Drapeaux Rouges — Version 1.0.0',
+              'Drapeaux Rouges — Version 1.0.0 — RC1',
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               style: RadarTextStyles.contextTitle,

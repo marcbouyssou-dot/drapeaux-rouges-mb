@@ -53,7 +53,7 @@ class AboutScreen extends StatelessWidget {
                 infoCard(
                   icon: Icons.info_outline,
                   title: 'Version',
-                  text: 'drapeaux_rouges_MB · Version 1.0.0',
+                  text: 'drapeaux_rouges_MB · Version 1.0.0 — RC1',
                 ),
               ],
             ),
