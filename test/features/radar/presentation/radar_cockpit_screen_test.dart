@@ -229,6 +229,22 @@ void main() {
       expect(find.text('BDK Lombalgie'), findsOneWidget);
     });
 
+    testWidgets('a rapid double tap opens only one BDK workflow', (
+      tester,
+    ) async {
+      await _pumpCockpit(tester);
+
+      await tester.ensureVisible(find.text('Bilan'));
+      await tester.tap(find.text('Bilan'));
+      await tester.tap(find.text('Bilan'), warnIfMissed: false);
+      await tester.pumpAndSettle();
+
+      expect(find.byType(BDKTypeScreen), findsOneWidget);
+      Navigator.of(tester.element(find.byType(BDKTypeScreen))).pop();
+      await tester.pumpAndSettle();
+      expect(find.byType(RadarCockpitScreen), findsOneWidget);
+    });
+
     testWidgets('Documents opens the historical document workflow', (
       tester,
     ) async {

@@ -56,6 +56,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
   String searchQuery = '';
   HistoryFilter selectedFilter = HistoryFilter.all;
   HistoryView selectedView = HistoryView.evaluations;
+  bool _clearHistoryPending = false;
 
   @override
   void initState() {
@@ -244,24 +245,31 @@ class _HistoryScreenState extends State<HistoryScreen> {
   }
 
   Future<void> clearHistory() async {
-    final confirm = await showRadarDestructiveConfirmationDialog(
-      context,
-      title: 'Supprimer tout l’historique ?',
-      message:
-          'Cette action supprimera toutes les évaluations enregistrées localement.',
-      confirmLabel: 'Supprimer',
-    );
+    if (_clearHistoryPending) return;
+    _clearHistoryPending = true;
 
-    if (confirm != true) return;
+    try {
+      final confirm = await showRadarDestructiveConfirmationDialog(
+        context,
+        title: 'Supprimer tout l’historique ?',
+        message:
+            'Cette action supprimera toutes les évaluations enregistrées localement.',
+        confirmLabel: 'Supprimer',
+      );
 
-    await HistoryService.clearHistory();
-    await loadHistory();
+      if (confirm != true) return;
 
-    if (!mounted) return;
+      await HistoryService.clearHistory();
+      await loadHistory();
 
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('Historique supprimé')));
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Historique supprimé')));
+    } finally {
+      _clearHistoryPending = false;
+    }
   }
 
   String patientName(Map<String, dynamic> item) {

@@ -25,47 +25,65 @@ class RadarCockpitScreen extends StatefulWidget {
 
 class _RadarCockpitScreenState extends State<RadarCockpitScreen> {
   int _patientContextVersion = 0;
+  bool _navigationPending = false;
 
-  void _openClinicalStart(BuildContext context) {
-    Navigator.of(
+  Future<void> _openClinicalStart(BuildContext context) async {
+    await _pushOnce(
       context,
-    ).push(MaterialPageRoute(builder: (_) => const RadarClinicalStartScreen()));
+      MaterialPageRoute(builder: (_) => const RadarClinicalStartScreen()),
+    );
   }
 
   Future<void> _openPatientScreen(BuildContext context) async {
-    await Navigator.of(
+    final opened = await _pushOnce(
       context,
-    ).push(MaterialPageRoute(builder: (_) => const PatientConsentScreen()));
+      MaterialPageRoute(builder: (_) => const PatientConsentScreen()),
+    );
 
-    if (!mounted) return;
+    if (!opened || !mounted) return;
 
     setState(() {
       _patientContextVersion++;
     });
   }
 
-  void _openBdkTypeScreen(BuildContext context) {
-    Navigator.of(
+  Future<void> _openBdkTypeScreen(BuildContext context) async {
+    await _pushOnce(
       context,
-    ).push(CupertinoPageRoute(builder: (_) => const BDKTypeScreen()));
+      CupertinoPageRoute(builder: (_) => const BDKTypeScreen()),
+    );
   }
 
-  void _openPrescriptionTypeScreen(BuildContext context) {
-    Navigator.of(
+  Future<void> _openPrescriptionTypeScreen(BuildContext context) async {
+    await _pushOnce(
       context,
-    ).push(CupertinoPageRoute(builder: (_) => const PrescriptionTypeScreen()));
+      CupertinoPageRoute(builder: (_) => const PrescriptionTypeScreen()),
+    );
   }
 
-  void _openHistoryScreen(BuildContext context) {
-    Navigator.of(
+  Future<void> _openHistoryScreen(BuildContext context) async {
+    await _pushOnce(
       context,
-    ).push(CupertinoPageRoute(builder: (_) => const HistoryScreen()));
+      CupertinoPageRoute(builder: (_) => const HistoryScreen()),
+    );
   }
 
-  void _openSettingsScreen(BuildContext context) {
-    Navigator.of(
+  Future<void> _openSettingsScreen(BuildContext context) async {
+    await _pushOnce(
       context,
-    ).push(CupertinoPageRoute(builder: (_) => const SettingsScreen()));
+      CupertinoPageRoute(builder: (_) => const SettingsScreen()),
+    );
+  }
+
+  Future<bool> _pushOnce<T>(BuildContext context, Route<T> route) async {
+    if (_navigationPending) return false;
+    _navigationPending = true;
+    try {
+      await Navigator.of(context).push<T>(route);
+      return true;
+    } finally {
+      _navigationPending = false;
+    }
   }
 
   void _onBottomNavigationSelected(BuildContext context, int index) {

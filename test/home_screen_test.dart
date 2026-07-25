@@ -170,11 +170,17 @@ void main() {
     expect(state.patientExportCode, isNot(state.patientDisplayName));
   });
 
-  test('HomeScreen reloads patient data after patient screen returns', () {
+  test('HomeScreen refreshes only patient context after patient return', () {
     final source = File('lib/screens/home_screen.dart').readAsStringSync();
 
     expect(source, contains('Future<void> openPatientScreen() async'));
-    expect(source, contains('await loadInitialData();'));
+    expect(source, contains('RgpdLocalService.getCurrentPatient()'));
+    expect(source, contains('AccessDirectLocalService.loadSettings()'));
+    final method = source.substring(
+      source.indexOf('Future<void> openPatientScreen() async'),
+      source.indexOf('Future<void> openBdkTypeScreen() async'),
+    );
+    expect(method, isNot(contains('HistoryService.loadHistory()')));
   });
 
   test('resetting evaluation clears persisted current patient', () {

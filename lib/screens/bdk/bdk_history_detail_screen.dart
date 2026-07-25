@@ -16,6 +16,7 @@ class BdkHistoryDetailScreen extends StatelessWidget {
   const BdkHistoryDetailScreen({super.key, required this.item});
 
   final BdkHistoryItem item;
+  static final Set<String> _deletionsInProgress = <String>{};
 
   String _formatDate(DateTime date) {
     final day = date.day.toString().padLeft(2, '0');
@@ -55,16 +56,18 @@ class BdkHistoryDetailScreen extends StatelessWidget {
   }
 
   Future<void> _delete(BuildContext context) async {
-    final confirmed = await showRadarDestructiveConfirmationDialog(
-      context,
-      title: 'Supprimer ce BDK ?',
-      message:
-          'Cette action supprimera définitivement ce BDK de l’historique local.',
-      confirmLabel: 'Supprimer',
-    );
-    if (!confirmed || !context.mounted) return;
+    if (!_deletionsInProgress.add(item.id)) return;
 
     try {
+      final confirmed = await showRadarDestructiveConfirmationDialog(
+        context,
+        title: 'Supprimer ce BDK ?',
+        message:
+            'Cette action supprimera définitivement ce BDK de l’historique local.',
+        confirmLabel: 'Supprimer',
+      );
+      if (!confirmed || !context.mounted) return;
+
       await BdkHistoryService.deleteById(item.id);
       if (!context.mounted) return;
       Navigator.pop(context, true);
@@ -75,6 +78,8 @@ class BdkHistoryDetailScreen extends StatelessWidget {
           content: Text('Le BDK n’a pas pu être supprimé. Veuillez réessayer.'),
         ),
       );
+    } finally {
+      _deletionsInProgress.remove(item.id);
     }
   }
 

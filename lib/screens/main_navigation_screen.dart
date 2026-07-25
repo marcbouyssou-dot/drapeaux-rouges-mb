@@ -54,6 +54,8 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   }
 
   void goToPage(int index) {
+    if (index == currentIndex) return;
+
     setState(() {
       currentIndex = index;
     });

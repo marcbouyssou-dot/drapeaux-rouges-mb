@@ -49,6 +49,7 @@ class _HomeScreenState extends State<HomeScreen> {
   List<Map<String, dynamic>> history = [];
   PatientLocal? currentPatient;
   AccessDirectModel accessDirect = AccessDirectModel.empty;
+  bool _navigationPending = false;
 
   final Map<String, List<Map<String, dynamic>>> categories = clinicalCategories
       .map(
@@ -70,8 +71,8 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  void openResultScreen() {
-    Navigator.push(
+  Future<void> openResultScreen() async {
+    await _pushOnce(
       context,
       MaterialPageRoute(
         builder: (_) => EvaluationResultScreen(
@@ -108,34 +109,56 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> openPatientScreen() async {
-    await Navigator.of(
+    final opened = await _pushOnce(
       context,
-    ).push(CupertinoPageRoute(builder: (_) => const PatientConsentScreen()));
+      CupertinoPageRoute(builder: (_) => const PatientConsentScreen()),
+    );
 
+    if (!opened || !mounted) return;
+
+    final patient = await RgpdLocalService.getCurrentPatient();
+    final accessDirectSettings = await AccessDirectLocalService.loadSettings();
     if (!mounted) return;
 
-    await loadInitialData();
+    setState(() {
+      currentPatient = patient;
+      accessDirect = accessDirectSettings;
+    });
   }
 
-  void openBdkTypeScreen() {
-    Navigator.of(
+  Future<void> openBdkTypeScreen() async {
+    await _pushOnce(
       context,
-    ).push(CupertinoPageRoute(builder: (_) => const BDKTypeScreen()));
+      CupertinoPageRoute(builder: (_) => const BDKTypeScreen()),
+    );
   }
 
-  void openPrescriptionTypeScreen() {
-    Navigator.of(
+  Future<void> openPrescriptionTypeScreen() async {
+    await _pushOnce(
       context,
-    ).push(CupertinoPageRoute(builder: (_) => const PrescriptionTypeScreen()));
+      CupertinoPageRoute(builder: (_) => const PrescriptionTypeScreen()),
+    );
   }
 
-  void openAdaptiveClinicalEvaluation() {
-    Navigator.of(context).push(
+  Future<void> openAdaptiveClinicalEvaluation() async {
+    await _pushOnce(
+      context,
       CupertinoPageRoute(
         settings: const RouteSettings(name: ClinicalAdaptiveScreenV5.routeName),
         builder: (_) => const ClinicalAdaptiveScreenV5(),
       ),
     );
+  }
+
+  Future<bool> _pushOnce<T>(BuildContext context, Route<T> route) async {
+    if (_navigationPending) return false;
+    _navigationPending = true;
+    try {
+      await Navigator.of(context).push<T>(route);
+      return true;
+    } finally {
+      _navigationPending = false;
+    }
   }
 
   int get checkedCount =>
