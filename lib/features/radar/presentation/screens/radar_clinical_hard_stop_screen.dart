@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../application/radar_clinical_history_recorder.dart';
 import '../../application/radar_clinical_hard_stop_view_state.dart';
 import '../../application/radar_clinical_region.dart';
 import '../../application/radar_clinical_view_state.dart';
@@ -14,9 +15,53 @@ import '../widgets/radar_primary_button.dart';
 import '../widgets/radar_surface_card.dart';
 
 class RadarClinicalHardStopScreen extends StatelessWidget {
-  const RadarClinicalHardStopScreen({super.key, required this.finalState});
+  const RadarClinicalHardStopScreen({
+    super.key,
+    required this.finalState,
+    this.historyRecorder = const RadarClinicalHistoryRecorder(),
+  });
 
   final RadarClinicalViewState finalState;
+  final RadarClinicalHistoryRecorder historyRecorder;
+
+  @override
+  Widget build(BuildContext context) {
+    return _RadarClinicalHardStopScreenBody(
+      finalState: finalState,
+      historyRecorder: historyRecorder,
+    );
+  }
+}
+
+class _RadarClinicalHardStopScreenBody extends StatefulWidget {
+  const _RadarClinicalHardStopScreenBody({
+    required this.finalState,
+    required this.historyRecorder,
+  });
+
+  final RadarClinicalViewState finalState;
+  final RadarClinicalHistoryRecorder historyRecorder;
+
+  @override
+  State<_RadarClinicalHardStopScreenBody> createState() =>
+      _RadarClinicalHardStopScreenBodyState();
+}
+
+class _RadarClinicalHardStopScreenBodyState
+    extends State<_RadarClinicalHardStopScreenBody> {
+  @override
+  void initState() {
+    super.initState();
+    _saveCompletedEvaluation();
+  }
+
+  void _saveCompletedEvaluation() {
+    widget.historyRecorder
+        .saveCompletedEvaluation(widget.finalState)
+        .catchError((Object error, StackTrace stackTrace) {
+          debugPrint('Radar history save failed: $error');
+        });
+  }
 
   void _returnHome(BuildContext context) {
     Navigator.of(context).popUntil((route) => route.isFirst);
@@ -24,7 +69,7 @@ class RadarClinicalHardStopScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final hardStop = finalState.hardStop;
+    final hardStop = widget.finalState.hardStop;
 
     return Scaffold(
       backgroundColor: RadarColors.background,

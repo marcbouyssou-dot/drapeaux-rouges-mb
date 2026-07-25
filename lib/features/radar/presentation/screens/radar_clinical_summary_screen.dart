@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+import '../../application/radar_clinical_history_recorder.dart';
 import '../../application/radar_clinical_region.dart';
 import '../../application/radar_clinical_summary_view_state.dart';
 import '../../application/radar_clinical_view_state.dart';
@@ -14,22 +15,70 @@ import '../widgets/radar_patient_context.dart';
 import '../widgets/radar_decision_card.dart';
 
 class RadarClinicalSummaryScreen extends StatelessWidget {
-  const RadarClinicalSummaryScreen({super.key, this.finalState});
+  const RadarClinicalSummaryScreen({
+    super.key,
+    this.finalState,
+    this.historyRecorder = const RadarClinicalHistoryRecorder(),
+  });
 
   final RadarClinicalViewState? finalState;
+  final RadarClinicalHistoryRecorder historyRecorder;
+
+  @override
+  Widget build(BuildContext context) {
+    return _RadarClinicalSummaryScreenBody(
+      finalState: finalState,
+      historyRecorder: historyRecorder,
+    );
+  }
+}
+
+class _RadarClinicalSummaryScreenBody extends StatefulWidget {
+  const _RadarClinicalSummaryScreenBody({
+    required this.finalState,
+    required this.historyRecorder,
+  });
+
+  final RadarClinicalViewState? finalState;
+  final RadarClinicalHistoryRecorder historyRecorder;
+
+  @override
+  State<_RadarClinicalSummaryScreenBody> createState() =>
+      _RadarClinicalSummaryScreenBodyState();
+}
+
+class _RadarClinicalSummaryScreenBodyState
+    extends State<_RadarClinicalSummaryScreenBody> {
+  @override
+  void initState() {
+    super.initState();
+    _saveCompletedEvaluation();
+  }
+
+  void _saveCompletedEvaluation() {
+    final finalState = widget.finalState;
+    if (finalState == null) return;
+
+    widget.historyRecorder.saveCompletedEvaluation(finalState).catchError((
+      Object error,
+      StackTrace stackTrace,
+    ) {
+      debugPrint('Radar history save failed: $error');
+    });
+  }
 
   void _closeSummary(BuildContext context) {
     Navigator.of(context).popUntil((route) => route.isFirst);
   }
 
   void _openBdk(BuildContext context) {
-    final summary = finalState?.summary;
-    final decision = summary?.decision ?? finalState?.decision;
+    final summary = widget.finalState?.summary;
+    final decision = summary?.decision ?? widget.finalState?.decision;
 
     BDKSessionService.clear();
     BDKSessionService.loadFromClinicalSummary(
       BDKClinicalPrefill(
-        regionLabel: _regionLabel(finalState?.region),
+        regionLabel: _regionLabel(widget.finalState?.region),
         decisionTitle: decision?.title ?? '',
         decisionSummary: decision?.summary ?? '',
         vigilanceMessage: decision?.vigilanceMessage ?? '',
@@ -51,8 +100,8 @@ class RadarClinicalSummaryScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final summary = finalState?.summary;
-    final decision = summary?.decision ?? finalState?.decision;
+    final summary = widget.finalState?.summary;
+    final decision = summary?.decision ?? widget.finalState?.decision;
 
     return Scaffold(
       backgroundColor: RadarColors.background,
