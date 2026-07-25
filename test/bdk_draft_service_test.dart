@@ -121,6 +121,54 @@ void main() {
     expect(BDKSessionService.motif, isEmpty);
   });
 
+  test('restoreActiveDraft refuses an unknown schema version', () async {
+    await Hive.box(BdkDraftService.boxName).put('active_bdk_draft', {
+      'schemaVersion': BDKSessionService.draftSchemaVersion + 1,
+      'title': 'BDK Lombalgie',
+      'patientLocalId': 'patient-1',
+      'patientAnonymousId': 'DR-patient-1',
+      'motif': 'Ancien brouillon',
+    });
+
+    final restored = await BdkDraftService.restoreActiveDraft(
+      patientLocalId: 'patient-1',
+      patientAnonymousId: 'DR-patient-1',
+      title: 'BDK Lombalgie',
+    );
+
+    expect(restored, isFalse);
+    expect(BDKSessionService.motif, isEmpty);
+  });
+
+  test(
+    'deleteDraftForPatient only deletes the matching patient draft',
+    () async {
+      BDKSessionService.associatePatient(
+        localId: 'patient-2',
+        anonymousId: 'DR-patient-2',
+        displayName: 'MARTIN Bob',
+      );
+      BDKSessionService.motif = 'BDK Genou';
+      await BdkDraftService.saveActiveDraft(title: 'BDK Genou');
+
+      await BdkDraftService.deleteDraftForPatient('patient-1');
+      expect(await BdkDraftService.getActiveDraft(), isNotNull);
+
+      await BdkDraftService.deleteDraftForPatient('patient-2');
+      expect(await BdkDraftService.getActiveDraft(), isNull);
+    },
+  );
+
+  test('clearAllDrafts removes active and historical keys', () async {
+    final box = Hive.box(BdkDraftService.boxName);
+    await box.put('active_bdk_draft', {'motif': 'BDK actif'});
+    await box.put('legacy_bdk_draft', {'motif': 'BDK historique'});
+
+    await BdkDraftService.clearAllDrafts();
+
+    expect(box.isEmpty, isTrue);
+  });
+
   test('clearActiveDraft deletes the durable BDK draft', () async {
     BDKSessionService.motif = 'BDK Genou';
 

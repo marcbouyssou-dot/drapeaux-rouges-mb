@@ -2,6 +2,8 @@ import 'package:hive/hive.dart';
 import 'package:uuid/uuid.dart';
 
 import '../models/patient_local.dart';
+import 'bdk_draft_service.dart';
+import 'bdk_session_service.dart';
 import 'local_database_service.dart';
 
 class RgpdLocalService {
@@ -80,6 +82,13 @@ class RgpdLocalService {
   }
 
   static Future<void> deletePatient(String localId) async {
+    if (BDKSessionService.isAssociatedWithPatient(
+      localId: localId,
+      anonymousId: null,
+    )) {
+      BDKSessionService.clear();
+    }
+    await BdkDraftService.deleteDraftForPatient(localId);
     await LocalDatabaseService.anonymizeEvaluationsForPatient(localId);
     await _patientsBox.delete(localId);
 
@@ -91,6 +100,8 @@ class RgpdLocalService {
   }
 
   static Future<void> deleteAllLocalData() async {
+    BDKSessionService.clear();
+    await BdkDraftService.clearAllDrafts();
     await _patientsBox.clear();
     await LocalDatabaseService.clearEvaluations();
     await clearCurrentPatient();
