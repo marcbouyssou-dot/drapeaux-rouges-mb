@@ -3,10 +3,12 @@ import 'package:flutter/material.dart';
 
 import '../models/attestation/attestation_history_item.dart';
 import '../models/attestation/attestation_template.dart';
+import '../models/bdk_history_item.dart';
 import '../models/medical_letter/medical_letter_history_item.dart';
 import '../models/medical_letter/medical_letter_template.dart';
 import '../models/prescription_model.dart';
 import '../services/attestation_history_service.dart';
+import '../services/bdk_history_service.dart';
 import '../services/history_service.dart';
 import '../services/medical_letter_history_service.dart';
 import '../services/offline_sync_service.dart';
@@ -22,12 +24,19 @@ import '../features/radar/presentation/widgets/radar_destructive_confirmation_di
 import '../features/radar/presentation/widgets/radar_page_header.dart';
 import 'evaluation/evaluation_detail_screen.dart';
 import 'attestation/attestation_history_detail_screen.dart';
+import 'bdk/bdk_history_detail_screen.dart';
 import 'medical_letter/medical_letter_history_detail_screen.dart';
 import 'prescription/prescription_history_detail_screen.dart';
 
 enum HistoryFilter { all, critical, high, moderate, low, anonymous }
 
-enum HistoryView { evaluations, prescriptions, attestations, medicalLetters }
+enum HistoryView {
+  evaluations,
+  prescriptions,
+  attestations,
+  medicalLetters,
+  bdks,
+}
 
 class HistoryScreen extends StatefulWidget {
   const HistoryScreen({super.key});
@@ -43,6 +52,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
   List<PrescriptionModel> prescriptions = [];
   List<AttestationHistoryItem> attestations = [];
   List<MedicalLetterHistoryItem> medicalLetters = [];
+  List<BdkHistoryItem> bdks = [];
   String searchQuery = '';
   HistoryFilter selectedFilter = HistoryFilter.all;
   HistoryView selectedView = HistoryView.evaluations;
@@ -65,6 +75,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
     final loadedAttestations =
         await AttestationHistoryService.getAttestations();
     final loadedMedicalLetters = await MedicalLetterHistoryService.getLetters();
+    final loadedBdks = await BdkHistoryService.getHistory();
 
     if (!mounted) return;
 
@@ -73,6 +84,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
       prescriptions = loadedPrescriptions;
       attestations = loadedAttestations;
       medicalLetters = loadedMedicalLetters;
+      bdks = loadedBdks;
     });
   }
 
@@ -157,6 +169,24 @@ class _HistoryScreenState extends State<HistoryScreen> {
     }).toList();
 
     filtered.sort((a, b) => b.generatedAt.compareTo(a.generatedAt));
+    return filtered;
+  }
+
+  List<BdkHistoryItem> get filteredBdks {
+    final query = searchQuery.trim().toLowerCase();
+    final filtered = bdks.where((item) {
+      if (query.isEmpty) return true;
+      return [
+        item.displayPatient,
+        item.title,
+        item.customContext ?? '',
+        item.motif,
+        formatDate(item.generatedAt.toIso8601String()),
+        formatDate(item.updatedAt.toIso8601String()),
+      ].join(' ').toLowerCase().contains(query);
+    }).toList();
+
+    filtered.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
     return filtered;
   }
 
@@ -326,10 +356,12 @@ class _HistoryScreenState extends State<HistoryScreen> {
     final prescriptionResults = filteredPrescriptions;
     final attestationResults = filteredAttestations;
     final medicalLetterResults = filteredMedicalLetters;
+    final bdkResults = filteredBdks;
     final showEvaluations = selectedView == HistoryView.evaluations;
     final showPrescriptions = selectedView == HistoryView.prescriptions;
     final showAttestations = selectedView == HistoryView.attestations;
     final showMedicalLetters = selectedView == HistoryView.medicalLetters;
+    final showBdks = selectedView == HistoryView.bdks;
 
     return Theme(
       data: RadarTheme.lightTheme,
@@ -397,6 +429,12 @@ class _HistoryScreenState extends State<HistoryScreen> {
                         buildNoResultState(),
                       if (medicalLetterResults.isNotEmpty)
                         ...medicalLetterResults.map(buildMedicalLetterCard),
+                    ] else if (showBdks) ...[
+                      if (bdks.isEmpty) buildBdkEmptyState(),
+                      if (bdks.isNotEmpty && bdkResults.isEmpty)
+                        buildNoResultState(),
+                      if (bdkResults.isNotEmpty)
+                        ...bdkResults.map(buildBdkCard),
                     ],
                   ],
                 ),
@@ -647,6 +685,11 @@ class _HistoryScreenState extends State<HistoryScreen> {
             icon: Icons.mark_email_read_outlined,
             view: HistoryView.medicalLetters,
           ),
+          buildHistoryViewButton(
+            label: 'BDK',
+            icon: Icons.assignment_ind_outlined,
+            view: HistoryView.bdks,
+          ),
         ],
       ),
     );
@@ -803,6 +846,15 @@ class _HistoryScreenState extends State<HistoryScreen> {
       title: 'Aucun courrier médical généré',
       text:
           'Les courriers médicaux générés apparaîtront ici avec leur patient, leur type et leur date.',
+    );
+  }
+
+  Widget buildBdkEmptyState() {
+    return buildInfoState(
+      icon: Icons.assignment_ind_outlined,
+      title: 'Aucun BDK terminé',
+      text:
+          'Les BDK exportés apparaîtront ici avec leur patient, leur type et leurs dates.',
     );
   }
 
@@ -1259,6 +1311,89 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   text: item.practitionerSignatureStatus,
                 ),
               ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget buildBdkCard(BdkHistoryItem item) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push<void>(
+          context,
+          CupertinoPageRoute(
+            builder: (_) => BdkHistoryDetailScreen(item: item),
+          ),
+        );
+      },
+      child: Container(
+        margin: const EdgeInsets.only(bottom: RadarSpacing.lg),
+        padding: const EdgeInsets.all(RadarSpacing.lg),
+        decoration: BoxDecoration(
+          color: RadarColors.surface,
+          borderRadius: BorderRadius.circular(RadarRadius.card),
+          boxShadow: RadarShadows.card,
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              height: 50,
+              width: 50,
+              decoration: BoxDecoration(
+                color: RadarColors.primary.withValues(alpha: 0.10),
+                borderRadius: BorderRadius.circular(RadarRadius.small),
+              ),
+              child: const Icon(
+                Icons.assignment_ind_outlined,
+                color: RadarColors.primary,
+                size: 25,
+              ),
+            ),
+            const SizedBox(width: RadarSpacing.lg),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    item.displayPatient,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: RadarTextStyles.contextTitle.copyWith(fontSize: 16),
+                  ),
+                  const SizedBox(height: RadarSpacing.xs),
+                  Text(
+                    item.title,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: RadarTextStyles.secondary.copyWith(
+                      color: RadarColors.textPrimary,
+                    ),
+                  ),
+                  const SizedBox(height: RadarSpacing.md),
+                  Wrap(
+                    spacing: RadarSpacing.sm,
+                    runSpacing: RadarSpacing.sm,
+                    children: [
+                      buildSmallBadge(
+                        icon: Icons.event_outlined,
+                        text: formatDate(item.generatedAt.toIso8601String()),
+                      ),
+                      buildSmallBadge(
+                        icon: Icons.update_rounded,
+                        text:
+                            'Modifié ${formatDate(item.updatedAt.toIso8601String())}',
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const Icon(
+              Icons.chevron_right_rounded,
+              color: RadarColors.textSecondary,
             ),
           ],
         ),

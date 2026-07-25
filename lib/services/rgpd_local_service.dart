@@ -5,6 +5,7 @@ import '../models/patient_local.dart';
 import 'access_direct_local_service.dart';
 import 'attestation_history_service.dart';
 import 'bdk_draft_service.dart';
+import 'bdk_history_service.dart';
 import 'bdk_session_service.dart';
 import 'local_database_service.dart';
 import 'medical_letter_history_service.dart';
@@ -97,6 +98,7 @@ class RgpdLocalService {
       BDKSessionService.clear();
     }
     await BdkDraftService.deleteDraftForPatient(localId);
+    await BdkHistoryService.deleteForPatient(localId, anonymousId);
     await PrescriptionService.deleteForPatient(localId, anonymousId);
     await MedicalLetterHistoryService.deleteForPatient(localId, anonymousId);
     await AttestationHistoryService.deleteForPatient(localId, anonymousId);
@@ -113,6 +115,7 @@ class RgpdLocalService {
   static Future<void> deleteAllLocalData() async {
     BDKSessionService.clear();
     await BdkDraftService.clearAllDrafts();
+    await BdkHistoryService.clearHistory();
     await PrescriptionService.clearPrescriptions();
     await MedicalLetterHistoryService.clearLetters();
     await AttestationHistoryService.clearAttestations();

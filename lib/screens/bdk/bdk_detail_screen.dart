@@ -2,9 +2,11 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../../models/bdk_history_item.dart';
 import '../../models/patient_local.dart';
 import '../../models/practitioner_profile.dart';
 import '../../services/bdk_draft_service.dart';
+import '../../services/bdk_history_service.dart';
 import '../../services/bdk_pdf_service.dart';
 import '../../services/bdk_session_service.dart';
 import '../../services/practitioner_profile_service.dart';
@@ -566,6 +568,40 @@ Une prise en charge kinésithérapique adaptée semble indiquée avec surveillan
         criteresReevaluation: criteresReevaluationController.text,
         syntheseClinique: BDKSessionService.syntheseClinique,
         practitioner: practitioner,
+      );
+      final completedAt = DateTime.now();
+      final patient = currentPatient;
+      await BdkHistoryService.save(
+        BdkHistoryItem(
+          id: completedAt.microsecondsSinceEpoch.toString(),
+          title: widget.title,
+          customContext: widget.customContext,
+          generatedAt: completedAt,
+          updatedAt: completedAt,
+          patientLocalId:
+              patient?.localId ?? BDKSessionService.patientLocalId ?? '',
+          patientAnonymousId:
+              patient?.anonymousId ??
+              BDKSessionService.patientAnonymousId ??
+              '',
+          patientDisplayName: patient == null
+              ? BDKSessionService.patientDisplayName
+              : RgpdLocalService.patientDisplayName(patient),
+          motif: motifController.text,
+          contexte: contexteController.text,
+          antecedents: antecedentsController.text,
+          evaluation: evaluationController.text,
+          tests: testsController.text,
+          limitations: limitationsController.text,
+          diagnostic: diagnosticController.text,
+          vigilance: vigilanceController.text,
+          objectifs: objectifsController.text,
+          planTraitement: planTraitementController.text,
+          criteresReevaluation: criteresReevaluationController.text,
+          syntheseClinique: BDKSessionService.syntheseClinique,
+          patientSnapshot: patient?.toJson(),
+          practitionerSnapshot: practitioner.toJson(),
+        ),
       );
     } catch (_) {
       if (!mounted) return;

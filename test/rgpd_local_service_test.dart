@@ -6,6 +6,7 @@ import 'package:drapeaux_rouges_mb/models/patient_local.dart';
 import 'package:drapeaux_rouges_mb/models/prescription_model.dart';
 import 'package:drapeaux_rouges_mb/services/attestation_history_service.dart';
 import 'package:drapeaux_rouges_mb/services/bdk_draft_service.dart';
+import 'package:drapeaux_rouges_mb/services/bdk_history_service.dart';
 import 'package:drapeaux_rouges_mb/services/bdk_session_service.dart';
 import 'package:drapeaux_rouges_mb/services/history_service.dart';
 import 'package:drapeaux_rouges_mb/services/local_database_service.dart';
@@ -30,6 +31,7 @@ void main() {
     await Hive.openBox(MedicalLetterHistoryService.boxName);
     await Hive.openBox(AttestationHistoryService.boxName);
     await Hive.openBox(BdkDraftService.boxName);
+    await Hive.openBox(BdkHistoryService.boxName);
     BDKSessionService.clear();
   });
 
