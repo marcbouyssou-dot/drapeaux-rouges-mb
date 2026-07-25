@@ -75,21 +75,11 @@ class _AttestationHistoryScreenState extends State<AttestationHistoryScreen> {
                     RadarSpacing.xxl,
                   ),
                   children: [
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: RadarPageBackButton(
-                        onPressed: () => Navigator.pop(context),
-                      ),
-                    ),
-                    const SizedBox(height: RadarSpacing.xl),
-                    const Text(
-                      'Historique des attestations',
-                      style: RadarTextStyles.screenTitle,
-                    ),
-                    const SizedBox(height: RadarSpacing.sm),
-                    const Text(
-                      'Retrouver les attestations générées et réexporter un PDF.',
-                      style: RadarTextStyles.secondary,
+                    RadarPageHeader(
+                      title: 'Historique des attestations',
+                      subtitle:
+                          'Retrouver les attestations générées et régénérer un PDF.',
+                      onBack: () => Navigator.pop(context),
                     ),
                     const SizedBox(height: RadarSpacing.xxl),
                     if (loading)

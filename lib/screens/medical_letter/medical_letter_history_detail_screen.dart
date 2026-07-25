@@ -132,6 +132,10 @@ class MedicalLetterHistoryDetailScreen extends StatelessWidget {
                     onPressed: () => deleteLetter(context),
                     icon: const Icon(Icons.delete_outline_rounded),
                     label: const Text('Supprimer'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: RadarColors.clinicalDanger,
+                      side: const BorderSide(color: RadarColors.clinicalDanger),
+                    ),
                   ),
                 ),
                 const SizedBox(width: RadarSpacing.md),

@@ -141,6 +141,10 @@ class PrescriptionHistoryDetailScreen extends StatelessWidget {
                     onPressed: () => deletePrescription(context),
                     icon: const Icon(Icons.delete_outline_rounded),
                     label: const Text('Supprimer'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: RadarColors.clinicalDanger,
+                      side: const BorderSide(color: RadarColors.clinicalDanger),
+                    ),
                   ),
                 ),
                 const SizedBox(width: RadarSpacing.md),
@@ -148,7 +152,7 @@ class PrescriptionHistoryDetailScreen extends StatelessWidget {
                   child: FilledButton.icon(
                     onPressed: exportPdf,
                     icon: const Icon(Icons.picture_as_pdf_outlined),
-                    label: const Text('Exporter le PDF'),
+                    label: const Text('Régénérer le PDF'),
                   ),
                 ),
               ],
@@ -167,7 +171,7 @@ class PrescriptionHistoryDetailScreen extends StatelessWidget {
           const SizedBox(width: RadarSpacing.lg),
           const Expanded(
             child: Text(
-              'Prescription historisée',
+              'Détail de la prescription',
               style: RadarTextStyles.question,
             ),
           ),

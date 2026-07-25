@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 
 import '../../features/radar/presentation/theme/radar_colors.dart';
 import '../../features/radar/presentation/theme/radar_layout.dart';
-import '../../features/radar/presentation/theme/radar_radius.dart';
-import '../../features/radar/presentation/theme/radar_shadows.dart';
 import '../../features/radar/presentation/theme/radar_spacing.dart';
 import '../../features/radar/presentation/theme/radar_text_styles.dart';
 import '../../features/radar/presentation/theme/radar_theme.dart';
 import '../../features/radar/presentation/widgets/radar_destructive_confirmation_dialog.dart';
+import '../../features/radar/presentation/widgets/radar_page_header.dart';
+import '../../features/radar/presentation/widgets/radar_surface_card.dart';
 import '../../models/bdk_history_item.dart';
 import '../../services/bdk_history_service.dart';
 import '../../services/bdk_pdf_service.dart';
@@ -104,70 +104,54 @@ class BdkHistoryDetailScreen extends StatelessWidget {
       data: RadarTheme.lightTheme,
       child: Scaffold(
         backgroundColor: RadarColors.background,
-        appBar: AppBar(
-          title: const Text('BDK historique'),
-          actions: [
-            IconButton(
-              tooltip: 'Supprimer ce BDK',
-              onPressed: () => _delete(context),
-              icon: const Icon(Icons.delete_outline_rounded),
-            ),
-            IconButton(
-              tooltip: 'Régénérer le PDF',
-              onPressed: () => _regeneratePdf(context),
-              icon: const Icon(Icons.picture_as_pdf_outlined),
-            ),
-          ],
-        ),
-        body: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: RadarLayout.formWidth),
-            child: ListView(
-              padding: const EdgeInsets.all(RadarSpacing.xl),
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(RadarSpacing.lg),
-                  decoration: BoxDecoration(
-                    color: RadarColors.surface,
-                    borderRadius: BorderRadius.circular(RadarRadius.card),
-                    boxShadow: RadarShadows.card,
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        item.displayPatient,
-                        style: RadarTextStyles.contextTitle,
-                      ),
-                      const SizedBox(height: RadarSpacing.xs),
-                      Text(item.title, style: RadarTextStyles.secondary),
-                      const SizedBox(height: RadarSpacing.md),
-                      Text(
-                        'Créé le ${_formatDate(item.generatedAt)}',
-                        style: RadarTextStyles.caption,
-                      ),
-                      Text(
-                        'Dernière modification ${_formatDate(item.updatedAt)}',
-                        style: RadarTextStyles.caption,
-                      ),
-                    ],
-                  ),
+        body: SafeArea(
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(
+                maxWidth: RadarLayout.workflowWidth,
+              ),
+              child: ListView(
+                padding: const EdgeInsets.fromLTRB(
+                  RadarSpacing.xl,
+                  RadarSpacing.xl,
+                  RadarSpacing.xl,
+                  RadarSpacing.xxxl * 3,
                 ),
-                const SizedBox(height: RadarSpacing.lg),
-                ...sections
-                    .where((section) => section.$2.trim().isNotEmpty)
-                    .map(
-                      (section) => Padding(
-                        padding: const EdgeInsets.only(bottom: RadarSpacing.lg),
-                        child: Container(
-                          padding: const EdgeInsets.all(RadarSpacing.lg),
-                          decoration: BoxDecoration(
-                            color: RadarColors.surface,
-                            borderRadius: BorderRadius.circular(
-                              RadarRadius.card,
-                            ),
-                            boxShadow: RadarShadows.card,
+                children: [
+                  _buildHeader(context),
+                  const SizedBox(height: RadarSpacing.xxl),
+                  RadarSurfaceCard(
+                    margin: const EdgeInsets.only(bottom: RadarSpacing.lg),
+                    padding: const EdgeInsets.all(RadarSpacing.lg),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          item.displayPatient,
+                          style: RadarTextStyles.contextTitle,
+                        ),
+                        const SizedBox(height: RadarSpacing.xs),
+                        Text(item.title, style: RadarTextStyles.secondary),
+                        const SizedBox(height: RadarSpacing.md),
+                        Text(
+                          'Créé le ${_formatDate(item.generatedAt)}',
+                          style: RadarTextStyles.caption,
+                        ),
+                        Text(
+                          'Dernière modification ${_formatDate(item.updatedAt)}',
+                          style: RadarTextStyles.caption,
+                        ),
+                      ],
+                    ),
+                  ),
+                  ...sections
+                      .where((section) => section.$2.trim().isNotEmpty)
+                      .map(
+                        (section) => RadarSurfaceCard(
+                          margin: const EdgeInsets.only(
+                            bottom: RadarSpacing.lg,
                           ),
+                          padding: const EdgeInsets.all(RadarSpacing.lg),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -188,11 +172,63 @@ class BdkHistoryDetailScreen extends StatelessWidget {
                           ),
                         ),
                       ),
+                ],
+              ),
+            ),
+          ),
+        ),
+        bottomNavigationBar: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(
+              RadarSpacing.xl,
+              RadarSpacing.sm,
+              RadarSpacing.xl,
+              RadarSpacing.xl,
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () => _delete(context),
+                    icon: const Icon(Icons.delete_outline_rounded),
+                    label: const Text('Supprimer'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: RadarColors.clinicalDanger,
+                      side: const BorderSide(color: RadarColors.clinicalDanger),
                     ),
+                  ),
+                ),
+                const SizedBox(width: RadarSpacing.md),
+                Expanded(
+                  child: FilledButton.icon(
+                    onPressed: () => _regeneratePdf(context),
+                    icon: const Icon(Icons.picture_as_pdf_outlined),
+                    label: const Text('Régénérer le PDF'),
+                  ),
+                ),
               ],
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildHeader(BuildContext context) {
+    return RadarSurfaceCard(
+      child: Row(
+        children: [
+          RadarPageBackButton(onPressed: () => Navigator.pop(context)),
+          const SizedBox(width: RadarSpacing.lg),
+          Expanded(
+            child: Text(
+              item.title,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: RadarTextStyles.question,
+            ),
+          ),
+        ],
       ),
     );
   }
