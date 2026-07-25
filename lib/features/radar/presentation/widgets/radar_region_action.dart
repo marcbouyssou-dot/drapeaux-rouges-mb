@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../theme/radar_colors.dart';
-import '../theme/radar_radius.dart';
-import '../theme/radar_shadows.dart';
 import '../theme/radar_spacing.dart';
 import '../theme/radar_text_styles.dart';
+import 'radar_surface_card.dart';
 
 class RadarRegionAction extends StatelessWidget {
   const RadarRegionAction({
@@ -18,37 +17,21 @@ class RadarRegionAction extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final borderRadius = BorderRadius.circular(RadarRadius.card);
-
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: RadarColors.surface,
-        borderRadius: borderRadius,
-        boxShadow: RadarShadows.card,
+    return RadarSurfaceCard(
+      onTap: onTap,
+      padding: const EdgeInsets.symmetric(
+        horizontal: RadarSpacing.cardGap,
+        vertical: RadarSpacing.sm,
       ),
-      child: Material(
-        color: RadarColors.surface,
-        borderRadius: borderRadius,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: borderRadius,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: RadarSpacing.cardGap,
-              vertical: RadarSpacing.sm,
-            ),
-            child: Row(
-              children: [
-                Expanded(child: Text(label, style: RadarTextStyles.body)),
-                const Icon(
-                  Icons.chevron_right,
-                  color: RadarColors.blueGrey,
-                  size: 20,
-                ),
-              ],
-            ),
+      child: Row(
+        children: [
+          Expanded(child: Text(label, style: RadarTextStyles.body)),
+          const Icon(
+            Icons.chevron_right,
+            color: RadarColors.blueGrey,
+            size: 20,
           ),
-        ),
+        ],
       ),
     );
   }

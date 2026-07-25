@@ -11,6 +11,7 @@ import '../theme/radar_spacing.dart';
 import '../theme/radar_text_styles.dart';
 import '../widgets/radar_patient_context.dart';
 import '../widgets/radar_primary_button.dart';
+import '../widgets/radar_surface_card.dart';
 
 class RadarClinicalHardStopScreen extends StatelessWidget {
   const RadarClinicalHardStopScreen({super.key, required this.finalState});
@@ -251,18 +252,8 @@ class _HardStopSectionState extends State<_HardStopSection> {
 
   @override
   Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: RadarColors.surface,
-        borderRadius: BorderRadius.circular(RadarRadius.card),
-        boxShadow: [
-          BoxShadow(
-            color: RadarColors.textPrimary.withValues(alpha: 0.018),
-            blurRadius: 16,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
+    return RadarSurfaceCard(
+      padding: EdgeInsets.zero,
       child: Column(
         children: [
           Semantics(

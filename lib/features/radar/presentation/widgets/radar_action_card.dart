@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 
 import '../theme/radar_colors.dart';
 import '../theme/radar_radius.dart';
-import '../theme/radar_shadows.dart';
 import '../theme/radar_spacing.dart';
 import '../theme/radar_text_styles.dart';
+import 'radar_surface_card.dart';
 
 class RadarActionCard extends StatelessWidget {
   const RadarActionCard({
@@ -26,52 +26,35 @@ class RadarActionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final borderRadius = BorderRadius.circular(RadarRadius.card);
-
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: RadarColors.surface,
-        borderRadius: borderRadius,
-        boxShadow: RadarShadows.card,
-      ),
-      child: Material(
-        color: RadarColors.surface,
-        borderRadius: borderRadius,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: borderRadius,
-          child: Padding(
-            padding: const EdgeInsets.all(RadarSpacing.xl),
-            child: Row(
+    return RadarSurfaceCard(
+      onTap: onTap,
+      child: Row(
+        children: [
+          _RadarActionIcon(icon: icon, accentColor: accentColor),
+          const SizedBox(width: RadarSpacing.cardGap),
+          Expanded(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _RadarActionIcon(icon: icon, accentColor: accentColor),
-                const SizedBox(width: RadarSpacing.cardGap),
-                Expanded(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(title, style: RadarTextStyles.question),
-                      const SizedBox(height: RadarSpacing.sm),
-                      Text(subtitle, style: RadarTextStyles.secondary),
-                      if (description != null) ...[
-                        const SizedBox(height: RadarSpacing.sm),
-                        Text(description!, style: RadarTextStyles.caption),
-                      ],
-                    ],
-                  ),
-                ),
-                const SizedBox(width: RadarSpacing.lg),
-                const Icon(
-                  Icons.chevron_right,
-                  color: RadarColors.blueGrey,
-                  size: 24,
-                ),
+                Text(title, style: RadarTextStyles.question),
+                const SizedBox(height: RadarSpacing.sm),
+                Text(subtitle, style: RadarTextStyles.secondary),
+                if (description != null) ...[
+                  const SizedBox(height: RadarSpacing.sm),
+                  Text(description!, style: RadarTextStyles.caption),
+                ],
               ],
             ),
           ),
-        ),
+          const SizedBox(width: RadarSpacing.lg),
+          const Icon(
+            Icons.chevron_right,
+            color: RadarColors.blueGrey,
+            size: 24,
+          ),
+        ],
       ),
     );
   }

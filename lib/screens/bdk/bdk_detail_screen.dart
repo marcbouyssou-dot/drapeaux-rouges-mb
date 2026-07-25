@@ -158,7 +158,7 @@ class _BDKDetailScreenState extends State<BDKDetailScreen> {
     }
 
     return Container(
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.all(RadarSpacing.lg),
       margin: const EdgeInsets.only(bottom: RadarSpacing.md),
       decoration: BoxDecoration(
         color: RadarColors.successSoft.withValues(alpha: 0.55),
@@ -212,7 +212,7 @@ class _BDKDetailScreenState extends State<BDKDetailScreen> {
 
   Widget buildNoImportedEvaluationBanner() {
     return Container(
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.all(RadarSpacing.lg),
       margin: const EdgeInsets.only(bottom: RadarSpacing.md),
       decoration: BoxDecoration(
         color: RadarColors.surface,
@@ -384,7 +384,7 @@ class _BDKDetailScreenState extends State<BDKDetailScreen> {
     final patient = currentPatient;
 
     return Container(
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.all(RadarSpacing.lg),
       margin: const EdgeInsets.only(bottom: RadarSpacing.md),
       decoration: BoxDecoration(
         color: RadarColors.surface,

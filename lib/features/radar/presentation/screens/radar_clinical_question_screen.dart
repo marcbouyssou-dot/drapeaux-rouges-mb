@@ -11,6 +11,7 @@ import '../theme/radar_shadows.dart';
 import '../theme/radar_spacing.dart';
 import '../theme/radar_text_styles.dart';
 import '../widgets/radar_patient_context.dart';
+import '../widgets/radar_surface_card.dart';
 import 'radar_clinical_hard_stop_screen.dart';
 import 'radar_clinical_summary_screen.dart';
 
@@ -189,8 +190,6 @@ class _RadarAnswerCardState extends State<_RadarAnswerCard> {
 
   @override
   Widget build(BuildContext context) {
-    final borderRadius = BorderRadius.circular(RadarRadius.card);
-
     return Semantics(
       button: true,
       label: widget.label,
@@ -206,26 +205,19 @@ class _RadarAnswerCardState extends State<_RadarAnswerCard> {
             duration: const Duration(milliseconds: 200),
             curve: Curves.easeOut,
             opacity: _pressed ? 0.78 : 1,
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                color: RadarColors.surface,
-                borderRadius: borderRadius,
-                boxShadow: RadarShadows.card,
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(RadarSpacing.cardGap),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Text(widget.label, style: RadarTextStyles.body),
-                    ),
-                    const Icon(
-                      Icons.chevron_right,
-                      color: RadarColors.blueGrey,
-                      size: 20,
-                    ),
-                  ],
-                ),
+            child: RadarSurfaceCard(
+              padding: const EdgeInsets.all(RadarSpacing.cardGap),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(widget.label, style: RadarTextStyles.body),
+                  ),
+                  const Icon(
+                    Icons.chevron_right,
+                    color: RadarColors.blueGrey,
+                    size: 20,
+                  ),
+                ],
               ),
             ),
           ),

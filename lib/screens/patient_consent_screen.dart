@@ -1018,7 +1018,7 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
 
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.all(10),
+      padding: const EdgeInsets.all(RadarSpacing.md),
       decoration: BoxDecoration(
         color: hasDocument ? RadarColors.successSoft : RadarColors.surface,
         borderRadius: BorderRadius.circular(RadarRadius.card),
@@ -1740,7 +1740,7 @@ class _DiagnosisDocumentCard extends StatelessWidget {
     final addedAt = _formatAddedAt(documentAddedAt);
 
     return Container(
-      padding: const EdgeInsets.all(10),
+      padding: const EdgeInsets.all(RadarSpacing.md),
       decoration: BoxDecoration(
         color: hasDocument ? RadarColors.successSoft : RadarColors.surface,
         borderRadius: BorderRadius.circular(RadarRadius.card),

@@ -635,7 +635,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
   Widget buildHistoryViewSwitch() {
     return Container(
-      padding: const EdgeInsets.all(5),
+      padding: const EdgeInsets.all(RadarSpacing.xs),
       decoration: BoxDecoration(
         color: RadarColors.surface,
         borderRadius: BorderRadius.circular(RadarRadius.pill),
