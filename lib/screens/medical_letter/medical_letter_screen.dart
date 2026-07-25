@@ -108,6 +108,15 @@ class _MedicalLetterScreenState extends State<MedicalLetterScreen> {
   }
 
   Future<void> exportPdf() async {
+    final reloadedPatient = await RgpdLocalService.getCurrentPatient();
+    if (!_samePatientContext(patient, reloadedPatient)) {
+      showMessage(
+        'Le patient actif a changé ou a été supprimé. Revenez aux documents avant de continuer.',
+      );
+      return;
+    }
+    patient = reloadedPatient;
+
     setState(() {
       exporting = true;
     });
@@ -126,6 +135,24 @@ class _MedicalLetterScreenState extends State<MedicalLetterScreen> {
         });
       }
     }
+  }
+
+  bool _samePatientContext(PatientLocal? loaded, PatientLocal? current) {
+    if (loaded == null || current == null) {
+      return loaded == null && current == null;
+    }
+
+    final loadedLocalId = loaded.localId.trim();
+    final currentLocalId = current.localId.trim();
+    if (loadedLocalId.isNotEmpty && currentLocalId.isNotEmpty) {
+      return loadedLocalId == currentLocalId;
+    }
+
+    final loadedAnonymousId = loaded.anonymousId.trim();
+    final currentAnonymousId = current.anonymousId.trim();
+    return loadedAnonymousId.isNotEmpty &&
+        currentAnonymousId.isNotEmpty &&
+        loadedAnonymousId == currentAnonymousId;
   }
 
   void showMessage(String message) {

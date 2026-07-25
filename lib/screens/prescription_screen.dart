@@ -242,6 +242,15 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
   }
 
   Future<void> exportPdf() async {
+    final reloadedPatient = await RgpdLocalService.getCurrentPatient();
+    if (!_samePatientContext(currentPatient, reloadedPatient)) {
+      showMessage(
+        'Le patient actif a changé ou a été supprimé. Revenez aux documents avant de continuer.',
+      );
+      return;
+    }
+    currentPatient = reloadedPatient;
+
     if (currentPatient == null) {
       showMessage('Aucun patient actif. Sélectionnez un patient avant export.');
       return;
@@ -281,6 +290,24 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
     );
 
     showMessage('Prescription enregistrée dans l’historique.');
+  }
+
+  bool _samePatientContext(PatientLocal? loaded, PatientLocal? current) {
+    if (loaded == null || current == null) {
+      return loaded == null && current == null;
+    }
+
+    final loadedLocalId = loaded.localId.trim();
+    final currentLocalId = current.localId.trim();
+    if (loadedLocalId.isNotEmpty && currentLocalId.isNotEmpty) {
+      return loadedLocalId == currentLocalId;
+    }
+
+    final loadedAnonymousId = loaded.anonymousId.trim();
+    final currentAnonymousId = current.anonymousId.trim();
+    return loadedAnonymousId.isNotEmpty &&
+        currentAnonymousId.isNotEmpty &&
+        loadedAnonymousId == currentAnonymousId;
   }
 
   Future<void> showPractitionerDialog() async {

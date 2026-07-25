@@ -183,7 +183,7 @@ class _PatientAttestationScreenState extends State<PatientAttestationScreen> {
   PatientAttestation buildAttestation() {
     return PatientAttestation(
       template: widget.template,
-      patient: patient,
+      patient: _documentPatient(),
       practitioner: practitioner,
       date: date,
       lieu: lieuController.text.trim(),
@@ -217,7 +217,49 @@ class _PatientAttestationScreenState extends State<PatientAttestationScreen> {
     );
   }
 
+  PatientLocal? _documentPatient() {
+    if (!isProximityAttestation) return patient;
+
+    final linkedPatient = patient;
+    return PatientLocal(
+      localId: linkedPatient?.localId ?? '',
+      anonymousId: linkedPatient?.anonymousId ?? '',
+      nom: patientNomController.text.trim(),
+      prenom: patientPrenomController.text.trim(),
+      dateNaissance: patientBirthDateController.text.trim(),
+      consentementValide: consentConfirmed,
+      dateConsentement: linkedPatient?.dateConsentement ?? date,
+      signatureBase64: patientSignatureBase64,
+      adresse: patientAddressController.text.trim(),
+      codePostal: patientPostalCodeController.text.trim(),
+      ville: patientCityController.text.trim(),
+      telephone: linkedPatient?.telephone ?? '',
+      email: linkedPatient?.email ?? '',
+      profession: linkedPatient?.profession ?? '',
+      personnePrevenir: linkedPatient?.personnePrevenir ?? '',
+      telephoneContact: linkedPatient?.telephoneContact ?? '',
+      medecinNom: linkedPatient?.medecinNom ?? '',
+      medecinRpps: linkedPatient?.medecinRpps ?? '',
+      medecinAdeli: linkedPatient?.medecinAdeli ?? '',
+      medecinAdresse: linkedPatient?.medecinAdresse ?? '',
+      medecinTelephone: linkedPatient?.medecinTelephone ?? '',
+      medecinEmail: linkedPatient?.medecinEmail ?? '',
+      carteVitalePresentee: linkedPatient?.carteVitalePresentee ?? false,
+      identiteVerifiee: linkedPatient?.identiteVerifiee ?? false,
+      medicalDocuments: linkedPatient?.medicalDocuments ?? const [],
+    );
+  }
+
   Future<void> exportPdf() async {
+    final reloadedPatient = await RgpdLocalService.getCurrentPatient();
+    if (!_samePatientContext(patient, reloadedPatient)) {
+      showMessage(
+        'Le patient actif a changé ou a été supprimé. Revenez aux documents avant de continuer.',
+      );
+      return;
+    }
+    patient = reloadedPatient;
+
     if (isProximityAttestation && !_validateProximityForm()) {
       return;
     }
@@ -259,6 +301,24 @@ class _PatientAttestationScreenState extends State<PatientAttestationScreen> {
         });
       }
     }
+  }
+
+  bool _samePatientContext(PatientLocal? loaded, PatientLocal? current) {
+    if (loaded == null || current == null) {
+      return loaded == null && current == null;
+    }
+
+    final loadedLocalId = loaded.localId.trim();
+    final currentLocalId = current.localId.trim();
+    if (loadedLocalId.isNotEmpty && currentLocalId.isNotEmpty) {
+      return loadedLocalId == currentLocalId;
+    }
+
+    final loadedAnonymousId = loaded.anonymousId.trim();
+    final currentAnonymousId = current.anonymousId.trim();
+    return loadedAnonymousId.isNotEmpty &&
+        currentAnonymousId.isNotEmpty &&
+        loadedAnonymousId == currentAnonymousId;
   }
 
   bool _validateProximityForm() {
