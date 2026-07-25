@@ -7,7 +7,9 @@ import '../../features/radar/presentation/theme/radar_shadows.dart';
 import '../../features/radar/presentation/theme/radar_spacing.dart';
 import '../../features/radar/presentation/theme/radar_text_styles.dart';
 import '../../features/radar/presentation/theme/radar_theme.dart';
+import '../../features/radar/presentation/widgets/radar_destructive_confirmation_dialog.dart';
 import '../../models/bdk_history_item.dart';
+import '../../services/bdk_history_service.dart';
 import '../../services/bdk_pdf_service.dart';
 
 class BdkHistoryDetailScreen extends StatelessWidget {
@@ -52,6 +54,30 @@ class BdkHistoryDetailScreen extends StatelessWidget {
     }
   }
 
+  Future<void> _delete(BuildContext context) async {
+    final confirmed = await showRadarDestructiveConfirmationDialog(
+      context,
+      title: 'Supprimer ce BDK ?',
+      message:
+          'Cette action supprimera définitivement ce BDK de l’historique local.',
+      confirmLabel: 'Supprimer',
+    );
+    if (!confirmed || !context.mounted) return;
+
+    try {
+      await BdkHistoryService.deleteById(item.id);
+      if (!context.mounted) return;
+      Navigator.pop(context, true);
+    } catch (_) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Le BDK n’a pas pu être supprimé. Veuillez réessayer.'),
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final sections = <(String, String)>[
@@ -76,6 +102,11 @@ class BdkHistoryDetailScreen extends StatelessWidget {
         appBar: AppBar(
           title: const Text('BDK historique'),
           actions: [
+            IconButton(
+              tooltip: 'Supprimer ce BDK',
+              onPressed: () => _delete(context),
+              icon: const Icon(Icons.delete_outline_rounded),
+            ),
             IconButton(
               tooltip: 'Régénérer le PDF',
               onPressed: () => _regeneratePdf(context),

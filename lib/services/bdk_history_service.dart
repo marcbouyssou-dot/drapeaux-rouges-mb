@@ -39,6 +39,18 @@ class BdkHistoryService {
     });
   }
 
+  static Future<void> deleteById(String id) async {
+    await _serializeMutation(() async {
+      final history = await getHistory();
+      history.removeWhere((item) => item.id == id);
+      final box = await _openBox();
+      await box.put(
+        _historyKey,
+        history.map((entry) => entry.toMap()).toList(),
+      );
+    });
+  }
+
   static Future<void> deleteForPatient(
     String localId,
     String anonymousId,

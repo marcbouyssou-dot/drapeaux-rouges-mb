@@ -29,4 +29,23 @@ void main() {
     expect(exportIndex, greaterThanOrEqualTo(0));
     expect(historyIndex, greaterThan(exportIndex));
   });
+
+  test('detail deletion is confirmed and reloads the BDK history', () {
+    final historySource = File(
+      'lib/screens/history_screen.dart',
+    ).readAsStringSync();
+    final detailSource = File(
+      'lib/screens/bdk/bdk_history_detail_screen.dart',
+    ).readAsStringSync();
+
+    expect(detailSource, contains('showRadarDestructiveConfirmationDialog('));
+    expect(detailSource, contains('BdkHistoryService.deleteById(item.id)'));
+    expect(detailSource, contains('Navigator.pop(context, true)'));
+    expect(
+      historySource,
+      contains('final deleted = await Navigator.push<bool>'),
+    );
+    expect(historySource, contains('if (deleted == true)'));
+    expect(historySource, contains('await loadHistory()'));
+  });
 }

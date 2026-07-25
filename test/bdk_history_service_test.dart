@@ -36,7 +36,26 @@ void main() {
     expect(restored.updatedAt, item.updatedAt);
   });
 
-  test('patient deletion preserves BDKs belonging to another patient', () async {
+  test(
+    'patient deletion preserves BDKs belonging to another patient',
+    () async {
+      await BdkHistoryService.save(
+        _item(id: 'bdk-a', patientLocalId: 'patient-a'),
+      );
+      await BdkHistoryService.save(
+        _item(id: 'bdk-b', patientLocalId: 'patient-b'),
+      );
+
+      await BdkHistoryService.deleteForPatient('patient-a', 'anonymous-a');
+
+      final remaining = await BdkHistoryService.getHistory();
+      expect(remaining, hasLength(1));
+      expect(remaining.single.id, 'bdk-b');
+      expect(remaining.single.patientLocalId, 'patient-b');
+    },
+  );
+
+  test('deleteById removes only the selected BDK', () async {
     await BdkHistoryService.save(
       _item(id: 'bdk-a', patientLocalId: 'patient-a'),
     );
@@ -44,12 +63,23 @@ void main() {
       _item(id: 'bdk-b', patientLocalId: 'patient-b'),
     );
 
-    await BdkHistoryService.deleteForPatient('patient-a', 'anonymous-a');
+    await BdkHistoryService.deleteById('bdk-a');
 
     final remaining = await BdkHistoryService.getHistory();
     expect(remaining, hasLength(1));
     expect(remaining.single.id, 'bdk-b');
-    expect(remaining.single.patientLocalId, 'patient-b');
+  });
+
+  test('deleteById is idempotent when the BDK is already absent', () async {
+    await BdkHistoryService.save(
+      _item(id: 'bdk-b', patientLocalId: 'patient-b'),
+    );
+
+    await BdkHistoryService.deleteById('missing-bdk');
+    await BdkHistoryService.deleteById('missing-bdk');
+
+    final remaining = await BdkHistoryService.getHistory();
+    expect(remaining.single.id, 'bdk-b');
   });
 
   test('clearHistory removes known and unknown keys', () async {
@@ -77,10 +107,7 @@ void main() {
   });
 }
 
-BdkHistoryItem _item({
-  required String id,
-  required String patientLocalId,
-}) {
+BdkHistoryItem _item({required String id, required String patientLocalId}) {
   final generatedAt = DateTime.utc(2026, 7, 25, 10);
   return BdkHistoryItem(
     id: id,

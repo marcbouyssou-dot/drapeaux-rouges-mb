@@ -1320,13 +1320,16 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
   Widget buildBdkCard(BdkHistoryItem item) {
     return GestureDetector(
-      onTap: () {
-        Navigator.push<void>(
+      onTap: () async {
+        final deleted = await Navigator.push<bool>(
           context,
           CupertinoPageRoute(
             builder: (_) => BdkHistoryDetailScreen(item: item),
           ),
         );
+        if (deleted == true) {
+          await loadHistory();
+        }
       },
       child: Container(
         margin: const EdgeInsets.only(bottom: RadarSpacing.lg),
