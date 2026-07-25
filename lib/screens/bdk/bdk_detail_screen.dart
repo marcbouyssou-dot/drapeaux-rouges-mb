@@ -13,6 +13,7 @@ import '../../features/radar/presentation/theme/radar_shadows.dart';
 import '../../features/radar/presentation/theme/radar_spacing.dart';
 import '../../features/radar/presentation/theme/radar_text_styles.dart';
 import '../../features/radar/presentation/theme/radar_theme.dart';
+import '../../features/radar/presentation/widgets/radar_bottom_action_bar.dart';
 
 class BDKDetailScreen extends StatefulWidget {
   const BDKDetailScreen({super.key, required this.title, this.customContext});
@@ -918,61 +919,13 @@ class _BdkBottomActionBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Container(
-        padding: const EdgeInsets.fromLTRB(
-          RadarSpacing.xl,
-          RadarSpacing.md,
-          RadarSpacing.xl,
-          RadarSpacing.lg,
-        ),
-        decoration: BoxDecoration(
-          color: RadarColors.surface.withValues(alpha: 0.98),
-          border: const Border(top: BorderSide(color: RadarColors.border)),
-          boxShadow: RadarShadows.navigation,
-        ),
-        child: Row(
-          children: [
-            if (secondaryLabel != null &&
-                secondaryIcon != null &&
-                onSecondaryPressed != null) ...[
-              Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: onSecondaryPressed,
-                  icon: Icon(secondaryIcon),
-                  label: Text(secondaryLabel!),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: RadarColors.textPrimary,
-                    side: const BorderSide(color: RadarColors.border),
-                    minimumSize: const Size.fromHeight(52),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(RadarRadius.card),
-                    ),
-                    textStyle: RadarTextStyles.badge,
-                  ),
-                ),
-              ),
-              const SizedBox(width: RadarSpacing.md),
-            ],
-            Expanded(
-              child: FilledButton.icon(
-                onPressed: onPrimaryPressed,
-                icon: Icon(primaryIcon),
-                label: Text(primaryLabel),
-                style: FilledButton.styleFrom(
-                  backgroundColor: RadarColors.primary,
-                  foregroundColor: RadarColors.surface,
-                  minimumSize: const Size.fromHeight(52),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(RadarRadius.card),
-                  ),
-                  textStyle: RadarTextStyles.badge,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
+    return RadarBottomActionBar(
+      primaryLabel: primaryLabel,
+      primaryIcon: primaryIcon,
+      onPrimaryPressed: onPrimaryPressed,
+      secondaryLabel: secondaryLabel,
+      secondaryIcon: secondaryIcon,
+      onSecondaryPressed: onSecondaryPressed,
     );
   }
 }

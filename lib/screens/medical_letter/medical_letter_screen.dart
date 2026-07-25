@@ -18,6 +18,7 @@ import '../../features/radar/presentation/theme/radar_shadows.dart';
 import '../../features/radar/presentation/theme/radar_spacing.dart';
 import '../../features/radar/presentation/theme/radar_text_styles.dart';
 import '../../features/radar/presentation/theme/radar_theme.dart';
+import '../../features/radar/presentation/widgets/radar_bottom_action_bar.dart';
 
 class MedicalLetterScreen extends StatefulWidget {
   const MedicalLetterScreen({super.key, required this.template});
@@ -495,39 +496,13 @@ class _LetterBottomActionBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Container(
-        padding: const EdgeInsets.fromLTRB(
-          RadarSpacing.xl,
-          RadarSpacing.md,
-          RadarSpacing.xl,
-          RadarSpacing.lg,
-        ),
-        decoration: BoxDecoration(
-          color: RadarColors.surface.withValues(alpha: 0.98),
-          border: const Border(top: BorderSide(color: RadarColors.border)),
-          boxShadow: RadarShadows.navigation,
-        ),
-        child: Row(
-          children: [
-            Expanded(
-              child: OutlinedButton.icon(
-                onPressed: onSecondaryPressed,
-                icon: Icon(secondaryIcon),
-                label: Text(secondaryLabel),
-              ),
-            ),
-            const SizedBox(width: RadarSpacing.md),
-            Expanded(
-              child: FilledButton.icon(
-                onPressed: onPrimaryPressed,
-                icon: Icon(primaryIcon),
-                label: Text(primaryLabel),
-              ),
-            ),
-          ],
-        ),
-      ),
+    return RadarBottomActionBar(
+      primaryLabel: primaryLabel,
+      primaryIcon: primaryIcon,
+      onPrimaryPressed: onPrimaryPressed,
+      secondaryLabel: secondaryLabel,
+      secondaryIcon: secondaryIcon,
+      onSecondaryPressed: onSecondaryPressed,
     );
   }
 }
