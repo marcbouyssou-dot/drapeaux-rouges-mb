@@ -6,6 +6,7 @@ import 'secure_hive_service.dart';
 class AttestationHistoryService {
   static const String boxName = 'attestations_box';
   static const String _key = 'attestations_history';
+  static Future<void> _mutationQueue = Future<void>.value();
 
   static Future<Box> _openBox() {
     if (Hive.isBoxOpen(boxName)) {
@@ -18,12 +19,14 @@ class AttestationHistoryService {
   static Future<void> saveAttestation(
     AttestationHistoryItem attestation,
   ) async {
-    final attestations = await getAttestations();
-    attestations.removeWhere((item) => item.id == attestation.id);
-    attestations.insert(0, attestation);
+    await _serializeMutation(() async {
+      final attestations = await getAttestations();
+      attestations.removeWhere((item) => item.id == attestation.id);
+      attestations.insert(0, attestation);
 
-    final box = await _openBox();
-    await box.put(_key, attestations.map((item) => item.toMap()).toList());
+      final box = await _openBox();
+      await box.put(_key, attestations.map((item) => item.toMap()).toList());
+    });
   }
 
   static Future<List<AttestationHistoryItem>> getAttestations() async {
@@ -35,9 +38,11 @@ class AttestationHistoryService {
     final attestations = raw
         .whereType<Map>()
         .map(
-          (item) =>
-              AttestationHistoryItem.fromMap(Map<String, dynamic>.from(item)),
+          (item) => AttestationHistoryItem.tryFromMap(
+            Map<String, dynamic>.from(item),
+          ),
         )
+        .whereType<AttestationHistoryItem>()
         .toList();
 
     attestations.sort((a, b) => b.generatedAt.compareTo(a.generatedAt));
@@ -46,35 +51,50 @@ class AttestationHistoryService {
   }
 
   static Future<void> deleteById(String id) async {
-    final attestations = await getAttestations();
-    attestations.removeWhere((item) => item.id == id);
+    await _serializeMutation(() async {
+      final attestations = await getAttestations();
+      attestations.removeWhere((item) => item.id == id);
 
-    final box = await _openBox();
-    await box.put(_key, attestations.map((item) => item.toMap()).toList());
+      final box = await _openBox();
+      await box.put(_key, attestations.map((item) => item.toMap()).toList());
+    });
   }
 
   static Future<void> deleteForPatient(
     String localId,
     String anonymousId,
   ) async {
-    final normalizedLocalId = localId.trim();
-    final normalizedAnonymousId = anonymousId.trim();
-    final attestations = await getAttestations();
+    await _serializeMutation(() async {
+      final normalizedLocalId = localId.trim();
+      final normalizedAnonymousId = anonymousId.trim();
+      final attestations = await getAttestations();
 
-    attestations.removeWhere(
-      (item) =>
-          (normalizedLocalId.isNotEmpty &&
-              item.patientLocalId.trim() == normalizedLocalId) ||
-          (normalizedAnonymousId.isNotEmpty &&
-              item.patientAnonymousId.trim() == normalizedAnonymousId),
-    );
+      attestations.removeWhere(
+        (item) =>
+            (normalizedLocalId.isNotEmpty &&
+                item.patientLocalId.trim() == normalizedLocalId) ||
+            (normalizedAnonymousId.isNotEmpty &&
+                item.patientAnonymousId.trim() == normalizedAnonymousId),
+      );
 
-    final box = await _openBox();
-    await box.put(_key, attestations.map((item) => item.toMap()).toList());
+      final box = await _openBox();
+      await box.put(_key, attestations.map((item) => item.toMap()).toList());
+    });
   }
 
   static Future<void> clearAttestations() async {
-    final box = await _openBox();
-    await box.delete(_key);
+    await _serializeMutation(() async {
+      final box = await _openBox();
+      await box.clear();
+    });
+  }
+
+  static Future<void> _serializeMutation(Future<void> Function() mutation) {
+    final operation = _mutationQueue.then((_) => mutation());
+    _mutationQueue = operation.then<void>(
+      (_) {},
+      onError: (Object error, StackTrace stackTrace) {},
+    );
+    return operation;
   }
 }

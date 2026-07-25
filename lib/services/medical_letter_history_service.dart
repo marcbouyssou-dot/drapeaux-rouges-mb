@@ -6,6 +6,7 @@ import 'secure_hive_service.dart';
 class MedicalLetterHistoryService {
   static const String boxName = 'medical_letters_box';
   static const String _key = 'medical_letters_history';
+  static Future<void> _mutationQueue = Future<void>.value();
 
   static Future<Box> _openBox() {
     if (Hive.isBoxOpen(boxName)) {
@@ -16,12 +17,14 @@ class MedicalLetterHistoryService {
   }
 
   static Future<void> saveLetter(MedicalLetterHistoryItem letter) async {
-    final letters = await getLetters();
-    letters.removeWhere((item) => item.id == letter.id);
-    letters.insert(0, letter);
+    await _serializeMutation(() async {
+      final letters = await getLetters();
+      letters.removeWhere((item) => item.id == letter.id);
+      letters.insert(0, letter);
 
-    final box = await _openBox();
-    await box.put(_key, letters.map((item) => item.toMap()).toList());
+      final box = await _openBox();
+      await box.put(_key, letters.map((item) => item.toMap()).toList());
+    });
   }
 
   static Future<List<MedicalLetterHistoryItem>> getLetters() async {
@@ -33,9 +36,11 @@ class MedicalLetterHistoryService {
     final letters = raw
         .whereType<Map>()
         .map(
-          (item) =>
-              MedicalLetterHistoryItem.fromMap(Map<String, dynamic>.from(item)),
+          (item) => MedicalLetterHistoryItem.tryFromMap(
+            Map<String, dynamic>.from(item),
+          ),
         )
+        .whereType<MedicalLetterHistoryItem>()
         .toList();
 
     letters.sort((a, b) => b.generatedAt.compareTo(a.generatedAt));
@@ -44,35 +49,50 @@ class MedicalLetterHistoryService {
   }
 
   static Future<void> deleteById(String id) async {
-    final letters = await getLetters();
-    letters.removeWhere((item) => item.id == id);
+    await _serializeMutation(() async {
+      final letters = await getLetters();
+      letters.removeWhere((item) => item.id == id);
 
-    final box = await _openBox();
-    await box.put(_key, letters.map((item) => item.toMap()).toList());
+      final box = await _openBox();
+      await box.put(_key, letters.map((item) => item.toMap()).toList());
+    });
   }
 
   static Future<void> deleteForPatient(
     String localId,
     String anonymousId,
   ) async {
-    final normalizedLocalId = localId.trim();
-    final normalizedAnonymousId = anonymousId.trim();
-    final letters = await getLetters();
+    await _serializeMutation(() async {
+      final normalizedLocalId = localId.trim();
+      final normalizedAnonymousId = anonymousId.trim();
+      final letters = await getLetters();
 
-    letters.removeWhere(
-      (item) =>
-          (normalizedLocalId.isNotEmpty &&
-              item.patientLocalId.trim() == normalizedLocalId) ||
-          (normalizedAnonymousId.isNotEmpty &&
-              item.patientAnonymousId.trim() == normalizedAnonymousId),
-    );
+      letters.removeWhere(
+        (item) =>
+            (normalizedLocalId.isNotEmpty &&
+                item.patientLocalId.trim() == normalizedLocalId) ||
+            (normalizedAnonymousId.isNotEmpty &&
+                item.patientAnonymousId.trim() == normalizedAnonymousId),
+      );
 
-    final box = await _openBox();
-    await box.put(_key, letters.map((item) => item.toMap()).toList());
+      final box = await _openBox();
+      await box.put(_key, letters.map((item) => item.toMap()).toList());
+    });
   }
 
   static Future<void> clearLetters() async {
-    final box = await _openBox();
-    await box.delete(_key);
+    await _serializeMutation(() async {
+      final box = await _openBox();
+      await box.clear();
+    });
+  }
+
+  static Future<void> _serializeMutation(Future<void> Function() mutation) {
+    final operation = _mutationQueue.then((_) => mutation());
+    _mutationQueue = operation.then<void>(
+      (_) {},
+      onError: (Object error, StackTrace stackTrace) {},
+    );
+    return operation;
   }
 }

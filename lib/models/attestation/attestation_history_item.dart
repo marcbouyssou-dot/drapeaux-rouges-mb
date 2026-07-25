@@ -5,7 +5,10 @@ import 'attestation_type.dart';
 import 'patient_attestation.dart';
 
 class AttestationHistoryItem {
+  static const int currentSchemaVersion = 1;
+
   const AttestationHistoryItem({
+    this.schemaVersion = currentSchemaVersion,
     required this.id,
     required this.typeId,
     required this.title,
@@ -25,6 +28,7 @@ class AttestationHistoryItem {
     this.proximityData = const {},
   });
 
+  final int schemaVersion;
   final String id;
   final String typeId;
   final String title;
@@ -71,14 +75,27 @@ class AttestationHistoryItem {
   }
 
   factory AttestationHistoryItem.fromMap(Map<String, dynamic> map) {
+    final item = tryFromMap(map);
+    if (item == null) {
+      throw const FormatException(
+        'Unsupported or invalid attestation history data',
+      );
+    }
+    return item;
+  }
+
+  static AttestationHistoryItem? tryFromMap(Map<String, dynamic> map) {
+    final schemaVersion = _supportedSchemaVersion(map['schemaVersion']);
+    final generatedAt = DateTime.tryParse(map['generatedAt']?.toString() ?? '');
+    if (schemaVersion == null || generatedAt == null) return null;
+
     return AttestationHistoryItem(
+      schemaVersion: currentSchemaVersion,
       id: map['id']?.toString() ?? '',
       typeId: map['typeId']?.toString() ?? '',
       title: map['title']?.toString() ?? 'Attestation',
       pdfTitle: map['pdfTitle']?.toString() ?? 'ATTESTATION',
-      generatedAt:
-          DateTime.tryParse(map['generatedAt']?.toString() ?? '') ??
-          DateTime.now(),
+      generatedAt: generatedAt,
       patientLocalId: map['patientLocalId']?.toString() ?? '',
       patientAnonymousId: map['patientAnonymousId']?.toString() ?? '',
       patientNom: map['patientNom']?.toString() ?? '',
@@ -104,6 +121,7 @@ class AttestationHistoryItem {
 
   Map<String, dynamic> toMap() {
     return {
+      'schemaVersion': schemaVersion,
       'id': id,
       'typeId': typeId,
       'title': title,
@@ -122,6 +140,14 @@ class AttestationHistoryItem {
       'bodyParagraphs': bodyParagraphs,
       'proximityData': proximityData,
     };
+  }
+
+  static int? _supportedSchemaVersion(Object? rawVersion) {
+    if (rawVersion == null) return 0;
+    final version = rawVersion is int
+        ? rawVersion
+        : int.tryParse(rawVersion.toString());
+    return version == 0 || version == currentSchemaVersion ? version : null;
   }
 
   PatientAttestation toAttestation() {

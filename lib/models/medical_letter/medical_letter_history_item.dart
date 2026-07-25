@@ -5,7 +5,10 @@ import 'medical_letter.dart';
 import 'medical_letter_template.dart';
 
 class MedicalLetterHistoryItem {
+  static const int currentSchemaVersion = 1;
+
   const MedicalLetterHistoryItem({
+    this.schemaVersion = currentSchemaVersion,
     required this.id,
     required this.typeId,
     required this.title,
@@ -30,6 +33,7 @@ class MedicalLetterHistoryItem {
     required this.hasPractitionerSignature,
   });
 
+  final int schemaVersion;
   final String id;
   final String typeId;
   final String title;
@@ -84,14 +88,27 @@ class MedicalLetterHistoryItem {
   }
 
   factory MedicalLetterHistoryItem.fromMap(Map<String, dynamic> map) {
+    final item = tryFromMap(map);
+    if (item == null) {
+      throw const FormatException(
+        'Unsupported or invalid medical letter history data',
+      );
+    }
+    return item;
+  }
+
+  static MedicalLetterHistoryItem? tryFromMap(Map<String, dynamic> map) {
+    final schemaVersion = _supportedSchemaVersion(map['schemaVersion']);
+    final generatedAt = DateTime.tryParse(map['generatedAt']?.toString() ?? '');
+    if (schemaVersion == null || generatedAt == null) return null;
+
     return MedicalLetterHistoryItem(
+      schemaVersion: currentSchemaVersion,
       id: map['id']?.toString() ?? '',
       typeId: map['typeId']?.toString() ?? '',
       title: map['title']?.toString() ?? 'Courrier médical',
       pdfTitle: map['pdfTitle']?.toString() ?? 'COURRIER MÉDICAL',
-      generatedAt:
-          DateTime.tryParse(map['generatedAt']?.toString() ?? '') ??
-          DateTime.now(),
+      generatedAt: generatedAt,
       patientLocalId: map['patientLocalId']?.toString() ?? '',
       patientAnonymousId: map['patientAnonymousId']?.toString() ?? '',
       patientNom: map['patientNom']?.toString() ?? '',
@@ -122,6 +139,7 @@ class MedicalLetterHistoryItem {
 
   Map<String, dynamic> toMap() {
     return {
+      'schemaVersion': schemaVersion,
       'id': id,
       'typeId': typeId,
       'title': title,
@@ -145,6 +163,14 @@ class MedicalLetterHistoryItem {
       'evaluationSnapshot': evaluationSnapshot,
       'hasPractitionerSignature': hasPractitionerSignature,
     };
+  }
+
+  static int? _supportedSchemaVersion(Object? rawVersion) {
+    if (rawVersion == null) return 0;
+    final version = rawVersion is int
+        ? rawVersion
+        : int.tryParse(rawVersion.toString());
+    return version == 0 || version == currentSchemaVersion ? version : null;
   }
 
   MedicalLetter toLetter() {

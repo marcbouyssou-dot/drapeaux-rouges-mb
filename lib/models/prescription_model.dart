@@ -2,6 +2,9 @@ import 'patient_local.dart';
 import 'practitioner_profile.dart';
 
 class PrescriptionModel {
+  static const int currentSchemaVersion = 1;
+
+  final int schemaVersion;
   final String id;
   final String prescriptionType;
   final String professional;
@@ -21,6 +24,7 @@ class PrescriptionModel {
   final DateTime createdAt;
 
   PrescriptionModel({
+    this.schemaVersion = currentSchemaVersion,
     String? id,
     this.prescriptionType = '',
     required this.professional,
@@ -72,6 +76,7 @@ class PrescriptionModel {
 
   Map<String, dynamic> toMap() {
     return {
+      'schemaVersion': schemaVersion,
       'id': id,
       'prescriptionType': prescriptionType,
       'professional': professional,
@@ -93,7 +98,20 @@ class PrescriptionModel {
   }
 
   factory PrescriptionModel.fromMap(Map<String, dynamic> map) {
+    final prescription = tryFromMap(map);
+    if (prescription == null) {
+      throw const FormatException('Unsupported or invalid prescription data');
+    }
+    return prescription;
+  }
+
+  static PrescriptionModel? tryFromMap(Map<String, dynamic> map) {
+    final schemaVersion = _supportedSchemaVersion(map['schemaVersion']);
+    final createdAt = DateTime.tryParse(map['createdAt']?.toString() ?? '');
+    if (schemaVersion == null || createdAt == null) return null;
+
     return PrescriptionModel(
+      schemaVersion: currentSchemaVersion,
       id: map['id']?.toString(),
       prescriptionType: map['prescriptionType']?.toString() ?? '',
       professional: map['professional'] ?? '',
@@ -112,8 +130,16 @@ class PrescriptionModel {
           ? Map<String, dynamic>.from(map['practitionerProfile'])
           : const {},
       justificatifImageBase64: map['justificatifImageBase64']?.toString(),
-      createdAt: DateTime.tryParse(map['createdAt'] ?? '') ?? DateTime.now(),
+      createdAt: createdAt,
     );
+  }
+
+  static int? _supportedSchemaVersion(Object? rawVersion) {
+    if (rawVersion == null) return 0;
+    final version = rawVersion is int
+        ? rawVersion
+        : int.tryParse(rawVersion.toString());
+    return version == 0 || version == currentSchemaVersion ? version : null;
   }
 
   PractitionerProfile get practitioner {

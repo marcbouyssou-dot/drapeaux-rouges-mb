@@ -6,18 +6,21 @@ import 'secure_hive_service.dart';
 class PrescriptionService {
   static const String _boxName = 'prescriptions_box';
   static const String _key = 'prescriptions_history';
+  static Future<void> _mutationQueue = Future<void>.value();
 
   static Future<Box> _openBox() {
     return SecureHiveService.openProtectedBox(_boxName);
   }
 
   static Future<void> savePrescription(PrescriptionModel prescription) async {
-    final prescriptions = await getPrescriptions();
-    prescriptions.removeWhere((item) => item.id == prescription.id);
-    prescriptions.insert(0, prescription);
+    await _serializeMutation(() async {
+      final prescriptions = await getPrescriptions();
+      prescriptions.removeWhere((item) => item.id == prescription.id);
+      prescriptions.insert(0, prescription);
 
-    final box = await _openBox();
-    await box.put(_key, prescriptions.map((item) => item.toMap()).toList());
+      final box = await _openBox();
+      await box.put(_key, prescriptions.map((item) => item.toMap()).toList());
+    });
   }
 
   static Future<List<PrescriptionModel>> getPrescriptions() async {
@@ -29,41 +32,58 @@ class PrescriptionService {
     return raw
         .whereType<Map>()
         .map(
-          (item) => PrescriptionModel.fromMap(Map<String, dynamic>.from(item)),
+          (item) =>
+              PrescriptionModel.tryFromMap(Map<String, dynamic>.from(item)),
         )
+        .whereType<PrescriptionModel>()
         .toList();
   }
 
   static Future<void> deleteById(String id) async {
-    final prescriptions = await getPrescriptions();
-    prescriptions.removeWhere((item) => item.id == id);
+    await _serializeMutation(() async {
+      final prescriptions = await getPrescriptions();
+      prescriptions.removeWhere((item) => item.id == id);
 
-    final box = await _openBox();
-    await box.put(_key, prescriptions.map((item) => item.toMap()).toList());
+      final box = await _openBox();
+      await box.put(_key, prescriptions.map((item) => item.toMap()).toList());
+    });
   }
 
   static Future<void> deleteForPatient(
     String localId,
     String anonymousId,
   ) async {
-    final normalizedLocalId = localId.trim();
-    final normalizedAnonymousId = anonymousId.trim();
-    final prescriptions = await getPrescriptions();
+    await _serializeMutation(() async {
+      final normalizedLocalId = localId.trim();
+      final normalizedAnonymousId = anonymousId.trim();
+      final prescriptions = await getPrescriptions();
 
-    prescriptions.removeWhere(
-      (item) =>
-          (normalizedLocalId.isNotEmpty &&
-              item.patientLocalId.trim() == normalizedLocalId) ||
-          (normalizedAnonymousId.isNotEmpty &&
-              item.patientAnonymousId.trim() == normalizedAnonymousId),
-    );
+      prescriptions.removeWhere(
+        (item) =>
+            (normalizedLocalId.isNotEmpty &&
+                item.patientLocalId.trim() == normalizedLocalId) ||
+            (normalizedAnonymousId.isNotEmpty &&
+                item.patientAnonymousId.trim() == normalizedAnonymousId),
+      );
 
-    final box = await _openBox();
-    await box.put(_key, prescriptions.map((item) => item.toMap()).toList());
+      final box = await _openBox();
+      await box.put(_key, prescriptions.map((item) => item.toMap()).toList());
+    });
   }
 
   static Future<void> clearPrescriptions() async {
-    final box = await _openBox();
-    await box.delete(_key);
+    await _serializeMutation(() async {
+      final box = await _openBox();
+      await box.clear();
+    });
+  }
+
+  static Future<void> _serializeMutation(Future<void> Function() mutation) {
+    final operation = _mutationQueue.then((_) => mutation());
+    _mutationQueue = operation.then<void>(
+      (_) {},
+      onError: (Object error, StackTrace stackTrace) {},
+    );
+    return operation;
   }
 }
