@@ -9,10 +9,12 @@ import '../../features/radar/presentation/theme/radar_radius.dart';
 import '../../features/radar/presentation/theme/radar_spacing.dart';
 import '../../features/radar/presentation/theme/radar_text_styles.dart';
 import '../../features/radar/presentation/theme/radar_theme.dart';
+import '../../features/radar/presentation/widgets/radar_destructive_confirmation_dialog.dart';
 import '../../features/radar/presentation/widgets/radar_page_header.dart';
 import '../../features/radar/presentation/widgets/radar_surface_card.dart';
 import '../../models/prescription_model.dart';
 import '../../services/prescription_pdf_service.dart';
+import '../../services/prescription_service.dart';
 
 class PrescriptionHistoryDetailScreen extends StatelessWidget {
   const PrescriptionHistoryDetailScreen({
@@ -30,6 +32,23 @@ class PrescriptionHistoryDetailScreen extends StatelessWidget {
       prescriptionContent: prescription.prescription,
       justificatifImageBytes: justificatifImageBytes,
     );
+  }
+
+  Future<void> deletePrescription(BuildContext context) async {
+    final confirmed = await showRadarDestructiveConfirmationDialog(
+      context,
+      title: 'Supprimer cette prescription ?',
+      message:
+          'Cette action supprimera définitivement cette prescription de l’historique local.',
+      confirmLabel: 'Supprimer',
+    );
+
+    if (!confirmed || !context.mounted) return;
+
+    await PrescriptionService.deleteById(prescription.id);
+
+    if (!context.mounted) return;
+    Navigator.pop(context, true);
   }
 
   Uint8List? get justificatifImageBytes {
@@ -115,10 +134,24 @@ class PrescriptionHistoryDetailScreen extends StatelessWidget {
               RadarSpacing.xl,
               RadarSpacing.xl,
             ),
-            child: FilledButton.icon(
-              onPressed: exportPdf,
-              icon: const Icon(Icons.picture_as_pdf_outlined),
-              label: const Text('Exporter le PDF'),
+            child: Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () => deletePrescription(context),
+                    icon: const Icon(Icons.delete_outline_rounded),
+                    label: const Text('Supprimer'),
+                  ),
+                ),
+                const SizedBox(width: RadarSpacing.md),
+                Expanded(
+                  child: FilledButton.icon(
+                    onPressed: exportPdf,
+                    icon: const Icon(Icons.picture_as_pdf_outlined),
+                    label: const Text('Exporter le PDF'),
+                  ),
+                ),
+              ],
             ),
           ),
         ),

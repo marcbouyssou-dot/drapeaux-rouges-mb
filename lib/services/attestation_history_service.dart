@@ -45,6 +45,34 @@ class AttestationHistoryService {
     return attestations;
   }
 
+  static Future<void> deleteById(String id) async {
+    final attestations = await getAttestations();
+    attestations.removeWhere((item) => item.id == id);
+
+    final box = await _openBox();
+    await box.put(_key, attestations.map((item) => item.toMap()).toList());
+  }
+
+  static Future<void> deleteForPatient(
+    String localId,
+    String anonymousId,
+  ) async {
+    final normalizedLocalId = localId.trim();
+    final normalizedAnonymousId = anonymousId.trim();
+    final attestations = await getAttestations();
+
+    attestations.removeWhere(
+      (item) =>
+          (normalizedLocalId.isNotEmpty &&
+              item.patientLocalId.trim() == normalizedLocalId) ||
+          (normalizedAnonymousId.isNotEmpty &&
+              item.patientAnonymousId.trim() == normalizedAnonymousId),
+    );
+
+    final box = await _openBox();
+    await box.put(_key, attestations.map((item) => item.toMap()).toList());
+  }
+
   static Future<void> clearAttestations() async {
     final box = await _openBox();
     await box.delete(_key);

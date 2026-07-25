@@ -148,14 +148,18 @@ class _AttestationHistoryScreenState extends State<AttestationHistoryScreen> {
         borderRadius: BorderRadius.circular(RadarRadius.card),
         child: InkWell(
           borderRadius: BorderRadius.circular(RadarRadius.card),
-          onTap: () {
-            Navigator.push(
+          onTap: () async {
+            final deleted = await Navigator.push<bool>(
               context,
               CupertinoPageRoute(
                 builder: (_) =>
                     AttestationHistoryDetailScreen(attestation: item),
               ),
             );
+
+            if (deleted == true) {
+              await loadHistory();
+            }
           },
           child: Container(
             padding: const EdgeInsets.all(RadarSpacing.lg),

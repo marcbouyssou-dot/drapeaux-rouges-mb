@@ -6,9 +6,11 @@ import '../../features/radar/presentation/theme/radar_radius.dart';
 import '../../features/radar/presentation/theme/radar_spacing.dart';
 import '../../features/radar/presentation/theme/radar_text_styles.dart';
 import '../../features/radar/presentation/theme/radar_theme.dart';
+import '../../features/radar/presentation/widgets/radar_destructive_confirmation_dialog.dart';
 import '../../features/radar/presentation/widgets/radar_page_header.dart';
 import '../../features/radar/presentation/widgets/radar_surface_card.dart';
 import '../../models/medical_letter/medical_letter_history_item.dart';
+import '../../services/medical_letter_history_service.dart';
 import '../../services/medical_letter_pdf_service.dart';
 
 class MedicalLetterHistoryDetailScreen extends StatelessWidget {
@@ -18,6 +20,23 @@ class MedicalLetterHistoryDetailScreen extends StatelessWidget {
 
   Future<void> regeneratePdf() async {
     await MedicalLetterPdfService.exportPdf(letter.toLetter());
+  }
+
+  Future<void> deleteLetter(BuildContext context) async {
+    final confirmed = await showRadarDestructiveConfirmationDialog(
+      context,
+      title: 'Supprimer ce courrier ?',
+      message:
+          'Cette action supprimera définitivement ce courrier de l’historique local.',
+      confirmLabel: 'Supprimer',
+    );
+
+    if (!confirmed || !context.mounted) return;
+
+    await MedicalLetterHistoryService.deleteById(letter.id);
+
+    if (!context.mounted) return;
+    Navigator.pop(context, true);
   }
 
   String formatDate(DateTime date) {
@@ -106,10 +125,24 @@ class MedicalLetterHistoryDetailScreen extends StatelessWidget {
               RadarSpacing.xl,
               RadarSpacing.xl,
             ),
-            child: FilledButton.icon(
-              onPressed: regeneratePdf,
-              icon: const Icon(Icons.picture_as_pdf_outlined),
-              label: const Text('Régénérer le PDF'),
+            child: Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () => deleteLetter(context),
+                    icon: const Icon(Icons.delete_outline_rounded),
+                    label: const Text('Supprimer'),
+                  ),
+                ),
+                const SizedBox(width: RadarSpacing.md),
+                Expanded(
+                  child: FilledButton.icon(
+                    onPressed: regeneratePdf,
+                    icon: const Icon(Icons.picture_as_pdf_outlined),
+                    label: const Text('Régénérer le PDF'),
+                  ),
+                ),
+              ],
             ),
           ),
         ),

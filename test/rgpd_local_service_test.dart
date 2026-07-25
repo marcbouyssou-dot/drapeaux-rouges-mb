@@ -1,10 +1,16 @@
 import 'dart:io';
 
+import 'package:drapeaux_rouges_mb/models/attestation/attestation_history_item.dart';
+import 'package:drapeaux_rouges_mb/models/medical_letter/medical_letter_history_item.dart';
 import 'package:drapeaux_rouges_mb/models/patient_local.dart';
+import 'package:drapeaux_rouges_mb/models/prescription_model.dart';
+import 'package:drapeaux_rouges_mb/services/attestation_history_service.dart';
 import 'package:drapeaux_rouges_mb/services/bdk_draft_service.dart';
 import 'package:drapeaux_rouges_mb/services/bdk_session_service.dart';
 import 'package:drapeaux_rouges_mb/services/history_service.dart';
 import 'package:drapeaux_rouges_mb/services/local_database_service.dart';
+import 'package:drapeaux_rouges_mb/services/medical_letter_history_service.dart';
+import 'package:drapeaux_rouges_mb/services/prescription_service.dart';
 import 'package:drapeaux_rouges_mb/services/rgpd_local_service.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive/hive.dart';
@@ -19,6 +25,10 @@ void main() {
     await Hive.openBox('patients_box');
     await Hive.openBox('evaluations_box');
     await Hive.openBox('settings_box');
+    await Hive.openBox('access_direct_box');
+    await Hive.openBox('prescriptions_box');
+    await Hive.openBox(MedicalLetterHistoryService.boxName);
+    await Hive.openBox(AttestationHistoryService.boxName);
     await Hive.openBox(BdkDraftService.boxName);
     BDKSessionService.clear();
   });
@@ -57,6 +67,82 @@ void main() {
       'decisionMessage': 'Une surveillance clinique renforcée est recommandée.',
       'aiSummary': 'Synthèse test',
     };
+  }
+
+  PrescriptionModel buildPrescription({
+    String id = 'prescription-1',
+    String localId = 'patient-1',
+    String anonymousId = 'DR-patient-1',
+  }) {
+    return PrescriptionModel(
+      id: id,
+      professional: 'Camille DURAND',
+      patient: 'Alice DUPONT',
+      patientLocalId: localId,
+      patientAnonymousId: anonymousId,
+      clinicalContext: 'Lombalgie',
+      prescription: 'Rééducation',
+      frequency: '',
+      duration: '',
+      nomenclature: '',
+      createdAt: DateTime(2026, 1, 3),
+    );
+  }
+
+  MedicalLetterHistoryItem buildLetter({
+    String id = 'letter-1',
+    String localId = 'patient-1',
+    String anonymousId = 'DR-patient-1',
+  }) {
+    return MedicalLetterHistoryItem(
+      id: id,
+      typeId: 'medical_orientation',
+      title: 'Orientation médicale',
+      pdfTitle: 'COURRIER',
+      generatedAt: DateTime(2026, 1, 3),
+      patientLocalId: localId,
+      patientAnonymousId: anonymousId,
+      patientNom: 'Dupont',
+      patientPrenom: 'Alice',
+      patientDateNaissance: '01/01/1980',
+      patientMedecinNom: '',
+      patientMedecinRpps: '',
+      patientMedecinAdeli: '',
+      patientMedecinAdresse: '',
+      patientMedecinTelephone: '',
+      patientMedecinEmail: '',
+      practitionerProfile: const {},
+      lieu: '',
+      subject: 'Orientation',
+      bodyParagraphs: const ['Courrier clinique'],
+      evaluationSnapshot: const {},
+      hasPractitionerSignature: false,
+    );
+  }
+
+  AttestationHistoryItem buildAttestation({
+    String id = 'attestation-1',
+    String localId = 'patient-1',
+    String anonymousId = 'DR-patient-1',
+  }) {
+    return AttestationHistoryItem(
+      id: id,
+      typeId: 'nearest_available_mk',
+      title: 'Attestation',
+      pdfTitle: 'ATTESTATION',
+      generatedAt: DateTime(2026, 1, 3),
+      patientLocalId: localId,
+      patientAnonymousId: anonymousId,
+      patientNom: 'Dupont',
+      patientPrenom: 'Alice',
+      patientDateNaissance: '01/01/1980',
+      practitionerProfile: const {},
+      lieu: '',
+      hasSignature: true,
+      signatureBase64: 'signature',
+      consentConfirmed: true,
+      bodyParagraphs: const ['Attestation patient'],
+    );
   }
 
   test('deleting a patient anonymizes linked evaluations', () async {
@@ -132,6 +218,64 @@ void main() {
     expect(BDKSessionService.hasDraftContent, isFalse);
   });
 
+  test('deleting a patient removes all of its document histories', () async {
+    final patient = buildPatient();
+    await RgpdLocalService.saveOrUpdatePatient(patient);
+    await PrescriptionService.savePrescription(buildPrescription());
+    await MedicalLetterHistoryService.saveLetter(buildLetter());
+    await AttestationHistoryService.saveAttestation(buildAttestation());
+
+    await RgpdLocalService.deletePatient(patient.localId);
+
+    expect(await PrescriptionService.getPrescriptions(), isEmpty);
+    expect(await MedicalLetterHistoryService.getLetters(), isEmpty);
+    expect(await AttestationHistoryService.getAttestations(), isEmpty);
+  });
+
+  test('deleting patient A preserves every document belonging to B', () async {
+    final patient = buildPatient();
+    await RgpdLocalService.saveOrUpdatePatient(patient);
+    await PrescriptionService.savePrescription(buildPrescription());
+    await MedicalLetterHistoryService.saveLetter(buildLetter());
+    await AttestationHistoryService.saveAttestation(buildAttestation());
+    await PrescriptionService.savePrescription(
+      buildPrescription(
+        id: 'prescription-2',
+        localId: 'patient-2',
+        anonymousId: 'DR-patient-2',
+      ),
+    );
+    await MedicalLetterHistoryService.saveLetter(
+      buildLetter(
+        id: 'letter-2',
+        localId: 'patient-2',
+        anonymousId: 'DR-patient-2',
+      ),
+    );
+    await AttestationHistoryService.saveAttestation(
+      buildAttestation(
+        id: 'attestation-2',
+        localId: 'patient-2',
+        anonymousId: 'DR-patient-2',
+      ),
+    );
+
+    await RgpdLocalService.deletePatient(patient.localId);
+
+    expect(
+      (await PrescriptionService.getPrescriptions()).single.patientLocalId,
+      'patient-2',
+    );
+    expect(
+      (await MedicalLetterHistoryService.getLetters()).single.patientLocalId,
+      'patient-2',
+    );
+    expect(
+      (await AttestationHistoryService.getAttestations()).single.patientLocalId,
+      'patient-2',
+    );
+  });
+
   test('deleting all local RGPD data clears evaluation history', () async {
     await RgpdLocalService.saveOrUpdatePatient(buildPatient());
     await LocalDatabaseService.saveEvaluation(buildEvaluation());
@@ -145,6 +289,16 @@ void main() {
     await Hive.box(
       BdkDraftService.boxName,
     ).put('legacy_bdk_draft', {'motif': 'Ancien brouillon'});
+    await PrescriptionService.savePrescription(buildPrescription());
+    await MedicalLetterHistoryService.saveLetter(buildLetter());
+    await AttestationHistoryService.saveAttestation(buildAttestation());
+    await Hive.box('access_direct_box').put('current_access_direct_settings', {
+      'hasMedicalDiagnosis': true,
+      'diagnosisDocumentBase64': 'medical-document',
+    });
+    await Hive.box('settings_box').put('practitioner_profile', {
+      'signatureBase64': 'practitioner-signature',
+    });
 
     await RgpdLocalService.deleteAllLocalData();
 
@@ -153,5 +307,13 @@ void main() {
     expect(Hive.box(BdkDraftService.boxName).isEmpty, isTrue);
     expect(BDKSessionService.hasDraftContent, isFalse);
     expect(BDKSessionService.patientLocalId, isNull);
+    expect(await PrescriptionService.getPrescriptions(), isEmpty);
+    expect(await MedicalLetterHistoryService.getLetters(), isEmpty);
+    expect(await AttestationHistoryService.getAttestations(), isEmpty);
+    expect(Hive.box('prescriptions_box').isEmpty, isTrue);
+    expect(Hive.box(MedicalLetterHistoryService.boxName).isEmpty, isTrue);
+    expect(Hive.box(AttestationHistoryService.boxName).isEmpty, isTrue);
+    expect(Hive.box('access_direct_box').isEmpty, isTrue);
+    expect(Hive.box('settings_box').get('practitioner_profile'), isNull);
   });
 }

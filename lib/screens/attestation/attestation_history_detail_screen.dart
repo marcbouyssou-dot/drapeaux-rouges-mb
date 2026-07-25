@@ -6,9 +6,11 @@ import '../../features/radar/presentation/theme/radar_radius.dart';
 import '../../features/radar/presentation/theme/radar_spacing.dart';
 import '../../features/radar/presentation/theme/radar_text_styles.dart';
 import '../../features/radar/presentation/theme/radar_theme.dart';
+import '../../features/radar/presentation/widgets/radar_destructive_confirmation_dialog.dart';
 import '../../features/radar/presentation/widgets/radar_page_header.dart';
 import '../../features/radar/presentation/widgets/radar_surface_card.dart';
 import '../../models/attestation/attestation_history_item.dart';
+import '../../services/attestation_history_service.dart';
 import '../../services/patient_attestation_pdf_service.dart';
 
 class AttestationHistoryDetailScreen extends StatelessWidget {
@@ -18,6 +20,23 @@ class AttestationHistoryDetailScreen extends StatelessWidget {
 
   Future<void> regeneratePdf() async {
     await PatientAttestationPdfService.exportPdf(attestation.toAttestation());
+  }
+
+  Future<void> deleteAttestation(BuildContext context) async {
+    final confirmed = await showRadarDestructiveConfirmationDialog(
+      context,
+      title: 'Supprimer cette attestation ?',
+      message:
+          'Cette action supprimera définitivement cette attestation de l’historique local.',
+      confirmLabel: 'Supprimer',
+    );
+
+    if (!confirmed || !context.mounted) return;
+
+    await AttestationHistoryService.deleteById(attestation.id);
+
+    if (!context.mounted) return;
+    Navigator.pop(context, true);
   }
 
   String formatDate(DateTime date) {
@@ -105,10 +124,24 @@ class AttestationHistoryDetailScreen extends StatelessWidget {
               RadarSpacing.xl,
               RadarSpacing.xl,
             ),
-            child: FilledButton.icon(
-              onPressed: regeneratePdf,
-              icon: const Icon(Icons.picture_as_pdf_outlined),
-              label: const Text('Régénérer le PDF'),
+            child: Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () => deleteAttestation(context),
+                    icon: const Icon(Icons.delete_outline_rounded),
+                    label: const Text('Supprimer'),
+                  ),
+                ),
+                const SizedBox(width: RadarSpacing.md),
+                Expanded(
+                  child: FilledButton.icon(
+                    onPressed: regeneratePdf,
+                    icon: const Icon(Icons.picture_as_pdf_outlined),
+                    label: const Text('Régénérer le PDF'),
+                  ),
+                ),
+              ],
             ),
           ),
         ),

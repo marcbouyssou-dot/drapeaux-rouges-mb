@@ -128,6 +128,22 @@ void main() {
     expect(restored.prescriberName, 'Dr Test');
     expect(restored.contactedCabinets.single.reasonLabel, 'surcharge');
   });
+
+  test('deletes one attestation by id', () async {
+    final first = AttestationHistoryItem.fromAttestation(_attestation());
+    final second = AttestationHistoryItem.fromMap({
+      ...first.toMap(),
+      'id': 'attestation-2',
+    });
+    await AttestationHistoryService.saveAttestation(first);
+    await AttestationHistoryService.saveAttestation(second);
+
+    await AttestationHistoryService.deleteById(first.id);
+
+    final saved = await AttestationHistoryService.getAttestations();
+    expect(saved, hasLength(1));
+    expect(saved.single.id, 'attestation-2');
+  });
 }
 
 PatientAttestation _attestationWithPatient(

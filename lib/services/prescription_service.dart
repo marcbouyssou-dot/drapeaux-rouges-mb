@@ -34,6 +34,34 @@ class PrescriptionService {
         .toList();
   }
 
+  static Future<void> deleteById(String id) async {
+    final prescriptions = await getPrescriptions();
+    prescriptions.removeWhere((item) => item.id == id);
+
+    final box = await _openBox();
+    await box.put(_key, prescriptions.map((item) => item.toMap()).toList());
+  }
+
+  static Future<void> deleteForPatient(
+    String localId,
+    String anonymousId,
+  ) async {
+    final normalizedLocalId = localId.trim();
+    final normalizedAnonymousId = anonymousId.trim();
+    final prescriptions = await getPrescriptions();
+
+    prescriptions.removeWhere(
+      (item) =>
+          (normalizedLocalId.isNotEmpty &&
+              item.patientLocalId.trim() == normalizedLocalId) ||
+          (normalizedAnonymousId.isNotEmpty &&
+              item.patientAnonymousId.trim() == normalizedAnonymousId),
+    );
+
+    final box = await _openBox();
+    await box.put(_key, prescriptions.map((item) => item.toMap()).toList());
+  }
+
   static Future<void> clearPrescriptions() async {
     final box = await _openBox();
     await box.delete(_key);

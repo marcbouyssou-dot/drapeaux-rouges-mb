@@ -2,9 +2,14 @@ import 'package:hive/hive.dart';
 import 'package:uuid/uuid.dart';
 
 import '../models/patient_local.dart';
+import 'access_direct_local_service.dart';
+import 'attestation_history_service.dart';
 import 'bdk_draft_service.dart';
 import 'bdk_session_service.dart';
 import 'local_database_service.dart';
+import 'medical_letter_history_service.dart';
+import 'practitioner_profile_service.dart';
+import 'prescription_service.dart';
 
 class RgpdLocalService {
   static const String _patientsBoxName = 'patients_box';
@@ -82,13 +87,19 @@ class RgpdLocalService {
   }
 
   static Future<void> deletePatient(String localId) async {
+    final patient = await getPatientByLocalId(localId);
+    final anonymousId = patient?.anonymousId ?? '';
+
     if (BDKSessionService.isAssociatedWithPatient(
       localId: localId,
-      anonymousId: null,
+      anonymousId: anonymousId,
     )) {
       BDKSessionService.clear();
     }
     await BdkDraftService.deleteDraftForPatient(localId);
+    await PrescriptionService.deleteForPatient(localId, anonymousId);
+    await MedicalLetterHistoryService.deleteForPatient(localId, anonymousId);
+    await AttestationHistoryService.deleteForPatient(localId, anonymousId);
     await LocalDatabaseService.anonymizeEvaluationsForPatient(localId);
     await _patientsBox.delete(localId);
 
@@ -102,6 +113,11 @@ class RgpdLocalService {
   static Future<void> deleteAllLocalData() async {
     BDKSessionService.clear();
     await BdkDraftService.clearAllDrafts();
+    await PrescriptionService.clearPrescriptions();
+    await MedicalLetterHistoryService.clearLetters();
+    await AttestationHistoryService.clearAttestations();
+    await AccessDirectLocalService.resetSettings();
+    await PractitionerProfileService.clearProfile();
     await _patientsBox.clear();
     await LocalDatabaseService.clearEvaluations();
     await clearCurrentPatient();

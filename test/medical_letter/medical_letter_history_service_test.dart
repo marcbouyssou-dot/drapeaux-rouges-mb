@@ -72,6 +72,22 @@ void main() {
     expect(bytes, isNotEmpty);
     expect(String.fromCharCodes(bytes.take(4)), '%PDF');
   });
+
+  test('deletes one medical letter by id', () async {
+    final first = MedicalLetterHistoryItem.fromLetter(_letter());
+    final second = MedicalLetterHistoryItem.fromMap({
+      ...first.toMap(),
+      'id': 'letter-2',
+    });
+    await MedicalLetterHistoryService.saveLetter(first);
+    await MedicalLetterHistoryService.saveLetter(second);
+
+    await MedicalLetterHistoryService.deleteById(first.id);
+
+    final saved = await MedicalLetterHistoryService.getLetters();
+    expect(saved, hasLength(1));
+    expect(saved.single.id, 'letter-2');
+  });
 }
 
 MedicalLetter _letter({bool withPatient = true}) {

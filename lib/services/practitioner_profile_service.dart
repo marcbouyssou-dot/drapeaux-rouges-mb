@@ -21,4 +21,9 @@ class PractitionerProfileService {
     final box = Hive.box(_boxName);
     await box.put(_profileKey, profile.toJson());
   }
+
+  static Future<void> clearProfile() async {
+    final box = Hive.box(_boxName);
+    await box.delete(_profileKey);
+  }
 }

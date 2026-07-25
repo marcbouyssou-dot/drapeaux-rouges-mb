@@ -71,6 +71,8 @@ class _MedicalLetterScreenState extends State<MedicalLetterScreen> {
   Future<EvaluationModel?> latestEvaluationForPatient(
     PatientLocal? currentPatient,
   ) async {
+    if (currentPatient == null) return null;
+
     final history = await HistoryService.loadHistory();
     final candidates = history
         .map((item) {
@@ -82,7 +84,6 @@ class _MedicalLetterScreenState extends State<MedicalLetterScreen> {
         })
         .whereType<EvaluationModel>()
         .where((item) {
-          if (currentPatient == null) return true;
           return item.patientLocalId == currentPatient.localId ||
               item.patientAnonymousId == currentPatient.anonymousId;
         })

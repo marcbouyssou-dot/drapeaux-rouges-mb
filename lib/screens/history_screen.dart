@@ -963,13 +963,17 @@ class _HistoryScreenState extends State<HistoryScreen> {
         item.justificatifImageBase64?.trim().isNotEmpty ?? false;
 
     return GestureDetector(
-      onTap: () {
-        Navigator.push(
+      onTap: () async {
+        final deleted = await Navigator.push<bool>(
           context,
           CupertinoPageRoute(
             builder: (_) => PrescriptionHistoryDetailScreen(prescription: item),
           ),
         );
+
+        if (deleted == true) {
+          await loadHistory();
+        }
       },
       child: Container(
         margin: const EdgeInsets.only(bottom: RadarSpacing.lg),
@@ -1062,13 +1066,17 @@ class _HistoryScreenState extends State<HistoryScreen> {
     final template = attestationTemplateByTypeId(item.typeId);
 
     return GestureDetector(
-      onTap: () {
-        Navigator.push(
+      onTap: () async {
+        final deleted = await Navigator.push<bool>(
           context,
           CupertinoPageRoute(
             builder: (_) => AttestationHistoryDetailScreen(attestation: item),
           ),
         );
+
+        if (deleted == true) {
+          await loadHistory();
+        }
       },
       child: Container(
         margin: const EdgeInsets.only(bottom: RadarSpacing.lg),
@@ -1160,13 +1168,17 @@ class _HistoryScreenState extends State<HistoryScreen> {
     final template = medicalLetterTemplateByTypeId(item.typeId);
 
     return GestureDetector(
-      onTap: () {
-        Navigator.push(
+      onTap: () async {
+        final deleted = await Navigator.push<bool>(
           context,
           CupertinoPageRoute(
             builder: (_) => MedicalLetterHistoryDetailScreen(letter: item),
           ),
         );
+
+        if (deleted == true) {
+          await loadHistory();
+        }
       },
       child: Container(
         margin: const EdgeInsets.only(bottom: RadarSpacing.lg),
