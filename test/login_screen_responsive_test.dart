@@ -1,3 +1,4 @@
+import 'package:drapeaux_rouges_mb/features/radar/presentation/theme/radar_colors.dart';
 import 'package:drapeaux_rouges_mb/screens/login_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -14,9 +15,19 @@ void main() {
 
     expect(find.text('Radar'), findsOneWidget);
     expect(find.text('Assistant de raisonnement clinique'), findsOneWidget);
+    expect(find.byKey(const Key('radar-brand-symbol')), findsOneWidget);
+    expect(find.byKey(const Key('login-form-card')), findsOneWidget);
     expect(find.byKey(const Key('login-email-field')), findsOneWidget);
     expect(find.byKey(const Key('login-password-field')), findsOneWidget);
     expect(find.text('Se connecter'), findsOneWidget);
+    expect(find.text('Données locales sécurisées • RGPD'), findsOneWidget);
+    expect(find.textContaining('Drapeaux Rouges'), findsNothing);
+    expect(find.text('URPS'), findsNothing);
+    expect(find.textContaining('RUN APP'), findsNothing);
+    final scaffold = tester.widget<Scaffold>(
+      find.byKey(const Key('radar-login-screen')),
+    );
+    expect(scaffold.backgroundColor, RadarColors.brandBackground);
     expect(tester.takeException(), isNull);
   });
 
@@ -30,7 +41,12 @@ void main() {
     await tester.pump();
 
     expect(find.text('Radar'), findsOneWidget);
+    expect(find.text('Assistant de raisonnement clinique'), findsOneWidget);
+    expect(find.byKey(const Key('login-form-card')), findsOneWidget);
     expect(find.byKey(const Key('login-submit-button')), findsOneWidget);
+    expect(find.textContaining('Drapeaux Rouges'), findsNothing);
+    expect(find.text('URPS'), findsNothing);
+    expect(find.textContaining('RUN APP'), findsNothing);
     expect(tester.takeException(), isNull);
   });
 

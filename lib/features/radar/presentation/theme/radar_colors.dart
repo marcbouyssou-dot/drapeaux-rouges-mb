@@ -7,6 +7,12 @@ abstract final class RadarColors {
   static const slate = Color(0xFF64748B);
   static const blueGrey = Color(0xFF94A3B8);
   static const neutralGrey = Color(0xFF9CA3AF);
+  static const brandBackground = Color(0xFF032052);
+  static const brandAccent = Color(0xFFE91E63);
+  static const brandAccentDark = Color(0xFFC2185B);
+  static const textOnBrand = Color(0xFFFFFFFF);
+  static const textMutedOnBrand = Color(0xFFA9C4E8);
+  static const loginFieldSurface = Color(0xFFF8FAFF);
 
   // Clinical
   static const clinicalSuccess = Color(0xFF22C55E);

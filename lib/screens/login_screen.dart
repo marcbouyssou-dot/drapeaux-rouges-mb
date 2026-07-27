@@ -111,64 +111,102 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: SystemUiOverlayStyle.dark,
+      value: const SystemUiOverlayStyle(
+        statusBarColor: RadarColors.brandBackground,
+        statusBarIconBrightness: Brightness.light,
+        statusBarBrightness: Brightness.dark,
+        systemNavigationBarColor: RadarColors.brandBackground,
+        systemNavigationBarIconBrightness: Brightness.light,
+      ),
       child: Scaffold(
-        backgroundColor: RadarColors.background,
-        body: SafeArea(
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              return SingleChildScrollView(
-                keyboardDismissBehavior:
-                    ScrollViewKeyboardDismissBehavior.onDrag,
-                padding: const EdgeInsets.all(RadarSpacing.xl),
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(
-                    minHeight: constraints.maxHeight - RadarSpacing.xl * 2,
-                  ),
-                  child: Center(
+        key: const Key('radar-login-screen'),
+        backgroundColor: RadarColors.brandBackground,
+        body: Stack(
+          children: [
+            const Positioned.fill(
+              child: CustomPaint(painter: _RadarLoginBackgroundPainter()),
+            ),
+            SafeArea(
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final compact = constraints.maxHeight < 700;
+                  final verticalPadding = compact
+                      ? RadarSpacing.md
+                      : RadarSpacing.xl;
+
+                  return SingleChildScrollView(
+                    keyboardDismissBehavior:
+                        ScrollViewKeyboardDismissBehavior.onDrag,
+                    padding: EdgeInsets.fromLTRB(
+                      RadarSpacing.cardGap,
+                      verticalPadding,
+                      RadarSpacing.cardGap,
+                      RadarSpacing.lg,
+                    ),
                     child: ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 440),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const _RadarIdentity(),
-                          const SizedBox(height: RadarSpacing.xxl),
-                          _buildFormCard(),
-                          const SizedBox(height: RadarSpacing.xl),
-                          Text(
-                            'Données locales sécurisées',
-                            style: RadarTextStyles.caption,
-                            textAlign: TextAlign.center,
+                      constraints: BoxConstraints(
+                        minHeight:
+                            constraints.maxHeight -
+                            verticalPadding -
+                            RadarSpacing.lg,
+                      ),
+                      child: Center(
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 460),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              _RadarIdentity(compact: compact),
+                              SizedBox(
+                                height: compact
+                                    ? RadarSpacing.lg
+                                    : RadarSpacing.xl,
+                              ),
+                              _buildFormCard(compact: compact),
+                              SizedBox(
+                                height: compact
+                                    ? RadarSpacing.lg
+                                    : RadarSpacing.xl,
+                              ),
+                              Text(
+                                'Données locales sécurisées • RGPD',
+                                key: const Key('login-security-footer'),
+                                style: RadarTextStyles.caption.copyWith(
+                                  color: RadarColors.textMutedOnBrand,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ],
                           ),
-                        ],
+                        ),
                       ),
                     ),
-                  ),
-                ),
-              );
-            },
-          ),
+                  );
+                },
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildFormCard() {
+  Widget _buildFormCard({required bool compact}) {
     return Container(
+      key: const Key('login-form-card'),
       width: double.infinity,
-      padding: const EdgeInsets.all(RadarSpacing.xl),
+      padding: EdgeInsets.all(compact ? RadarSpacing.cardGap : RadarSpacing.xl),
       decoration: BoxDecoration(
         color: RadarColors.surface,
-        borderRadius: BorderRadius.circular(RadarRadius.card),
-        border: Border.all(color: RadarColors.border),
-        boxShadow: RadarShadows.card,
+        borderRadius: BorderRadius.circular(RadarRadius.loginCard),
+        boxShadow: RadarShadows.loginCard,
       ),
       child: Form(
         key: _formKey,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text('Adresse e-mail', style: RadarTextStyles.contextTitle),
+            _fieldLabel('Adresse e-mail'),
             const SizedBox(height: RadarSpacing.sm),
             TextFormField(
               key: const Key('login-email-field'),
@@ -178,13 +216,13 @@ class _LoginScreenState extends State<LoginScreen> {
               autofillHints: const [AutofillHints.username],
               enabled: !_isSubmitting,
               validator: _validateEmail,
-              decoration: const InputDecoration(
+              decoration: _fieldDecoration(
                 hintText: 'prenom.nom@exemple.fr',
-                prefixIcon: Icon(Icons.mail_outline_rounded),
+                prefixIcon: Icons.mail_outline_rounded,
               ),
             ),
             const SizedBox(height: RadarSpacing.lg),
-            Text('Mot de passe', style: RadarTextStyles.contextTitle),
+            _fieldLabel('Mot de passe'),
             const SizedBox(height: RadarSpacing.sm),
             TextFormField(
               key: const Key('login-password-field'),
@@ -195,9 +233,9 @@ class _LoginScreenState extends State<LoginScreen> {
               enabled: !_isSubmitting,
               validator: _validatePassword,
               onFieldSubmitted: (_) => _submit(),
-              decoration: InputDecoration(
+              decoration: _fieldDecoration(
                 hintText: 'Mot de passe',
-                prefixIcon: const Icon(Icons.lock_outline_rounded),
+                prefixIcon: Icons.lock_outline_rounded,
                 suffixIcon: IconButton(
                   key: const Key('login-password-visibility'),
                   tooltip: _obscurePassword
@@ -233,55 +271,214 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
             ],
             const SizedBox(height: RadarSpacing.xl),
-            FilledButton(
-              key: const Key('login-submit-button'),
-              onPressed: _isSubmitting ? null : _submit,
-              child: _isSubmitting
-                  ? const SizedBox.square(
-                      dimension: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: RadarColors.surface,
-                      ),
-                    )
-                  : const Text('Se connecter'),
-            ),
+            _buildLoginButton(),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _fieldLabel(String label) {
+    return Text(
+      label,
+      style: RadarTextStyles.contextTitle.copyWith(color: RadarColors.primary),
+    );
+  }
+
+  InputDecoration _fieldDecoration({
+    required String hintText,
+    required IconData prefixIcon,
+    Widget? suffixIcon,
+  }) {
+    final border = OutlineInputBorder(
+      borderRadius: BorderRadius.circular(RadarRadius.loginField),
+      borderSide: const BorderSide(color: RadarColors.border),
+    );
+
+    return InputDecoration(
+      hintText: hintText,
+      prefixIcon: Icon(prefixIcon, color: RadarColors.primary),
+      suffixIcon: suffixIcon,
+      filled: true,
+      fillColor: RadarColors.loginFieldSurface,
+      contentPadding: const EdgeInsets.symmetric(
+        horizontal: RadarSpacing.lg,
+        vertical: RadarSpacing.lg,
+      ),
+      border: border,
+      enabledBorder: border,
+      disabledBorder: border,
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(RadarRadius.loginField),
+        borderSide: const BorderSide(color: RadarColors.primary, width: 1.6),
+      ),
+      errorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(RadarRadius.loginField),
+        borderSide: const BorderSide(color: RadarColors.clinicalDanger),
+      ),
+      focusedErrorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(RadarRadius.loginField),
+        borderSide: const BorderSide(
+          color: RadarColors.clinicalDanger,
+          width: 1.6,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLoginButton() {
+    return Container(
+      height: 56,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: _isSubmitting
+              ? [
+                  RadarColors.brandAccent.withValues(alpha: 0.55),
+                  RadarColors.brandAccentDark.withValues(alpha: 0.55),
+                ]
+              : const [RadarColors.brandAccent, RadarColors.brandAccentDark],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(RadarRadius.loginField),
+        boxShadow: _isSubmitting ? const [] : RadarShadows.loginButton,
+      ),
+      child: ElevatedButton(
+        key: const Key('login-submit-button'),
+        onPressed: _isSubmitting ? null : _submit,
+        style: ElevatedButton.styleFrom(
+          elevation: 0,
+          backgroundColor: Colors.transparent,
+          disabledBackgroundColor: Colors.transparent,
+          shadowColor: Colors.transparent,
+          foregroundColor: RadarColors.textOnBrand,
+          disabledForegroundColor: RadarColors.textOnBrand,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(RadarRadius.loginField),
+          ),
+          textStyle: RadarTextStyles.body.copyWith(
+            color: RadarColors.textOnBrand,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        child: _isSubmitting
+            ? const SizedBox.square(
+                dimension: 20,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: RadarColors.textOnBrand,
+                ),
+              )
+            : const Text('Se connecter'),
       ),
     );
   }
 }
 
 class _RadarIdentity extends StatelessWidget {
-  const _RadarIdentity();
+  const _RadarIdentity({required this.compact});
+
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
         Container(
-          width: 72,
-          height: 72,
+          key: const Key('radar-brand-symbol'),
+          width: compact ? 82 : 104,
+          height: compact ? 82 : 104,
+          padding: EdgeInsets.all(compact ? 4 : 5),
           decoration: BoxDecoration(
-            color: RadarColors.surfaceMuted,
-            borderRadius: BorderRadius.circular(RadarRadius.signature),
+            color: RadarColors.textOnBrand.withValues(alpha: 0.08),
+            borderRadius: BorderRadius.circular(RadarRadius.loginCard),
+            border: Border.all(
+              color: RadarColors.textOnBrand.withValues(alpha: 0.12),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: RadarColors.primary.withValues(alpha: 0.16),
+                blurRadius: 28,
+              ),
+            ],
           ),
-          child: const Icon(
-            Icons.radar_rounded,
-            color: RadarColors.primary,
-            size: 42,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(RadarRadius.signature),
+            child: Image.asset(
+              'assets/icons/app_icon.png',
+              fit: BoxFit.cover,
+              filterQuality: FilterQuality.high,
+              semanticLabel: 'Symbole Radar',
+            ),
           ),
         ),
-        const SizedBox(height: RadarSpacing.lg),
-        Text('Radar', style: RadarTextStyles.screenTitle),
+        SizedBox(height: compact ? RadarSpacing.md : RadarSpacing.lg),
+        Text(
+          'Radar',
+          style: RadarTextStyles.screenTitle.copyWith(
+            color: RadarColors.textOnBrand,
+            fontSize: compact ? 30 : 36,
+            letterSpacing: 0.2,
+          ),
+        ),
         const SizedBox(height: RadarSpacing.sm),
         Text(
           'Assistant de raisonnement clinique',
-          style: RadarTextStyles.secondary,
+          style: RadarTextStyles.secondary.copyWith(
+            color: RadarColors.textOnBrand.withValues(alpha: 0.94),
+            fontSize: compact ? 14 : 16,
+            fontWeight: FontWeight.w600,
+          ),
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: RadarSpacing.xs),
+        Text(
+          'Dépistage • Orientation',
+          style: RadarTextStyles.caption.copyWith(
+            color: RadarColors.textMutedOnBrand,
+          ),
           textAlign: TextAlign.center,
         ),
       ],
     );
   }
+}
+
+class _RadarLoginBackgroundPainter extends CustomPainter {
+  const _RadarLoginBackgroundPainter();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final linePaint = Paint()
+      ..color = RadarColors.primary.withValues(alpha: 0.14)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1;
+
+    final upperArc = Path()
+      ..moveTo(-size.width * 0.2, size.height * 0.16)
+      ..cubicTo(
+        size.width * 0.16,
+        size.height * 0.06,
+        size.width * 0.30,
+        size.height * 0.28,
+        -size.width * 0.04,
+        size.height * 0.38,
+      );
+    final lowerArc = Path()
+      ..moveTo(size.width * 1.16, size.height * 0.64)
+      ..cubicTo(
+        size.width * 0.82,
+        size.height * 0.52,
+        size.width * 0.72,
+        size.height * 0.78,
+        size.width * 1.04,
+        size.height * 0.88,
+      );
+
+    canvas.drawPath(upperArc, linePaint);
+    canvas.drawPath(lowerArc, linePaint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
