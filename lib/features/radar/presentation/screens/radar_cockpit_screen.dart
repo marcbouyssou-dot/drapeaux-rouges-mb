@@ -17,7 +17,9 @@ import '../widgets/radar_patient_context.dart';
 import 'radar_clinical_start_screen.dart';
 
 class RadarCockpitScreen extends StatefulWidget {
-  const RadarCockpitScreen({super.key});
+  const RadarCockpitScreen({super.key, this.onLogout});
+
+  final Future<void> Function()? onLogout;
 
   @override
   State<RadarCockpitScreen> createState() => _RadarCockpitScreenState();
@@ -71,7 +73,9 @@ class _RadarCockpitScreenState extends State<RadarCockpitScreen> {
   Future<void> _openSettingsScreen(BuildContext context) async {
     await _pushOnce(
       context,
-      CupertinoPageRoute(builder: (_) => const SettingsScreen()),
+      CupertinoPageRoute(
+        builder: (_) => SettingsScreen(onLogout: widget.onLogout),
+      ),
     );
   }
 

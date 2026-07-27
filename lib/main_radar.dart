@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
-import 'features/radar/presentation/radar_demo_shell.dart';
+import 'features/radar/presentation/theme/radar_theme.dart';
+import 'screens/auth/radar_auth_gate.dart';
 import 'services/secure_hive_service.dart';
 
 Future<void> main() async {
@@ -14,10 +15,11 @@ class RadarPreviewApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
+    return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Radar',
-      home: RadarDemoShell(),
+      theme: RadarTheme.lightTheme,
+      home: RadarAuthGate(),
     );
   }
 }

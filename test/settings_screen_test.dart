@@ -11,4 +11,21 @@ void main() {
     expect(source, contains("title: 'Réinitialisation locale'"));
     expect(source, contains('onTap: confirmResetLocalData'));
   });
+
+  test('Radar logout is explicit and keeps persistent local data', () {
+    final source = File('lib/screens/settings_screen.dart').readAsStringSync();
+
+    expect(source, contains('Future<void> confirmLogout() async'));
+    expect(source, contains("title: 'Se déconnecter'"));
+    expect(source, contains('await onLogout()'));
+    expect(
+      source,
+      isNot(
+        contains(
+          'confirmLogout() async {\n'
+          '    await RgpdLocalService.deleteAllLocalData()',
+        ),
+      ),
+    );
+  });
 }

@@ -22,7 +22,9 @@ import '../features/radar/presentation/widgets/radar_page_header.dart';
 import 'access_direct_settings_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
-  const SettingsScreen({super.key});
+  const SettingsScreen({super.key, this.onLogout});
+
+  final Future<void> Function()? onLogout;
 
   @override
   State<SettingsScreen> createState() => _SettingsScreenState();
@@ -85,6 +87,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ),
       ),
     );
+  }
+
+  Future<void> confirmLogout() async {
+    final onLogout = widget.onLogout;
+    if (onLogout == null) return;
+
+    final confirmed = await showRadarDestructiveConfirmationDialog(
+      context,
+      title: 'Se déconnecter',
+      message:
+          'Le patient actif et les données temporaires de cette session '
+          'seront retirés. Les données locales enregistrées seront conservées.',
+      confirmLabel: 'Se déconnecter',
+    );
+    if (confirmed != true || !mounted) return;
+
+    Navigator.of(context).popUntil((route) => route.isFirst);
+    await onLogout();
   }
 
   Future<void> showPractitionerDialog() async {
@@ -627,6 +647,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     subtitle: 'Effacer les données stockées sur cet appareil.',
                     onTap: confirmResetLocalData,
                   ),
+                  if (widget.onLogout != null)
+                    settingCard(
+                      icon: Icons.logout_rounded,
+                      iconColor: RadarColors.clinicalDanger,
+                      title: 'Se déconnecter',
+                      subtitle:
+                          'Fermer la session sans effacer les données locales.',
+                      onTap: confirmLogout,
+                    ),
 
                   const SizedBox(height: RadarSpacing.lg),
                   buildVersionCard(),
@@ -723,7 +752,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           SizedBox(width: RadarSpacing.md),
           Expanded(
             child: Text(
-              'Drapeaux Rouges — Version 1.0.0 — RC1',
+              'Radar — Version 1.0.0 — RC1',
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               style: RadarTextStyles.contextTitle,
