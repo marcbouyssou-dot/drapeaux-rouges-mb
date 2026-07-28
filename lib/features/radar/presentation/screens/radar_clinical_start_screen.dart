@@ -42,24 +42,8 @@ class RadarClinicalStartScreen extends StatelessWidget {
     );
   }
 
-  void _showUnavailableRegion(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text(
-          'Parcours clinique non disponible dans la matrice expérimentale V0.1 — NON VALIDÉE.',
-        ),
-      ),
-    );
-  }
-
   void _handleRegionTap(BuildContext context, _RadarRegionOption option) {
-    final region = option.region;
-    if (region == null) {
-      _showUnavailableRegion(context);
-      return;
-    }
-
-    _openQuestion(context, region);
+    _openQuestion(context, option.region);
   }
 
   @override
@@ -101,7 +85,8 @@ class RadarClinicalStartScreen extends StatelessWidget {
                 _RegionGroup(
                   title: 'TÊTE ET COU',
                   regions: const [
-                    _RadarRegionOption('Tête / Face'),
+                    // Tête / Face reste masquée en RC1 tant qu'aucun parcours
+                    // clinique fonctionnel ne lui est associé.
                     _RadarRegionOption('Cou', RadarClinicalRegion.cervical),
                   ],
                   onRegionTap: (option) => _handleRegionTap(context, option),
@@ -123,8 +108,10 @@ class RadarClinicalStartScreen extends StatelessWidget {
                 _RegionGroup(
                   title: 'TRONC',
                   regions: const [
-                    _RadarRegionOption('Thorax', RadarClinicalRegion.thoracic),
-                    _RadarRegionOption('Dos', RadarClinicalRegion.thoracic),
+                    _RadarRegionOption(
+                      'Thorax / Dos',
+                      RadarClinicalRegion.thoracic,
+                    ),
                     _RadarRegionOption('Lombaires', RadarClinicalRegion.lumbar),
                   ],
                   onRegionTap: (option) => _handleRegionTap(context, option),
@@ -164,10 +151,10 @@ class RadarClinicalStartScreen extends StatelessWidget {
 }
 
 class _RadarRegionOption {
-  const _RadarRegionOption(this.label, [this.region]);
+  const _RadarRegionOption(this.label, this.region);
 
   final String label;
-  final RadarClinicalRegion? region;
+  final RadarClinicalRegion region;
 }
 
 class _RegionGroup extends StatelessWidget {

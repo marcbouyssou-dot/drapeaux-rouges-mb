@@ -12,6 +12,7 @@ import 'package:drapeaux_rouges_mb/features/radar/presentation/screens/radar_cli
 import 'package:drapeaux_rouges_mb/features/radar/presentation/screens/radar_clinical_summary_screen.dart';
 import 'package:drapeaux_rouges_mb/features/radar/presentation/widgets/radar_decision_card.dart';
 import 'package:drapeaux_rouges_mb/features/radar/presentation/widgets/radar_patient_context.dart';
+import 'package:drapeaux_rouges_mb/features/radar/presentation/widgets/radar_region_action.dart';
 import 'package:drapeaux_rouges_mb/models/clinical_screening/clinical_adaptive_session_v5.dart';
 import 'package:drapeaux_rouges_mb/models/clinical_screening/clinical_adaptive_view_state_v5.dart';
 import 'package:drapeaux_rouges_mb/models/clinical_screening/clinical_probability_update_v5.dart';
@@ -116,27 +117,16 @@ void main() {
       },
     );
 
-    testWidgets('unsupported Tête / Face does not start a lumbar session', (
+    testWidgets('shows nine functional regions and hides Tête / Face', (
       tester,
     ) async {
-      final observer = _RecordingNavigatorObserver();
-      await _pumpStartScreen(tester, observer: observer);
-      final routeCountBeforeTap = observer.didPushCount;
+      await _pumpStartScreen(tester);
 
-      await tester.tap(find.text('Tête / Face'));
-      await tester.pump();
-
-      expect(observer.didPushCount, routeCountBeforeTap);
-      expect(
-        find.textContaining(
-          'Parcours clinique non disponible dans la matrice expérimentale V0.1',
-        ),
-        findsOneWidget,
-      );
-      expect(
-        find.textContaining('troubles urinaires ou fécaux nouveaux'),
-        findsNothing,
-      );
+      expect(find.text('Tête / Face'), findsNothing);
+      expect(find.text('Thorax'), findsNothing);
+      expect(find.text('Dos'), findsNothing);
+      expect(find.text('Thorax / Dos'), findsOneWidget);
+      expect(find.byType(RadarRegionAction), findsNWidgets(9));
     });
 
     testWidgets('only yes and no are visible in the connected V5 flow', (
@@ -623,7 +613,7 @@ void main() {
       tester,
     ) async {
       await _pumpStartScreen(tester);
-      await tester.tap(find.text('Thorax'));
+      await tester.tap(find.text('Thorax / Dos'));
       await tester.pumpAndSettle();
 
       expect(find.textContaining('La douleur thoracique'), findsOneWidget);
@@ -668,7 +658,7 @@ void main() {
       await tester.tap(find.text('Revenir à l’accueil'));
       await tester.pumpAndSettle();
 
-      expect(find.text('Thorax'), findsOneWidget);
+      expect(find.text('Thorax / Dos'), findsOneWidget);
       expect(find.text('Urgence médicale'), findsNothing);
     });
 
