@@ -19,6 +19,13 @@ for = "/index.html"
 Cache-Control = "no-cache"
 
 [[headers]]
+for = "/radar_service_worker.js"
+[headers.values]
+Content-Type = "application/javascript; charset=utf-8"
+Cache-Control = "no-cache"
+Service-Worker-Allowed = "/"
+
+[[headers]]
 for = "/*"
 [headers.values]
 X-Content-Type-Options = "nosniff"
