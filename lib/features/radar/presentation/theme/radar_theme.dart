@@ -20,7 +20,7 @@ abstract final class RadarTheme {
       useMaterial3: true,
       colorScheme: colorScheme,
       scaffoldBackgroundColor: RadarColors.background,
-      fontFamily: 'SF Pro',
+      fontFamily: 'Roboto',
     );
 
     return base.copyWith(

@@ -9,6 +9,10 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('RadarTheme RC1', () {
+    test('uses the bundled Roboto family', () {
+      expect(RadarTheme.lightTheme.textTheme.displayLarge?.fontFamily, 'Roboto');
+    });
+
     test('exposes the main RC1 color tokens', () {
       expect(RadarColors.primary, const Color(0xFF3B82F6));
       expect(RadarColors.clinicalAction, const Color(0xFF2563EB));

@@ -63,6 +63,24 @@ void main() {
     },
   );
 
+  test('Roboto is bundled and precached for deterministic offline text', () {
+    final pubspec = File('pubspec.yaml').readAsStringSync();
+    final worker = File('web/radar_service_worker.js').readAsStringSync();
+    final sources = Directory('lib')
+        .listSync(recursive: true)
+        .whereType<File>()
+        .where((file) => file.path.endsWith('.dart'))
+        .map((file) => file.readAsStringSync())
+        .join('\n');
+
+    expect(pubspec, contains('family: Roboto'));
+    expect(pubspec, contains('assets/fonts/Roboto-Regular.ttf'));
+    expect(pubspec, contains('assets/fonts/Roboto-Bold.ttf'));
+    expect(worker, contains('/assets/assets/fonts/Roboto-Regular.ttf'));
+    expect(worker, contains('/assets/assets/fonts/Roboto-Bold.ttf'));
+    expect(sources, isNot(contains('SF Pro')));
+  });
+
   test('Netlify does not HTTP-cache the worker or application entry point', () {
     final config = File('netlify.toml').readAsStringSync();
 
@@ -119,9 +137,21 @@ void main() {
     final worker = workerFile.readAsStringSync();
     final index = indexFile.readAsStringSync();
     final bootstrap = bootstrapFile.readAsStringSync();
+    final fontManifest = File(
+      'build/web/assets/FontManifest.json',
+    ).readAsStringSync();
     expect(worker, isNot(index));
     expect(worker, isNot(contains('unregister()')));
     expect(bootstrap, contains('"useLocalCanvasKit":true'));
+    expect(fontManifest, contains('"family":"Roboto"'));
+    expect(
+      File('build/web/assets/assets/fonts/Roboto-Regular.ttf').existsSync(),
+      isTrue,
+    );
+    expect(
+      File('build/web/assets/assets/fonts/Roboto-Bold.ttf').existsSync(),
+      isTrue,
+    );
 
     final paths = RegExp(
       r"^\s*'(/[^']+)',?$",

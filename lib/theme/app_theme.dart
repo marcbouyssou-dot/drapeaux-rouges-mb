@@ -15,7 +15,7 @@ class AppTheme {
       primary: primary,
       surface: background,
     ),
-    fontFamily: 'SF Pro',
+    fontFamily: 'Roboto',
 
     filledButtonTheme: FilledButtonThemeData(
       style: FilledButton.styleFrom(
