@@ -19,6 +19,7 @@ import '../../features/radar/presentation/theme/radar_spacing.dart';
 import '../../features/radar/presentation/theme/radar_text_styles.dart';
 import '../../features/radar/presentation/theme/radar_theme.dart';
 import '../../features/radar/presentation/widgets/radar_bottom_action_bar.dart';
+import '../../features/radar/presentation/widgets/radar_patient_context.dart';
 
 class MedicalLetterScreen extends StatefulWidget {
   const MedicalLetterScreen({super.key, required this.template});
@@ -200,6 +201,10 @@ class _MedicalLetterScreenState extends State<MedicalLetterScreen> {
                       ),
                       children: [
                         _HeaderCard(template: widget.template),
+                        const SizedBox(height: RadarSpacing.lg),
+                        const RadarPatientContextBar(
+                          confirmPatientChange: true,
+                        ),
                         const SizedBox(height: RadarSpacing.lg),
                         _ContextCard(
                           title: 'Patient utilisé',

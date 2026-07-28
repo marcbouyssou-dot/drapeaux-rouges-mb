@@ -20,6 +20,7 @@ import '../../features/radar/presentation/theme/radar_text_styles.dart';
 import '../../features/radar/presentation/theme/radar_theme.dart';
 import '../../features/radar/presentation/widgets/radar_bottom_action_bar.dart';
 import '../../features/radar/presentation/widgets/radar_destructive_confirmation_dialog.dart';
+import '../../features/radar/presentation/widgets/radar_patient_context.dart';
 
 class BDKDetailScreen extends StatefulWidget {
   const BDKDetailScreen({super.key, required this.title, this.customContext});
@@ -665,6 +666,8 @@ Une prise en charge kinésithérapique adaptée semble indiquée avec surveillan
                       RadarSpacing.xxxl + RadarSpacing.xxl + RadarSpacing.lg,
                     ),
                     children: [
+                      const RadarPatientContextBar(confirmPatientChange: true),
+                      const SizedBox(height: RadarSpacing.lg),
                       buildPatientSummaryCard(),
                       buildImportedEvaluationBanner(),
                       _BdkExpandableSection(

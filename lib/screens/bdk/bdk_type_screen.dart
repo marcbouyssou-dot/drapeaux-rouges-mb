@@ -9,6 +9,7 @@ import '../../features/radar/presentation/theme/radar_spacing.dart';
 import '../../features/radar/presentation/theme/radar_text_styles.dart';
 import '../../features/radar/presentation/theme/radar_theme.dart';
 import '../../features/radar/presentation/widgets/radar_page_header.dart';
+import '../../features/radar/presentation/widgets/radar_patient_context.dart';
 import '../../services/bdk_draft_service.dart';
 import '../../services/bdk_session_service.dart';
 import '../../services/rgpd_local_service.dart';
@@ -43,6 +44,8 @@ class BDKTypeScreen extends StatelessWidget {
                         'Créer ou compléter un bilan diagnostique kinésithérapique.',
                     onBack: () => Navigator.pop(context),
                   ),
+                  const SizedBox(height: RadarSpacing.lg),
+                  const RadarPatientContextBar(),
                   const SizedBox(height: RadarSpacing.xxl),
                   ...bdkTypeOptions.map(
                     (item) => Padding(

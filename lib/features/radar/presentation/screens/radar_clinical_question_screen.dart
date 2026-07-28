@@ -109,7 +109,7 @@ class _RadarClinicalQuestionScreenState
                 RadarSpacing.xxl,
               ),
               children: [
-                const RadarPatientContextBar(),
+                const RadarPatientContextBar(confirmPatientChange: true),
                 const SizedBox(height: RadarSpacing.xl),
                 const Text(
                   'Évaluation clinique',

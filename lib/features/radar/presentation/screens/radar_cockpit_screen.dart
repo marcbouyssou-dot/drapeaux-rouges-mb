@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 
 import '../../../../screens/bdk/bdk_type_screen.dart';
 import '../../../../screens/history_screen.dart';
-import '../../../../screens/patient_consent_screen.dart';
 import '../../../../screens/prescription/prescription_type_screen.dart';
 import '../../../../screens/settings_screen.dart';
 import '../theme/radar_colors.dart';
@@ -26,7 +25,6 @@ class RadarCockpitScreen extends StatefulWidget {
 }
 
 class _RadarCockpitScreenState extends State<RadarCockpitScreen> {
-  int _patientContextVersion = 0;
   bool _navigationPending = false;
 
   Future<void> _openClinicalStart(BuildContext context) async {
@@ -34,19 +32,6 @@ class _RadarCockpitScreenState extends State<RadarCockpitScreen> {
       context,
       MaterialPageRoute(builder: (_) => const RadarClinicalStartScreen()),
     );
-  }
-
-  Future<void> _openPatientScreen(BuildContext context) async {
-    final opened = await _pushOnce(
-      context,
-      MaterialPageRoute(builder: (_) => const PatientConsentScreen()),
-    );
-
-    if (!opened || !mounted) return;
-
-    setState(() {
-      _patientContextVersion++;
-    });
   }
 
   Future<void> _openBdkTypeScreen(BuildContext context) async {
@@ -133,10 +118,7 @@ class _RadarCockpitScreenState extends State<RadarCockpitScreen> {
                                 children: [
                                   const _RadarCockpitHeader(),
                                   const SizedBox(height: RadarSpacing.xxl),
-                                  RadarPatientContextBar(
-                                    key: ValueKey(_patientContextVersion),
-                                    onTap: () => _openPatientScreen(context),
-                                  ),
+                                  const RadarPatientContextBar(),
                                   const SizedBox(height: RadarSpacing.xxl),
                                   RadarActionCard(
                                     title: 'Évaluation clinique',

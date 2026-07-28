@@ -11,12 +11,14 @@ import 'package:drapeaux_rouges_mb/features/radar/presentation/screens/radar_cli
 import 'package:drapeaux_rouges_mb/features/radar/presentation/screens/radar_clinical_start_screen.dart';
 import 'package:drapeaux_rouges_mb/features/radar/presentation/screens/radar_clinical_summary_screen.dart';
 import 'package:drapeaux_rouges_mb/features/radar/presentation/widgets/radar_decision_card.dart';
+import 'package:drapeaux_rouges_mb/features/radar/presentation/widgets/radar_patient_context.dart';
 import 'package:drapeaux_rouges_mb/models/clinical_screening/clinical_adaptive_session_v5.dart';
 import 'package:drapeaux_rouges_mb/models/clinical_screening/clinical_adaptive_view_state_v5.dart';
 import 'package:drapeaux_rouges_mb/models/clinical_screening/clinical_probability_update_v5.dart';
 import 'package:drapeaux_rouges_mb/models/clinical_screening/clinical_screening_models.dart';
 import 'package:drapeaux_rouges_mb/screens/bdk/bdk_detail_screen.dart';
 import 'package:drapeaux_rouges_mb/screens/bdk/bdk_type_screen.dart';
+import 'package:drapeaux_rouges_mb/screens/patient_consent_screen.dart';
 import 'package:drapeaux_rouges_mb/services/bdk_pdf_service.dart';
 import 'package:drapeaux_rouges_mb/services/bdk_session_service.dart';
 import 'package:flutter/material.dart';
@@ -227,6 +229,33 @@ void main() {
         findsNothing,
       );
     });
+
+    testWidgets(
+      'patient context opens from a question and preserves the current step',
+      (tester) async {
+        await _pumpStartScreen(tester);
+        await tester.tap(find.text('Lombaires'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Non'));
+        await tester.pumpAndSettle();
+
+        final currentQuestion = find.textContaining('cancer actif');
+        expect(currentQuestion, findsOneWidget);
+
+        await tester.tap(find.byType(RadarPatientContextBar));
+        await tester.pumpAndSettle();
+        expect(find.byType(PatientConsentScreen), findsOneWidget);
+
+        Navigator.of(
+          tester.element(find.byType(PatientConsentScreen)),
+        ).maybePop();
+        await tester.pumpAndSettle();
+
+        expect(find.byType(RadarClinicalQuestionScreen), findsOneWidget);
+        expect(currentQuestion, findsOneWidget);
+        expect(find.text('Lombaires • Étape 2'), findsOneWidget);
+      },
+    );
 
     testWidgets('lumbar summary displays dynamic session data', (tester) async {
       await _pumpStartScreen(tester);

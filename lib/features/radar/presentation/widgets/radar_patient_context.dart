@@ -1,8 +1,21 @@
 import 'package:flutter/material.dart';
 
 import '../../../../models/patient_local.dart';
+import '../../../../screens/patient_consent_screen.dart';
 import '../../../../services/rgpd_local_service.dart';
 import 'radar_context_bar.dart';
+
+Future<void> openRadarPatientContext(
+  BuildContext context, {
+  bool confirmPatientChange = false,
+}) {
+  return Navigator.of(context).push<void>(
+    MaterialPageRoute(
+      builder: (_) =>
+          PatientConsentScreen(confirmPatientChange: confirmPatientChange),
+    ),
+  );
+}
 
 class RadarPatientContext {
   const RadarPatientContext({
@@ -36,9 +49,14 @@ class RadarPatientContext {
 }
 
 class RadarPatientContextBar extends StatefulWidget {
-  const RadarPatientContextBar({super.key, this.onTap});
+  const RadarPatientContextBar({
+    super.key,
+    this.onTap,
+    this.confirmPatientChange = false,
+  });
 
   final VoidCallback? onTap;
+  final bool confirmPatientChange;
 
   @override
   State<RadarPatientContextBar> createState() => _RadarPatientContextBarState();
@@ -59,8 +77,23 @@ class _RadarPatientContextBarState extends State<RadarPatientContextBar> {
     return RadarContextBar(
       patientName: _patientContext.primaryLabel,
       status: _patientContext.secondaryLabel,
-      onTap: widget.onTap,
+      onTap: _openContext,
     );
+  }
+
+  Future<void> _openContext() async {
+    final callback = widget.onTap;
+    if (callback != null) {
+      callback();
+      return;
+    }
+
+    await openRadarPatientContext(
+      context,
+      confirmPatientChange: widget.confirmPatientChange,
+    );
+    if (!mounted) return;
+    await _loadContext();
   }
 
   Future<void> _loadContext() async {

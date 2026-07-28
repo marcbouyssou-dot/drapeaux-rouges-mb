@@ -18,6 +18,7 @@ import '../features/radar/presentation/theme/radar_shadows.dart';
 import '../features/radar/presentation/theme/radar_spacing.dart';
 import '../features/radar/presentation/theme/radar_text_styles.dart';
 import '../features/radar/presentation/theme/radar_theme.dart';
+import '../features/radar/presentation/widgets/radar_patient_context.dart';
 import '../features/radar/presentation/widgets/radar_bottom_action_bar.dart';
 import '../features/radar/presentation/widgets/radar_destructive_confirmation_dialog.dart';
 
@@ -581,6 +582,8 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
                       112,
                     ),
                     children: [
+                      const RadarPatientContextBar(confirmPatientChange: true),
+                      const SizedBox(height: RadarSpacing.lg),
                       buildReadinessSummary(),
                       const SizedBox(height: RadarSpacing.lg),
                       buildPatientCard(),

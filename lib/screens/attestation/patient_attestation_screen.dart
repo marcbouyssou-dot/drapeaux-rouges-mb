@@ -22,6 +22,7 @@ import '../../features/radar/presentation/theme/radar_spacing.dart';
 import '../../features/radar/presentation/theme/radar_text_styles.dart';
 import '../../features/radar/presentation/theme/radar_theme.dart';
 import '../../features/radar/presentation/widgets/radar_page_header.dart';
+import '../../features/radar/presentation/widgets/radar_patient_context.dart';
 import '../../widgets/design_system/clinical_bottom_action_bar.dart';
 
 class PatientAttestationScreen extends StatefulWidget {
@@ -391,6 +392,10 @@ class _PatientAttestationScreenState extends State<PatientAttestationScreen> {
                       ),
                       children: [
                         _HeaderCard(template: widget.template),
+                        const SizedBox(height: RadarSpacing.lg),
+                        const RadarPatientContextBar(
+                          confirmPatientChange: true,
+                        ),
                         const SizedBox(height: RadarSpacing.lg),
                         if (isProximityAttestation)
                           _ProximityForm(

@@ -20,7 +20,9 @@ import '../services/rgpd_local_service.dart';
 import '../widgets/design_system/clinical_responsive_info.dart';
 
 class PatientConsentScreen extends StatefulWidget {
-  const PatientConsentScreen({super.key});
+  const PatientConsentScreen({super.key, this.confirmPatientChange = false});
+
+  final bool confirmPatientChange;
 
   @override
   State<PatientConsentScreen> createState() => _PatientConsentScreenState();
@@ -655,6 +657,8 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
   }
 
   Future<void> selectPatient(PatientLocal patient) async {
+    if (!await _confirmPatientChange(patient.localId)) return;
+
     await RgpdLocalService.setCurrentPatientId(patient.localId);
     populateFormFromPatient(patient);
     await loadPatients();
@@ -662,6 +666,24 @@ class _PatientConsentScreenState extends State<PatientConsentScreen> {
     if (!mounted) return;
 
     showMessage('${patient.nom.toUpperCase()} ${patient.prenom} activé.');
+  }
+
+  Future<bool> _confirmPatientChange(String nextPatientLocalId) async {
+    if (!widget.confirmPatientChange ||
+        currentPatient == null ||
+        currentPatient!.localId == nextPatientLocalId) {
+      return true;
+    }
+
+    final confirmed = await showRadarDestructiveConfirmationDialog(
+      context,
+      title: 'Changer de patient actif ?',
+      message:
+          'Des données sont en cours de saisie sur l’écran précédent. '
+          'Vérifiez leur attribution avant de poursuivre.',
+      confirmLabel: 'Changer de patient',
+    );
+    return confirmed == true;
   }
 
   void populateFormFromPatient(PatientLocal patient) {

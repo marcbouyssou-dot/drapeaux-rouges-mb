@@ -9,6 +9,7 @@ import '../../features/radar/presentation/theme/radar_spacing.dart';
 import '../../features/radar/presentation/theme/radar_text_styles.dart';
 import '../../features/radar/presentation/theme/radar_theme.dart';
 import '../../features/radar/presentation/widgets/radar_page_header.dart';
+import '../../features/radar/presentation/widgets/radar_patient_context.dart';
 import '../attestation/attestation_type_screen.dart';
 import '../medical_letter/medical_letter_type_screen.dart';
 import '../prescription_screen.dart';
@@ -67,6 +68,8 @@ class PrescriptionTypeScreen extends StatelessWidget {
                         'Créer un document clinique et préparer un export PDF.',
                     onBack: () => Navigator.pop(context),
                   ),
+                  const SizedBox(height: RadarSpacing.lg),
+                  const RadarPatientContextBar(),
                   const SizedBox(height: RadarSpacing.xxl),
                   LayoutBuilder(
                     builder: (context, constraints) {
