@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../features/radar/presentation/theme/radar_colors.dart';
+import '../features/radar/presentation/theme/radar_design_tokens.dart';
 import '../features/radar/presentation/theme/radar_radius.dart';
 import '../features/radar/presentation/theme/radar_shadows.dart';
 import '../features/radar/presentation/theme/radar_spacing.dart';
@@ -112,15 +112,15 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: const SystemUiOverlayStyle(
-        statusBarColor: RadarColors.brandBackground,
-        statusBarIconBrightness: Brightness.light,
-        statusBarBrightness: Brightness.dark,
-        systemNavigationBarColor: RadarColors.brandBackground,
-        systemNavigationBarIconBrightness: Brightness.light,
+        statusBarColor: RadarComponentTokens.loginBackground,
+        statusBarIconBrightness: Brightness.dark,
+        statusBarBrightness: Brightness.light,
+        systemNavigationBarColor: RadarComponentTokens.loginBackground,
+        systemNavigationBarIconBrightness: Brightness.dark,
       ),
       child: Scaffold(
         key: const Key('radar-login-screen'),
-        backgroundColor: RadarColors.brandBackground,
+        backgroundColor: RadarComponentTokens.loginBackground,
         body: Stack(
           children: [
             const Positioned.fill(
@@ -172,7 +172,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 'Données locales sécurisées • RGPD',
                                 key: const Key('login-security-footer'),
                                 style: RadarTextStyles.caption.copyWith(
-                                  color: RadarColors.textMutedOnBrand,
+                                  color: RadarComponentTokens.loginTextMuted,
                                 ),
                                 textAlign: TextAlign.center,
                               ),
@@ -197,7 +197,7 @@ class _LoginScreenState extends State<LoginScreen> {
       width: double.infinity,
       padding: EdgeInsets.all(compact ? RadarSpacing.cardGap : RadarSpacing.xl),
       decoration: BoxDecoration(
-        color: RadarColors.surface,
+        color: RadarComponentTokens.loginCardBackground,
         borderRadius: BorderRadius.circular(RadarRadius.loginCard),
         boxShadow: RadarShadows.loginCard,
       ),
@@ -211,6 +211,7 @@ class _LoginScreenState extends State<LoginScreen> {
             TextFormField(
               key: const Key('login-email-field'),
               controller: _emailController,
+              style: const TextStyle(color: RadarComponentTokens.loginText),
               keyboardType: TextInputType.emailAddress,
               textInputAction: TextInputAction.next,
               autofillHints: const [AutofillHints.username],
@@ -227,6 +228,7 @@ class _LoginScreenState extends State<LoginScreen> {
             TextFormField(
               key: const Key('login-password-field'),
               controller: _passwordController,
+              style: const TextStyle(color: RadarComponentTokens.loginText),
               obscureText: _obscurePassword,
               textInputAction: TextInputAction.done,
               autofillHints: const [AutofillHints.password],
@@ -264,7 +266,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   _errorMessage!,
                   key: const Key('login-error-message'),
                   style: RadarTextStyles.secondary.copyWith(
-                    color: RadarColors.clinicalDanger,
+                    color: RadarSemanticTokens.danger,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -281,7 +283,9 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget _fieldLabel(String label) {
     return Text(
       label,
-      style: RadarTextStyles.contextTitle.copyWith(color: RadarColors.primary),
+      style: RadarTextStyles.contextTitle.copyWith(
+        color: RadarComponentTokens.loginText,
+      ),
     );
   }
 
@@ -292,15 +296,18 @@ class _LoginScreenState extends State<LoginScreen> {
   }) {
     final border = OutlineInputBorder(
       borderRadius: BorderRadius.circular(RadarRadius.loginField),
-      borderSide: const BorderSide(color: RadarColors.border),
+      borderSide: const BorderSide(
+        color: RadarComponentTokens.loginFieldBorder,
+      ),
     );
 
     return InputDecoration(
       hintText: hintText,
-      prefixIcon: Icon(prefixIcon, color: RadarColors.primary),
+      hintStyle: const TextStyle(color: RadarComponentTokens.loginTextMuted),
+      prefixIcon: Icon(prefixIcon, color: RadarBrandTokens.primary),
       suffixIcon: suffixIcon,
       filled: true,
-      fillColor: RadarColors.loginFieldSurface,
+      fillColor: RadarComponentTokens.loginFieldBackground,
       contentPadding: const EdgeInsets.symmetric(
         horizontal: RadarSpacing.lg,
         vertical: RadarSpacing.lg,
@@ -310,16 +317,19 @@ class _LoginScreenState extends State<LoginScreen> {
       disabledBorder: border,
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(RadarRadius.loginField),
-        borderSide: const BorderSide(color: RadarColors.primary, width: 1.6),
+        borderSide: const BorderSide(
+          color: RadarBrandTokens.primary,
+          width: 1.6,
+        ),
       ),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(RadarRadius.loginField),
-        borderSide: const BorderSide(color: RadarColors.clinicalDanger),
+        borderSide: const BorderSide(color: RadarSemanticTokens.danger),
       ),
       focusedErrorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(RadarRadius.loginField),
         borderSide: const BorderSide(
-          color: RadarColors.clinicalDanger,
+          color: RadarSemanticTokens.danger,
           width: 1.6,
         ),
       ),
@@ -330,16 +340,11 @@ class _LoginScreenState extends State<LoginScreen> {
     return Container(
       height: 56,
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: _isSubmitting
-              ? [
-                  RadarColors.brandAccent.withValues(alpha: 0.55),
-                  RadarColors.brandAccentDark.withValues(alpha: 0.55),
-                ]
-              : const [RadarColors.brandAccent, RadarColors.brandAccentDark],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        color: _isSubmitting
+            ? RadarComponentTokens.primaryButtonBackground.withValues(
+                alpha: 0.55,
+              )
+            : RadarComponentTokens.primaryButtonBackground,
         borderRadius: BorderRadius.circular(RadarRadius.loginField),
         boxShadow: _isSubmitting ? const [] : RadarShadows.loginButton,
       ),
@@ -351,13 +356,13 @@ class _LoginScreenState extends State<LoginScreen> {
           backgroundColor: Colors.transparent,
           disabledBackgroundColor: Colors.transparent,
           shadowColor: Colors.transparent,
-          foregroundColor: RadarColors.textOnBrand,
-          disabledForegroundColor: RadarColors.textOnBrand,
+          foregroundColor: RadarComponentTokens.primaryButtonText,
+          disabledForegroundColor: RadarComponentTokens.primaryButtonText,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(RadarRadius.loginField),
           ),
           textStyle: RadarTextStyles.body.copyWith(
-            color: RadarColors.textOnBrand,
+            color: RadarComponentTokens.primaryButtonText,
             fontWeight: FontWeight.w700,
           ),
         ),
@@ -366,7 +371,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 dimension: 20,
                 child: CircularProgressIndicator(
                   strokeWidth: 2,
-                  color: RadarColors.textOnBrand,
+                  color: RadarComponentTokens.primaryButtonText,
                 ),
               )
             : const Text('Se connecter'),
@@ -386,21 +391,14 @@ class _RadarIdentity extends StatelessWidget {
       children: [
         Container(
           key: const Key('radar-brand-symbol'),
-          width: compact ? 82 : 104,
-          height: compact ? 82 : 104,
-          padding: EdgeInsets.all(compact ? 4 : 5),
+          width: compact ? 96 : 124,
+          height: compact ? 96 : 124,
+          padding: const EdgeInsets.all(RadarSpacing.xs),
           decoration: BoxDecoration(
-            color: RadarColors.textOnBrand.withValues(alpha: 0.08),
+            color: RadarComponentTokens.loginCardBackground,
             borderRadius: BorderRadius.circular(RadarRadius.loginCard),
-            border: Border.all(
-              color: RadarColors.textOnBrand.withValues(alpha: 0.12),
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: RadarColors.primary.withValues(alpha: 0.16),
-                blurRadius: 28,
-              ),
-            ],
+            border: Border.all(color: RadarComponentTokens.loginFieldBorder),
+            boxShadow: RadarShadows.card,
           ),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(RadarRadius.signature),
@@ -416,7 +414,7 @@ class _RadarIdentity extends StatelessWidget {
         Text(
           'Radar',
           style: RadarTextStyles.screenTitle.copyWith(
-            color: RadarColors.textOnBrand,
+            color: RadarComponentTokens.loginText,
             fontSize: compact ? 30 : 36,
             letterSpacing: 0.2,
           ),
@@ -425,7 +423,7 @@ class _RadarIdentity extends StatelessWidget {
         Text(
           'Assistant de raisonnement clinique',
           style: RadarTextStyles.secondary.copyWith(
-            color: RadarColors.textOnBrand.withValues(alpha: 0.94),
+            color: RadarComponentTokens.loginText,
             fontSize: compact ? 14 : 16,
             fontWeight: FontWeight.w600,
           ),
@@ -435,9 +433,19 @@ class _RadarIdentity extends StatelessWidget {
         Text(
           'Dépistage • Orientation',
           style: RadarTextStyles.caption.copyWith(
-            color: RadarColors.textMutedOnBrand,
+            color: RadarComponentTokens.loginTextMuted,
           ),
           textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: RadarSpacing.md),
+        Container(
+          key: const Key('login-coral-accent'),
+          width: 32,
+          height: 3,
+          decoration: BoxDecoration(
+            color: RadarComponentTokens.loginAccent,
+            borderRadius: BorderRadius.circular(RadarRadius.pill),
+          ),
         ),
       ],
     );
@@ -450,7 +458,7 @@ class _RadarLoginBackgroundPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final linePaint = Paint()
-      ..color = RadarColors.primary.withValues(alpha: 0.14)
+      ..color = RadarBrandTokens.primary.withValues(alpha: 0.08)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1;
 

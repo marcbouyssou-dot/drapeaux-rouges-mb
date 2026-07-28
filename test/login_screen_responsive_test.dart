@@ -1,4 +1,4 @@
-import 'package:drapeaux_rouges_mb/features/radar/presentation/theme/radar_colors.dart';
+import 'package:drapeaux_rouges_mb/features/radar/presentation/theme/radar_design_tokens.dart';
 import 'package:drapeaux_rouges_mb/screens/login_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -27,7 +27,8 @@ void main() {
     final scaffold = tester.widget<Scaffold>(
       find.byKey(const Key('radar-login-screen')),
     );
-    expect(scaffold.backgroundColor, RadarColors.brandBackground);
+    expect(scaffold.backgroundColor, RadarComponentTokens.loginBackground);
+    expect(find.byKey(const Key('login-coral-accent')), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
@@ -47,6 +48,16 @@ void main() {
     expect(find.textContaining('Drapeaux Rouges'), findsNothing);
     expect(find.text('URPS'), findsNothing);
     expect(find.textContaining('RUN APP'), findsNothing);
+    final buttonContainer = tester.widget<Container>(
+      find
+          .ancestor(
+            of: find.byKey(const Key('login-submit-button')),
+            matching: find.byType(Container),
+          )
+          .first,
+    );
+    final decoration = buttonContainer.decoration! as BoxDecoration;
+    expect(decoration.color, RadarComponentTokens.primaryButtonBackground);
     expect(tester.takeException(), isNull);
   });
 

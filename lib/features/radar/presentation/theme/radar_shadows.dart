@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'radar_colors.dart';
+import 'radar_design_tokens.dart';
 
 abstract final class RadarShadows {
   static List<BoxShadow> get card => [
@@ -21,17 +22,19 @@ abstract final class RadarShadows {
 
   static List<BoxShadow> get loginCard => [
     BoxShadow(
-      color: RadarColors.textPrimary.withValues(alpha: 0.24),
+      color: RadarColors.textPrimary.withValues(alpha: 0.08),
       blurRadius: 32,
-      offset: const Offset(0, 18),
+      offset: const Offset(0, 12),
     ),
   ];
 
   static List<BoxShadow> get loginButton => [
     BoxShadow(
-      color: RadarColors.brandAccent.withValues(alpha: 0.34),
-      blurRadius: 22,
-      offset: const Offset(0, 10),
+      color: RadarComponentTokens.primaryButtonBackground.withValues(
+        alpha: 0.24,
+      ),
+      blurRadius: 18,
+      offset: const Offset(0, 8),
     ),
   ];
 }
