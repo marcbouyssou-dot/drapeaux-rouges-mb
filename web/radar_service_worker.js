@@ -4,6 +4,7 @@ const CACHE_VERSION = 'radar-app-v3';
 const NAVIGATION_TIMEOUT_MS = 3000;
 const DEBUG = true;
 const fetchDiagnostics = [];
+let fetchSequence = 0;
 
 // This list is derived from the release build and from the requests observed
 // between index.html and Radar's first rendered screen.
@@ -97,8 +98,16 @@ self.addEventListener('fetch', (event) => {
   const isNavigation =
     request.mode === 'navigate' || request.destination === 'document';
   if (isNavigation) {
-    fetchLog('request received', { ...details, branch: 'navigation' });
-    event.respondWith(networkFirstNavigation(request));
+    const fetchId = `navigation-${++fetchSequence}`;
+    fetchLog('NAVIGATION_INTERCEPTED', {
+      fetchId,
+      intercepted: true,
+      ...details,
+      branch: 'navigation',
+      clientId: event.clientId,
+      resultingClientId: event.resultingClientId,
+    });
+    event.respondWith(networkFirstNavigation(request, fetchId));
     return;
   }
 
@@ -124,52 +133,80 @@ async function precacheCriticalResources() {
   log('critical resources cached', CRITICAL_RESOURCES.length);
 }
 
-async function networkFirstNavigation(request) {
-  fetchLog('network attempt started', requestDetails(request));
+async function networkFirstNavigation(request, fetchId) {
+  fetchLog('network attempt started', {
+    fetchId,
+    ...requestDetails(request),
+  });
   try {
     const response = await fetchWithTimeout(request, NAVIGATION_TIMEOUT_MS);
     fetchLog('network response received', {
+      fetchId,
       status: response.status,
       type: response.type,
       url: response.url,
+      headers: safeResponseHeaders(response.headers),
     });
     if (isCacheable(response)) {
       const cache = await caches.open(CACHE_VERSION);
       await cache.put('/index.html', response.clone());
-      fetchLog('final response', {
+      fetchLog('NAVIGATION_RESPONSE_SENT', {
+        fetchId,
+        responseSent: true,
+        cacheFound: false,
         source: 'network',
-        status: response.status,
-        type: response.type,
-        url: response.url,
+        ...responseDetails(response),
       });
       return response;
     }
   } catch (error) {
     fetchLog(
       error?.name === 'AbortError' ? 'network timeout' : 'network error',
-      { url: request.url, error: String(error) },
+      { fetchId, url: request.url, error: String(error) },
     );
   }
 
   const cache = await caches.open(CACHE_VERSION);
   const exactKey = request.url;
-  fetchLog('cache lookup', { key: exactKey, ignoreSearch: true });
+  fetchLog('cache lookup', {
+    fetchId,
+    key: exactKey,
+    ignoreSearch: true,
+  });
   const exactMatch = await cache.match(request, { ignoreSearch: true });
-  fetchLog('cache lookup result', responseDetails(exactMatch));
+  fetchLog('cache lookup result', {
+    fetchId,
+    ...responseDetails(exactMatch),
+  });
 
   const indexKey = absoluteUrl('/index.html');
-  fetchLog('cache lookup', { key: indexKey, ignoreSearch: true });
+  fetchLog('cache lookup', {
+    fetchId,
+    key: indexKey,
+    ignoreSearch: true,
+  });
   const indexMatch = await cache.match(indexKey, { ignoreSearch: true });
-  fetchLog('cache lookup result', responseDetails(indexMatch));
+  fetchLog('cache lookup result', {
+    fetchId,
+    ...responseDetails(indexMatch),
+  });
 
   const rootKey = absoluteUrl('/');
-  fetchLog('cache lookup', { key: rootKey, ignoreSearch: true });
+  fetchLog('cache lookup', {
+    fetchId,
+    key: rootKey,
+    ignoreSearch: true,
+  });
   const rootMatch = await cache.match(rootKey, { ignoreSearch: true });
-  fetchLog('cache lookup result', responseDetails(rootMatch));
+  fetchLog('cache lookup result', {
+    fetchId,
+    ...responseDetails(rootMatch),
+  });
 
   const fallback = exactMatch ?? indexMatch ?? rootMatch;
   if (fallback) {
     fetchLog('fallback selected', {
+      fetchId,
       source: exactMatch
         ? 'exact-request'
         : indexMatch
@@ -177,16 +214,33 @@ async function networkFirstNavigation(request) {
           : 'root',
       responseUrl: fallback.url,
     });
-    fetchLog('final response', responseDetails(fallback));
+    fetchLog('NAVIGATION_RESPONSE_SENT', {
+      fetchId,
+      responseSent: true,
+      cacheFound: true,
+      source: exactMatch
+        ? 'exact-request'
+        : indexMatch
+          ? 'index.html'
+          : 'root',
+      ...responseDetails(fallback),
+    });
     return fallback;
   }
 
   const emergencyResponse = offlineHtmlResponse();
   fetchLog('fallback selected', {
+    fetchId,
     source: 'minimal-offline-html',
     responseUrl: '',
   });
-  fetchLog('final response', responseDetails(emergencyResponse));
+  fetchLog('NAVIGATION_RESPONSE_SENT', {
+    fetchId,
+    responseSent: true,
+    cacheFound: false,
+    source: 'minimal-offline-html',
+    ...responseDetails(emergencyResponse),
+  });
   return emergencyResponse;
 }
 
@@ -233,6 +287,7 @@ function requestDetails(request, parsedUrl = new URL(request.url)) {
     redirect: request.redirect,
     pathname: parsedUrl.pathname,
     search: parsedUrl.search,
+    headers: safeRequestHeaders(request.headers),
   };
 }
 
@@ -284,8 +339,38 @@ function responseDetails(response) {
         status: response.status,
         type: response.type,
         url: response.url,
+        headers: safeResponseHeaders(response.headers),
       }
     : { found: false };
+}
+
+function safeRequestHeaders(headers) {
+  return selectedHeaders(headers, [
+    'accept',
+    'purpose',
+    'sec-fetch-dest',
+    'sec-fetch-mode',
+    'sec-fetch-site',
+  ]);
+}
+
+function safeResponseHeaders(headers) {
+  return selectedHeaders(headers, [
+    'cache-control',
+    'content-length',
+    'content-type',
+    'etag',
+    'last-modified',
+    'location',
+  ]);
+}
+
+function selectedHeaders(headers, allowedNames) {
+  return Object.fromEntries(
+    allowedNames
+      .map((name) => [name, headers.get(name)])
+      .filter(([, value]) => value !== null),
+  );
 }
 
 function offlineHtmlResponse() {

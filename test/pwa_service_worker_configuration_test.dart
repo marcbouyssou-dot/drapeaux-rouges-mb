@@ -15,7 +15,11 @@ void main() {
     expect(worker, contains("caches.open(CACHE_VERSION)"));
     expect(worker, contains("request.mode === 'navigate'"));
     expect(worker, contains("request.destination === 'document'"));
-    expect(worker, contains('networkFirstNavigation(request)'));
+    expect(worker, contains("fetchLog('NAVIGATION_INTERCEPTED'"));
+    expect(worker, contains("fetchLog('NAVIGATION_RESPONSE_SENT'"));
+    expect(worker, contains('safeRequestHeaders(request.headers)'));
+    expect(worker, contains('safeResponseHeaders(response.headers)'));
+    expect(worker, contains('networkFirstNavigation(request, fetchId)'));
     expect(worker, contains("cache.match('/index.html')"));
     expect(worker, contains("name.startsWith('radar-app-')"));
     expect(worker, contains('self.clients.claim()'));
