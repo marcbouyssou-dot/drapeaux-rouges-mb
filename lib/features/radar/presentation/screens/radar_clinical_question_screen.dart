@@ -11,6 +11,7 @@ import '../theme/radar_shadows.dart';
 import '../theme/radar_spacing.dart';
 import '../theme/radar_text_styles.dart';
 import '../widgets/radar_patient_context.dart';
+import '../widgets/radar_page_header.dart';
 import '../widgets/radar_surface_card.dart';
 import 'radar_clinical_hard_stop_screen.dart';
 import 'radar_clinical_summary_screen.dart';
@@ -155,7 +156,10 @@ class _RadarClinicalQuestionScreenState
                     ),
                   ),
                 const SizedBox(height: RadarSpacing.xxl),
-                _RadarBackAction(onTap: () => Navigator.of(context).pop()),
+                const Align(
+                  alignment: Alignment.centerLeft,
+                  child: RadarPageBackButton(),
+                ),
               ],
             ),
           ),
@@ -217,66 +221,6 @@ class _RadarAnswerCardState extends State<_RadarAnswerCard> {
                     color: RadarColors.blueGrey,
                     size: 20,
                   ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _RadarBackAction extends StatefulWidget {
-  const _RadarBackAction({required this.onTap});
-
-  final VoidCallback onTap;
-
-  @override
-  State<_RadarBackAction> createState() => _RadarBackActionState();
-}
-
-class _RadarBackActionState extends State<_RadarBackAction> {
-  bool _pressed = false;
-
-  void _setPressed(bool value) {
-    if (_pressed == value) {
-      return;
-    }
-
-    setState(() {
-      _pressed = value;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Semantics(
-      button: true,
-      label: 'Retour',
-      child: MouseRegion(
-        cursor: SystemMouseCursors.click,
-        child: GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTap: widget.onTap,
-          onTapDown: (_) => _setPressed(true),
-          onTapCancel: () => _setPressed(false),
-          onTapUp: (_) => _setPressed(false),
-          child: AnimatedOpacity(
-            duration: const Duration(milliseconds: 200),
-            curve: Curves.easeOut,
-            opacity: _pressed ? 0.7 : 1,
-            child: const SizedBox(
-              height: 44,
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.arrow_back_ios_new,
-                    color: RadarColors.primary,
-                    size: 16,
-                  ),
-                  SizedBox(width: RadarSpacing.sm),
-                  Text('Retour', style: RadarTextStyles.action),
                 ],
               ),
             ),

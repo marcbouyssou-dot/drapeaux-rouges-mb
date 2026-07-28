@@ -71,8 +71,8 @@ void main() {
       );
       expect(find.text('Évaluation clinique'), findsOneWidget);
       expect(find.text('Lombaires • Étape 1'), findsOneWidget);
-      expect(find.text('Retour'), findsOneWidget);
-      expect(find.byIcon(Icons.arrow_back_ios_new), findsOneWidget);
+      expect(find.byTooltip('Retour'), findsOneWidget);
+      expect(find.byIcon(Icons.arrow_back_ios_new_rounded), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
 

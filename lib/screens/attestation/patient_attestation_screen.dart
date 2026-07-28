@@ -567,7 +567,7 @@ class _HeaderCard extends StatelessWidget {
       ),
       child: Row(
         children: [
-          RadarPageBackButton(onPressed: () => Navigator.pop(context)),
+          const RadarPageBackButton(),
           const SizedBox(width: RadarSpacing.lg),
           Expanded(
             child: Column(

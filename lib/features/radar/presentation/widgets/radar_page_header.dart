@@ -46,17 +46,18 @@ class RadarPageHeader extends StatelessWidget {
 }
 
 class RadarPageBackButton extends StatelessWidget {
-  const RadarPageBackButton({super.key, required this.onPressed});
+  const RadarPageBackButton({super.key, this.onPressed});
 
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed;
 
   @override
   Widget build(BuildContext context) {
     return IconButton.filledTonal(
       tooltip: 'Retour',
-      onPressed: onPressed,
+      onPressed: onPressed ?? () => Navigator.of(context).maybePop(),
       icon: const Icon(Icons.arrow_back_ios_new_rounded),
       style: IconButton.styleFrom(
+        minimumSize: const Size.square(44),
         backgroundColor: RadarColors.surface,
         foregroundColor: RadarColors.primary,
         shape: RoundedRectangleBorder(

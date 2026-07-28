@@ -20,6 +20,7 @@ import '../../features/radar/presentation/theme/radar_text_styles.dart';
 import '../../features/radar/presentation/theme/radar_theme.dart';
 import '../../features/radar/presentation/widgets/radar_bottom_action_bar.dart';
 import '../../features/radar/presentation/widgets/radar_patient_context.dart';
+import '../../features/radar/presentation/widgets/radar_page_header.dart';
 
 class MedicalLetterScreen extends StatefulWidget {
   const MedicalLetterScreen({super.key, required this.template});
@@ -294,6 +295,8 @@ class _HeaderCard extends StatelessWidget {
       ),
       child: Row(
         children: [
+          const RadarPageBackButton(),
+          const SizedBox(width: RadarSpacing.lg),
           Container(
             width: 48,
             height: 48,

@@ -19,6 +19,7 @@ import '../features/radar/presentation/theme/radar_spacing.dart';
 import '../features/radar/presentation/theme/radar_text_styles.dart';
 import '../features/radar/presentation/theme/radar_theme.dart';
 import '../features/radar/presentation/widgets/radar_patient_context.dart';
+import '../features/radar/presentation/widgets/radar_page_header.dart';
 import '../features/radar/presentation/widgets/radar_bottom_action_bar.dart';
 import '../features/radar/presentation/widgets/radar_destructive_confirmation_dialog.dart';
 
@@ -656,22 +657,7 @@ class _PrescriptionScreenState extends State<PrescriptionScreen> {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              InkWell(
-                borderRadius: BorderRadius.circular(RadarRadius.small),
-                onTap: () => Navigator.pop(context),
-                child: Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    color: RadarColors.background,
-                    borderRadius: BorderRadius.circular(RadarRadius.small),
-                  ),
-                  child: const Icon(
-                    Icons.arrow_back_ios_new_rounded,
-                    color: RadarColors.primary,
-                  ),
-                ),
-              ),
+              const RadarPageBackButton(),
               if (!compact) ...[
                 const SizedBox(width: RadarSpacing.md),
                 Container(

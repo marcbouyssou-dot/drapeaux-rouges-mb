@@ -11,6 +11,7 @@ import '../theme/radar_shadows.dart';
 import '../theme/radar_spacing.dart';
 import '../theme/radar_text_styles.dart';
 import '../widgets/radar_patient_context.dart';
+import '../widgets/radar_page_header.dart';
 import '../widgets/radar_primary_button.dart';
 import '../widgets/radar_surface_card.dart';
 
@@ -87,7 +88,13 @@ class _RadarClinicalHardStopScreenBodyState
                 RadarSpacing.xxl,
               ),
               children: [
-                const RadarPatientContextBar(),
+                const Row(
+                  children: [
+                    RadarPageBackButton(),
+                    SizedBox(width: RadarSpacing.md),
+                    Expanded(child: RadarPatientContextBar()),
+                  ],
+                ),
                 const SizedBox(height: RadarSpacing.cardGap),
                 _HardStopDecisionCard(
                   title:
