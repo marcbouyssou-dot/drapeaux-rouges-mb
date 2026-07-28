@@ -1,5 +1,5 @@
 [build]
-command = "flutter build web --release --target lib/main_radar.dart"
+command = "flutter build web --release --target lib/main_radar.dart --no-web-resources-cdn && rm -f build/web/flutter_service_worker.js"
 publish = "build/web"
 
 [[redirects]]
@@ -16,13 +16,23 @@ Cache-Control = "no-cache"
 [[headers]]
 for = "/index.html"
 [headers.values]
-Cache-Control = "no-cache"
+Cache-Control = "no-cache, no-store, must-revalidate"
+
+[[headers]]
+for = "/"
+[headers.values]
+Cache-Control = "no-cache, no-store, must-revalidate"
+
+[[headers]]
+for = "/flutter_bootstrap.js"
+[headers.values]
+Cache-Control = "no-cache, no-store, must-revalidate"
 
 [[headers]]
 for = "/radar_service_worker.js"
 [headers.values]
 Content-Type = "application/javascript; charset=utf-8"
-Cache-Control = "no-cache"
+Cache-Control = "no-cache, no-store, must-revalidate"
 Service-Worker-Allowed = "/"
 
 [[headers]]

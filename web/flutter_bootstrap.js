@@ -4,9 +4,15 @@
 async function startRadar() {
   if ('serviceWorker' in navigator) {
     try {
-      await navigator.serviceWorker.register('/radar_service_worker.js', {
-        updateViaCache: 'none',
-      });
+      const registration = await navigator.serviceWorker.register(
+        '/radar_service_worker.js',
+        {
+          scope: '/',
+          updateViaCache: 'none',
+        },
+      );
+      await registration.update();
+      await navigator.serviceWorker.ready;
     } catch (error) {
       console.warn('Radar service worker registration failed', error);
     }

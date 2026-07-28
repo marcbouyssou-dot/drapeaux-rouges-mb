@@ -1,9 +1,12 @@
 'use strict';
 
-// Increment this version whenever the application shell changes. Activating the
-// new worker removes every older Radar application cache.
-const CACHE_VERSION = 'radar-app-v1';
-const APP_SHELL = [
+const CACHE_VERSION = 'radar-app-v2';
+const NAVIGATION_TIMEOUT_MS = 3000;
+const DEBUG = true;
+
+// This list is derived from the release build and from the requests observed
+// between index.html and Radar's first rendered screen.
+const CRITICAL_RESOURCES = [
   '/',
   '/index.html',
   '/main.dart.js',
@@ -12,9 +15,13 @@ const APP_SHELL = [
   '/manifest.json',
   '/favicon.png',
   '/assets/AssetManifest.bin',
+  '/assets/AssetManifest.bin.json',
   '/assets/FontManifest.json',
   '/assets/NOTICES',
   '/assets/fonts/MaterialIcons-Regular.otf',
+  '/assets/packages/cupertino_icons/assets/CupertinoIcons.ttf',
+  '/assets/shaders/ink_sparkle.frag',
+  '/assets/shaders/stretch_effect.frag',
   '/assets/assets/fonts/Roboto-Bold.ttf',
   '/assets/assets/fonts/Roboto-Regular.ttf',
   '/assets/assets/icons/app_icon.png',
@@ -40,24 +47,26 @@ const APP_SHELL = [
 ];
 
 self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_VERSION).then((cache) => cache.addAll(APP_SHELL)),
-  );
+  log('installation started', {
+    cache: CACHE_VERSION,
+    resources: CRITICAL_RESOURCES.length,
+  });
+  event.waitUntil(precacheCriticalResources());
   self.skipWaiting();
 });
 
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches
-      .keys()
-      .then((names) =>
-        Promise.all(
-          names
-            .filter((name) => name.startsWith('radar-app-') && name !== CACHE_VERSION)
-            .map((name) => caches.delete(name)),
-        ),
-      )
-      .then(() => self.clients.claim()),
+    (async () => {
+      for (const name of await caches.keys()) {
+        if (name.startsWith('radar-app-') && name !== CACHE_VERSION) {
+          await caches.delete(name);
+          log('old cache removed', name);
+        }
+      }
+      await self.clients.claim();
+      log('worker activated', CACHE_VERSION);
+    })(),
   );
 });
 
@@ -69,38 +78,99 @@ self.addEventListener('fetch', (event) => {
   if (url.origin !== self.location.origin) return;
 
   if (request.mode === 'navigate') {
-    event.respondWith(networkFirst(request, '/index.html'));
+    event.respondWith(networkFirstNavigation(request));
     return;
   }
 
-  if (APP_SHELL.includes(url.pathname)) {
-    event.respondWith(cacheFirst(request));
-  }
+  event.respondWith(cacheFirstStatic(request));
 });
 
-async function cacheFirst(request) {
-  const cached = await caches.match(request, { ignoreSearch: true });
-  if (cached) return cached;
+async function precacheCriticalResources() {
+  const cache = await caches.open(CACHE_VERSION);
 
-  const response = await fetch(request);
-  if (response.ok) {
-    const cache = await caches.open(CACHE_VERSION);
-    await cache.put(request, response.clone());
+  for (const path of CRITICAL_RESOURCES) {
+    try {
+      const response = await fetch(path, { cache: 'reload' });
+      if (!isCacheable(response)) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+      await cache.put(path, response);
+    } catch (error) {
+      console.error('[Radar SW] critical resource failed', path, error);
+      throw error;
+    }
   }
-  return response;
+
+  log('critical resources cached', CRITICAL_RESOURCES.length);
 }
 
-async function networkFirst(request, fallbackPath) {
+async function networkFirstNavigation(request) {
   try {
-    const response = await fetch(request);
-    if (response.ok) {
+    const response = await fetchWithTimeout(request, NAVIGATION_TIMEOUT_MS);
+    if (isCacheable(response)) {
       const cache = await caches.open(CACHE_VERSION);
       await cache.put('/index.html', response.clone());
+      log('navigation served from network', request.url);
+      return response;
+    }
+  } catch (error) {
+    log('navigation network unavailable', request.url);
+  }
+
+  const cache = await caches.open(CACHE_VERSION);
+  const cachedNavigation = await cache.match(normalizedPath(request));
+  const fallback = cachedNavigation ?? (await cache.match('/index.html'));
+  if (fallback) {
+    log('navigation served from cache', request.url);
+    return fallback;
+  }
+
+  console.error('[Radar SW] navigation fallback missing', request.url);
+  return Response.error();
+}
+
+async function cacheFirstStatic(request) {
+  const cache = await caches.open(CACHE_VERSION);
+  const normalized = normalizedPath(request);
+  const cached =
+    (await cache.match(request, { ignoreSearch: true })) ??
+    (await cache.match(normalized));
+  if (cached) return cached;
+
+  log('resource absent from cache', normalized);
+  try {
+    const response = await fetch(request);
+    if (isCacheable(response)) {
+      await cache.put(normalized, response.clone());
     }
     return response;
   } catch (_) {
-    return (await caches.match(request, { ignoreSearch: true })) ||
-      (await caches.match(fallbackPath)) ||
-      Response.error();
+    return Response.error();
   }
+}
+
+function normalizedPath(request) {
+  const url = new URL(
+    typeof request === 'string' ? request : request.url,
+    self.location.origin,
+  );
+  return url.pathname;
+}
+
+function isCacheable(response) {
+  return response && response.ok && response.type !== 'error';
+}
+
+async function fetchWithTimeout(request, timeoutMillis) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), timeoutMillis);
+  try {
+    return await fetch(request, { signal: controller.signal });
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+function log(message, detail) {
+  if (DEBUG) console.info('[Radar SW]', message, detail ?? '');
 }
