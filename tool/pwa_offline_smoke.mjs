@@ -12,6 +12,7 @@ if (!page) throw new Error('No Chrome page target is available.');
 const socket = new WebSocket(page.webSocketDebuggerUrl);
 const pending = new Map();
 const requests = new Set();
+const navigationResponses = [];
 let sequence = 0;
 
 socket.addEventListener('message', (event) => {
@@ -26,6 +27,17 @@ socket.addEventListener('message', (event) => {
 
   if (message.method === 'Network.requestWillBeSent') {
     requests.add(message.params.request.url);
+  }
+  if (
+    message.method === 'Network.responseReceived' &&
+    message.params.type === 'Document'
+  ) {
+    navigationResponses.push({
+      url: message.params.response.url,
+      status: message.params.response.status,
+      mimeType: message.params.response.mimeType,
+      fromServiceWorker: message.params.response.fromServiceWorker,
+    });
   }
 });
 
@@ -59,6 +71,25 @@ await new Promise((resolve) => setTimeout(resolve, waitMillis));
 const evaluation = await command('Runtime.evaluate', {
   expression: `(async () => {
     const registration = await navigator.serviceWorker.getRegistration('/');
+    const diagnostic = navigator.serviceWorker.controller
+      ? await new Promise((resolve) => {
+          const timeout = setTimeout(
+            () => resolve({ error: 'diagnostic timeout' }),
+            3000,
+          );
+          const listener = (event) => {
+            if (event.data?.type !== 'RADAR_PWA_DIAGNOSTIC_RESULT') return;
+            clearTimeout(timeout);
+            navigator.serviceWorker.removeEventListener('message', listener);
+            resolve(event.data.diagnostic);
+          };
+          navigator.serviceWorker.addEventListener('message', listener);
+          navigator.serviceWorker.controller.postMessage({
+            type: 'RADAR_PWA_DIAGNOSTIC',
+            navigationUrl: location.href,
+          });
+        })
+      : null;
     const cacheNames = await caches.keys();
     const cacheEntries = {};
     for (const name of cacheNames) {
@@ -76,6 +107,7 @@ const evaluation = await command('Runtime.evaluate', {
       registrationScope: registration?.scope ?? null,
       activeWorkerUrl: registration?.active?.scriptURL ?? null,
       activeWorkerState: registration?.active?.state ?? null,
+      diagnostic,
       cacheNames,
       cacheEntries,
     };
@@ -95,6 +127,7 @@ console.log(
     {
       page: evaluation.result.value,
       requests: [...requests].sort(),
+      navigationResponses,
     },
     null,
     2,

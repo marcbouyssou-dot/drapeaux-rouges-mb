@@ -11,14 +11,22 @@ void main() {
     expect(bootstrap, contains("scope: '/'"));
     expect(bootstrap, contains("updateViaCache: 'none'"));
     expect(bootstrap, contains('navigator.serviceWorker.ready'));
-    expect(worker, contains("const CACHE_VERSION = 'radar-app-v2'"));
+    expect(worker, contains("const CACHE_VERSION = 'radar-app-v3'"));
     expect(worker, contains("caches.open(CACHE_VERSION)"));
     expect(worker, contains("request.mode === 'navigate'"));
+    expect(worker, contains("request.destination === 'document'"));
     expect(worker, contains('networkFirstNavigation(request)'));
     expect(worker, contains("cache.match('/index.html')"));
     expect(worker, contains("name.startsWith('radar-app-')"));
     expect(worker, contains('self.clients.claim()'));
     expect(worker, isNot(contains('unregister()')));
+
+    final navigationHandler = RegExp(
+      r'async function networkFirstNavigation[\s\S]*?'
+      r'\n}\n\nasync function cacheFirstStatic',
+    ).firstMatch(worker)!.group(0)!;
+    expect(navigationHandler, contains('offlineHtmlResponse()'));
+    expect(navigationHandler, isNot(contains('Response.error()')));
   });
 
   test(

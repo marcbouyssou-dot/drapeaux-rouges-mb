@@ -1,8 +1,9 @@
 'use strict';
 
-const CACHE_VERSION = 'radar-app-v2';
+const CACHE_VERSION = 'radar-app-v3';
 const NAVIGATION_TIMEOUT_MS = 3000;
 const DEBUG = true;
+const fetchDiagnostics = [];
 
 // This list is derived from the release build and from the requests observed
 // between index.html and Radar's first rendered screen.
@@ -70,14 +71,33 @@ self.addEventListener('activate', (event) => {
   );
 });
 
+self.addEventListener('message', (event) => {
+  if (event.data?.type !== 'RADAR_PWA_DIAGNOSTIC') return;
+
+  event.waitUntil(
+    navigationCacheDiagnostic(event.data.navigationUrl).then((diagnostic) => {
+      event.source?.postMessage({
+        type: 'RADAR_PWA_DIAGNOSTIC_RESULT',
+        diagnostic,
+      });
+    }),
+  );
+});
+
 self.addEventListener('fetch', (event) => {
   const request = event.request;
-  if (request.method !== 'GET') return;
-
   const url = new URL(request.url);
-  if (url.origin !== self.location.origin) return;
+  const details = requestDetails(request, url);
 
-  if (request.mode === 'navigate') {
+  if (request.method !== 'GET' || url.origin !== self.location.origin) {
+    fetchLog('request ignored', { ...details, branch: 'ignored' });
+    return;
+  }
+
+  const isNavigation =
+    request.mode === 'navigate' || request.destination === 'document';
+  if (isNavigation) {
+    fetchLog('request received', { ...details, branch: 'navigation' });
     event.respondWith(networkFirstNavigation(request));
     return;
   }
@@ -105,28 +125,69 @@ async function precacheCriticalResources() {
 }
 
 async function networkFirstNavigation(request) {
+  fetchLog('network attempt started', requestDetails(request));
   try {
     const response = await fetchWithTimeout(request, NAVIGATION_TIMEOUT_MS);
+    fetchLog('network response received', {
+      status: response.status,
+      type: response.type,
+      url: response.url,
+    });
     if (isCacheable(response)) {
       const cache = await caches.open(CACHE_VERSION);
       await cache.put('/index.html', response.clone());
-      log('navigation served from network', request.url);
+      fetchLog('final response', {
+        source: 'network',
+        status: response.status,
+        type: response.type,
+        url: response.url,
+      });
       return response;
     }
   } catch (error) {
-    log('navigation network unavailable', request.url);
+    fetchLog(
+      error?.name === 'AbortError' ? 'network timeout' : 'network error',
+      { url: request.url, error: String(error) },
+    );
   }
 
   const cache = await caches.open(CACHE_VERSION);
-  const cachedNavigation = await cache.match(normalizedPath(request));
-  const fallback = cachedNavigation ?? (await cache.match('/index.html'));
+  const exactKey = request.url;
+  fetchLog('cache lookup', { key: exactKey, ignoreSearch: true });
+  const exactMatch = await cache.match(request, { ignoreSearch: true });
+  fetchLog('cache lookup result', responseDetails(exactMatch));
+
+  const indexKey = absoluteUrl('/index.html');
+  fetchLog('cache lookup', { key: indexKey, ignoreSearch: true });
+  const indexMatch = await cache.match(indexKey, { ignoreSearch: true });
+  fetchLog('cache lookup result', responseDetails(indexMatch));
+
+  const rootKey = absoluteUrl('/');
+  fetchLog('cache lookup', { key: rootKey, ignoreSearch: true });
+  const rootMatch = await cache.match(rootKey, { ignoreSearch: true });
+  fetchLog('cache lookup result', responseDetails(rootMatch));
+
+  const fallback = exactMatch ?? indexMatch ?? rootMatch;
   if (fallback) {
-    log('navigation served from cache', request.url);
+    fetchLog('fallback selected', {
+      source: exactMatch
+        ? 'exact-request'
+        : indexMatch
+          ? 'index.html'
+          : 'root',
+      responseUrl: fallback.url,
+    });
+    fetchLog('final response', responseDetails(fallback));
     return fallback;
   }
 
-  console.error('[Radar SW] navigation fallback missing', request.url);
-  return Response.error();
+  const emergencyResponse = offlineHtmlResponse();
+  fetchLog('fallback selected', {
+    source: 'minimal-offline-html',
+    responseUrl: '',
+  });
+  fetchLog('final response', responseDetails(emergencyResponse));
+  return emergencyResponse;
 }
 
 async function cacheFirstStatic(request) {
@@ -157,6 +218,93 @@ function normalizedPath(request) {
   return url.pathname;
 }
 
+function absoluteUrl(path) {
+  return new URL(path, self.location.origin).href;
+}
+
+function requestDetails(request, parsedUrl = new URL(request.url)) {
+  return {
+    url: request.url,
+    method: request.method,
+    mode: request.mode,
+    destination: request.destination,
+    cache: request.cache,
+    credentials: request.credentials,
+    redirect: request.redirect,
+    pathname: parsedUrl.pathname,
+    search: parsedUrl.search,
+  };
+}
+
+async function navigationCacheDiagnostic(navigationUrl = '/') {
+  const cache = await caches.open(CACHE_VERSION);
+  const origin = self.location.origin;
+  const navigationRequest = new Request(
+    new URL(navigationUrl, origin).href,
+    { mode: 'same-origin' },
+  );
+  const checks = {
+    matchRoot: await cache.match('/'),
+    matchIndex: await cache.match('/index.html'),
+    matchAbsoluteRoot: await cache.match(new Request(`${origin}/`)),
+    matchAbsoluteIndex: await cache.match(
+      new Request(`${origin}/index.html`),
+    ),
+    matchNavigationIgnoreSearch: await cache.match(navigationRequest, {
+      ignoreSearch: true,
+    }),
+    matchIndexIgnoreSearch: await cache.match('/index.html', {
+      ignoreSearch: true,
+    }),
+  };
+
+  return {
+    cache: CACHE_VERSION,
+    origin,
+    navigationUrl: navigationRequest.url,
+    keys: (await cache.keys()).map((request) => ({
+      url: request.url,
+      pathname: new URL(request.url).pathname,
+      search: new URL(request.url).search,
+    })),
+    matches: Object.fromEntries(
+      Object.entries(checks).map(([name, response]) => [
+        name,
+        responseDetails(response),
+      ]),
+    ),
+    fetchEvents: [...fetchDiagnostics],
+  };
+}
+
+function responseDetails(response) {
+  return response
+    ? {
+        found: true,
+        status: response.status,
+        type: response.type,
+        url: response.url,
+      }
+    : { found: false };
+}
+
+function offlineHtmlResponse() {
+  return new Response(
+    '<!doctype html><html lang="fr"><meta charset="utf-8">' +
+      '<meta name="viewport" content="width=device-width,initial-scale=1">' +
+      '<title>Radar hors ligne</title>' +
+      '<body><p>Radar ne peut pas charger ses ressources locales.</p></body>' +
+      '</html>',
+    {
+      status: 200,
+      headers: {
+        'Content-Type': 'text/html; charset=utf-8',
+        'Cache-Control': 'no-store',
+      },
+    },
+  );
+}
+
 function isCacheable(response) {
   return response && response.ok && response.type !== 'error';
 }
@@ -173,4 +321,14 @@ async function fetchWithTimeout(request, timeoutMillis) {
 
 function log(message, detail) {
   if (DEBUG) console.info('[Radar SW]', message, detail ?? '');
+}
+
+function fetchLog(message, detail) {
+  fetchDiagnostics.push({
+    at: new Date().toISOString(),
+    message,
+    detail: detail ?? null,
+  });
+  if (fetchDiagnostics.length > 100) fetchDiagnostics.shift();
+  if (DEBUG) console.info('[Radar SW][fetch]', message, detail ?? '');
 }
