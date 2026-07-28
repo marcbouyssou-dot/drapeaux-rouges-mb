@@ -226,6 +226,11 @@ void main() {
 
       expect(tester.takeException(), isNull);
       expect(find.byType(BDKTypeScreen), findsOneWidget);
+      expect(find.text('Bilan'), findsNothing);
+      expect(
+        find.text('Créer ou compléter un bilan diagnostique kinésithérapique.'),
+        findsNothing,
+      );
       expect(find.text('BDK Lombalgie'), findsOneWidget);
     });
 
@@ -256,6 +261,11 @@ void main() {
 
       expect(tester.takeException(), isNull);
       expect(find.byType(PrescriptionTypeScreen), findsOneWidget);
+      expect(find.text('Documents'), findsNothing);
+      expect(
+        find.text('Créer un document clinique et préparer un export PDF.'),
+        findsNothing,
+      );
       expect(find.text('Rééducation'), findsOneWidget);
     });
 

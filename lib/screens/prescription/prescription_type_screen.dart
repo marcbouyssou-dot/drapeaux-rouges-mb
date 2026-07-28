@@ -62,14 +62,13 @@ class PrescriptionTypeScreen extends StatelessWidget {
                   RadarSpacing.xxl,
                 ),
                 children: [
-                  RadarPageHeader(
-                    title: 'Documents',
-                    subtitle:
-                        'Créer un document clinique et préparer un export PDF.',
-                    onBack: () => Navigator.pop(context),
+                  const Row(
+                    children: [
+                      RadarPageBackButton(),
+                      SizedBox(width: RadarSpacing.md),
+                      Expanded(child: RadarPatientContextBar()),
+                    ],
                   ),
-                  const SizedBox(height: RadarSpacing.lg),
-                  const RadarPatientContextBar(),
                   const SizedBox(height: RadarSpacing.xxl),
                   LayoutBuilder(
                     builder: (context, constraints) {

@@ -38,14 +38,13 @@ class BDKTypeScreen extends StatelessWidget {
                   RadarSpacing.xxl,
                 ),
                 children: [
-                  RadarPageHeader(
-                    title: 'Bilan',
-                    subtitle:
-                        'Créer ou compléter un bilan diagnostique kinésithérapique.',
-                    onBack: () => Navigator.pop(context),
+                  const Row(
+                    children: [
+                      RadarPageBackButton(),
+                      SizedBox(width: RadarSpacing.md),
+                      Expanded(child: RadarPatientContextBar()),
+                    ],
                   ),
-                  const SizedBox(height: RadarSpacing.lg),
-                  const RadarPatientContextBar(),
                   const SizedBox(height: RadarSpacing.xxl),
                   ...bdkTypeOptions.map(
                     (item) => Padding(
