@@ -1,34 +1,36 @@
 import 'package:flutter/material.dart';
 
+import 'radar_design_tokens.dart';
+
 abstract final class RadarColors {
   // Identity
-  static const primary = Color(0xFF3B82F6);
-  static const indigo = Color(0xFF6366F1);
+  static const primary = RadarBrandTokens.primary;
+  static const indigo = RadarBrandTokens.secondary;
   static const slate = Color(0xFF64748B);
   static const blueGrey = Color(0xFF94A3B8);
   static const neutralGrey = Color(0xFF9CA3AF);
   static const brandBackground = Color(0xFF032052);
-  static const brandAccent = Color(0xFFE91E63);
+  static const brandAccent = RadarBrandTokens.accent;
   static const brandAccentDark = Color(0xFFC2185B);
   static const textOnBrand = Color(0xFFFFFFFF);
   static const textMutedOnBrand = Color(0xFFA9C4E8);
-  static const loginFieldSurface = Color(0xFFF8FAFF);
+  static const loginFieldSurface = RadarComponentTokens.loginFieldBackground;
 
   // Clinical
-  static const clinicalSuccess = Color(0xFF22C55E);
-  static const clinicalWarning = Color(0xFFF59E0B);
-  static const clinicalDanger = Color(0xFFEF4444);
-  static const clinicalAction = Color(0xFF2563EB);
+  static const clinicalSuccess = RadarSemanticTokens.success;
+  static const clinicalWarning = RadarSemanticTokens.warning;
+  static const clinicalDanger = RadarSemanticTokens.danger;
+  static const clinicalAction = RadarSemanticTokens.information;
 
   // Neutrals
-  static const background = Color(0xFFF8FAFC);
-  static const surface = Color(0xFFFFFFFF);
-  static const border = Color(0xFFE2E8F0);
+  static const background = RadarBrandTokens.background;
+  static const surface = RadarBrandTokens.surface;
+  static const border = RadarSemanticTokens.border;
   static const divider = Color(0xFFCBD5E1);
-  static const textPrimary = Color(0xFF0F172A);
-  static const textSecondary = Color(0xFF475569);
+  static const textPrimary = RadarBrandTokens.text;
+  static const textSecondary = RadarBrandTokens.textMuted;
   static const textMuted = Color(0xFF64748B);
-  static const disabled = Color(0xFFCBD5E1);
+  static const disabled = RadarSemanticTokens.disabled;
 
   // Backward-compatible aliases for the current Radar presentation widgets.
   static const surfaceMuted = Color(0xFFEFF6FF);
